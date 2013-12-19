@@ -2436,7 +2436,9 @@
          */
         utilx.deepEqual = function (a, b, opts) {
             if (!utilx.isPlainObject(opts)) {
-                opts = {};
+                opts = {
+                    strict: true
+                };
             }
 
             if (utilx.objectIs(a, b)) {
@@ -2456,7 +2458,7 @@
                     utilx.objectIs(a.sticky, b.sticky);
             }
 
-            if (!utilx.isTypeObject(a) && !utilx.isTypeObject(b)) {
+            if (!utilx.isTypeOfObject(a) && !utilx.isTypeOfObject(b)) {
                 return utilx.isTrue(opts.strict) ? utilx.objectIs(a, b) : utilx.equal(a, b);
             }
 
