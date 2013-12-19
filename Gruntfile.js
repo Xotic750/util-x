@@ -8,7 +8,7 @@
             pkg: grunt.file.readJSON('package.json'),
 
             clean: {
-                all: ['docs', 'lib', 'coverage'],
+                all: ['README.md', 'docs', 'lib', 'coverage'],
                 after: ['coverage'],
                 coverage: ['coverage']
             },
@@ -137,7 +137,7 @@
                             maxBuffer: 1048576
                         }
                     },
-                    command: './node_modules/tape-compact/bin/tape-compact tests/*.js'
+                    command: 'UTILX_WHICH=1 ./node_modules/tape-compact/bin/tape-compact tests/*.js'
                 },
                 coveralls: {
                     options: {
@@ -148,7 +148,7 @@
                             maxBuffer: 1048576
                         }
                     },
-                    command: 'node_modules/istanbul/lib/cli.js cover tests/*.js --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js'
+                    command: 'UTILX_WHICH=1 node_modules/istanbul/lib/cli.js cover tests/*.js --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js'
                 },
                 uglified: {
                     options: {
