@@ -2,7 +2,7 @@
     "name": "util-x",
     "version": "0.0.1",
     "description": "A Javascript utility library.",
-    "homepage": "http://xotic750.github.io/astrodate/",
+    "homepage": "http://xotic750.github.io/util-x/",
     "author": {
         "name": "Graham Fairweather",
         "email": "xotic750@gmail.com"
@@ -10,11 +10,9 @@
     "copyright": "Copyright (c) 2013",
     "contributors": [],
     "keywords": [
-        "astrodate",
-        "date",
-        "time",
-        "parse",
-        "atronomy"
+        "utilities",
+        "library",
+        "javascript"
     ],
     "main": "lib/util-x.js",
     "engines": {
@@ -22,10 +20,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Xotic750/astrodate.git"
+        "url": "https://github.com/Xotic750/util-x.git"
     },
     "bugs": {
-        "url": "https://github.com/Xotic750/astrodate/issues"
+        "url": "https://github.com/Xotic750/util-x/issues"
     },
     "licenses": [{
         "type": "GPL3",
