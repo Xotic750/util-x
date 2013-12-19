@@ -3,3 +3,4 @@ node_modules/
 *.komodoproject
 .coveralls.yml
 coverage/
+npm-debug.log
