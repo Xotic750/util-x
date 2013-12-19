@@ -2431,9 +2431,14 @@
          * @function
          * @param {*} a
          * @param {*} b
+         * @param {object} opts
          * @return {boolean}
          */
-        utilx.deepEqual = function (a, b) {
+        utilx.deepEqual = function (a, b, opts) {
+            if (!utilx.isPlainObject(opts)) {
+                opts = {};
+            }
+
             if (utilx.objectIs(a, b)) {
                 return true;
             }
@@ -2452,7 +2457,7 @@
             }
 
             if (!utilx.isTypeObject(a) && !utilx.isTypeObject(b)) {
-                return utilx.objectIs(a, b);
+                return utilx.isTrue(opts.strict) ? utilx.objectIs(a, b) : utilx.equal(a, b);
             }
 
             if (!utilx.objectIs(utilx.objectGetPrototypeOf(a), utilx.objectGetPrototypeOf(b))) {
@@ -2467,7 +2472,7 @@
                 a = utilx.argumentsSlice(a);
                 b = utilx.argumentsSlice(b);
 
-                return utilx.deepEqual(a, b);
+                return utilx.deepEqual(a, b, opts);
             }
 
             var ka,
@@ -2496,7 +2501,7 @@
             }
 
             status = utilx.arraySome(ka, function (aKey) {
-                return !utilx.deepEqual(a[aKey], b[aKey]);
+                return !utilx.deepEqual(a[aKey], b[aKey], opts);
             });
 
             if (utilx.isTrue(status)) {
