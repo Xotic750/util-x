@@ -8,9 +8,9 @@
     };
 
     if ('1' === process.env.UTILX_WHICH) {
-        required.util = require('../lib/util-x');
+        required.utilx = require('../lib/util-x');
     } else {
-        required.util = require('../lib/util-x.min');
+        required.utilx = require('../lib/util-x.min');
     }
 
     module.exports = required;
