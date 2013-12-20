@@ -2426,7 +2426,7 @@
         };
 
         /**
-         * Tests a deep equality relation..
+         * Tests a deep equality relation.. set opts {strict: true} for deepStrictEqual
          * @memberOf utilx
          * @function
          * @param {*} a
@@ -2436,9 +2436,7 @@
          */
         utilx.deepEqual = function (a, b, opts) {
             if (!utilx.isPlainObject(opts)) {
-                opts = {
-                    strict: true
-                };
+                opts = {};
             }
 
             if (utilx.objectIs(a, b)) {
@@ -2458,16 +2456,18 @@
                     utilx.objectIs(a.sticky, b.sticky);
             }
 
-            if (!utilx.isTypeOfObject(a) && !utilx.isTypeOfObject(b)) {
+            if (!utilx.isTypeObject(a) && !utilx.isTypeObject(b)) {
                 return utilx.isTrue(opts.strict) ? utilx.objectIs(a, b) : utilx.equal(a, b);
             }
 
-            if (utilx.isUndefinedOrNull(a) || utilx.isUndefinedOrNull(b)) {
-                return false;
-            }
-
-            if (!utilx.objectIs(utilx.objectGetPrototypeOf(a), utilx.objectGetPrototypeOf(b))) {
-                return false;
+            if (utilx.isTrue(opts.strict)) {
+                if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)), utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
+                    return false;
+                }
+            } else {
+                if (!utilx.objectIs(a.prototype, b.prototype)) {
+                    return false;
+                }
             }
 
             if (utilx.isArguments(a)) {
@@ -2515,6 +2515,18 @@
             }
 
             return true;
+        };
+
+        /**
+         * Shortcut for utilx.deepEqual(a, b, {strict: true})
+         * @memberOf utilx
+         * @function
+         * @param {*} a
+         * @param {*} b
+         * @return {boolean}
+         */
+        utilx.deepStrictEqual = function (a, b) {
+            return utilx.deepEqual(a, b, {strict: true});
         };
 
         /**
