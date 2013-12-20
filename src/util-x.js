@@ -2805,6 +2805,31 @@
             return utilx.extend({}, tempSafariNFE);
         }());
 
+        /**
+         * Truncates a long string to the length specified by n; used by AssertionError.toString
+         * @private
+         * @function
+         * @param {string} s
+         * @param {number} n
+         * @return {string}
+         */
+        utilx.stringTruncate = function (s, n) {
+            if (!utilx.isString(s)) {
+                s = utilx.anyToString(s);
+            }
+
+            n = utilx.toNumber(n);
+            if (utilx.lt(n, 0) || !utilx.numberIsNaN(n)) {
+                n = Infinity;
+            }
+
+            if (utilx.gt(s.length, n)) {
+                s = s.slice(0, n);
+            }
+
+            return s;
+        };
+
         tempSafariNFE = null;
 
         return utilx;
