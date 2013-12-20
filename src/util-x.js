@@ -1,5 +1,5 @@
 /**
- * @file {@link @@HOMEPAGE AstroDate}. @@DESCRIPTION.
+ * @file {@link @@HOMEPAGE @@MODULE}. @@DESCRIPTION.
  * @version @@VERSION
  * @author @@AUTHORNAME <@@AUTHOREMAIL>
  * @copyright @@COPYRIGHT @@AUTHORNAME
