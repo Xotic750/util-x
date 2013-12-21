@@ -7,6 +7,14 @@
         utilx = required.utilx,
         test = required.test;
 
+    function returnArgs() {
+        return arguments;
+    }
+
+    function X() {
+        return;
+    }
+
     test('basics', function (t) {
         t.strictEqual(utilx.noop(), privateUndefined, 'noop');
         t.strictEqual(utilx.privateUndefined, privateUndefined, 'undefined');
@@ -187,10 +195,7 @@
         t.strictEqual(utilx.isArguments(), false, 'isArguments');
         t.strictEqual(utilx.isArguments(null), false, 'isArguments');
         t.strictEqual(utilx.isArguments(utilx.noop), false, 'isArguments');
-        t.strictEqual(utilx.isArguments((function () {
-            return arguments;
-        }())), true, 'isArguments');
-
+        t.strictEqual(utilx.isArguments(returnArgs()), true, 'isArguments');
         t.strictEqual(utilx.arrayIsArray(new RegExp('test')), false, 'arrayIsArray');
         t.strictEqual(utilx.arrayIsArray(/test/), false, 'arrayIsArray');
         t.strictEqual(utilx.arrayIsArray([]), true, 'arrayIsArray');
@@ -201,9 +206,81 @@
         t.strictEqual(utilx.arrayIsArray(), false, 'arrayIsArray');
         t.strictEqual(utilx.arrayIsArray(null), false, 'arrayIsArray');
         t.strictEqual(utilx.arrayIsArray(utilx.noop), false, 'arrayIsArray');
-        t.strictEqual(utilx.arrayIsArray((function () {
-            return arguments;
-        }())), false, 'arrayIsArray');
+        t.strictEqual(utilx.arrayIsArray(returnArgs()), false, 'arrayIsArray');
+        t.strictEqual(utilx.isEmptyArray(new RegExp('test')), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(new Date()), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(/test/), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray([]), true, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray([utilx.privateUndefined]), false, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray([null]), false, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray({}), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(''), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(1), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(true), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(null), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(utilx.noop), null, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(returnArgs()), true, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(returnArgs(null)), false, 'isEmptyArray');
+        t.strictEqual(utilx.isEmptyArray(returnArgs(utilx.privateUndefined)), false, 'isEmptyArray');
+        t.strictEqual(utilx.isTypeOfObject(new RegExp('test')), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(new Date()), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(/test/), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject([]), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject({}), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(''), false, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(1), false, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(true), false, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(), false, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(null), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(utilx.noop), false, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeOfObject(returnArgs()), true, 'isTypeOfObject');
+        t.strictEqual(utilx.isTypeObject(new RegExp('test')), true, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(new Date()), true, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(/test/), true, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject([]), true, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject({}), true, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(''), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(1), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(true), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(null), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(utilx.noop), false, 'isTypeObject');
+        t.strictEqual(utilx.isTypeObject(returnArgs()), true, 'isTypeObject');
+        t.strictEqual(utilx.isDate(new RegExp('test')), false, 'isDate');
+        t.strictEqual(utilx.isDate(new Date()), true, 'isDate');
+        t.strictEqual(utilx.isDate(/test/), false, 'isDate');
+        t.strictEqual(utilx.isDate([]), false, 'isDate');
+        t.strictEqual(utilx.isDate({}), false, 'isDate');
+        t.strictEqual(utilx.isDate(''), false, 'isDate');
+        t.strictEqual(utilx.isDate(1), false, 'isDate');
+        t.strictEqual(utilx.isDate(true), false, 'isDate');
+        t.strictEqual(utilx.isDate(), false, 'isDate');
+        t.strictEqual(utilx.isDate(null), false, 'isDate');
+        t.strictEqual(utilx.isDate(utilx.noop), false, 'isDate');
+        t.strictEqual(utilx.isDate(returnArgs()), false, 'isDate');
+        t.strictEqual(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs())), true, 'argumentsSlice');
+        t.strictEqual(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(null))), true, 'argumentsSlice');
+        t.strictEqual(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(utilx.privateUndefined))), true, 'argumentsSlice');
+        t.strictEqual(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(1, 2, 3))), true, 'argumentsSlice');
+        t.strictEqual(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs({}, {}, {}))), true, 'argumentsSlice');
+        t.strictEqual(utilx.stringTrim(''), '', 'stringTrim');
+        t.strictEqual(utilx.stringTrim('     '), '', 'stringTrim');
+        t.strictEqual(utilx.stringTrim('x '), 'x', 'stringTrim');
+        t.strictEqual(utilx.stringTrim(' x'), 'x', 'stringTrim');
+        t.strictEqual(utilx.stringTrim(' x '), 'x', 'stringTrim');
+        t.strictEqual(utilx.stringTrim('    x x x    '), 'x x x', 'stringTrim');
+        t.strictEqual(utilx.objectInstanceOf(new Date(), Date), true, 'objectInstanceOf');
+        t.strictEqual(utilx.objectInstanceOf(new RegExp(), RegExp), true, 'objectInstanceOf');
+        t.strictEqual(utilx.objectInstanceOf(new X(), X), true, 'objectInstanceOf');
+        t.strictEqual(utilx.isPlainObject(), false, 'isPlainObject');
+        t.strictEqual(utilx.isPlainObject(null), false, 'isPlainObject');
+        t.strictEqual(utilx.isPlainObject(utilx.privateUndefined), false, 'isPlainObject');
+        t.strictEqual(utilx.isPlainObject([]), false, 'isPlainObject');
+        t.strictEqual(utilx.isPlainObject({}), true, 'isPlainObject');
+        t.strictEqual(utilx.isPlainObject(new X()), false, 'isPlainObject');
+        t.strictEqual(utilx.isDateValid(new Date()), true, 'isDateValid');
+        t.strictEqual(utilx.isDateValid(new Date(NaN)), false, 'isDateValid');
 
         t.end();
     });
