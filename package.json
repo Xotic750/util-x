@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -63,7 +63,7 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "~2.36.1"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
@@ -83,7 +83,7 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "~2.36.1"
     },
     "scripts": {
         "test": "./node_modules/tape-compact/bin/tape-compact tests/*.js"
