@@ -356,19 +356,23 @@
          * @param {*} inputArg
          * @return {boolean}
          */
-        utilx.isNumeric = function (inputArg) {
-            var val = false,
-                string;
+        utilx.isNumeric = (function () {
+            var rxPlusMinus = new RegExp('^[+\\-]?');
 
-            if (utilx.isNumber(inputArg) || utilx.isString(inputArg)) {
-                string = inputArg.toString().replace(/^[+\-]?/, '');
-                if (!isNaN(parseFloat(string)) && isFinite(string)) {
-                    val = true;
+            return function (inputArg) {
+                var val = false,
+                    string;
+
+                if (utilx.isNumber(inputArg) || utilx.isString(inputArg)) {
+                    string = inputArg.toString().replace(rxPlusMinus, '');
+                    if (!isNaN(parseFloat(string)) && isFinite(string)) {
+                        val = true;
+                    }
                 }
-            }
 
-            return val;
-        };
+                return val;
+            };
+        }());
 
         /**
          * The abstract operation throws an error if its argument is a value that cannot be
@@ -559,7 +563,7 @@
         utilx.isTypeOfObject = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var testRx = /test/,
+            var testRx = new RegExp('test'),
                 objectString = 'object',
                 isRxObject = utilx.strictEqual(typeof testRx, objectString),
                 nfeIsTypeOfObject;
@@ -946,7 +950,7 @@
         // named utilx.stringSplit instead of split because of SpiderMonkey and Blackberry bug
         utilx.stringSplit = (function () {
             var splitFN = baseString.split,
-                compliantExecNpcg = utilx.isUndefined(/()??/.exec('')[1]);
+                compliantExecNpcg = utilx.isUndefined(new RegExp('()??').exec('')[1]);
 
             return function (str, separator, limit) {
                 var string = utilx.anyToString(utilx.checkObjectCoercible(str)),
@@ -2384,9 +2388,13 @@
          * @param {*} string
          * @return {boolean}
          */
-        utilx.isDigits = function (string) {
-            return utilx.isString(string) && (/^\d+$/).test(string);
-        };
+        utilx.isDigits = (function () {
+            var rxNotDigits = new RegExp('^\\d+$');
+
+            return function (string) {
+                return utilx.isString(string) && rxNotDigits.test(string);
+            };
+        }());
 
         /**
          * Takes string and puts a backslash in front of every character that is part of the regular expression syntax.
@@ -2396,9 +2404,13 @@
          * @param {string} string
          * @return {string}
          */
-        utilx.escapeRegex = function (string) {
-            return string.replace(/[\[\](){}?*+\^$\\.|]/g, '\\$&');
-        };
+        utilx.escapeRegex = (function () {
+            var rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g');
+
+            return function (string) {
+                return string.replace(rxEscapeThese, '\\$&');
+            };
+        }());
 
         /**
          * Wraps a string within the string character.
@@ -2568,7 +2580,7 @@
             if (typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.stringify)) {
                 tempSafariNFE = JSON.stringify;
             } else {
-                escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+                escapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
                 meta = {
                     '\b': '\\b',
                     '\t': '\\t',
@@ -2748,11 +2760,11 @@
             if (typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.parse)) {
                 tempSafariNFE = JSON.parse;
             } else {
-                rx1 = /^[\],:{}\s]*$/;
-                rx2 = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+                rx1 = new RegExp('^[\\],:{}\\s]*$');
+                rx2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
                 rx3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
-                rx4 = /(?:^|:|,)(?:\s*\[)+/g;
-                cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+                rx4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
+                cx = new RegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
                 tempSafariNFE = function nfeJSONParse(text, reviver) {
                     var j;
 
