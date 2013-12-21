@@ -328,6 +328,17 @@
         };
 
         /**
+         * Returns true if the operand inputArg is an error.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isError = function (inputArg) {
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]');
+        };
+
+        /**
          * Returns true if the operand inputArg is a primitive object.
          * @memberOf utilx
          * @function
@@ -2840,6 +2851,35 @@
             }
 
             return s;
+        };
+
+        /**
+         * Inherit the prototype methods from one constructor into another.
+         * @private
+         * @function
+         * @param {function} ctor
+         * @param {function} superCtor
+         * @return {undefined}
+         */
+        utilx.inherits = function (ctor, superCtor) {
+            if (!utilx.isFunction(ctor)) {
+                throw new TypeError(ctor + ' is not a function');
+            }
+
+            if (!utilx.isFunction(superCtor)) {
+                throw new TypeError(superCtor + ' is not a function');
+            }
+
+            /*jslint nomen: true */
+            //ctor.super_ = superCtor;
+            /*jslint nomen: false */
+            ctor.prototype = utilx.objectCreate(superCtor.prototype);
+            utilx.objectDefineProperty(ctor.prototype, 'constructor', {
+                value: ctor,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
         };
 
         tempSafariNFE = null;
