@@ -1713,7 +1713,6 @@
                         length,
                         k,
                         index,
-                        accumulator,
                         kPresent;
 
                     if (!utilx.isFunction(fn)) {
@@ -1725,28 +1724,24 @@
                     }
 
                     k = 0;
-                    if (utilx.gt(arguments.length, 2)) {
-                        accumulator = initialValue;
-                    } else {
-                        for (k = 0, length = utilx.toUint32(object.length), kPresent = false; utilx.isFalse(kPresent) && utilx.lt(k, length); k += 1) {
-                            kPresent = utilx.hasProperty(object, k);
-                            if (utilx.isTrue(kPresent)) {
-                                accumulator = object[k];
-                            }
+                    for (k = 0, length = utilx.toUint32(object.length), kPresent = false; utilx.isFalse(kPresent) && utilx.lt(k, length); k += 1) {
+                        kPresent = utilx.hasProperty(object, k);
+                        if (utilx.isTrue(kPresent)) {
+                            initialValue = object[k];
                         }
+                    }
 
-                        if (utilx.isFalse(kPresent)) {
-                            throw new TypeError(errString);
-                        }
+                    if (utilx.isFalse(kPresent)) {
+                        throw new TypeError(errString);
                     }
 
                     for (index = k; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index)) {
-                            accumulator = fn.call(utilx.privateUndefined, accumulator, object[index], index, object);
+                            initialValue = fn.call(utilx.privateUndefined, initialValue, object[index], index, object);
                         }
                     }
 
-                    return accumulator;
+                    return initialValue;
                 };
             }
 
@@ -1766,7 +1761,7 @@
         utilx.stringTrim = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var trimFN = null,//baseString.trim,
+            var trimFN = baseString.trim,
                 whiteSpacesList = [
                     0x0009, // Tab
                     0x000a, // Line Feed
@@ -1813,8 +1808,6 @@
                     return trimFN.call(inputArg);
                 };
             } else {
-                /*global console */
-                console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
                 buildWhiteSpaceString = function (previous, element) {
                     return previous + '\\u' + utilx.padLeadingChar(element.toString(16), '0', 4);
                 };
