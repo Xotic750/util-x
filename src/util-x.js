@@ -295,6 +295,17 @@
         };
 
         /**
+         * Converts any truthy or falsy expression into a boolean true or false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.toBoolean = function (inputArg) {
+            return !!inputArg;
+        };
+
+        /**
          * Returns true if the operand inputArg is a number.
          * @memberOf utilx
          * @function
