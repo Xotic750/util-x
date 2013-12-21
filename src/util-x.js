@@ -1801,24 +1801,23 @@
                 whiteSpacesString,
                 wsTrimRX,
                 nfeTrim,
-                nfeBuildTestString,
-                nfeBuildWhiteSpaceString;
+                buildWhiteSpaceString;
 
-            tempSafariNFE = function nfeBuildTestString(previous, element) {
+            function buildTestString(previous, element) {
                 return previous + String.fromCharCode(element);
-            };
+            }
 
-            testString = utilx.arrayReduce(whiteSpacesList, tempSafariNFE, '');
+            testString = utilx.arrayReduce(whiteSpacesList, buildTestString, '');
             if (utilx.isFunction(trimFN) && utilx.isZero(trimFN.call(testString).length)) {
                 tempSafariNFE = function nfeTrim(inputArg) {
                     return trimFN.call(inputArg);
                 };
             } else {
-                tempSafariNFE = function nfeBuildWhiteSpaceString(previous, element) {
+                buildWhiteSpaceString = function (previous, element) {
                     return previous + '\\u' + utilx.padLeadingChar(element.toString(16), '0', 4);
                 };
 
-                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, tempSafariNFE, '');
+                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, buildWhiteSpaceString, '');
                 wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
                 tempSafariNFE = function nfeTrim(inputArg) {
                     return utilx.anyToString(utilx.checkObjectCoercible(inputArg)).replace(wsTrimRX, '');
@@ -1826,8 +1825,6 @@
             }
 
             nfeTrim = null;
-            nfeBuildTestString = null;
-            nfeBuildWhiteSpaceString = null;
 
             return tempSafariNFE;
         }());
