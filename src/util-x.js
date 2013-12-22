@@ -469,6 +469,8 @@
             var toStringFN = baseObject.toString,
                 propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
                 argumentsString = '[object Arguments]',
+                functionString = '[object Function]',
+                objectString = '[object Object]',
                 calleeString = 'callee',
                 lengthString = 'length',
                 nfeIsArguments;
@@ -479,15 +481,15 @@
 
             if (utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), argumentsString);
+                    return utilx.strictEqual(toStringFN.call(inputArg), argumentsString);
                 };
-            } else if (utilx.strictEqual(typeof propertyIsEnumerableFN, 'function')) {
+            } else if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.isObject(inputArg) && utilx.objectHasOwnProperty(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, calleeString) && utilx.objectHasOwnProperty(inputArg, lengthString) && !propertyIsEnumerableFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.objectHasOwnProperty(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, calleeString) && utilx.objectHasOwnProperty(inputArg, lengthString) && !propertyIsEnumerableFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
             } else {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.isObject(inputArg) && utilx.objectHasOwnProperty(inputArg, calleeString) && utilx.objectHasOwnProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.objectHasOwnProperty(inputArg, calleeString) && utilx.objectHasOwnProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
             }
 
