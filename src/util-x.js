@@ -491,7 +491,7 @@
             } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
                 firstCheck = function (inputArg) {
                     console.log('# firstCheck');
-                    return /*utilx.strictEqual(toStringFN.call(inputArg), objectString) && */ null !== inputArg && typeof inputArg === 'object' && hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && /* null !== inputArg && typeof inputArg === 'object' &&*/ hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
 
                 if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
