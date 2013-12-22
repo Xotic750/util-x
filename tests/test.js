@@ -359,4 +359,131 @@
 
         t.end();
     });
+
+    test('Throws errors', function (t) {
+        t.throws(function () {
+            utilx.checkObjectCoercible();
+        }, TypeError, 'checkObjectCoercible');
+
+        t.throws(function () {
+            utilx.checkObjectCoercible(utilx.privateUndefined);
+        }, TypeError, 'checkObjectCoercible');
+
+        t.throws(function () {
+            utilx.checkObjectCoercible(null);
+        }, TypeError, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(-1);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(0);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(1);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(NaN);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(Infinity);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(-Infinity);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(true);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(false);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible('');
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible('x');
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(utilx.noop);
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(new RegExp('y'));
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.doesNotThrow(function () {
+            utilx.checkObjectCoercible(new Date());
+        }, utilx.privateUndefined, 'checkObjectCoercible');
+
+        t.end();
+    });
+
+    test('argToObject', function (t) {
+        t.throws(function () {
+            utilx.argToObject();
+        }, TypeError, 'argToObject');
+
+        t.throws(function () {
+            utilx.argToObject(utilx.privateUndefined);
+        }, TypeError, 'argToObject');
+
+        t.throws(function () {
+            utilx.argToObject(null);
+        }, TypeError, 'argToObject');
+
+        t.strictEqual(typeof utilx.argToObject(1), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(true), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(''), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject([]), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject({}), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(utilx.noop), 'function', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(new Date()), 'object', 'argToObject');
+        t.strictEqual(utilx.isRegExp(utilx.argToObject(new RegExp('c'))), true, 'argToObject');
+
+
+        t.end();
+    });
+
+    test('anyToString', function (t) {
+        t.strictEqual(utilx.anyToString(), 'undefined', 'anyToString');
+        t.strictEqual(utilx.anyToString(utilx.privateUndefined), 'undefined', 'anyToString');
+        t.strictEqual(utilx.anyToString(null), 'null', 'anyToString');
+        t.strictEqual(utilx.anyToString(1), '1', 'anyToString');
+        t.strictEqual(utilx.anyToString(true), 'true', 'anyToString');
+        t.strictEqual(utilx.anyToString('x'), 'x', 'anyToString');
+        t.strictEqual(utilx.anyToString([1, 2, 3]), '1,2,3', 'anyToString');
+        t.strictEqual(utilx.anyToString({}), '[object Object]', 'anyToString');
+        t.strictEqual(utilx.anyToString(utilx.noop), utilx.noop.toString(), 'anyToString');
+        t.strictEqual(utilx.anyToString(new RegExp('c')), '/c/', 'anyToString');
+
+
+        t.end();
+    });
+
+    test('toObjectString', function (t) {
+        t.strictEqual(utilx.toObjectString(), '[object Undefined]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(utilx.privateUndefined), '[object Undefined]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(null), '[object Null]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(1), '[object Number]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(true), '[object Boolean]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString('x'), '[object String]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString([1, 2, 3]), '[object Array]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(returnArgs()), '[object Arguments]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString({}), '[object Object]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(utilx.noop), '[object Function]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(new RegExp('c')), '[object RegExp]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(new Date()), '[object Date]', 'toObjectString');
+
+        t.end();
+    });
 }());
