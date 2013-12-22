@@ -1684,6 +1684,7 @@
             } else {
                 tempSafariNFE = function nfeFilter(array, fn, thisArg) {
                     var object = utilx.toObjectFixIndexedAccess(array),
+                        next = 0,
                         length,
                         arr,
                         index,
@@ -1696,7 +1697,8 @@
                     for (index = 0, length = utilx.toUint32(object.length), arr = []; utilx.lt(index, length); index += 1) {
                         element = object[index];
                         if (fn.call(thisArg, element, index, object)) {
-                            arr[index] = element;
+                            arr[next] = element;
+                            next += 1;
                         }
                     }
 
@@ -1723,7 +1725,6 @@
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var reduceFN = baseArray.reduce,
-                errString = 'Reduce of empty array with no initial value',
                 nfeReduce;
 
             if (utilx.isFunction(reduceFN)) {
@@ -1733,38 +1734,36 @@
             } else {
                 tempSafariNFE = function nfeReduce(array, fn, initialValue) {
                     var object = utilx.toObjectFixIndexedAccess(array),
+                        isValueSet = false,
+                        value,
                         length,
-                        k,
-                        index,
-                        kPresent;
+                        index;
 
                     if (!utilx.isFunction(fn)) {
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    if (utilx.isZero(length) && utilx.lt(arguments.length, 3)) {
-                        throw new TypeError(errString);
+                    /*global console */
+                    console.log('length', arguments.length);
+                    if (utilx.gt(arguments.length, 2)) {
+                        value = initialValue;
+                        isValueSet = true;
                     }
 
-                    k = 0;
-                    for (k = 0, length = utilx.toUint32(object.length), kPresent = false; utilx.isFalse(kPresent) && utilx.lt(k, length); k += 1) {
-                        kPresent = utilx.hasProperty(object, k);
-                        if (utilx.isTrue(kPresent)) {
-                            initialValue = object[k];
+                    for (index = 0, length = object.length; utilx.lt(index, length); index += 1) {
+                        if (utilx.objectHasOwnProperty(object, index)) {
+                            value = fn(value, object[index], index, object);
+                            if (utilx.isFalse(isValueSet)) {
+                                isValueSet = true;
+                            }
                         }
                     }
 
-                    if (utilx.isFalse(kPresent)) {
-                        throw new TypeError(errString);
+                    if (utilx.isFalse(isValueSet)) {
+                        throw new TypeError('Reduce of empty array with no initial value');
                     }
 
-                    for (index = k; utilx.lt(index, length); index += 1) {
-                        if (utilx.hasProperty(object, index)) {
-                            initialValue = fn.call(utilx.privateUndefined, initialValue, object[index], index, object);
-                        }
-                    }
-
-                    return initialValue;
+                    return value;
                 };
             }
 
