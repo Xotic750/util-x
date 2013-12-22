@@ -350,6 +350,47 @@
         };
 
         /**
+         * Returns true if the operand inputArg is typeof Object.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isTypeOfObject = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe/
+            var testRx = new RegExp('test'),
+                objectString = 'object',
+                isRxObject = utilx.strictEqual(typeof testRx, objectString),
+                nfeIsTypeOfObject;
+
+            if (utilx.isTrue(isRxObject)) {
+                tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
+                    return utilx.strictEqual(typeof inputArg, objectString);
+                };
+            } else {
+                tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
+                    return utilx.strictEqual(typeof inputArg, objectString) || utilx.isRegExp(inputArg);
+                };
+            }
+
+            nfeIsTypeOfObject = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
+         * Returns true if the operand inputArg is of type Object but not if null.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isTypeObject = function (inputArg) {
+            return !utilx.isNull(inputArg) && utilx.isTypeOfObject(inputArg);
+        };
+
+        /**
          * Returns true if the operand inputArg is an empty string.
          * @memberOf utilx
          * @function
@@ -482,7 +523,6 @@
                 return arguments;
             }
 
-            /*global console */
             tempSafariNFE = null;
             if (utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
@@ -490,25 +530,21 @@
                 };
             } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
                 firstCheck = function (inputArg) {
-                    console.log('# firstCheck');
-                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && /* null !== inputArg && typeof inputArg === 'object' &&*/ hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) && utilx.strictEqual(toStringFN.call(inputArg), objectString) && hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
 
                 if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
-                    console.log('# with propertyIsEnumerable');
                     tempSafariNFE = function nfeIsArguments(inputArg) {
                         return firstCheck(inputArg) && !propertyIsEnumerableFN.call(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, lengthString);
                     };
                 } else {
-                    console.log('# without propertyIsEnumerable');
                     tempSafariNFE = firstCheck;
                 }
             }
 
             if (utilx.isNull(tempSafariNFE)) {
-                console.log('# duck');
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.hasProperty(inputArg, calleeString) && utilx.hasProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) && utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.hasProperty(inputArg, calleeString) && utilx.hasProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -552,7 +588,6 @@
                 tempSafariNFE = function nfeToObjectString(object) {
                     var val;
 
-                    console.log('# will call isArguments');
                     if (utilx.isUndefined(object)) {
                         val = undefinedString;
                     } else if (utilx.isNull(object)) {
@@ -614,47 +649,6 @@
          */
         utilx.isFunction = function (inputArg) {
             return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]');
-        };
-
-        /**
-         * Returns true if the operand inputArg is typeof Object.
-         * @memberOf utilx
-         * @function
-         * @param {*} inputArg
-         * @return {boolean}
-         */
-        utilx.isTypeOfObject = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe/
-            var testRx = new RegExp('test'),
-                objectString = 'object',
-                isRxObject = utilx.strictEqual(typeof testRx, objectString),
-                nfeIsTypeOfObject;
-
-            if (utilx.isTrue(isRxObject)) {
-                tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
-                    return utilx.strictEqual(typeof inputArg, objectString);
-                };
-            } else {
-                tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
-                    return utilx.strictEqual(typeof inputArg, objectString) || utilx.isRegExp(inputArg);
-                };
-            }
-
-            nfeIsTypeOfObject = null;
-
-            return tempSafariNFE;
-        }());
-
-        /**
-         * Returns true if the operand inputArg is of type Object but not if null.
-         * @memberOf utilx
-         * @function
-         * @param {*} inputArg
-         * @return {boolean}
-         */
-        utilx.isTypeObject = function (inputArg) {
-            return !utilx.isNull(inputArg) && utilx.isTypeOfObject(inputArg);
         };
 
         /**
