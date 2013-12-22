@@ -339,17 +339,6 @@
         };
 
         /**
-         * Returns true if the operand inputArg is an error.
-         * @memberOf utilx
-         * @function
-         * @param {*} inputArg
-         * @return {boolean}
-         */
-        utilx.isError = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]');
-        };
-
-        /**
          * Returns true if the operand inputArg is a primitive object.
          * @memberOf utilx
          * @function
@@ -486,25 +475,38 @@
                 objectString = '[object Object]',
                 calleeString = 'callee',
                 lengthString = 'length',
+                firstCheck,
                 nfeIsArguments;
 
             function returnArgs() {
                 return arguments;
             }
 
+            /*global console */
+            tempSafariNFE = null;
             if (utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
                     return utilx.strictEqual(toStringFN.call(inputArg), argumentsString);
                 };
-            } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString) && utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
-                tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && hasOwnPropertyFN.call(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && !propertyIsEnumerableFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
-                };
             } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
-                tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.strictEqual(toStringFN.call(inputArg), objectString) && hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                firstCheck = function (inputArg) {
+                    console.log('# firstCheck');
+                    return /*utilx.strictEqual(toStringFN.call(inputArg), objectString) && */ null !== inputArg && typeof inputArg === 'object' && hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
-            } else {
+
+                if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
+                    console.log('# with propertyIsEnumerable');
+                    tempSafariNFE = function nfeIsArguments(inputArg) {
+                        return firstCheck(inputArg) && !propertyIsEnumerableFN.call(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, lengthString);
+                    };
+                } else {
+                    console.log('# without propertyIsEnumerable');
+                    tempSafariNFE = firstCheck;
+                }
+            }
+
+            if (utilx.isNull(tempSafariNFE)) {
+                console.log('# duck');
                 tempSafariNFE = function nfeIsArguments(inputArg) {
                     return utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.hasProperty(inputArg, calleeString) && utilx.hasProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
                 };
@@ -550,6 +552,7 @@
                 tempSafariNFE = function nfeToObjectString(object) {
                     var val;
 
+                    console.log('# will call isArguments');
                     if (utilx.isUndefined(object)) {
                         val = undefinedString;
                     } else if (utilx.isNull(object)) {
@@ -568,6 +571,17 @@
 
             return tempSafariNFE;
         }());
+
+        /**
+         * Returns true if the operand inputArg is an error.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isError = function (inputArg) {
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]');
+        };
 
         /**
          * Returns true if the operand inputArg is a RegExp.
