@@ -282,6 +282,20 @@
         t.strictEqual(utilx.isDateValid(new Date()), true, 'isDateValid');
         t.strictEqual(utilx.isDateValid(new Date(NaN)), false, 'isDateValid');
 
+        t.strictEqual(utilx.hasProperty({
+            foo: utilx.privateUndefined
+        }, 'foo'), true, 'hasProperty');
+
+        t.strictEqual(utilx.hasProperty({}, 'toString'), true, 'hasProperty');
+        t.strictEqual(utilx.hasProperty({}, 'bar'), false, 'hasProperty');
+
+        t.strictEqual(utilx.objectHasOwnProperty({
+            toString: utilx.privateUndefined
+        }, 'toString'), true, 'hasProperty');
+
+        t.strictEqual(utilx.objectHasOwnProperty({}, 'toString'), false, 'objectHasOwnProperty');
+        t.strictEqual(utilx.objectHasOwnProperty({}, 'bar'), false, 'objectHasOwnProperty');
+
         t.end();
     });
 
@@ -428,27 +442,28 @@
         t.end();
     });
 
-    test('argToObject', function (t) {
+    test('toObjectFixIndexedAccess', function (t) {
         t.throws(function () {
-            utilx.argToObject();
-        }, TypeError, 'argToObject');
+            utilx.toObjectFixIndexedAccess();
+        }, TypeError, 'toObjectFixIndexedAccess');
 
         t.throws(function () {
-            utilx.argToObject(utilx.privateUndefined);
-        }, TypeError, 'argToObject');
+            utilx.toObjectFixIndexedAccess(utilx.privateUndefined);
+        }, TypeError, 'toObjectFixIndexedAccess');
 
         t.throws(function () {
-            utilx.argToObject(null);
-        }, TypeError, 'argToObject');
+            utilx.toObjectFixIndexedAccess(null);
+        }, TypeError, 'toObjectFixIndexedAccess');
 
-        t.strictEqual(typeof utilx.argToObject(1), 'object', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject(true), 'object', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject(''), 'object', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject([]), 'object', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject({}), 'object', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject(utilx.noop), 'function', 'argToObject');
-        t.strictEqual(typeof utilx.argToObject(new Date()), 'object', 'argToObject');
-        t.strictEqual(utilx.isRegExp(utilx.argToObject(new RegExp('c'))), true, 'argToObject');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(1), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(true), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(''), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess([]), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess({}), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(Object('a')), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(utilx.noop), 'function', 'toObjectFixIndexedAccess');
+        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(new Date()), 'object', 'toObjectFixIndexedAccess');
+        t.strictEqual(utilx.isRegExp(utilx.toObjectFixIndexedAccess(new RegExp('c'))), true, 'toObjectFixIndexedAccess');
 
 
         t.end();
@@ -483,6 +498,156 @@
         t.strictEqual(utilx.toObjectString(utilx.noop), '[object Function]', 'toObjectString');
         t.strictEqual(utilx.toObjectString(new RegExp('c')), '[object RegExp]', 'toObjectString');
         t.strictEqual(utilx.toObjectString(new Date()), '[object Date]', 'toObjectString');
+        t.strictEqual(utilx.toObjectString(new Error('x')), '[object Error]', 'toObjectString');
+
+        t.end();
+    });
+
+    test('arrayForEach', function (t) {
+        var lastIndex = Math.pow(2, 32) - 1,
+            forEachArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, utilx.privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
+            testIndex;
+
+        forEachArray[24] = NaN;
+        forEachArray[25] = 'end';
+        t.strictEqual(utilx.arrayForEach(forEachArray, function (element, index, array) {
+            t.strictEqual(array, forEachArray, 'arrayForEach');
+            t.strictEqual(typeof index, 'number', 'arrayForEach');
+            t.strictEqual(index >= 0, true, 'arrayForEach');
+            t.strictEqual(index <= lastIndex, true, 'arrayForEach');
+            if (typeof element === 'number' && isNaN(element)) {
+                t.strictEqual(typeof forEachArray[index] === 'number' && isNaN(forEachArray[index]), true, 'arrayForEach');
+            } else {
+                t.strictEqual(element, forEachArray[index], 'arrayForEach');
+            }
+
+            testIndex = index;
+        }), utilx.privateUndefined, 'arrayForEach');
+
+        t.strictEqual(testIndex, forEachArray.length - 1, 'arrayForEach');
+
+        t.end();
+    });
+
+    test('arraySome', function (t) {
+        var lastIndex = Math.pow(2, 32) - 1,
+            someArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, utilx.privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
+            testIndex;
+
+        someArray[24] = NaN;
+        someArray[25] = 'end';
+        t.strictEqual(utilx.arraySome(someArray, function (element, index, array) {
+            t.strictEqual(array, someArray, 'arraySome');
+            t.strictEqual(typeof index, 'number', 'arraySome');
+            t.strictEqual(index >= 0, true, 'arraySome');
+            t.strictEqual(index <= lastIndex, true, 'arraySome');
+            if (typeof element === 'number' && isNaN(element)) {
+                t.strictEqual(typeof someArray[index] === 'number' && isNaN(someArray[index]), true, 'arraySome');
+            } else {
+                t.strictEqual(element, someArray[index], 'arraySome');
+            }
+
+            testIndex = index;
+            if ('end' === element) {
+                return true;
+            }
+
+            return false;
+        }), true, 'arraySome return');
+
+        t.strictEqual(testIndex, someArray.length - 1, 'arraySome');
+
+        t.end();
+    });
+
+    test('arrayMap', function (t) {
+        var lastIndex = Math.pow(2, 32) - 1,
+            mapArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, utilx.privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
+            testIndex;
+
+        mapArray[24] = NaN;
+        mapArray[25] = 'end';
+        t.strictEqual(utilx.arrayMap(mapArray, function (element, index, array) {
+            t.strictEqual(array, mapArray, 'arrayMap');
+            t.strictEqual(typeof index, 'number', 'arrayMap');
+            t.strictEqual(index >= 0, true, 'arrayMap');
+            t.strictEqual(index <= lastIndex, true, 'arrayMap');
+            if (typeof element === 'number' && isNaN(element)) {
+                t.strictEqual(typeof mapArray[index] === 'number' && isNaN(mapArray[index]), true, 'arrayMap');
+            } else {
+                t.strictEqual(element, mapArray[index], 'arrayMap');
+            }
+
+            testIndex = index;
+
+            return element;
+        }).toString(), mapArray.toString(), 'arrayMap return');
+
+        t.strictEqual(testIndex, mapArray.length - 1, 'arrayMap');
+
+        t.end();
+    });
+
+    test('arrayFilter', function (t) {
+        var lastIndex = Math.pow(2, 32) - 1,
+            filterArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, utilx.privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
+            testIndex;
+
+        filterArray[24] = NaN;
+        filterArray[25] = 'end';
+        t.strictEqual(utilx.arrayFilter(filterArray, function (element, index, array) {
+            t.strictEqual(array, filterArray, 'arrayFilter');
+            t.strictEqual(typeof index, 'number', 'arrayFilter');
+            t.strictEqual(index >= 0, true, 'arrayFilter');
+            t.strictEqual(index <= lastIndex, true, 'arrayFilter');
+            if (typeof element === 'number' && isNaN(element)) {
+                t.strictEqual(typeof filterArray[index] === 'number' && isNaN(filterArray[index]), true, 'arrayFilter');
+            } else {
+                t.strictEqual(element, filterArray[index], 'arrayFilter');
+            }
+
+            testIndex = index;
+
+            if (typeof element === 'string') {
+                return element;
+            }
+
+            return utilx.privateUndefined;
+        }).toString(), ['a', 'b', 'c', 'end'].toString(), 'arrayFilter return');
+
+        t.strictEqual(testIndex, filterArray.length - 1, 'arrayFilter');
+
+        t.end();
+    });
+
+    test('arrayReduce', function (t) {
+        var lastIndex = Math.pow(2, 32) - 1,
+            reduceArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, utilx.privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
+            testIndex;
+
+        reduceArray[24] = NaN;
+        reduceArray[25] = 'end';
+        t.strictEqual(utilx.arrayReduce(reduceArray, function (accumulator, element, index, array) {
+            t.strictEqual(array, reduceArray, 'arrayReduce');
+            t.strictEqual(typeof index, 'number', 'arrayReduce');
+            t.strictEqual(index >= 0, true, 'arrayReduce');
+            t.strictEqual(index <= lastIndex, true, 'arrayReduce');
+            if (typeof element === 'number' && isNaN(element)) {
+                t.strictEqual(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index]), true, 'arrayReduce');
+            } else {
+                t.strictEqual(element, reduceArray[index], 'arrayReduce');
+            }
+
+            testIndex = index;
+
+            if (utilx.privateUndefined === element || null === element) {
+                return accumulator;
+            }
+
+            return accumulator + ',' + element;
+        }, '').slice(1), reduceArray.toString().replace(new RegExp(',+', 'g'), ','), 'arrayReduce return');
+
+        t.strictEqual(testIndex, reduceArray.length - 1, 'arrayReduce');
 
         t.end();
     });
