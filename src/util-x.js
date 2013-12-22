@@ -704,13 +704,13 @@
          * Returns the first element of an array; otherwise returns undefined.
          * @memberOf utilx
          * @function
-         * @param {array} inputArg
-         * @return {(*|undefined)}
+         * @param {array|arguments} inputArg
+         * @return {*}
          */
         utilx.arrayFirst = function (inputArg) {
             var val;
 
-            if (!utilx.isEmptyArray(inputArg)) {
+            if (utilx.arrayIsArray(inputArg) || utilx.isArguments(inputArg)) {
                 val = inputArg[0];
             }
 
@@ -721,13 +721,13 @@
          * Returns the last element of an array; otherwise returns undefined.
          * @memberOf utilx
          * @function
-         * @param {array} inputArg
-         * @return {(*|undefined)}
+         * @param {array|arguments} inputArg
+         * @return {*}
          */
         utilx.arrayLast = function (inputArg) {
             var val;
 
-            if (!utilx.isEmptyArray(inputArg)) {
+            if (utilx.arrayIsArray(inputArg) || utilx.isArguments(inputArg)) {
                 val = inputArg[inputArg.length - 1];
             }
 

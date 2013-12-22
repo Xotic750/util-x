@@ -442,6 +442,33 @@
         t.end();
     });
 
+    test('argToObject', function (t) {
+        t.throws(function () {
+            utilx.argToObject();
+        }, TypeError, 'argToObject');
+
+        t.throws(function () {
+            utilx.argToObject(utilx.privateUndefined);
+        }, TypeError, 'argToObject');
+
+        t.throws(function () {
+            utilx.argToObject(null);
+        }, TypeError, 'argToObject');
+
+        t.strictEqual(typeof utilx.argToObject(1), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(true), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(''), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject([]), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject({}), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(Object('a')), 'object', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(utilx.noop), 'function', 'argToObject');
+        t.strictEqual(typeof utilx.argToObject(new Date()), 'object', 'argToObject');
+        t.strictEqual(utilx.argToObject(new RegExp('c')).toString(), '/c/', 'argToObject');
+
+
+        t.end();
+    });
+
     test('toObjectFixIndexedAccess', function (t) {
         t.throws(function () {
             utilx.toObjectFixIndexedAccess();
@@ -463,7 +490,7 @@
         t.strictEqual(typeof utilx.toObjectFixIndexedAccess(Object('a')), 'object', 'toObjectFixIndexedAccess');
         t.strictEqual(typeof utilx.toObjectFixIndexedAccess(utilx.noop), 'function', 'toObjectFixIndexedAccess');
         t.strictEqual(typeof utilx.toObjectFixIndexedAccess(new Date()), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(utilx.isRegExp(utilx.toObjectFixIndexedAccess(new RegExp('c'))), true, 'toObjectFixIndexedAccess');
+        t.strictEqual(utilx.toObjectFixIndexedAccess(new RegExp('c')).toString(), '/c/', 'toObjectFixIndexedAccess');
 
 
         t.end();
@@ -690,6 +717,90 @@
         }, '').slice(1), reduceArray.toString().replace(new RegExp(',+', 'g'), ','), 'arrayReduce return');
 
         t.strictEqual(testIndex, reduceArray.length - 1, 'arrayReduce');
+
+        t.end();
+    });
+
+    test('Array extras', function (t) {
+        var testArray1 = [],
+            testArray2 = [utilx.privateUndefined, utilx.privateUndefined],
+            testArray3 = [1, 2, 3],
+            testArgs = returnArgs(1, 2, 3);
+
+        t.strictEqual(utilx.arrayFirst(), utilx.privateUndefined, 'arrayFirst');
+        t.strictEqual(utilx.arrayFirst(testArray1), utilx.privateUndefined, 'arrayFirst');
+        t.strictEqual(utilx.arrayFirst(testArray2), utilx.privateUndefined, 'arrayFirst');
+        t.strictEqual(utilx.arrayFirst(testArray3), 1, 'arrayFirst');
+        t.strictEqual(utilx.arrayFirst(testArgs), 1, 'arrayFirst');
+
+        t.strictEqual(utilx.arrayLast(), utilx.privateUndefined, 'arrayLast');
+        t.strictEqual(utilx.arrayLast(testArray1), utilx.privateUndefined, 'arrayLast');
+        t.strictEqual(utilx.arrayLast(testArray2), utilx.privateUndefined, 'arrayLast');
+        t.strictEqual(utilx.arrayLast(testArray3), 3, 'arrayLast');
+        t.strictEqual(utilx.arrayLast(testArgs), 3, 'arrayLast');
+
+        t.end();
+    });
+
+    test('objectKeys', function (t) {
+        var loopedValues = [],
+            obj = {
+                'str': 'boz',
+                'obj': {},
+                'arr': [],
+                'bool': true,
+                'num': 42,
+                'null': null,
+                'undefined': utilx.privateUndefined
+            },
+            keys = utilx.objectKeys(obj),
+            k;
+
+        for (k in obj) {
+            /*jslint forin: true */
+            loopedValues.push(k);
+        }
+
+        t.strictEqual(keys.length, 7, 'should have correct length');
+        t.strictEqual(utilx.arrayIsArray(keys), true, 'should return an Array');
+
+        utilx.arrayForEach(keys, function (name) {
+            t.strictEqual(utilx.objectHasOwnProperty(obj, name), true, 'should return names which are own properties');
+        });
+
+        utilx.arrayForEach(keys, function (name) {
+            t.notStrictEqual(utilx.arrayIndexOf(loopedValues, name), -1, 'should return names which are enumerable');
+        });
+
+        t.throws(function () {
+            utilx.objectKeys(42);
+        }, TypeError, 'should throw error for non object');
+
+        t.end();
+    });
+
+    test('objectIs', function (t) {
+        var date = new Date(),
+            rx = new RegExp('x'),
+            err = new Error('y');
+
+        t.strictEqual(utilx.objectIs(utilx.privateUndefined, utilx.privateUndefined), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(null, null), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(1, 1), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(true, true), true, 'objectIs');
+        t.strictEqual(utilx.objectIs('x', 'x'), true, 'objectIs');
+        t.strictEqual(utilx.objectIs([1, 2, 3], [1, 2, 3]), false, 'objectIs');
+        t.strictEqual(utilx.objectIs(returnArgs(), returnArgs()), false, 'objectIs');
+        t.strictEqual(utilx.objectIs({}, {}), false, 'objectIs');
+        t.strictEqual(utilx.objectIs(utilx.noop, utilx.noop), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(new RegExp('c'), new RegExp('c')), false, 'objectIs');
+        t.strictEqual(utilx.objectIs(new Date(2013, 11, 23), new Date(2013, 11, 23)), false, 'objectIs');
+        t.strictEqual(utilx.objectIs(new Error('x'), new Error('x')), false, 'objectIs');
+        t.strictEqual(utilx.objectIs(date, date), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(rx, rx), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(err, err), true, 'objectIs');
+        t.strictEqual(utilx.objectIs(NaN, NaN), true, 'objectIs');
+
 
         t.end();
     });
