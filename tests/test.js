@@ -804,4 +804,68 @@
 
         t.end();
     });
+
+    test('numberIsNaN', function (t) {
+        t.strictEqual(utilx.numberIsNaN(), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(utilx.privateUndefined), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(null), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(1), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(Infinity), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(-Infinity), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(NaN), true, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(''), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(true), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(false), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(utilx.noop), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN({}), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN([]), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(new RegExp('c')), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(new Date(2013, 11, 23)), false, 'numberIsNaN');
+        t.strictEqual(utilx.numberIsNaN(new Error('x')), false, 'numberIsNaN');
+
+        t.end();
+    });
+
+    test('numberIsFinite', function (t) {
+        t.strictEqual(utilx.numberIsFinite(), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(utilx.privateUndefined), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(null), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(1), true, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(Infinity), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(-Infinity), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(NaN), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(''), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(true), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(false), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite({}), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite([]), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(new RegExp('c')), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(new Date(2013, 11, 23)), false, 'numberIsFinite');
+        t.strictEqual(utilx.numberIsFinite(new Error('x')), false, 'numberIsFinite');
+
+        t.end();
+    });
+
+    test('mathSign', function (t) {
+        t.strictEqual(isNaN(utilx.mathSign()), true, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign(utilx.privateUndefined)), true, 'mathSign');
+        t.strictEqual(utilx.mathSign(null), 0, 'mathSign');
+        t.strictEqual(utilx.mathSign(-1), -1, 'mathSign');
+        t.strictEqual(utilx.mathSign(0), 0, 'mathSign');
+        t.strictEqual(utilx.mathSign(1), 1, 'mathSign');
+        t.strictEqual(utilx.mathSign(Infinity), 1, 'mathSign');
+        t.strictEqual(utilx.mathSign(-Infinity), -1, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign(NaN)), true, 'mathSign');
+        t.strictEqual(utilx.mathSign(''), 0, 'mathSign');
+        t.strictEqual(utilx.mathSign(true), 1, 'mathSign');
+        t.strictEqual(utilx.mathSign(false), 0, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign(utilx.noop)), true, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign({})), true, 'mathSign');
+        t.strictEqual(utilx.mathSign([]), 0, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign(new RegExp('c'))), true, 'mathSign');
+        t.strictEqual(utilx.mathSign(new Date(2013, 11, 23)), 1, 'mathSign');
+        t.strictEqual(isNaN(utilx.mathSign(new Error('x'))), true, 'mathSign');
+
+        t.end();
+    });
 }());
