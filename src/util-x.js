@@ -2664,9 +2664,11 @@
                             utilx.strictEqual(JSON.stringify([utilx.privateUndefined, isNaN, null]), '[null,null,null]') &&
                             // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
                             // where character escape codes are expected (e.g., `\b` => `\u0008`).
+                            // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
+                            // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
                             utilx.strictEqual(JSON.stringify({
-                                'A': [stringifiedValue, true, false, null, '\0\b\n\f\r\t']
-                            }), '{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}') &&
+                                'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
+                            }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &&
                             // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
                             utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') && utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
                             // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
