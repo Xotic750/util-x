@@ -2961,7 +2961,7 @@
 
             nfeJSONParse = null;
 
-            return utilx.extend({}, tempSafariNFE);
+            return tempSafariNFE;
         }());
 
         /**
