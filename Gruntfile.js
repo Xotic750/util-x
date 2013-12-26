@@ -49,7 +49,7 @@
             },
 
             jshint: {
-                build: ['Gruntfile.js', 'scripts/*.js', 'src/*.js', 'tasks/**/*.js', 'tests/**/*.js'],
+                build: ['Gruntfile.js', 'src/*.js', 'tasks/**/*.js', 'tests/**/*.js'],
                 lib: ['lib/<%= pkg.name %>.js'],
                 options: {
                     'bitwise': true,

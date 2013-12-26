@@ -567,6 +567,8 @@
                 undefinedString = '[object Undefined]',
                 nullString = '[object Null]',
                 argumentsString = '[object Arguments]',
+                functionString = '[object Function]',
+                regexpString = '[object RegExp]',
                 nfeToObjectString;
 
             function returnArgs() {
@@ -575,7 +577,7 @@
 
             try {
                 tempSafariNFE = null;
-                if (utilx.strictEqual(toStringFN.call(), undefinedString) && utilx.strictEqual(toStringFN.call(null), nullString) && utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+                if (utilx.strictEqual(toStringFN.call(), undefinedString) && utilx.strictEqual(toStringFN.call(null), nullString) && utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString) && utilx.strictEqual(toStringFN.call(returnArgs), functionString)) {
                     tempSafariNFE = function nfeToObjectString(object) {
                         return toStringFN.call(object);
                     };
@@ -592,6 +594,8 @@
                         val = undefinedString;
                     } else if (utilx.isNull(object)) {
                         val = nullString;
+                    } else if (utilx.stricEqual(typeof object, 'function') && utilx.notStrictEqual(toStringFN.call(object), regexpString) && utilx.strictEqual(typeof object.call, 'function') && utilx.strictEqual(typeof object.apply, 'function')) {
+                        val = functionString;
                     } else if (utilx.isArguments(object)) {
                         val = argumentsString;
                     } else {
@@ -670,7 +674,7 @@
                 tempSafariNFE = isArrayFN;
             } else {
                 tempSafariNFE = function nfeIsArray(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]');
+                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') && utilx.isNumber(inputArg.length);
                 };
             }
 
