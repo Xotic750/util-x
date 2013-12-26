@@ -2613,7 +2613,7 @@
                 str,
                 nfeJSONStringify;
 
-            if (false && typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.stringify)) {
+            if (typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.stringify)) {
                 tempSafariNFE = JSON.stringify;
             } else {
                 escapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
@@ -2760,7 +2760,7 @@
                     }
 
                     rep = replacer;
-                    if (!utilx.isFunction(replacer) && !utilx.arrayIsArray(replacer)) {
+                    if (!utilx.isUndefinedOrNull(replacer) && !utilx.isFunction(replacer) && !utilx.arrayIsArray(replacer)) {
                         throw new Error('JSON.stringify');
                     }
 
@@ -2793,7 +2793,7 @@
                 cx,
                 nfeJSONParse;
 
-            if (false && typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.parse)) {
+            if (typeof JSON === 'object' && !utilx.isNull(JSON) && utilx.isFunction(JSON.parse)) {
                 tempSafariNFE = JSON.parse;
             } else {
                 rx1 = new RegExp('^[\\],:{}\\s]*$');
