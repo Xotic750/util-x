@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.35
+ * @version 0.0.36
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -3048,7 +3048,7 @@
          * @private
          * @function
          * @param {string} name
-         * @param {constructor} [ErrorConstructor]
+         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used
          * @return {constructor}
          */
         utilx.customError = (function () {
@@ -3062,34 +3062,10 @@
                 return value;
             }
 
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var nfeCustomError;
-
-            tempSafariNFE = function nfeCustomError(name, ErrorConstructor) {
-                if (!utilx.isString(name)) {
-                    throw new TypeError('"name" was not a string');
-                }
-
-                if (utilx.isEmptyString(name)) {
-                    throw new SyntaxError('"name" was an empty string');
-                }
-
-                if (utilx.isUndefined(ErrorConstructor)) {
-                    ErrorConstructor = Error;
-                }
-
-                if (!utilx.isUndefined(ErrorConstructor)) {
-                    if (!utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
-                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
-                    }
-                }
-
+            function makeCustomError(name, ErrorConstructor) {
                 // Unused variable for JScript NFE bug
                 // http://kangax.github.io/nfe
-                var nfeError;
-
-                tempSafariNFE = function nfeError(message, stackStartFunction) {
+                function CustomError(message, stackStartFunction) {
                     var err;
 
                     if (!utilx.isString(message)) {
@@ -3097,7 +3073,7 @@
                     }
 
                     if (!utilx.isFunction(stackStartFunction)) {
-                        stackStartFunction = nfeError;
+                        stackStartFunction = CustomError;
                     }
 
                     this.message = message;
@@ -3114,40 +3090,64 @@
                             this.stack = err.stacktrace;
                         }
                     }
-                };
+                }
 
-                utilx.inherits(tempSafariNFE, ErrorConstructor);
+                utilx.inherits(CustomError, ErrorConstructor);
 
-                utilx.objectDefineProperty(tempSafariNFE, 'errorToString', {
-                    value: function (err) {
-                        var theString;
-
-                        if (utilx.objectInstanceOf(err, Error)) {
-                            theString = err.name + ': ' + err.message;
-                        }
-
-                        return theString;
-                    }
-                });
-
-                utilx.objectDefineProperties(tempSafariNFE.prototype, {
+                utilx.objectDefineProperties(CustomError.prototype, {
                     constructor: {
-                        value: nfeError
+                        value: CustomError
                     },
 
                     name: {
                         value: name
+                    },
+
+                    toStringX: {
+                        value: function () {
+                            return this.name + ': ' + this.message;
+                        }
                     }
                 });
 
-                nfeError = null;
+                return CustomError;
+            }
 
-                return tempSafariNFE;
-            };
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe
+            var isOkToUseOtherErrors,
+                CustomSyntaxError;
 
-            nfeCustomError = null;
+            try {
+                CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
+                throw new CustomSyntaxError('test');
+            } catch (e) {
+                isOkToUseOtherErrors = utilx.objectInstanceOf(e, SyntaxError);
+            }
 
-            return tempSafariNFE;
+            function customError(name, ErrorConstructor) {
+                if (!utilx.isString(name)) {
+                    throw new TypeError('"name" was not a string');
+                }
+
+                if (utilx.isEmptyString(name)) {
+                    throw new SyntaxError('"name" was an empty string');
+                }
+
+                if (utilx.isFalse(isOkToUseOtherErrors) || utilx.isUndefined(ErrorConstructor)) {
+                    ErrorConstructor = Error;
+                }
+
+                if (!utilx.isUndefined(ErrorConstructor)) {
+                    if (!utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
+                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
+                    }
+                }
+
+                return makeCustomError(name, ErrorConstructor);
+            }
+
+            return customError;
         }());
 
         tempSafariNFE = null;
@@ -3200,7 +3200,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Dec 27 2013 14:53:52 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Dec 27 2013 15:56:47 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

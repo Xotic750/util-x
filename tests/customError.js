@@ -37,13 +37,13 @@
         try {
             throw new MyError('test');
         } catch (e) {
-            t.strictEqual(MyError.errorToString(e), 'MyError: test', 'customError');
+            t.strictEqual(e.toStringX().split('\n')[0], 'MyError: test', 'customError');
         }
 
         try {
             throw new MySyntaxError('test');
         } catch (e) {
-            t.strictEqual(MySyntaxError.errorToString(e), 'MySyntaxError: test', 'customError');
+            t.strictEqual(e.toStringX().split('\n')[0], 'MySyntaxError: test', 'customError');
         }
 
         t.throws(function () {
@@ -64,7 +64,13 @@
         t.strictEqual(new MySyntaxError('test').message, 'test', 'customError');
         t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError');
         t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError), 'customError');
-        t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError');
+
+        if (utilx.strictEqual(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError))) {
+            t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
+        } else {
+            t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
+        }
+
         t.ok(!utilx.objectInstanceOf(new MySyntaxError('test'), TypeError), 'customError');
 
         t.end();
