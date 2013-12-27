@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.33",
+    "version": "0.0.34",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -52,7 +52,7 @@
         "jsdoc": "latest",
         "tape-compact": "latest",
         "grunt-cli": "latest",
-        "grunt-contrib-jshint": "~0.7.0",
+        "grunt-contrib-jshint": "latest",
         "grunt-contrib-uglify": "latest",
         "grunt-contrib-watch": "latest",
         "grunt-lib-legacyhelpers": "latest",
@@ -72,7 +72,7 @@
         "jsdoc": "latest",
         "tape-compact": "latest",
         "grunt-cli": "latest",
-        "grunt-contrib-jshint": "~0.7.0",
+        "grunt-contrib-jshint": "latest",
         "grunt-contrib-uglify": "latest",
         "grunt-contrib-watch": "latest",
         "grunt-lib-legacyhelpers": "latest",

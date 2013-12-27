@@ -3021,60 +3021,101 @@
          * @private
          * @function
          * @param {string} name
+         * @param {constructor} [ErrorConstructor]
          * @return {constructor}
          */
-        utilx.customError = function (name) {
-            if (!utilx.isString(name) || utilx.isEmptyString(name)) {
-                throw new TypeError('"name" must be a string and must not be empty');
+        utilx.customError = (function () {
+            function replacer(key, value) {
+                /*jslint unparam: true */
+                /*jshint unused: true */
+                if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) || (utilx.isNumber(value) && !utilx.numberIsFinite(value))) {
+                    return utilx.anyToString(value);
+                }
+
+                return value;
             }
 
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var nfeCustomError;
 
-            tempSafariNFE = function nfeCustomError(message, stackStartFunction) {
-                var err;
-
-                if (!utilx.isString(message)) {
-                    message = '';
+            tempSafariNFE = function nfeCustomError(name, ErrorConstructor) {
+                if (!utilx.isString(name)) {
+                    throw new TypeError('"name" was not a string');
                 }
 
-                if (!utilx.isFunction(stackStartFunction)) {
-                    stackStartFunction = nfeCustomError;
+                if (utilx.isEmptyString(name)) {
+                    throw new SyntaxError('"name" was an empty string');
                 }
 
-                this.message = message;
-                this.stackStartFunction = stackStartFunction;
+                if (utilx.isUndefined(ErrorConstructor)) {
+                    ErrorConstructor = Error;
+                }
 
-                if (utilx.isFunction(Error.captureStackTrace)) {
-                    Error.captureStackTrace(this, this.stackStartFunction);
-                } else {
-                    err = Error.call(this);
-
-                    if (utilx.isString(err.stack)) {
-                        this.stack = err.stack;
-                    } else if (utilx.isString(err.stacktrace)) {
-                        this.stack = err.stacktrace;
+                if (!utilx.isUndefined(ErrorConstructor)) {
+                    if (!utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
+                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
                     }
                 }
+
+                // Unused variable for JScript NFE bug
+                // http://kangax.github.io/nfe
+                var nfeError;
+
+                tempSafariNFE = function nfeError(message, stackStartFunction) {
+                    var err;
+
+                    if (!utilx.isString(message)) {
+                        message = utilx.stringTruncate(utilx.jsonStringify(message, replacer), 128);
+                    }
+
+                    if (!utilx.isFunction(stackStartFunction)) {
+                        stackStartFunction = nfeError;
+                    }
+
+                    this.message = message;
+                    this.stackStartFunction = stackStartFunction;
+
+                    if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
+                        ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+                    } else {
+                        err = ErrorConstructor.call(this);
+
+                        if (utilx.isString(err.stack)) {
+                            this.stack = err.stack;
+                        } else if (utilx.isString(err.stacktrace)) {
+                            this.stack = err.stacktrace;
+                        }
+                    }
+                };
+
+                utilx.inherits(tempSafariNFE, ErrorConstructor);
+
+                utilx.objectDefineProperties(tempSafariNFE.prototype, {
+                    constructor: {
+                        value: nfeError
+                    },
+
+                    name: {
+                        value: name
+                    },
+
+                    toStringX: {
+                        value: function () {
+                            return this.name + ': ' + this.message;
+                        }
+                    }
+                });
+
+                nfeError = null;
+
+                return tempSafariNFE;
             };
-
-            utilx.inherits(tempSafariNFE, Error);
-
-            utilx.objectDefineProperties(tempSafariNFE.prototype, {
-                constructor: {
-                    value: nfeCustomError
-                },
-
-                name: {
-                    value: name
-                }
-            });
 
             nfeCustomError = null;
 
             return tempSafariNFE;
-        };
+        }());
 
         tempSafariNFE = null;
 
