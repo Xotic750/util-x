@@ -3025,7 +3025,7 @@
          */
         utilx.customError = function (name) {
             if (!utilx.isString(name) || utilx.isEmptyString(name)) {
-                throw new TypeError('"name" must be a string and con not be empty');
+                throw new TypeError('"name" must be a string and must not be empty');
             }
 
             // Unused variable for JScript NFE bug
@@ -3063,7 +3063,7 @@
 
             utilx.objectDefineProperties(tempSafariNFE.prototype, {
                 constructor: {
-                    value: tempSafariNFE
+                    value: nfeCustomError
                 },
 
                 name: {
