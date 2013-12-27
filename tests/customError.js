@@ -37,13 +37,13 @@
         try {
             throw new MyError('test');
         } catch (e) {
-            t.strictEqual(e.toStringX(), 'MyError: test', 'customError');
+            t.strictEqual(MyError.errorToString(e), 'MyError: test', 'customError');
         }
 
         try {
             throw new MySyntaxError('test');
         } catch (e) {
-            t.strictEqual(e.toStringX(), 'MySyntaxError: test', 'customError');
+            t.strictEqual(MySyntaxError.errorToString(e), 'MySyntaxError: test', 'customError');
         }
 
         t.throws(function () {

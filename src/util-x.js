@@ -3091,6 +3091,18 @@
 
                 utilx.inherits(tempSafariNFE, ErrorConstructor);
 
+                utilx.objectDefineProperty(tempSafariNFE, 'errorToString', {
+                    value: function (err) {
+                        var theString;
+
+                        if (utilx.objectInstanceOf(err, Error)) {
+                            theString = err.name + ': ' + err.message;
+                        }
+
+                        return theString;
+                    }
+                });
+
                 utilx.objectDefineProperties(tempSafariNFE.prototype, {
                     constructor: {
                         value: nfeError
@@ -3098,12 +3110,6 @@
 
                     name: {
                         value: name
-                    },
-
-                    toStringX: {
-                        value: function () {
-                            return this.name + ': ' + this.message;
-                        }
                     }
                 });
 
