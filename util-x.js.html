@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.30
+ * @version 0.0.38
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -642,7 +642,7 @@
          * @return {boolean}
          */
         utilx.isError = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]');
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]') || (utilx.isTypeObject(inputArg) &amp;&amp; utilx.objectInstanceOf(inputArg, Error));
         };
 
         /**
@@ -653,7 +653,7 @@
          * @return {boolean}
          */
         utilx.isRegExp = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]');
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]') &amp;&amp; utilx.isString(inputArg.source) &amp;&amp; utilx.isBoolean(inputArg.global);
         };
 
         /**
@@ -675,7 +675,7 @@
          * @return {boolean}
          */
         utilx.isFunction = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]');
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]') || (utilx.strictEqual(typeof inputArg, 'function') &amp;&amp; utilx.strictEqual(typeof inputArg.call, 'function') &amp;&amp; utilx.strictEqual(typeof inputArg.apply, 'function'));
         };
 
         /**
@@ -697,7 +697,7 @@
                 tempSafariNFE = isArrayFN;
             } else {
                 tempSafariNFE = function nfeIsArray(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]');
+                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') &amp;&amp; utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -2988,15 +2988,15 @@
 
             nfeJSONParse = null;
 
-            return utilx.extend({}, tempSafariNFE);
+            return tempSafariNFE;
         }());
 
         /**
          * Truncates a long string to the length specified by n; used by AssertionError.toString
-         * @private
+         * @memberOf utilx
          * @function
          * @param {string} s
-         * @param {number} n
+         * @param {number|string} n
          * @return {string}
          */
         utilx.stringTruncate = function (s, n) {
@@ -3005,12 +3005,10 @@
             }
 
             n = utilx.toNumber(n);
-            if (utilx.lt(n, 0) || !utilx.numberIsNaN(n)) {
-                n = Infinity;
-            }
-
-            if (utilx.gt(s.length, n)) {
-                s = s.slice(0, n);
+            if (utilx.gte(n, 0) &amp;&amp; !utilx.numberIsNaN(n)) {
+                if (utilx.gt(s.length, n)) {
+                    s = s.slice(0, n);
+                }
             }
 
             return s;
@@ -3018,7 +3016,7 @@
 
         /**
          * Inherit the prototype methods from one constructor into another.
-         * @private
+         * @memberOf utilx
          * @function
          * @param {function} ctor
          * @param {function} superCtor
@@ -3044,6 +3042,113 @@
                 configurable: true
             });
         };
+
+        /**
+         * Creates a custom Error.
+         * @memberOf utilx
+         * @function
+         * @param {string} name
+         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used
+         * @return {constructor}
+         */
+        utilx.customError = (function () {
+            function replacer(key, value) {
+                /*jslint unparam: true */
+                /*jshint unused: true */
+                if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) || (utilx.isNumber(value) &amp;&amp; !utilx.numberIsFinite(value))) {
+                    return utilx.anyToString(value);
+                }
+
+                return value;
+            }
+
+            function makeCustomError(name, ErrorConstructor) {
+                // Unused variable for JScript NFE bug
+                // http://kangax.github.io/nfe
+                function CustomError(message, stackStartFunction) {
+                    var err;
+
+                    if (!utilx.isString(message)) {
+                        message = utilx.stringTruncate(utilx.jsonStringify(message, replacer), 128);
+                    }
+
+                    if (!utilx.isFunction(stackStartFunction)) {
+                        stackStartFunction = CustomError;
+                    }
+
+                    this.message = message;
+                    this.stackStartFunction = stackStartFunction;
+
+                    if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
+                        ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+                    } else {
+                        err = ErrorConstructor.call(this);
+
+                        if (utilx.isString(err.stack)) {
+                            this.stack = err.stack;
+                        } else if (utilx.isString(err.stacktrace)) {
+                            this.stack = err.stacktrace;
+                        }
+                    }
+                }
+
+                utilx.inherits(CustomError, ErrorConstructor);
+
+                utilx.objectDefineProperties(CustomError.prototype, {
+                    constructor: {
+                        value: CustomError
+                    },
+
+                    name: {
+                        value: name
+                    },
+
+                    toStringX: {
+                        value: function () {
+                            return this.name + ': ' + this.message;
+                        }
+                    }
+                });
+
+                return CustomError;
+            }
+
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe
+            var isOkToUseOtherErrors,
+                CustomSyntaxError;
+
+            try {
+                CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
+                isOkToUseOtherErrors = utilx.objectInstanceOf(new CustomSyntaxError('test'), SyntaxError);
+            } catch (e) {
+                isOkToUseOtherErrors = false;
+            }
+
+            function customError(name, ErrorConstructor) {
+                if (!utilx.isString(name)) {
+                    throw new TypeError('"name" was not a string');
+                }
+
+                if (utilx.isEmptyString(name)) {
+                    throw new SyntaxError('"name" was an empty string');
+                }
+
+                if (!isOkToUseOtherErrors || utilx.isUndefined(ErrorConstructor)) {
+                    ErrorConstructor = Error;
+                }
+
+                if (!utilx.isUndefined(ErrorConstructor)) {
+                    if (utilx.isPrimitive(ErrorConstructor) || !utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
+                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
+                    }
+                }
+
+                return makeCustomError(name, ErrorConstructor);
+            }
+
+            return customError;
+        }());
 
         tempSafariNFE = null;
 
@@ -3095,7 +3200,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Thu Dec 26 2013 12:53:58 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Dec 27 2013 18:11:39 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
