@@ -27,13 +27,17 @@
             utilx.customError('');
         }, SyntaxError, 'customError');
 
-        t.throws(function () {
-            utilx.customError('MyError', null);
-        }, TypeError, 'customError');
+        try {
+            utilx.customError('NullError', null);
+        } catch (e) {
+            t.ok(utilx.objectInstanceOf(e, TypeError), 'customError');
+        }
 
-        t.throws(function () {
-            utilx.customError('MyError', Fn);
-        }, TypeError, 'customError');
+        try {
+            utilx.customError('FnError', Fn);
+        } catch (e) {
+            t.ok(utilx.objectInstanceOf(e, TypeError), 'customError');
+        }
 
         try {
             throw new MyError('test');
