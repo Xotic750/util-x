@@ -6,6 +6,7 @@
     var required = require('./'),
         utilx = required.utilx,
         test = required.test,
+        rxSplit = new RegExp('[\\r\\n]'),
         MyError = utilx.customError('MyError'),
         MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
 
@@ -37,13 +38,13 @@
         try {
             throw new MyError('test');
         } catch (e) {
-            t.strictEqual(e.toStringX().split('\n')[0], 'MyError: test', 'customError');
+            t.strictEqual(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit)), 'MyError: test', 'customError');
         }
 
         try {
             throw new MySyntaxError('test');
         } catch (e) {
-            t.strictEqual(e.toStringX().split('\n')[0], 'MySyntaxError: test', 'customError');
+            t.strictEqual(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit)), 'MySyntaxError: test', 'customError');
         }
 
         t.throws(function () {
@@ -65,7 +66,7 @@
         t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError');
         t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError), 'customError');
 
-        if (utilx.strictEqual(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError))) {
+        if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
             t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
         } else {
             t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
