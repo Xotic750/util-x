@@ -2969,7 +2969,7 @@
          * @private
          * @function
          * @param {string} s
-         * @param {number} n
+         * @param {number|string} n
          * @return {string}
          */
         utilx.stringTruncate = function (s, n) {
@@ -2978,12 +2978,10 @@
             }
 
             n = utilx.toNumber(n);
-            if (utilx.lt(n, 0) || !utilx.numberIsNaN(n)) {
-                n = Infinity;
-            }
-
-            if (utilx.gt(s.length, n)) {
-                s = s.slice(0, n);
+            if (utilx.gte(n, 0) && !utilx.numberIsNaN(n)) {
+                if (utilx.gt(s.length, n)) {
+                    s = s.slice(0, n);
+                }
             }
 
             return s;
@@ -3016,6 +3014,66 @@
                 writable: true,
                 configurable: true
             });
+        };
+
+        /**
+         * Creates a custom Error.
+         * @private
+         * @function
+         * @param {string} name
+         * @return {constructor}
+         */
+        utilx.customError = function (name) {
+            if (!utilx.isString(name) || utilx.isEmptyString(name)) {
+                throw new TypeError('"name" must be a string and con not be empty');
+            }
+
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe
+            var nfeCustomError;
+
+            tempSafariNFE = function nfeCustomError(message, stackStartFunction) {
+                var err;
+
+                if (!utilx.isString(message)) {
+                    message = '';
+                }
+
+                if (!utilx.isFunction(stackStartFunction)) {
+                    stackStartFunction = nfeCustomError;
+                }
+
+                this.message = message;
+                this.stackStartFunction = stackStartFunction;
+
+                if (utilx.isFunction(Error.captureStackTrace)) {
+                    Error.captureStackTrace(this, this.stackStartFunction);
+                } else {
+                    err = Error.call(this);
+
+                    if (utilx.isString(err.stack)) {
+                        this.stack = err.stack;
+                    } else if (utilx.isString(err.stacktrace)) {
+                        this.stack = err.stacktrace;
+                    }
+                }
+            };
+
+            utilx.inherits(tempSafariNFE, Error);
+
+            utilx.objectDefineProperties(tempSafariNFE.prototype, {
+                constructor: {
+                    value: tempSafariNFE
+                },
+
+                name: {
+                    value: name
+                }
+            });
+
+            nfeCustomError = null;
+
+            return tempSafariNFE;
         };
 
         tempSafariNFE = null;
