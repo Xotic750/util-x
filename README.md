@@ -10,5 +10,5 @@ Master
 
 [![browser support](https://ci.testling.com/Xotic750/util-x.png)](https://ci.testling.com/Xotic750/util-x 'Browser support on Testling CI')
 
-#[util-x 0.0.37](http://xotic750.github.io/util-x/)
+#[util-x 0.0.38](http://xotic750.github.io/util-x/)
 ###### Graham Fairweather <xotic750@gmail.com>

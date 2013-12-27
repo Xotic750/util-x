@@ -2966,7 +2966,7 @@
 
         /**
          * Truncates a long string to the length specified by n; used by AssertionError.toString
-         * @private
+         * @memberOf utilx
          * @function
          * @param {string} s
          * @param {number|string} n
@@ -2989,7 +2989,7 @@
 
         /**
          * Inherit the prototype methods from one constructor into another.
-         * @private
+         * @memberOf utilx
          * @function
          * @param {function} ctor
          * @param {function} superCtor
@@ -3018,7 +3018,7 @@
 
         /**
          * Creates a custom Error.
-         * @private
+         * @memberOf utilx
          * @function
          * @param {string} name
          * @param {constructor} [ErrorConstructor] Does not work with IE < 9, only Error can be used
