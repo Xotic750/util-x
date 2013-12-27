@@ -29,14 +29,6 @@
         }, SyntaxError, 'jsonParse');
 
         t.throws(function () {
-            utilx.jsonParse('01');
-        }, SyntaxError, 'jsonParse');
-
-        t.throws(function () {
-            utilx.jsonParse('"\t"');
-        }, SyntaxError, 'jsonParse');
-
-        t.throws(function () {
             utilx.jsonParse('{"A": undefined}');
         }, SyntaxError, 'jsonParse');
 
