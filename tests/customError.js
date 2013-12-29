@@ -30,17 +30,17 @@
                 expect(e).to.be.a(SyntaxError);
             });
 
-            expect(function () {
+            try {
                 utilx.customError('NullError', null);
-            }).to.throwException(function (e) {
+            } catch (e) {
                 expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
-            });
+            }
 
-            expect(function () {
+            try {
                 utilx.customError('FnError', utilx.noop);
-            }).to.throwException(function (e) {
+            } catch (e) {
                 expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
-            });
+            }
 
             expect(function () {
                 throw new MyError('test');
