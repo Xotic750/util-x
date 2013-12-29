@@ -17,33 +17,35 @@
             expect(utilx.jsonParse(true)).to.be(true);
             expect(utilx.jsonParse('null')).to.be(null);
 
-            try {
+            expect(function () {
                 utilx.jsonParse();
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            }
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-            try {
+            expect(function () {
                 utilx.jsonParse(utilx.privateUndefined);
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            }
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-            try {
+            expect(function () {
                 utilx.jsonParse('');
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            }
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-            try {
+            expect(function () {
                 utilx.jsonParse('{"A": undefined}');
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            }
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
+            /*
             expect(utilx.jsonParse('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}')).to.eql({
                 'A': [1, true, false, null, '\u0000\b\n\f\r\t']
             });
+            */
         });
     });
 }());
