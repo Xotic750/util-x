@@ -2407,23 +2407,40 @@
         utilx.objectCreate = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var objectCreateFN,
+            var createdOk,
+                objectCreateFN,
                 nfeObjectCreate,
-                newObject;
+                testObject;
 
             try {
                 objectCreateFN = baseObject.constructor.create;
-                objectCreateFN(ObjectCreateFunc.prototype, {
+                testObject = objectCreateFN(ObjectCreateFunc.prototype, {
                     constructor: {
                         value: ObjectCreateFunc,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    },
+
+                    foo: {
+                        value: 'test',
                         enumerable: false,
                         writable: true,
                         configurable: true
                     }
                 });
 
-                tempSafariNFE = objectCreateFN;
+                if (utilx.strictEqual(testObject.foo, 'test')) {
+                    tempSafariNFE = objectCreateFN;
+                    createdOk = true;
+                } else {
+                    createdOk = false;
+                }
             } catch (e) {
+                createdOk = false;
+            }
+
+            if (true || utilx.isFalse(createdOk)) {
                 tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
                     if (!utilx.isTypeObject(prototype) && !utilx.isFunction(prototype)) {
                         throw new TypeError('Object prototype may only be an Object, but not null.');
@@ -2432,6 +2449,8 @@
                     if (!utilx.isUndefined(propertiesObject) && !utilx.isPlainObject(propertiesObject)) {
                         throw new TypeError('propertiesObject may only be a plain object.');
                     }
+
+                    var newObject;
 
                     ObjectCreateFunc.prototype = prototype;
                     newObject = new ObjectCreateFunc();
