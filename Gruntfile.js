@@ -20,17 +20,6 @@
                 }
             },
 
-            jsbeautifier: {
-                lib: {
-                    src: ['lib/<%= pkg.name %>.js'],
-                    options: {
-                        js: {
-                            jslintHappy: true
-                        }
-                    }
-                }
-            },
-
             uglify: {
                 lib: {
                     files: {
@@ -138,7 +127,7 @@
                             maxBuffer: 1048576
                         }
                     },
-                    command: './node_modules/mocha/bin/mocha --check-leaks -u bdd -t 10000 -b -R tap tests/*.js'
+                    command: '<%= pkg.scripts.test %>'
                 },
                 coveralls: {
                     options: {
@@ -149,7 +138,13 @@
                             maxBuffer: 1048576
                         }
                     },
-                    command: './node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha tests/*.js --report lcovonly -- --check-leaks -u bdd -t 10000 -b --reporter mocha-lcov-reporter && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js'
+                    command: ['./node_modules/istanbul/lib/cli.js cover --report lcovonly',
+                              './node_modules/mocha/bin/_mocha --',
+                              '--check-leaks -u bdd -t 10000 -b -R tap tests/*.js',
+                              '&&',
+                              'cat ./coverage/lcov.info',
+                              '|',
+                              './node_modules/coveralls/bin/coveralls.js'].join(' ')
                 },
                 uglified: {
                     options: {
@@ -160,25 +155,7 @@
                             maxBuffer: 1048576
                         }
                     },
-                    command: 'UTILX_WHICH=1 ./node_modules/mocha/bin/mocha --check-leaks -u bdd -t 10000 -b -R tap tests/*.js'
-                }
-            },
-
-            watch: {
-                test: {
-                    files: [
-                        'lib/<%= pkg.name %>.js',
-                        'tests/*.js'
-                    ],
-                    tasks: ['shell:beautified', 'shell:coveralls', 'shell:uglified']
-                },
-
-                jshint: {
-                    files: [
-                        '<%= jshint.build %>',
-                        '<%= jshint.lib %>'
-                    ],
-                    tasks: ['jshint']
+                    command: 'UTILX_WHICH=1 <%= pkg.scripts.test %>'
                 }
             }
         });
@@ -189,9 +166,7 @@
         // These plugins provide necessary tasks.
         grunt.loadNpmTasks('grunt-contrib-jshint');
         grunt.loadNpmTasks('grunt-contrib-uglify');
-        grunt.loadNpmTasks('grunt-contrib-watch');
         grunt.loadNpmTasks('grunt-jsdoc');
-        grunt.loadNpmTasks('grunt-jsbeautifier');
         grunt.loadNpmTasks('grunt-replace');
         grunt.loadNpmTasks('grunt-contrib-clean');
         grunt.loadNpmTasks('grunt-shell');
@@ -201,7 +176,6 @@
             'clean:all',
             'jshint:build',
             'replace:lib',
-            'jsbeautifier:lib',
             'jshint:lib',
             'shell:beautified',
             'uglify',

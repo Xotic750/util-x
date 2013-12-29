@@ -189,8 +189,9 @@
         };
 
         /**
-         * The mod/remainder operator returns the first operand modulo of the second operand, that is, number1 modulo number2, in the preceding statement,
-         * where number1 and number2 are numbers. The modulo function is the integer remainder of dividing number1 by number2.
+         * The mod/remainder operator returns the first operand modulo of the second operand, that is,
+         * number1 modulo number2, in the preceding statement, where number1 and number2 are numbers.
+         * The modulo function is the integer remainder of dividing number1 by number2.
          * For example, 12 % 5 returns 2. The result will have the same sign as number1; that is, -1 % 2 returns -1.
          * @memberOf utilx
          * @function
@@ -346,7 +347,10 @@
          * @return {boolean}
          */
         utilx.isPrimitive = function (object) {
-            return utilx.isUndefinedOrNull(object) || utilx.isString(object) || utilx.isNumber(object) || utilx.isBoolean(object);
+            return utilx.isUndefinedOrNull(object) ||
+                utilx.isString(object) ||
+                utilx.isNumber(object) ||
+                utilx.isBoolean(object);
         };
 
         /**
@@ -530,12 +534,18 @@
                 };
             } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
                 firstCheck = function (inputArg) {
-                    return utilx.isTypeObject(inputArg) && utilx.strictEqual(toStringFN.call(inputArg), objectString) && hasOwnPropertyFN.call(inputArg, calleeString) && hasOwnPropertyFN.call(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) &&
+                        utilx.strictEqual(toStringFN.call(inputArg), objectString) &&
+                        hasOwnPropertyFN.call(inputArg, calleeString) &&
+                        hasOwnPropertyFN.call(inputArg, lengthString) &&
+                        utilx.isNumber(inputArg.length);
                 };
 
                 if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
                     tempSafariNFE = function nfeIsArguments(inputArg) {
-                        return firstCheck(inputArg) && !propertyIsEnumerableFN.call(inputArg, calleeString) && !propertyIsEnumerableFN.call(inputArg, lengthString);
+                        return firstCheck(inputArg) &&
+                            !propertyIsEnumerableFN.call(inputArg, calleeString) &&
+                            !propertyIsEnumerableFN.call(inputArg, lengthString);
                     };
                 } else {
                     tempSafariNFE = firstCheck;
@@ -544,7 +554,11 @@
 
             if (utilx.isNull(tempSafariNFE)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.isTypeObject(inputArg) && utilx.strictEqual(toStringFN.call(inputArg), objectString) && utilx.hasProperty(inputArg, calleeString) && utilx.hasProperty(inputArg, lengthString) && utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) &&
+                        utilx.strictEqual(toStringFN.call(inputArg), objectString) &&
+                        utilx.hasProperty(inputArg, calleeString) &&
+                        utilx.hasProperty(inputArg, lengthString) &&
+                        utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -575,7 +589,10 @@
 
             try {
                 tempSafariNFE = null;
-                if (utilx.strictEqual(toStringFN.call(), undefinedString) && utilx.strictEqual(toStringFN.call(null), nullString) && utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+                if (utilx.strictEqual(toStringFN.call(), undefinedString) &&
+                        utilx.strictEqual(toStringFN.call(null), nullString) &&
+                        utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+
                     tempSafariNFE = function nfeToObjectString(object) {
                         return toStringFN.call(object);
                     };
@@ -615,7 +632,8 @@
          * @return {boolean}
          */
         utilx.isError = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]') || (utilx.isTypeObject(inputArg) && utilx.objectInstanceOf(inputArg, Error));
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]') ||
+                (utilx.isTypeObject(inputArg) && utilx.objectInstanceOf(inputArg, Error));
         };
 
         /**
@@ -626,7 +644,8 @@
          * @return {boolean}
          */
         utilx.isRegExp = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]') && utilx.isString(inputArg.source) && utilx.isBoolean(inputArg.global);
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]') &&
+                utilx.isString(inputArg.source) && utilx.isBoolean(inputArg.global);
         };
 
         /**
@@ -648,7 +667,10 @@
          * @return {boolean}
          */
         utilx.isFunction = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]') || (utilx.strictEqual(typeof inputArg, 'function') && utilx.strictEqual(typeof inputArg.call, 'function') && utilx.strictEqual(typeof inputArg.apply, 'function'));
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]') ||
+                (utilx.strictEqual(typeof inputArg, 'function') &&
+                 utilx.strictEqual(typeof inputArg.call, 'function') &&
+                 utilx.strictEqual(typeof inputArg.apply, 'function'));
         };
 
         /**
@@ -670,7 +692,8 @@
                 tempSafariNFE = isArrayFN;
             } else {
                 tempSafariNFE = function nfeIsArray(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') && utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') &&
+                        utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -680,8 +703,9 @@
         }());
 
         /**
-         * The function takes one argument inputArg, if the argument is an object whose class internal property is "Array"
-         * or is an Object whose class internal property is "Arguments"; returns true if length is zero otherwise it returns false.
+         * The function takes one argument inputArg, if the argument is an object whose class internal
+         * property is "Array" or is an Object whose class internal property is "Arguments";
+         * returns true if length is zero otherwise it returns false.
          * Otherwise returns null if the argument does not match the rquirements.
          * @memberOf utilx
          * @function
@@ -813,7 +837,8 @@
         }());
 
         /**
-         * The function determines whether the passed value is finite. More robust version of the original global isFinite.
+         * The function determines whether the passed value is finite.
+         * More robust version of the original global isFinite.
          * @memberOf utilx
          * @function
          * @param {*} number
@@ -918,7 +943,8 @@
         }());
 
         /**
-         * The abstract operation converts its argument to one of 2^32 integer values in the range -2^31 through 2^31-1, inclusive.
+         * The abstract operation converts its argument to one of 2^32 integer values in
+         * the range -2^31 through 2^31-1, inclusive.
          * @memberOf utilx
          * @function
          * @param {*} inputArg
@@ -944,7 +970,8 @@
         };
 
         /**
-         * The abstract operation converts its argument to one of 2^32 integer values in the range 0 through 2^32-1,inclusive.
+         * The abstract operation converts its argument to one of 2^32 integer values in
+         * the range 0 through 2^32-1,inclusive.
          * @memberOf utilx
          * @function
          * @param {*} inputArg
@@ -1152,7 +1179,8 @@
          * @return {number}
          */
         utilx.countCharacter = function (inputArg, character) {
-            return utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)), utilx.firstChar(character)).length - 1, 0, Number.POSITIVE_INFINITY);
+            return utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
+                                                 utilx.firstChar(character)).length - 1, 0, Number.POSITIVE_INFINITY);
         };
 
         /**
@@ -1232,7 +1260,8 @@
         }());
 
         /**
-         * Determines whether a string begins with the characters of another string, returning true or false as appropriate.
+         * Determines whether a string begins with the characters of another string,
+         * returning true or false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1267,7 +1296,8 @@
         }());
 
         /**
-         * Determines whether a string ends with the characters of another string, returning true or false as appropriate.
+         * Determines whether a string ends with the characters of another string,
+         * returning true or false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1313,7 +1343,8 @@
         }());
 
         /**
-         * Determines whether a string contains the characters of another string, returning true or false as appropriate.
+         * Determines whether a string contains the characters of another string, returning true or
+         * false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1344,7 +1375,8 @@
                         position = utilx.numberToInteger(position);
                     }
 
-                    return utilx.notStrictEqual(baseString.indexOf.call(thisStr, searchStr, utilx.clamp(position, 0, thisLen)), -1);
+                    return utilx.notStrictEqual(baseString.indexOf.call(thisStr, searchStr,
+                                                                        utilx.clamp(position, 0, thisLen)), -1);
                 };
             }
 
@@ -1411,8 +1443,9 @@
 
         /**
          * Returns a boolean indicating whether the object has the specified property.
-         * This function can be used to determine whether an object has the specified property as a direct property of that object;
-         * unlike the utilx.hasProperty function, this method does not check down the object's prototype chain.
+         * This function can be used to determine whether an object has the specified property as a direct property of
+         * that object; unlike the utilx.hasProperty function, this method does not check down the object's prototype
+         * chain.
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -1441,7 +1474,9 @@
             }
 
             function checkDontEnums(object, property) {
-                return hasDontEnumBug && utilx.arrayContains(defaultProperties, property) && utilx.hasProperty(object, property) && utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
+                return hasDontEnumBug && utilx.arrayContains(defaultProperties, property) &&
+                    utilx.hasProperty(object, property) &&
+                    utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
             }
 
             if (utilx.isFunction(hasOwnPropertyFN)) {
@@ -1454,7 +1489,8 @@
                 };
             } else {
                 tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return utilx.hasProperty(object, property) && utilx.isUndefined(utilx.objectGetPrototypeOf(object)[property]);
+                    return utilx.hasProperty(object, property) &&
+                        utilx.isUndefined(utilx.objectGetPrototypeOf(object)[property]);
                 };
             }
 
@@ -1567,7 +1603,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), val = false; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    val = false;
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index) && fn.call(thisArg, object[index], index, object)) {
                             val = true;
                             break;
@@ -1614,7 +1652,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), arr = []; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    arr = [];
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         arr[index] = fn.call(thisArg, object[index], index, object);
                     }
 
@@ -1694,7 +1734,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), arr = []; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    arr = [];
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         element = object[index];
                         if (fn.call(thisArg, element, index, object)) {
                             arr[next] = element;
@@ -1712,7 +1754,8 @@
         }());
 
         /**
-         * Apply a function against an accumulator and each value of the array (from left-to-right) as to reduce it to a single value.
+         * Apply a function against an accumulator and each value of the array (from left-to-right)
+         * as to reduce it to a single value.
          * @memberOf utilx
          * @function
          * @param {array} array
@@ -1899,7 +1942,8 @@
                             }
 
                             for (index = start, val = -1; utilx.lt(index, length); index += 1) {
-                                if (utilx.hasProperty(object, index) && utilx.strictEqual(searchElement, object[index])) {
+                                if (utilx.hasProperty(object, index) && utilx.strictEqual(searchElement,
+                                                                                          object[index])) {
                                     val = index;
                                     break;
                                 }
@@ -1917,8 +1961,8 @@
         }());
 
         /**
-         * Returns an array of a given object's own enumerable properties, in the same order as that provided by a for-in loop
-         * (the difference being that a for-in loop enumerates properties in the prototype chain as well).
+         * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
+         * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -1958,7 +2002,8 @@
         }());
 
         /**
-         * Defines a new property directly on an object, or modifies an existing property on an object, and returns the object.
+         * Defines a new property directly on an object, or modifies an existing property on an object,
+         * and returns the object.
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -2094,7 +2139,8 @@
          * @return {object}
          */
         // Create our own local "getOwnPropertyDescriptor" function: native -> sham
-        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey and Blackberry bug
+        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
+        // and Blackberry bug
         utilx.objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
@@ -2172,8 +2218,9 @@
         }());
 
         /**
-         * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties from being removed;
-         * and prevents existing properties, or their enumerability, configurability, or writability, from being changed.
+         * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties
+         * from being removed; and prevents existing properties, or their enumerability, configurability, or
+         * writability, from being changed.
          * In essence the object is made effectively immutable. Returns the object being frozen.
          * @memberOf utilx
          * @function
@@ -2382,7 +2429,8 @@
             var baseObjectPrototype = utilx.objectGetPrototypeOf(baseObject);
 
             return function (object) {
-                return utilx.isObject(object) && utilx.strictEqual(utilx.objectGetPrototypeOf(object), baseObjectPrototype);
+                return utilx.isObject(object) && utilx.strictEqual(utilx.objectGetPrototypeOf(object),
+                                                                   baseObjectPrototype);
             };
         }());
 
@@ -2434,7 +2482,8 @@
 
         /**
          * Takes string and puts a backslash in front of every character that is part of the regular expression syntax.
-         * This is useful if you have a run-time string that you need to match in some text and the string may contain special regex characters.
+         * This is useful if you have a run-time string that you need to match in some text and the string may contain
+         * special regex characters.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -2509,7 +2558,8 @@
             }
 
             if (utilx.isTrue(opts.strict)) {
-                if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)), utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
+                if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)),
+                                    utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
                     return false;
                 }
             } else {
@@ -2606,6 +2656,7 @@
             // http://kangax.github.io/nfe
             var supported = false,
                 stringifiedValue,
+                escapableStr,
                 escapable,
                 gap,
                 indent,
@@ -2633,7 +2684,8 @@
                             utilx.strictEqual(JSON.stringify(0), '0') &&
                             // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
                             // literals.
-                            utilx.strictEqual(JSON.stringify(new CtrNumber()), '0') && utilx.strictEqual(JSON.stringify(new CtrString()), '""') &&
+                            utilx.strictEqual(JSON.stringify(new CtrNumber()), '0') &&
+                            utilx.strictEqual(JSON.stringify(new CtrString()), '""') &&
                             // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
                             // does not define a canonical JSON representation (this applies to
                             // objects with `toJSON` properties as well, *unless* they are nested
@@ -2650,7 +2702,8 @@
                             // objects with custom `toJSON` methods as well, unless they are nested
                             // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
                             // methods entirely.
-                            utilx.strictEqual(JSON.stringify(stringifiedValue), '1') && utilx.strictEqual(JSON.stringify([stringifiedValue]), '[1]') &&
+                            utilx.strictEqual(JSON.stringify(stringifiedValue), '1') &&
+                            utilx.strictEqual(JSON.stringify([stringifiedValue]), '[1]') &&
                             // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
                             // `"[null]"`.
                             utilx.strictEqual(JSON.stringify([utilx.privateUndefined]), '[null]') &&
@@ -2661,7 +2714,8 @@
                             // of Firefox also allow trailing commas in JSON objects and arrays.
                             // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
                             // define custom `toJSON` methods.
-                            utilx.strictEqual(JSON.stringify([utilx.privateUndefined, isNaN, null]), '[null,null,null]') &&
+                            utilx.strictEqual(JSON.stringify([utilx.privateUndefined, isNaN, null]),
+                                              '[null,null,null]') &&
                             // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
                             // where character escape codes are expected (e.g., `\b` => `\u0008`).
                             // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
@@ -2670,7 +2724,8 @@
                                 'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
                             }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &&
                             // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                            utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') && utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
+                            utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') &&
+                            utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
                             // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
                             // serialize extended years.
                             utilx.strictEqual(JSON.stringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &&
@@ -2678,7 +2733,8 @@
                             utilx.strictEqual(JSON.stringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &&
                             // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
                             // four-digit years instead of six-digit years. Credits: @Yaffle.
-                            utilx.strictEqual(JSON.stringify(new Date(-621987552e5)), '"-000001-01-01T00:00:00.000Z"') &&
+                            utilx.strictEqual(JSON.stringify(new Date(-621987552e5)),
+                                              '"-000001-01-01T00:00:00.000Z"') &&
                             // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
                             // values less than 1000. Credits: @Yaffle.
                             utilx.strictEqual(JSON.stringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
@@ -2691,7 +2747,9 @@
             if (utilx.isTrue(supported)) {
                 tempSafariNFE = JSON.stringify;
             } else {
-                escapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
+                escapableStr = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
+                escapableStr += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+                escapable = new RegExp(escapableStr, 'g');
                 meta = {
                     '\b': '\\b',
                     '\t': '\\t',
@@ -2835,7 +2893,9 @@
                     }
 
                     rep = replacer;
-                    if (!utilx.isUndefinedOrNull(replacer) && !utilx.isFunction(replacer) && !utilx.arrayIsArray(replacer)) {
+                    if (!utilx.isUndefinedOrNull(replacer) && !utilx.isFunction(replacer) &&
+                            !utilx.arrayIsArray(replacer)) {
+
                         throw new Error('JSON.stringify');
                     }
 
@@ -2867,6 +2927,7 @@
                 rx2,
                 rx3,
                 rx4,
+                cxStr,
                 cx,
                 nfeJSONParse;
 
@@ -2881,7 +2942,8 @@
                         if (utilx.isZero(JSON.parse('0')) && utilx.isFalse(JSON.parse(false))) {
                             // Simple parsing test.
                             parsedValue = JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                            supported = utilx.strictEqual(parsedValue.A.length, 5) && utilx.strictEqual(parsedValue.A[0], 1);
+                            supported = utilx.strictEqual(parsedValue.A.length, 5);
+                            supported = supported && utilx.strictEqual(parsedValue.A[0], 1);
                             if (supported) {
                                 try {
                                     // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
@@ -2911,7 +2973,9 @@
                 rx2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
                 rx3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
                 rx4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
-                cx = new RegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
+                cxStr = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
+                cxStr += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+                cx = new RegExp(cxStr, 'g');
                 tempSafariNFE = function nfeJSONParse(text, reviver) {
                     var j;
 
@@ -3028,7 +3092,9 @@
             function replacer(key, value) {
                 /*jslint unparam: true */
                 /*jshint unused: true */
-                if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) || (utilx.isNumber(value) && !utilx.numberIsFinite(value))) {
+                if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) ||
+                        (utilx.isNumber(value) && !utilx.numberIsFinite(value))) {
+
                     return utilx.anyToString(value);
                 }
 
@@ -3099,22 +3165,28 @@
             }
 
             function customError(name, ErrorConstructor) {
-                if (!utilx.isString(name)) {
-                    throw new TypeError('"name" was not a string');
-                }
-
-                if (utilx.isEmptyString(name)) {
-                    throw new SyntaxError('"name" was an empty string');
-                }
-
-                if (!isOkToUseOtherErrors || utilx.isUndefined(ErrorConstructor)) {
-                    ErrorConstructor = Error;
-                }
-
-                if (!utilx.isUndefined(ErrorConstructor)) {
-                    if (utilx.isPrimitive(ErrorConstructor) || !utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
-                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
+                try {
+                    if (!utilx.isString(name)) {
+                        throw new TypeError('"name" was not a string');
                     }
+
+                    if (utilx.isEmptyString(name)) {
+                        throw new SyntaxError('"name" was an empty string');
+                    }
+
+                    if (!isOkToUseOtherErrors || utilx.isUndefined(ErrorConstructor)) {
+                        ErrorConstructor = Error;
+                    }
+
+                    if (!utilx.isUndefined(ErrorConstructor)) {
+                        if (utilx.isPrimitive(ErrorConstructor) || !utilx.isFunction(ErrorConstructor) ||
+                                !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
+
+                            throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
+                        }
+                    }
+                } catch (e) {
+                    throw e;
                 }
 
                 return makeCustomError(name, ErrorConstructor);
@@ -3149,7 +3221,9 @@
     }
 
     /*global module, define */
-    if (typeof module === 'object' && null !== module && typeof module.exports === 'object' && null !== module.exports) {
+    if (typeof module === 'object' && null !== module &&
+            typeof module.exports === 'object' && null !== module.exports) {
+
         module.exports = publicUtil;
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
         define(publicUtil);

@@ -10,6 +10,12 @@
         MyError = utilx.customError('MyError'),
         MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
 
+    /*
+    function Fn() {
+        return;
+    }
+    */
+
     describe('customError', function () {
         it('should not throw an error in each case', function () {
             expect(function () {
@@ -30,6 +36,7 @@
                 expect(e).to.be.a(SyntaxError);
             });
 
+            /*
             try {
                 utilx.customError('NullError', null);
             } catch (e) {
@@ -41,6 +48,19 @@
             } catch (e) {
                 expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
             }
+            */
+
+            expect(function () {
+                utilx.customError('NullError', null);
+            }).to.throwException(function (e) {
+                expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
+            });
+
+            expect(function () {
+                utilx.customError('FnError', utilx.noop);
+            }).to.throwException(function (e) {
+                expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
+            });
 
             expect(function () {
                 throw new MyError('test');
