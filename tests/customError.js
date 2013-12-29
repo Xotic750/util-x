@@ -80,18 +80,18 @@
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error)).to.be(true);
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError)).to.be(true);
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
+        });
 
-            describe('should detect what the environment supports', function () {
-                if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
-                    it('Environment supports other custom errors', function () {
-                        expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
-                    });
-                } else {
-                    it('Environment only supports custom Error', function () {
-                        expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
-                    });
-                }
-            });
+        describe('should detect what the environment supports', function () {
+            if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
+                it('Environment supports other custom errors', function () {
+                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
+                });
+            } else {
+                it('Environment only supports custom Error', function () {
+                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
+                });
+            }
         });
     });
 }());
