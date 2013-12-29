@@ -1816,6 +1816,18 @@
         }());
 
         /**
+         * Builds the test string used to determine if native trim is ES5.
+         * @private
+         * @function
+         * @param {string} previous
+         * @param {string} element
+         * @return {string}
+         */
+        function buildTestString(previous, element) {
+            return previous + String.fromCharCode(element);
+        }
+
+        /**
          * Removes whitespace from both ends of the string.
          * @memberOf utilx
          * @function
@@ -1860,12 +1872,7 @@
                 testString,
                 whiteSpacesString,
                 wsTrimRX,
-                nfeTrim,
-                buildWhiteSpaceString;
-
-            function buildTestString(previous, element) {
-                return previous + String.fromCharCode(element);
-            }
+                nfeTrim;
 
             testString = utilx.arrayReduce(whiteSpacesList, buildTestString, '');
             if (utilx.isFunction(trimFN) && utilx.isZero(trimFN.call(testString).length)) {
@@ -1873,11 +1880,10 @@
                     return trimFN.call(inputArg);
                 };
             } else {
-                buildWhiteSpaceString = function (previous, element) {
+                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, function (previous, element) {
                     return previous + '\\u' + utilx.padLeadingChar(element.toString(16), '0', 4);
-                };
+                }, '');
 
-                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, buildWhiteSpaceString, '');
                 wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
                 tempSafariNFE = function nfeTrim(inputArg) {
                     return utilx.anyToString(utilx.checkObjectCoercible(inputArg)).replace(wsTrimRX, '');
@@ -2381,6 +2387,16 @@
         }());
 
         /**
+         * The constructor used by utilx.objectCreate if shimmed.
+         * @private
+         * @constructor
+         * @return {object}
+         */
+        function ObjectCreateFunc() {
+            return;
+        }
+
+        /**
          * The utilx.objectCreate method creates a new object with the specified prototype object and properties.
          * @memberOf utilx
          * @function
@@ -2391,25 +2407,46 @@
         utilx.objectCreate = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var objectCreateFN = baseObject.constructor.create,
+            var objectCreateFN,
                 nfeObjectCreate,
-                Func;
+                newObject;
 
-            if (utilx.isFunction(objectCreateFN)) {
+            try {
+                objectCreateFN = baseObject.constructor.create;
+                objectCreateFN(ObjectCreateFunc.prototype, {
+                    constructor: {
+                        value: ObjectCreateFunc,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    }
+                });
+
                 tempSafariNFE = objectCreateFN;
-            } else if (utilx.isFunction(utilx.objectGetPrototypeOf)) {
-                Func = function () {
-                    return;
-                };
-
-                tempSafariNFE = function nfeObjectCreate(prototype) {
-                    if (utilx.notStrictEqual(arguments.length, 1)) {
-                        throw new Error('Object.create implementation only accepts one parameter.');
+            } catch (e) {
+                tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
+                    if (!utilx.isTypeObject(prototype) && !utilx.isFunction(prototype)) {
+                        throw new TypeError('Object prototype may only be an Object, but not null.');
                     }
 
-                    Func.prototype = prototype;
+                    if (!utilx.isUndefined(propertiesObject) && !utilx.isPlainObject(propertiesObject)) {
+                        throw new TypeError('propertiesObject may only be a plain object.');
+                    }
 
-                    return new Func();
+                    ObjectCreateFunc.prototype = prototype;
+                    newObject = new ObjectCreateFunc();
+                    utilx.objectDefineProperty(newObject, protoName, {
+                        value: prototype,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    });
+
+                    if (utilx.isPlainObject(propertiesObject)) {
+                        utilx.objectDefineProperties(newObject, propertiesObject);
+                    }
+
+                    return newObject;
                 };
             }
 
@@ -3069,14 +3106,15 @@
             }
 
             /*jslint nomen: true */
-            //ctor.super_ = superCtor;
+            ctor.super_ = superCtor;
             /*jslint nomen: false */
-            ctor.prototype = utilx.objectCreate(superCtor.prototype);
-            utilx.objectDefineProperty(ctor.prototype, 'constructor', {
-                value: ctor,
-                enumerable: false,
-                writable: true,
-                configurable: true
+            ctor.prototype = utilx.objectCreate(superCtor.prototype, {
+                constructor: {
+                    value: ctor,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                }
             });
         };
 
