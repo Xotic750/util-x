@@ -20,13 +20,13 @@
             expect(function () {
                 utilx.jsonParse();
             }).to.throwException(function (e) {
-                expect(e).to.be.a(SyntaxError);
+                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
             });
 
             expect(function () {
                 utilx.jsonParse(utilx.privateUndefined);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(SyntaxError);
+                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
             });
 
             expect(function () {
