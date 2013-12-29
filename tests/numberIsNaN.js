@@ -1,30 +1,30 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('numberIsNaN', function (t) {
-        t.strictEqual(utilx.numberIsNaN(), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(privateUndefined), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(null), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(1), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(Infinity), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(-Infinity), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(NaN), true, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(''), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(true), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(false), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(utilx.noop), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN({}), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN([]), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(new RegExp('c')), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(new Date(2013, 11, 23)), false, 'numberIsNaN');
-        t.strictEqual(utilx.numberIsNaN(new Error('x')), false, 'numberIsNaN');
-
-        t.end();
+    describe('numberIsNaN', function () {
+        it('should not throw an error in each case', function () {
+            expect(utilx.numberIsNaN()).to.be(false);
+            expect(utilx.numberIsNaN(privateUndefined)).to.be(false);
+            expect(utilx.numberIsNaN(null)).to.be(false);
+            expect(utilx.numberIsNaN(1)).to.be(false);
+            expect(utilx.numberIsNaN(Infinity)).to.be(false);
+            expect(utilx.numberIsNaN(-Infinity)).to.be(false);
+            expect(utilx.numberIsNaN(NaN)).to.be(true);
+            expect(utilx.numberIsNaN('')).to.be(false);
+            expect(utilx.numberIsNaN(true)).to.be(false);
+            expect(utilx.numberIsNaN(false)).to.be(false);
+            expect(utilx.numberIsNaN(utilx.noop)).to.be(false);
+            expect(utilx.numberIsNaN({})).to.be(false);
+            expect(utilx.numberIsNaN([])).to.be(false);
+            expect(utilx.numberIsNaN(new RegExp('c'))).to.be(false);
+            expect(utilx.numberIsNaN(new Date(2013, 11, 11))).to.be(false);
+            expect(utilx.numberIsNaN(new Error('x'))).to.be(false);
+        });
     });
 }());

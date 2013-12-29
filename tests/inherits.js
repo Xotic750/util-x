@@ -1,11 +1,11 @@
-/*global require */
+/*global require, describe, it */
 
 (function () {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
     function Test() {
         return;
@@ -38,17 +38,17 @@
 
     utilx.inherits(Tested, Test);
 
-    test('inherits', function (t) {
-        t.notStrictEqual(Tested.prototype, Test.prototype, 'inherits');
-        t.strictEqual(Tested.prototype.foo, Test.prototype.foo, 'inherits');
-        t.strictEqual(Tested.prototype.bar, Test.prototype.bar, 'inherits');
-        t.strictEqual(Tested.prototype.flum, Test.prototype.flum, 'inherits');
-        t.strictEqual(Tested.prototype.wiz, Test.prototype.wiz, 'inherits');
-        t.strictEqual(Tested.prototype.constructor, Tested, 'inherits');
-        t.deepEqual(utilx.objectGetOwnPropertyDescriptor(Tested.prototype), utilx.objectGetOwnPropertyDescriptor(Test.prototype), 'inherits');
-        t.deepEqual(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.flum), utilx.objectGetOwnPropertyDescriptor(Test.prototype.flum), 'inherits');
-        t.deepEqual(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.wiz), utilx.objectGetOwnPropertyDescriptor(Test.prototype.wiz), 'inherits');
-
-        t.end();
+    describe('inherits', function () {
+        it('should not throw an error in each case', function () {
+            expect(Tested.prototype).not.to.be(Test.prototype);
+            expect(Tested.prototype.foo).to.be(Test.prototype.foo);
+            expect(Tested.prototype.bar).to.be(Test.prototype.bar);
+            expect(Tested.prototype.flum).to.be(Test.prototype.flum);
+            expect(Tested.prototype.wiz).to.be(Test.prototype.wiz);
+            expect(Tested.prototype.constructor).to.be(Tested);
+            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype));
+            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.flum)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.flum));
+            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.wiz)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.wiz));
+        });
     });
 }());

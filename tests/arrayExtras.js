@@ -1,34 +1,34 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
     function returnArgs() {
         return arguments;
     }
 
-    test('Array extras', function (t) {
+    describe('Array extras', function () {
         var testArray1 = [],
             testArray2 = [privateUndefined, privateUndefined],
             testArray3 = [1, 2, 3],
             testArgs = returnArgs(1, 2, 3);
 
-        t.strictEqual(utilx.arrayFirst(), privateUndefined, 'arrayFirst');
-        t.strictEqual(utilx.arrayFirst(testArray1), privateUndefined, 'arrayFirst');
-        t.strictEqual(utilx.arrayFirst(testArray2), privateUndefined, 'arrayFirst');
-        t.strictEqual(utilx.arrayFirst(testArray3), 1, 'arrayFirst');
-        t.strictEqual(utilx.arrayFirst(testArgs), 1, 'arrayFirst');
+        it('should not throw an error in each case', function () {
+            expect(utilx.arrayFirst()).to.be(privateUndefined);
+            expect(utilx.arrayFirst(testArray1)).to.be(privateUndefined);
+            expect(utilx.arrayFirst(testArray2)).to.be(privateUndefined);
+            expect(utilx.arrayFirst(testArray3)).to.be(1);
+            expect(utilx.arrayFirst(testArgs)).to.be(1);
 
-        t.strictEqual(utilx.arrayLast(), privateUndefined, 'arrayLast');
-        t.strictEqual(utilx.arrayLast(testArray1), privateUndefined, 'arrayLast');
-        t.strictEqual(utilx.arrayLast(testArray2), privateUndefined, 'arrayLast');
-        t.strictEqual(utilx.arrayLast(testArray3), 3, 'arrayLast');
-        t.strictEqual(utilx.arrayLast(testArgs), 3, 'arrayLast');
-
-        t.end();
+            expect(utilx.arrayLast()).to.be(privateUndefined);
+            expect(utilx.arrayLast(testArray1)).to.be(privateUndefined);
+            expect(utilx.arrayLast(testArray2)).to.be(privateUndefined);
+            expect(utilx.arrayLast(testArray3)).to.be(3);
+            expect(utilx.arrayLast(testArgs)).to.be(3);
+        });
     });
 }());

@@ -1,83 +1,82 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('arrayReduce', function (t) {
+    describe('arrayReduce', function () {
         var lastIndex = Math.pow(2, 32) - 1,
             reduceArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
             testIndex;
 
         reduceArray[24] = NaN;
         reduceArray[25] = 'end';
+        it('should not throw an error in each case', function () {
+            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
+                expect(array).to.be(reduceArray);
+                expect(typeof index).to.be('number');
+                expect(index >= 0).to.be(true);
+                expect(index <= lastIndex).to.be(true);
+                if (typeof element === 'number' && isNaN(element)) {
+                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
+                } else {
+                    expect(element).to.be(reduceArray[index]);
+                }
 
-        t.strictEqual(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-            t.strictEqual(array, reduceArray, 'arrayReduce');
-            t.strictEqual(typeof index, 'number', 'arrayReduce');
-            t.strictEqual(index >= 0, true, 'arrayReduce');
-            t.strictEqual(index <= lastIndex, true, 'arrayReduce');
-            if (typeof element === 'number' && isNaN(element)) {
-                t.strictEqual(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index]), true, 'arrayReduce');
-            } else {
-                t.strictEqual(element, reduceArray[index], 'arrayReduce');
-            }
+                testIndex = index;
+                if (element === privateUndefined || null === element) {
+                    return previous;
+                }
 
-            testIndex = index;
-            if (element === privateUndefined || null === element) {
-                return previous;
-            }
+                return previous + ',' + element;
+            })).to.be('undefined,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
 
-            return previous + ',' + element;
-        }), 'undefined,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','), 'arrayReduce return');
+            expect(testIndex).to.be(reduceArray.length - 1);
 
-        t.strictEqual(testIndex, reduceArray.length - 1, 'arrayReduce');
+            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
+                expect(array).to.be(reduceArray);
+                expect(typeof index).to.be('number');
+                expect(index >= 0).to.be(true);
+                expect(index <= lastIndex).to.be(true);
+                if (typeof element === 'number' && isNaN(element)) {
+                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
+                } else {
+                    expect(element).to.be(reduceArray[index]);
+                }
 
-        t.strictEqual(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-            t.strictEqual(array, reduceArray, 'arrayReduce');
-            t.strictEqual(typeof index, 'number', 'arrayReduce');
-            t.strictEqual(index >= 0, true, 'arrayReduce');
-            t.strictEqual(index <= lastIndex, true, 'arrayReduce');
-            if (typeof element === 'number' && isNaN(element)) {
-                t.strictEqual(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index]), true, 'arrayReduce');
-            } else {
-                t.strictEqual(element, reduceArray[index], 'arrayReduce');
-            }
+                testIndex = index;
+                if (element === privateUndefined || null === element) {
+                    return previous;
+                }
 
-            testIndex = index;
-            if (element === privateUndefined || null === element) {
-                return previous;
-            }
+                return previous + ',' + element;
+            }, null)).to.be('null,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
 
-            return previous + ',' + element;
-        }, null), 'null,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','), 'arrayReduce return');
+            expect(testIndex).to.be(reduceArray.length - 1);
 
-        t.strictEqual(testIndex, reduceArray.length - 1, 'arrayReduce');
+            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
+                expect(array).to.be(reduceArray);
+                expect(typeof index).to.be('number');
+                expect(index >= 0).to.be(true);
+                expect(index <= lastIndex).to.be(true);
+                if (typeof element === 'number' && isNaN(element)) {
+                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
+                } else {
+                    expect(element).to.be(reduceArray[index]);
+                }
 
-        t.strictEqual(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-            t.strictEqual(array, reduceArray, 'arrayReduce');
-            t.strictEqual(typeof index, 'number', 'arrayReduce');
-            t.strictEqual(index >= 0, true, 'arrayReduce');
-            t.strictEqual(index <= lastIndex, true, 'arrayReduce');
-            if (typeof element === 'number' && isNaN(element)) {
-                t.strictEqual(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index]), true, 'arrayReduce');
-            } else {
-                t.strictEqual(element, reduceArray[index], 'arrayReduce');
-            }
+                testIndex = index;
+                if (element === privateUndefined || null === element) {
+                    return previous;
+                }
 
-            testIndex = index;
-            if (element === privateUndefined || null === element) {
-                return previous;
-            }
+                return previous + ',' + element;
+            }, '').slice(1)).to.be(reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
 
-            return previous + ',' + element;
-        }, '').slice(1), reduceArray.toString().replace(new RegExp(',+', 'g'), ','), 'arrayReduce return');
-
-        t.strictEqual(testIndex, reduceArray.length - 1, 'arrayReduce');
-
-        t.end();
+            expect(testIndex).to.be(reduceArray.length - 1);
+        });
     });
 }());

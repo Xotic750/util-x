@@ -1,31 +1,31 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
     function returnArgs() {
         return arguments;
     }
 
-    test('toObjectString', function (t) {
-        t.strictEqual(utilx.toObjectString(), '[object Undefined]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(privateUndefined), '[object Undefined]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(null), '[object Null]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(1), '[object Number]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(true), '[object Boolean]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString('x'), '[object String]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString([1, 2, 3]), '[object Array]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(returnArgs()), '[object Arguments]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString({}), '[object Object]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(utilx.noop), '[object Function]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(new RegExp('c')), '[object RegExp]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(new Date()), '[object Date]', 'toObjectString');
-        t.strictEqual(utilx.toObjectString(new Error('x')), '[object Error]', 'toObjectString');
-
-        t.end();
+    describe('toObjectString', function () {
+        it('should not throw an error in each case', function () {
+            expect(utilx.toObjectString()).to.be('[object Undefined]');
+            expect(utilx.toObjectString(privateUndefined)).to.be('[object Undefined]');
+            expect(utilx.toObjectString(null)).to.be('[object Null]');
+            expect(utilx.toObjectString(1)).to.be('[object Number]');
+            expect(utilx.toObjectString(true)).to.be('[object Boolean]');
+            expect(utilx.toObjectString('x')).to.be('[object String]');
+            expect(utilx.toObjectString([1, 2, 3])).to.be('[object Array]');
+            expect(utilx.toObjectString(returnArgs())).to.be('[object Arguments]');
+            expect(utilx.toObjectString({})).to.be('[object Object]');
+            expect(utilx.toObjectString(utilx.noop)).to.be('[object Function]');
+            expect(utilx.toObjectString(new RegExp('c'))).to.be('[object RegExp]');
+            expect(utilx.toObjectString(new Date())).to.be('[object Date]');
+            expect(utilx.toObjectString(new Error('x'))).to.be('[object Error]');
+        });
     });
 }());

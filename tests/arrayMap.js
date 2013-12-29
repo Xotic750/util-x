@@ -1,37 +1,37 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('arrayMap', function (t) {
+    describe('arrayMap', function () {
         var lastIndex = Math.pow(2, 32) - 1,
             mapArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
             testIndex;
 
         mapArray[24] = NaN;
         mapArray[25] = 'end';
-        t.strictEqual(utilx.arrayMap(mapArray, function (element, index, array) {
-            t.strictEqual(array, mapArray, 'arrayMap');
-            t.strictEqual(typeof index, 'number', 'arrayMap');
-            t.strictEqual(index >= 0, true, 'arrayMap');
-            t.strictEqual(index <= lastIndex, true, 'arrayMap');
-            if (typeof element === 'number' && isNaN(element)) {
-                t.strictEqual(typeof mapArray[index] === 'number' && isNaN(mapArray[index]), true, 'arrayMap');
-            } else {
-                t.strictEqual(element, mapArray[index], 'arrayMap');
-            }
+        it('should not throw an error in each case', function () {
+            expect(utilx.arrayMap(mapArray, function (element, index, array) {
+                expect(array).to.be(mapArray);
+                expect(typeof index).to.be('number');
+                expect(index >= 0).to.be(true);
+                expect(index <= lastIndex).to.be(true);
+                if (typeof element === 'number' && isNaN(element)) {
+                    expect(typeof mapArray[index] === 'number' && isNaN(mapArray[index])).to.be(true);
+                } else {
+                    expect(element).to.be(mapArray[index]);
+                }
 
-            testIndex = index;
+                testIndex = index;
 
-            return element;
-        }).toString(), mapArray.toString(), 'arrayMap return');
+                return element;
+            }).toString()).to.be(mapArray.toString());
 
-        t.strictEqual(testIndex, mapArray.length - 1, 'arrayMap');
-
-        t.end();
+            expect(testIndex).to.be(mapArray.length - 1);
+        });
     });
 }());

@@ -1,77 +1,83 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('checkObjectCoercible', function (t) {
-        t.throws(function () {
-            utilx.checkObjectCoercible();
-        }, TypeError, 'checkObjectCoercible');
+    describe('checkObjectCoercible', function () {
+        it('should not throw an error in each case', function () {
+            expect(function () {
+                utilx.checkObjectCoercible();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.checkObjectCoercible(privateUndefined);
-        }, TypeError, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(privateUndefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.checkObjectCoercible(null);
-        }, TypeError, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(-1);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(-1);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(0);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(0);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(1);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(1);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(NaN);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(NaN);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(Infinity);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(Infinity);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(-Infinity);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(-Infinity);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(true);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(true);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(false);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(false);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible('');
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible('');
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible('x');
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible('x');
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(utilx.noop);
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(utilx.noop);
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(new RegExp('y'));
-        }, privateUndefined, 'checkObjectCoercible');
+            expect(function () {
+                utilx.checkObjectCoercible(new RegExp('y'));
+            }).to.not.throwException();
 
-        t.doesNotThrow(function () {
-            utilx.checkObjectCoercible(new Date());
-        }, privateUndefined, 'checkObjectCoercible');
-
-        t.end();
+            expect(function () {
+                utilx.checkObjectCoercible(new Date());
+            }).to.not.throwException();
+        });
     });
 }());

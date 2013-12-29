@@ -1,41 +1,49 @@
-/*global require */
+/*global require, describe, it */
 
 (function () {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('jsonParse', function (t) {
-        t.strictEqual(utilx.jsonParse(null), null, 'jsonParse');
-        t.strictEqual(utilx.jsonParse('-1'), -1, 'jsonParse');
-        t.strictEqual(utilx.jsonParse('0'), 0, 'jsonParse');
-        t.strictEqual(utilx.jsonParse('1'), 1, 'jsonParse');
-        t.strictEqual(utilx.jsonParse(false), false, 'jsonParse');
-        t.strictEqual(utilx.jsonParse(true), true, 'jsonParse');
-        t.strictEqual(utilx.jsonParse('null'), null, 'jsonParse');
+    describe('jsonParse', function () {
+        it('should not throw an error in each case', function () {
+            expect(utilx.jsonParse(null)).to.be(null);
+            expect(utilx.jsonParse('-1')).to.be(-1);
+            expect(utilx.jsonParse('0')).to.be(0);
+            expect(utilx.jsonParse('1')).to.be(1);
+            expect(utilx.jsonParse(false)).to.be(false);
+            expect(utilx.jsonParse(true)).to.be(true);
+            expect(utilx.jsonParse('null')).to.be(null);
 
-        t.throws(function () {
-            utilx.jsonParse();
-        }, SyntaxError, 'jsonParse');
+            expect(function () {
+                utilx.jsonParse();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-        t.throws(function () {
-            utilx.jsonParse(utilx.privateUndefined);
-        }, SyntaxError, 'jsonParse');
+            expect(function () {
+                utilx.jsonParse(utilx.privateUndefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-        t.throws(function () {
-            utilx.jsonParse('');
-        }, SyntaxError, 'jsonParse');
+            expect(function () {
+                utilx.jsonParse('');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-        t.throws(function () {
-            utilx.jsonParse('{"A": undefined}');
-        }, SyntaxError, 'jsonParse');
+            expect(function () {
+                utilx.jsonParse('{"A": undefined}');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-        t.deepEqual(utilx.jsonParse('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}'), {
-            'A': [1, true, false, null, '\u0000\b\n\f\r\t']
-        }, 'jsonParse');
-
-        t.end();
+            expect(utilx.jsonParse('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}')).to.eql({
+                'A': [1, true, false, null, '\u0000\b\n\f\r\t']
+            });
+        });
     });
 }());

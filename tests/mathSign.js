@@ -1,32 +1,32 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('mathSign', function (t) {
-        t.strictEqual(isNaN(utilx.mathSign()), true, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign(privateUndefined)), true, 'mathSign');
-        t.strictEqual(utilx.mathSign(null), 0, 'mathSign');
-        t.strictEqual(utilx.mathSign(-1), -1, 'mathSign');
-        t.strictEqual(utilx.mathSign(0), 0, 'mathSign');
-        t.strictEqual(utilx.mathSign(1), 1, 'mathSign');
-        t.strictEqual(utilx.mathSign(Infinity), 1, 'mathSign');
-        t.strictEqual(utilx.mathSign(-Infinity), -1, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign(NaN)), true, 'mathSign');
-        t.strictEqual(utilx.mathSign(''), 0, 'mathSign');
-        t.strictEqual(utilx.mathSign(true), 1, 'mathSign');
-        t.strictEqual(utilx.mathSign(false), 0, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign(utilx.noop)), true, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign({})), true, 'mathSign');
-        t.strictEqual(utilx.mathSign([]), 0, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign(new RegExp('c'))), true, 'mathSign');
-        t.strictEqual(utilx.mathSign(new Date(2013, 11, 23)), 1, 'mathSign');
-        t.strictEqual(isNaN(utilx.mathSign(new Error('x'))), true, 'mathSign');
-
-        t.end();
+    describe('mathSign', function () {
+        it('should not throw an error in each case', function () {
+            expect(isNaN(utilx.mathSign())).to.be(true);
+            expect(isNaN(utilx.mathSign(privateUndefined))).to.be(true);
+            expect(utilx.mathSign(null)).to.be(0);
+            expect(utilx.mathSign(-1)).to.be(-1);
+            expect(utilx.mathSign(0)).to.be(0);
+            expect(utilx.mathSign(1)).to.be(1);
+            expect(utilx.mathSign(Infinity)).to.be(1);
+            expect(utilx.mathSign(-Infinity)).to.be(-1);
+            expect(isNaN(utilx.mathSign(NaN))).to.be(true);
+            expect(utilx.mathSign('')).to.be(0);
+            expect(utilx.mathSign(true)).to.be(1);
+            expect(utilx.mathSign(false)).to.be(0);
+            expect(isNaN(utilx.mathSign(utilx.noop))).to.be(true);
+            expect(isNaN(utilx.mathSign({}))).to.be(true);
+            expect(utilx.mathSign([])).to.be(0);
+            expect(isNaN(utilx.mathSign(new RegExp('c')))).to.be(true);
+            expect(utilx.mathSign(new Date(2013, 11, 11))).to.be(1);
+            expect(isNaN(utilx.mathSign(new Error('x')))).to.be(true);
+        });
     });
 }());

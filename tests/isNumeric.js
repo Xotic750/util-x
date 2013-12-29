@@ -1,84 +1,134 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('isNumeric - Integer Literals', function (t) {
-        t.ok(utilx.isNumeric('-10'), 'Negative integer string');
-        t.ok(utilx.isNumeric('0'), 'Zero string');
-        t.ok(utilx.isNumeric('5'), 'Positive integer string');
-        t.ok(utilx.isNumeric(-16), 'Negative integer number');
-        t.ok(utilx.isNumeric(0), 'Zero integer number');
-        t.ok(utilx.isNumeric(32), 'Positive integer number');
-        t.ok(utilx.isNumeric('040'), 'Octal integer literal string');
-        //t.ok(utilx.isNumeric(0144), 'Octal integer literal');
-        t.ok(utilx.isNumeric('-040'), 'Negative Octal integer literal string');
-        //t.ok(utilx.isNumeric(-0144), 'Negative Octal integer literal');
-        t.ok(utilx.isNumeric('0xFF'), 'Hexadecimal integer literal string');
-        t.ok(utilx.isNumeric(0xFFF), 'Hexadecimal integer literal');
-        t.ok(utilx.isNumeric('-0xFF'), 'Negative Hexadecimal integer literal string');
-        t.ok(utilx.isNumeric(-0xFFF), 'Negative Hexadecimal integer literal');
-
-        t.end();
+    describe('isNumeric - Integer Literals', function () {
+        it('should not throw an error in each case', function () {
+            // Negative integer string
+            expect(utilx.isNumeric('-10')).to.be.ok();
+            // Zero string
+            expect(utilx.isNumeric('0')).to.be.ok();
+            // Positive integer string
+            expect(utilx.isNumeric('5')).to.be.ok();
+            // Negative integer number
+            expect(utilx.isNumeric(-16)).to.be.ok();
+            // Zero integer number
+            expect(utilx.isNumeric(0)).to.be.ok();
+            // Positive integer number
+            expect(utilx.isNumeric(32)).to.be.ok();
+            // Octal integer literal string
+            expect(utilx.isNumeric('040')).to.be.ok();
+            //t.ok(utilx.isNumeric(0144), 'Octal integer literal');
+            // Negative Octal integer literal string
+            expect(utilx.isNumeric('-040')).to.be.ok();
+            //t.ok(utilx.isNumeric(-0144), 'Negative Octal integer literal');
+            // Hexadecimal integer literal string
+            expect(utilx.isNumeric('0xFF')).to.be.ok();
+            // Hexadecimal integer literal
+            expect(utilx.isNumeric(0xFFF)).to.be.ok();
+            // Negative Hexadecimal integer literal string
+            expect(utilx.isNumeric('-0xFF')).to.be.ok();
+            // Negative Hexadecimal integer literal
+            expect(utilx.isNumeric(-0xFFF)).to.be.ok();
+        });
     });
 
-    test('isNumeric - Foating-Point Literals', function (t) {
-        t.ok(utilx.isNumeric('-1.6'), 'Negative floating point string');
-        t.ok(utilx.isNumeric('4.536'), 'Positive floating point string');
-        t.ok(utilx.isNumeric(-2.6), 'Negative floating point number');
-        t.ok(utilx.isNumeric(3.1415), 'Positive floating point number');
-        t.ok(utilx.isNumeric(8e5), 'Exponential notation');
-        t.ok(utilx.isNumeric('123e-2'), 'Exponential notation string');
-
-        t.end();
+    describe('isNumeric - Foating-Point Literals', function () {
+        it('should not throw an error in each case', function () {
+            // Negative floating point string
+            expect(utilx.isNumeric('-1.6')).to.be.ok();
+            // Positive floating point string
+            expect(utilx.isNumeric('4.536')).to.be.ok();
+            // Negative floating point number
+            expect(utilx.isNumeric(-2.6)).to.be.ok();
+            // Positive floating point number
+            expect(utilx.isNumeric(3.1415)).to.be.ok();
+            // Exponential notation
+            expect(utilx.isNumeric(8e5)).to.be.ok();
+            // Exponential notation string
+            expect(utilx.isNumeric('123e-2')).to.be.ok();
+        });
     });
 
-    test('isNumeric - Non-Numeric values', function (t) {
-        t.strictEqual(utilx.isNumeric(''), false, 'Empty string');
-        t.strictEqual(utilx.isNumeric('        '), false, 'Whitespace characters string');
-        t.strictEqual(utilx.isNumeric('\t\t'), false, 'Tab characters string');
-        t.strictEqual(utilx.isNumeric('abcdefghijklm1234567890'), false, 'Alphanumeric character string');
-        t.strictEqual(utilx.isNumeric('xabcdefx'), false, 'Non-numeric character string');
-        t.strictEqual(utilx.isNumeric(true), false, 'Boolean true literal');
-        t.strictEqual(utilx.isNumeric(false), false, 'Boolean false literal');
-        t.strictEqual(utilx.isNumeric('bcfed5.2'), false, 'Number with preceding non-numeric characters');
-        t.strictEqual(utilx.isNumeric('7.2acdgs'), false, 'Number with trailling non-numeric characters');
-        t.strictEqual(utilx.isNumeric(privateUndefined), false, 'Undefined value');
-        t.strictEqual(utilx.isNumeric(null), false, 'Null value');
-        t.strictEqual(utilx.isNumeric(NaN), false, 'NaN value');
-        t.strictEqual(utilx.isNumeric(Infinity), false, 'Infinity primitive');
-        t.strictEqual(utilx.isNumeric(Number.POSITIVE_INFINITY), false, 'Positive Infinity');
-        t.strictEqual(utilx.isNumeric(Number.NEGATIVE_INFINITY), false, 'Negative Infinity');
-        t.strictEqual(utilx.isNumeric(new Date(2009, 1, 1)), false, 'Date object');
-        t.strictEqual(utilx.isNumeric({}), false, 'Empty object');
-        t.strictEqual(utilx.isNumeric(utilx.noop), false, 'Instance of a function');
-        t.strictEqual(utilx.isNumeric([]), false, 'Empty Array');
-        t.strictEqual(utilx.isNumeric(['-10']), false, 'Array Negative integer string');
-        t.strictEqual(utilx.isNumeric(['0']), false, 'Array Zero string');
-        t.strictEqual(utilx.isNumeric(['5']), false, 'Array Positive integer string');
-        t.strictEqual(utilx.isNumeric([-16]), false, 'Array Negative integer number');
-        t.strictEqual(utilx.isNumeric([0]), false, 'Array Zero integer number');
-        t.strictEqual(utilx.isNumeric([32]), false, 'Array Positive integer number');
-        t.strictEqual(utilx.isNumeric(['040']), false, 'Array Octal integer literal string');
-        //t.strictEqual(utilx.isNumeric([0144]), false, 'Array Octal integer literal');
-        t.strictEqual(utilx.isNumeric(['-040']), false, 'Array Negative Octal integer literal string');
-        //t.strictEqual(utilx.isNumeric([-0144]), false, 'Array Negative Octal integer literal');
-        t.strictEqual(utilx.isNumeric(['0xFF']), false, 'Array Hexadecimal integer literal string');
-        t.strictEqual(utilx.isNumeric([0xFFF]), false, 'Array Hexadecimal integer literal');
-        t.strictEqual(utilx.isNumeric(['-0xFF']), false, 'Array Negative Hexadecimal integer literal string');
-        t.strictEqual(utilx.isNumeric([-0xFFF]), false, 'Array Negative Hexadecimal integer literal');
-        t.strictEqual(utilx.isNumeric([1, 2]), false, 'Array with more than 1 Positive interger number');
-        t.strictEqual(utilx.isNumeric([-1, -2]), false, 'Array with more than 1 Negative interger number');
-        t.strictEqual(utilx.isNumeric({
-            toString: function () {
-                return '1.2';
-            }
-        }), false, 'Functions that could be considered numbers');
-
-        t.end();
+    describe('isNumeric - Non-Numeric values', function () {
+        it('should not throw an error in each case', function () {
+            // Empty string
+            expect(utilx.isNumeric('')).to.not.be.ok();
+            // Whitespace characters string
+            expect(utilx.isNumeric('        ')).to.not.be.ok();
+            // Tab characters string
+            expect(utilx.isNumeric('\t\t')).to.not.be.ok();
+            // Alphanumeric character string
+            expect(utilx.isNumeric('abcdefghijklm1234567890')).to.not.be.ok();
+            // Non-numeric character string
+            expect(utilx.isNumeric('xabcdefx')).to.not.be.ok();
+            // Boolean true literal
+            expect(utilx.isNumeric(true)).to.not.be.ok();
+            // Boolean false literal
+            expect(utilx.isNumeric(false)).to.not.be.ok();
+            // Number with preceding non-numeric characters
+            expect(utilx.isNumeric('bcfed5.2')).to.not.be.ok();
+            // Number with trailling non-numeric characters
+            expect(utilx.isNumeric('7.2acdgs')).to.not.be.ok();
+            // Undefined value
+            expect(utilx.isNumeric(privateUndefined)).to.not.be.ok();
+            // Null value
+            expect(utilx.isNumeric(null)).to.not.be.ok();
+            // NaN value
+            expect(utilx.isNumeric(NaN)).to.not.be.ok();
+            // Infinity primitive
+            expect(utilx.isNumeric(Infinity)).to.not.be.ok();
+            // Positive Infinity
+            expect(utilx.isNumeric(Number.POSITIVE_INFINITY)).to.not.be.ok();
+            // Negative Infinity
+            expect(utilx.isNumeric(Number.NEGATIVE_INFINITY)).to.not.be.ok();
+            // Date object
+            expect(utilx.isNumeric(new Date(2009, 1, 1))).to.not.be.ok();
+            // Empty object
+            expect(utilx.isNumeric({})).to.not.be.ok();
+            // Instance of a function
+            expect(utilx.isNumeric(utilx.noop)).to.not.be.ok();
+            // Empty Array
+            expect(utilx.isNumeric([])).to.not.be.ok();
+            // Array Negative integer string
+            expect(utilx.isNumeric(['-10'])).to.not.be.ok();
+            // Array Zero string
+            expect(utilx.isNumeric(['0'])).to.not.be.ok();
+            // Array Positive integer string
+            expect(utilx.isNumeric(['5'])).to.not.be.ok();
+            // Array Negative integer number
+            expect(utilx.isNumeric([-16])).to.not.be.ok();
+            // Array Zero integer number
+            expect(utilx.isNumeric([0])).to.not.be.ok();
+            // Array Positive integer number
+            expect(utilx.isNumeric([32])).to.not.be.ok();
+            // Array Octal integer literal string
+            expect(utilx.isNumeric(['040'])).to.not.be.ok();
+            // Array Negative Octal integer literal string
+            expect(utilx.isNumeric(['-040'])).to.not.be.ok();
+            // Array Hexadecimal integer literal string
+            expect(utilx.isNumeric(['0xFF'])).to.not.be.ok();
+            // Array Hexadecimal integer literal
+            expect(utilx.isNumeric([0xFFF])).to.not.be.ok();
+            // Array Negative Hexadecimal integer literal string
+            expect(utilx.isNumeric(['-0xFF'])).to.not.be.ok();
+            // Array Negative Hexadecimal integer literal
+            expect(utilx.isNumeric([-0xFFF])).to.not.be.ok();
+            // Array with more than 1 Positive interger number
+            expect(utilx.isNumeric([1, 2])).to.not.be.ok();
+            // Array with more than 1 Negative interger number
+            expect(utilx.isNumeric([-1, -2])).to.not.be.ok();
+            // Functions that could be considered numbers
+            expect(utilx.isNumeric({
+                toString: function () {
+                    return '1.2';
+                }
+            })).to.not.be.ok();
+        });
     });
 }());

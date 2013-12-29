@@ -1,36 +1,41 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    test('toObjectFixIndexedAccess', function (t) {
-        t.throws(function () {
-            utilx.toObjectFixIndexedAccess();
-        }, TypeError, 'toObjectFixIndexedAccess');
+    describe('toObjectFixIndexedAccess', function () {
+        it('should not throw an error in each case', function () {
+            expect(function () {
+                utilx.toObjectFixIndexedAccess();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.toObjectFixIndexedAccess(privateUndefined);
-        }, TypeError, 'toObjectFixIndexedAccess');
+            expect(function () {
+                utilx.toObjectFixIndexedAccess(privateUndefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.toObjectFixIndexedAccess(null);
-        }, TypeError, 'toObjectFixIndexedAccess');
+            expect(function () {
+                utilx.toObjectFixIndexedAccess(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(1), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(true), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(''), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess([]), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess({}), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(Object('a')), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(utilx.noop), 'function', 'toObjectFixIndexedAccess');
-        t.strictEqual(typeof utilx.toObjectFixIndexedAccess(new Date()), 'object', 'toObjectFixIndexedAccess');
-        t.strictEqual(utilx.toObjectFixIndexedAccess(new RegExp('c')).toString(), '/c/', 'toObjectFixIndexedAccess');
-
-
-        t.end();
+            expect(typeof utilx.toObjectFixIndexedAccess(1)).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess(true)).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess('')).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess([])).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess({})).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess(Object('a'))).to.be('object');
+            expect(typeof utilx.toObjectFixIndexedAccess(utilx.noop)).to.be('function');
+            expect(typeof utilx.toObjectFixIndexedAccess(new Date())).to.be('object');
+            expect(utilx.toObjectFixIndexedAccess(new RegExp('c')).toString()).to.be('/c/');
+        });
     });
 }());

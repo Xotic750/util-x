@@ -1,21 +1,13 @@
-/*global require */
+/*global require, describe, it */
 
 (function (privateUndefined) {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test;
+        expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
-    function X() {
-        return;
-    }
-
-    test('objectKeys', function (t) {
+    describe('objectKeys', function () {
         var loopedValues = [],
             obj = {
                 'str': 'boz',
@@ -34,21 +26,24 @@
             loopedValues.push(k);
         }
 
-        t.strictEqual(keys.length, 7, 'should have correct length');
-        t.strictEqual(utilx.arrayIsArray(keys), true, 'should return an Array');
+        it('should not throw an error in each case', function () {
+            expect(keys.length).to.be(7);
+            expect(utilx.arrayIsArray(keys)).to.be(true);
 
-        utilx.arrayForEach(keys, function (name) {
-            t.strictEqual(utilx.objectHasOwnProperty(obj, name), true, 'should return names which are own properties');
+            utilx.arrayForEach(keys, function (name) {
+                expect(utilx.objectHasOwnProperty(obj, name)).to.be(true);
+            });
+
+            utilx.arrayForEach(keys, function (name) {
+                // should return names which are enumerable
+                expect(utilx.arrayIndexOf(loopedValues, name)).not.to.be(-1);
+            });
+
+            expect(function () {
+                utilx.objectKeys(42);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
         });
-
-        utilx.arrayForEach(keys, function (name) {
-            t.notStrictEqual(utilx.arrayIndexOf(loopedValues, name), -1, 'should return names which are enumerable');
-        });
-
-        t.throws(function () {
-            utilx.objectKeys(42);
-        }, TypeError, 'should throw error for non object');
-
-        t.end();
     });
 }());

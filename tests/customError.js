@@ -1,11 +1,11 @@
-/*global require */
+/*global require, describe, it */
 
 (function () {
     'use strict';
 
     var required = require('./'),
         utilx = required.utilx,
-        test = required.test,
+        expect = required.expect,
         rxSplit = new RegExp('[\\r\\n]'),
         MyError = utilx.customError('MyError'),
         MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
@@ -14,70 +14,84 @@
         return;
     }
 
-    test('customError', function (t) {
-        t.throws(function () {
-            utilx.customError();
-        }, TypeError, 'customError');
+    describe('customError', function () {
+        it('should not throw an error in each case', function () {
+            expect(function () {
+                utilx.customError();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.customError(null);
-        }, TypeError, 'customError');
+            expect(function () {
+                utilx.customError(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        t.throws(function () {
-            utilx.customError('');
-        }, SyntaxError, 'customError');
+            expect(function () {
+                utilx.customError('');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(SyntaxError);
+            });
 
-        try {
-            utilx.customError('NullError', null);
-        } catch (e) {
-            t.ok(utilx.objectInstanceOf(e, TypeError), 'customError');
-        }
+            expect(function () {
+                utilx.customError('NullError', null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        try {
-            utilx.customError('FnError', Fn);
-        } catch (e) {
-            t.ok(utilx.objectInstanceOf(e, TypeError), 'customError');
-        }
+            expect(function () {
+                utilx.customError('FnError', Fn);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
-        try {
-            throw new MyError('test');
-        } catch (e) {
-            t.strictEqual(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit)), 'MyError: test', 'customError');
-        }
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MyError: test');
+            });
 
-        try {
-            throw new MySyntaxError('test');
-        } catch (e) {
-            t.strictEqual(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit)), 'MySyntaxError: test', 'customError');
-        }
+            expect(function () {
+                throw new MySyntaxError('test');
+            }).to.throwException(function (e) {
+                expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MySyntaxError: test');
+            });
 
-        t.throws(function () {
-            throw new MyError('test');
-        }, MyError, 'customError');
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(MyError);
+            });
 
-        t.throws(function () {
-            throw new MySyntaxError('test');
-        }, MySyntaxError, 'customError');
+            expect(function () {
+                throw new MySyntaxError('test');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(MySyntaxError);
+            });
 
+            expect(new MyError('test').message).to.be('test');
+            expect(utilx.objectInstanceOf(new MyError('test'), Error)).to.be(true);
+            expect(utilx.objectInstanceOf(new MyError('test'), MyError)).to.be(true);
+            expect(utilx.objectInstanceOf(new MyError('test'), SyntaxError)).to.be(false);
+            expect(utilx.objectInstanceOf(new MyError('test'), TypeError)).to.be(false);
 
-        t.strictEqual(new MyError('test').message, 'test', 'customError');
-        t.ok(utilx.objectInstanceOf(new MyError('test'), Error), 'customError');
-        t.ok(utilx.objectInstanceOf(new MyError('test'), MyError), 'customError');
-        t.ok(!utilx.objectInstanceOf(new MyError('test'), SyntaxError), 'customError');
-        t.ok(!utilx.objectInstanceOf(new MyError('test'), TypeError), 'customError');
+            expect(new MySyntaxError('test').message).to.be('test');
+            expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error)).to.be(true);
+            expect(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError)).to.be(true);
+            expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
 
-        t.strictEqual(new MySyntaxError('test').message, 'test', 'customError');
-        t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError');
-        t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError), 'customError');
-
-        if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
-            t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
-        } else {
-            t.ok(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
-        }
-
-        t.ok(!utilx.objectInstanceOf(new MySyntaxError('test'), TypeError), 'customError');
-
-        t.end();
+            describe('should detect what the environment supports', function () {
+                if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
+                    it('Environment supports other custom errors', function () {
+                        expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
+                    });
+                } else {
+                    it('Environment only supports custom Error', function () {
+                        expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
+                    });
+                }
+            });
+        });
     });
 }());
