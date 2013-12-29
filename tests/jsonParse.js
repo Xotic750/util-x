@@ -17,17 +17,17 @@
             expect(utilx.jsonParse(true)).to.be(true);
             expect(utilx.jsonParse('null')).to.be(null);
 
-            expect(function () {
+            try {
                 utilx.jsonParse();
-            }).to.throwException(function (e) {
+            } catch (e) {
                 expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            });
+            }
 
-            expect(function () {
+            try {
                 utilx.jsonParse(utilx.privateUndefined);
-            }).to.throwException(function (e) {
+            } catch (e) {
                 expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
-            });
+            }
 
             expect(function () {
                 utilx.jsonParse('');
