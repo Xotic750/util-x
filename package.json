@@ -109,7 +109,7 @@
         "harness": "mocha",
         "files": "tests/*.js",
         "browsers": [
-            "safari/4..latest"
+            "iexplore/6.0..latest"
         ]
     }
 }

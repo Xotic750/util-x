@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -20,14 +20,12 @@
             expect(function () {
                 utilx.jsonParse();
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
                 expect(e).to.be.a(SyntaxError);
             });
 
             expect(function () {
                 utilx.jsonParse(utilx.privateUndefined);
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
                 expect(e).to.be.a(SyntaxError);
             });
 

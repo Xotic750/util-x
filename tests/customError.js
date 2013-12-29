@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -9,12 +9,6 @@
         rxSplit = new RegExp('[\\r\\n]'),
         MyError = utilx.customError('MyError'),
         MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
-
-    /*
-    function Fn() {
-        return;
-    }
-    */
 
     describe('customError', function () {
         it('should not throw an error in each case', function () {
@@ -36,6 +30,7 @@
                 expect(e).to.be.a(SyntaxError);
             });
 
+            /*
             try {
                 utilx.customError('NullError', null);
             } catch (e) {
@@ -47,6 +42,21 @@
             } catch (e) {
                 expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
             }
+            */
+
+            expect(function () {
+                utilx.customError('NullError', null);
+            }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.customError('FnError', utilx.noop);
+            }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
+                expect(e).to.be.a(TypeError);
+            });
 
             expect(function () {
                 throw new MyError('test');
@@ -87,11 +97,13 @@
         describe('should detect what the environment supports', function () {
             if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
                 it('Environment supports other custom errors', function () {
-                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError), 'customError Environment supports other custom errors');
+                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError),
+                           'customError Environment supports other custom errors');
                 });
             } else {
                 it('Environment only supports custom Error', function () {
-                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error), 'customError Environment only supports custom Error');
+                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error),
+                           'customError Environment only supports custom Error');
                 });
             }
         });
