@@ -2960,6 +2960,7 @@
             // http://kangax.github.io/nfe
             var supported = false,
                 parsedValue,
+                throwsSyntaxError,
                 rx1,
                 rx2,
                 rx3,
@@ -3004,7 +3005,23 @@
             }
 
             if (utilx.isTrue(supported)) {
-                tempSafariNFE = JSON.parse;
+                try {
+                    JSON.parse();
+                } catch (e) {
+                    throwsSyntaxError = utilx.objectInstanceOf(e, SyntaxError);
+                }
+
+                if (throwsSyntaxError) {
+                    tempSafariNFE = JSON.parse;
+                } else {
+                    tempSafariNFE = function nfeJSONParse(text, reviver) {
+                        if (utilx.isUndefined(text)) {
+                            throw new SyntaxError('JSON.parse');
+                        }
+
+                        return JSON.parse(text, reviver);
+                    };
+                }
             } else {
                 rx1 = new RegExp('^[\\],:{}\\s]*$');
                 rx2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
@@ -3034,7 +3051,7 @@
                         return reviver.call(holder, key, value);
                     }
 
-                    text = String(text);
+                    text = utilx.anyToString(text);
                     cx.lastIndex = 0;
                     if (cx.test(text)) {
                         text = text.replace(cx, function (a) {
