@@ -21,14 +21,15 @@
                 utilx.jsonParse();
             }).to.throwException(function (e) {
                 console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
-                expect(e).to.be.a(SyntaxError);
+                expect(e).to.be.a(Error);
             });
 
             console.log('#9');
             expect(function () {
                 utilx.jsonParse(utilx.privateUndefined);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(SyntaxError);
+                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
+                expect(e).to.be.a(Error);
             });
 
             console.log('#10');
