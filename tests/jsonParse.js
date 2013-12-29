@@ -9,25 +9,18 @@
 
     describe('jsonParse', function () {
         it('should not throw an error in each case', function () {
-            console.log('#1');
             expect(utilx.jsonParse(null)).to.be(null);
-            console.log('#2');
             expect(utilx.jsonParse('-1')).to.be(-1);
-            console.log('#3');
             expect(utilx.jsonParse('0')).to.be(0);
-            console.log('#4');
             expect(utilx.jsonParse('1')).to.be(1);
-            console.log('#5');
             expect(utilx.jsonParse(false)).to.be(false);
-            console.log('#6');
             expect(utilx.jsonParse(true)).to.be(true);
-            console.log('#7');
             expect(utilx.jsonParse('null')).to.be(null);
 
-            console.log('#8');
             expect(function () {
                 utilx.jsonParse();
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n' + Object.prototype.toString.call(e) + '\n');
                 expect(e).to.be.a(SyntaxError);
             });
 
