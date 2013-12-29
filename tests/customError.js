@@ -37,13 +37,13 @@
             expect(function () {
                 utilx.customError('NullError', null);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
+                expect(e).to.be.a(Error);
             });
 
             expect(function () {
                 utilx.customError('FnError', Fn);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
+                expect(e).to.be.a(Error);
             });
 
             expect(function () {
