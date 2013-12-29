@@ -29,17 +29,17 @@
                 expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
             }
 
-            expect(function () {
+            try {
                 utilx.jsonParse('');
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(SyntaxError);
-            });
+            } catch (e) {
+                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
+            }
 
-            expect(function () {
+            try {
                 utilx.jsonParse('{"A": undefined}');
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(SyntaxError);
-            });
+            } catch (e) {
+                expect(utilx.objectInstanceOf(e, SyntaxError)).to.be(true);
+            }
 
             expect(utilx.jsonParse('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}')).to.eql({
                 'A': [1, true, false, null, '\u0000\b\n\f\r\t']
