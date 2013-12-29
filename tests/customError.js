@@ -10,9 +10,11 @@
         MyError = utilx.customError('MyError'),
         MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
 
+    /*
     function Fn() {
         return;
     }
+    */
 
     describe('customError', function () {
         it('should not throw an error in each case', function () {
@@ -34,17 +36,19 @@
                 expect(e).to.be.a(SyntaxError);
             });
 
+            /*
             expect(function () {
                 utilx.customError('NullError', null);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(Error);
+                expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError('FnError', Fn);
             }).to.throwException(function (e) {
-                expect(e).to.be.a(Error);
+                expect(e).to.be.a(TypeError);
             });
+            */
 
             expect(function () {
                 throw new MyError('test');
