@@ -7,26 +7,37 @@
         utilx = required.utilx,
         expect = required.expect,
         rxSplit = new RegExp('[\\r\\n]'),
-        MyError = utilx.customError('MyError'),
-        MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
+        MyError,
+        MySyntaxError;
 
     describe('customError', function () {
         it('should not throw an error in each case', function () {
             expect(function () {
+                MyError = utilx.customError('MyError');
+            }).to.not.throwException();
+
+            expect(function () {
+                MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
+            }).to.not.throwException();
+
+            expect(function () {
                 utilx.customError();
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError(null);
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError('');
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(SyntaxError);
             });
 
@@ -48,37 +59,41 @@
                 utilx.customError('NullError', null);
             }).to.throwException(function (e) {
                 console.log(e.name + '\n' + e.message + '\n');
-                //expect(e).to.be.a(TypeError);
+                expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError('FnError', utilx.noop);
             }).to.throwException(function (e) {
                 console.log(e.name + '\n' + e.message + '\n');
-                //expect(e).to.be.a(TypeError);
+                expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MySyntaxError: test');
             });
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(MyError);
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
+                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(MySyntaxError);
             });
 
@@ -94,6 +109,7 @@
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
         });
 
+        /*
         describe('should detect what the environment supports', function () {
             if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
                 it('Environment supports other custom errors', function () {
@@ -107,5 +123,6 @@
                 });
             }
         });
+        */
     });
 }());
