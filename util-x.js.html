@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.38
+ * @version 0.0.41
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -216,8 +216,9 @@
         };
 
         /**
-         * The mod/remainder operator returns the first operand modulo of the second operand, that is, number1 modulo number2, in the preceding statement,
-         * where number1 and number2 are numbers. The modulo function is the integer remainder of dividing number1 by number2.
+         * The mod/remainder operator returns the first operand modulo of the second operand, that is,
+         * number1 modulo number2, in the preceding statement, where number1 and number2 are numbers.
+         * The modulo function is the integer remainder of dividing number1 by number2.
          * For example, 12 % 5 returns 2. The result will have the same sign as number1; that is, -1 % 2 returns -1.
          * @memberOf utilx
          * @function
@@ -373,7 +374,10 @@
          * @return {boolean}
          */
         utilx.isPrimitive = function (object) {
-            return utilx.isUndefinedOrNull(object) || utilx.isString(object) || utilx.isNumber(object) || utilx.isBoolean(object);
+            return utilx.isUndefinedOrNull(object) ||
+                utilx.isString(object) ||
+                utilx.isNumber(object) ||
+                utilx.isBoolean(object);
         };
 
         /**
@@ -557,12 +561,18 @@
                 };
             } else if (utilx.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
                 firstCheck = function (inputArg) {
-                    return utilx.isTypeObject(inputArg) &amp;&amp; utilx.strictEqual(toStringFN.call(inputArg), objectString) &amp;&amp; hasOwnPropertyFN.call(inputArg, calleeString) &amp;&amp; hasOwnPropertyFN.call(inputArg, lengthString) &amp;&amp; utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) &amp;&amp;
+                        utilx.strictEqual(toStringFN.call(inputArg), objectString) &amp;&amp;
+                        hasOwnPropertyFN.call(inputArg, calleeString) &amp;&amp;
+                        hasOwnPropertyFN.call(inputArg, lengthString) &amp;&amp;
+                        utilx.isNumber(inputArg.length);
                 };
 
                 if (utilx.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
                     tempSafariNFE = function nfeIsArguments(inputArg) {
-                        return firstCheck(inputArg) &amp;&amp; !propertyIsEnumerableFN.call(inputArg, calleeString) &amp;&amp; !propertyIsEnumerableFN.call(inputArg, lengthString);
+                        return firstCheck(inputArg) &amp;&amp;
+                            !propertyIsEnumerableFN.call(inputArg, calleeString) &amp;&amp;
+                            !propertyIsEnumerableFN.call(inputArg, lengthString);
                     };
                 } else {
                     tempSafariNFE = firstCheck;
@@ -571,7 +581,11 @@
 
             if (utilx.isNull(tempSafariNFE)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return utilx.isTypeObject(inputArg) &amp;&amp; utilx.strictEqual(toStringFN.call(inputArg), objectString) &amp;&amp; utilx.hasProperty(inputArg, calleeString) &amp;&amp; utilx.hasProperty(inputArg, lengthString) &amp;&amp; utilx.isNumber(inputArg.length);
+                    return utilx.isTypeObject(inputArg) &amp;&amp;
+                        utilx.strictEqual(toStringFN.call(inputArg), objectString) &amp;&amp;
+                        utilx.hasProperty(inputArg, calleeString) &amp;&amp;
+                        utilx.hasProperty(inputArg, lengthString) &amp;&amp;
+                        utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -602,7 +616,10 @@
 
             try {
                 tempSafariNFE = null;
-                if (utilx.strictEqual(toStringFN.call(), undefinedString) &amp;&amp; utilx.strictEqual(toStringFN.call(null), nullString) &amp;&amp; utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+                if (utilx.strictEqual(toStringFN.call(), undefinedString) &amp;&amp;
+                        utilx.strictEqual(toStringFN.call(null), nullString) &amp;&amp;
+                        utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+
                     tempSafariNFE = function nfeToObjectString(object) {
                         return toStringFN.call(object);
                     };
@@ -642,7 +659,8 @@
          * @return {boolean}
          */
         utilx.isError = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]') || (utilx.isTypeObject(inputArg) &amp;&amp; utilx.objectInstanceOf(inputArg, Error));
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Error]') ||
+                (utilx.isTypeObject(inputArg) &amp;&amp; utilx.objectInstanceOf(inputArg, Error));
         };
 
         /**
@@ -653,7 +671,8 @@
          * @return {boolean}
          */
         utilx.isRegExp = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]') &amp;&amp; utilx.isString(inputArg.source) &amp;&amp; utilx.isBoolean(inputArg.global);
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object RegExp]') &amp;&amp;
+                utilx.isString(inputArg.source) &amp;&amp; utilx.isBoolean(inputArg.global);
         };
 
         /**
@@ -675,7 +694,10 @@
          * @return {boolean}
          */
         utilx.isFunction = function (inputArg) {
-            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]') || (utilx.strictEqual(typeof inputArg, 'function') &amp;&amp; utilx.strictEqual(typeof inputArg.call, 'function') &amp;&amp; utilx.strictEqual(typeof inputArg.apply, 'function'));
+            return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Function]') ||
+                (utilx.strictEqual(typeof inputArg, 'function') &amp;&amp;
+                 utilx.strictEqual(typeof inputArg.call, 'function') &amp;&amp;
+                 utilx.strictEqual(typeof inputArg.apply, 'function'));
         };
 
         /**
@@ -697,7 +719,8 @@
                 tempSafariNFE = isArrayFN;
             } else {
                 tempSafariNFE = function nfeIsArray(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') &amp;&amp; utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') &amp;&amp;
+                        utilx.isNumber(inputArg.length);
                 };
             }
 
@@ -707,8 +730,9 @@
         }());
 
         /**
-         * The function takes one argument inputArg, if the argument is an object whose class internal property is "Array"
-         * or is an Object whose class internal property is "Arguments"; returns true if length is zero otherwise it returns false.
+         * The function takes one argument inputArg, if the argument is an object whose class internal
+         * property is "Array" or is an Object whose class internal property is "Arguments";
+         * returns true if length is zero otherwise it returns false.
          * Otherwise returns null if the argument does not match the rquirements.
          * @memberOf utilx
          * @function
@@ -840,7 +864,8 @@
         }());
 
         /**
-         * The function determines whether the passed value is finite. More robust version of the original global isFinite.
+         * The function determines whether the passed value is finite.
+         * More robust version of the original global isFinite.
          * @memberOf utilx
          * @function
          * @param {*} number
@@ -945,7 +970,8 @@
         }());
 
         /**
-         * The abstract operation converts its argument to one of 2^32 integer values in the range -2^31 through 2^31-1, inclusive.
+         * The abstract operation converts its argument to one of 2^32 integer values in
+         * the range -2^31 through 2^31-1, inclusive.
          * @memberOf utilx
          * @function
          * @param {*} inputArg
@@ -971,7 +997,8 @@
         };
 
         /**
-         * The abstract operation converts its argument to one of 2^32 integer values in the range 0 through 2^32-1,inclusive.
+         * The abstract operation converts its argument to one of 2^32 integer values in
+         * the range 0 through 2^32-1,inclusive.
          * @memberOf utilx
          * @function
          * @param {*} inputArg
@@ -1179,7 +1206,8 @@
          * @return {number}
          */
         utilx.countCharacter = function (inputArg, character) {
-            return utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)), utilx.firstChar(character)).length - 1, 0, Number.POSITIVE_INFINITY);
+            return utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
+                                                 utilx.firstChar(character)).length - 1, 0, Number.POSITIVE_INFINITY);
         };
 
         /**
@@ -1259,7 +1287,8 @@
         }());
 
         /**
-         * Determines whether a string begins with the characters of another string, returning true or false as appropriate.
+         * Determines whether a string begins with the characters of another string,
+         * returning true or false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1294,7 +1323,8 @@
         }());
 
         /**
-         * Determines whether a string ends with the characters of another string, returning true or false as appropriate.
+         * Determines whether a string ends with the characters of another string,
+         * returning true or false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1340,7 +1370,8 @@
         }());
 
         /**
-         * Determines whether a string contains the characters of another string, returning true or false as appropriate.
+         * Determines whether a string contains the characters of another string, returning true or
+         * false as appropriate.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -1371,7 +1402,8 @@
                         position = utilx.numberToInteger(position);
                     }
 
-                    return utilx.notStrictEqual(baseString.indexOf.call(thisStr, searchStr, utilx.clamp(position, 0, thisLen)), -1);
+                    return utilx.notStrictEqual(baseString.indexOf.call(thisStr, searchStr,
+                                                                        utilx.clamp(position, 0, thisLen)), -1);
                 };
             }
 
@@ -1438,8 +1470,9 @@
 
         /**
          * Returns a boolean indicating whether the object has the specified property.
-         * This function can be used to determine whether an object has the specified property as a direct property of that object;
-         * unlike the utilx.hasProperty function, this method does not check down the object's prototype chain.
+         * This function can be used to determine whether an object has the specified property as a direct property of
+         * that object; unlike the utilx.hasProperty function, this method does not check down the object's prototype
+         * chain.
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -1468,7 +1501,9 @@
             }
 
             function checkDontEnums(object, property) {
-                return hasDontEnumBug &amp;&amp; utilx.arrayContains(defaultProperties, property) &amp;&amp; utilx.hasProperty(object, property) &amp;&amp; utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
+                return hasDontEnumBug &amp;&amp; utilx.arrayContains(defaultProperties, property) &amp;&amp;
+                    utilx.hasProperty(object, property) &amp;&amp;
+                    utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
             }
 
             if (utilx.isFunction(hasOwnPropertyFN)) {
@@ -1481,7 +1516,8 @@
                 };
             } else {
                 tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return utilx.hasProperty(object, property) &amp;&amp; utilx.isUndefined(utilx.objectGetPrototypeOf(object)[property]);
+                    return utilx.hasProperty(object, property) &amp;&amp;
+                        utilx.isUndefined(utilx.objectGetPrototypeOf(object)[property]);
                 };
             }
 
@@ -1594,7 +1630,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), val = false; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    val = false;
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index) &amp;&amp; fn.call(thisArg, object[index], index, object)) {
                             val = true;
                             break;
@@ -1641,7 +1679,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), arr = []; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    arr = [];
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         arr[index] = fn.call(thisArg, object[index], index, object);
                     }
 
@@ -1721,7 +1761,9 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length), arr = []; utilx.lt(index, length); index += 1) {
+                    length = utilx.toUint32(object.length);
+                    arr = [];
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         element = object[index];
                         if (fn.call(thisArg, element, index, object)) {
                             arr[next] = element;
@@ -1739,7 +1781,8 @@
         }());
 
         /**
-         * Apply a function against an accumulator and each value of the array (from left-to-right) as to reduce it to a single value.
+         * Apply a function against an accumulator and each value of the array (from left-to-right)
+         * as to reduce it to a single value.
          * @memberOf utilx
          * @function
          * @param {array} array
@@ -1800,6 +1843,18 @@
         }());
 
         /**
+         * Builds the test string used to determine if native trim is ES5.
+         * @private
+         * @function
+         * @param {string} previous
+         * @param {string} element
+         * @return {string}
+         */
+        function buildTestString(previous, element) {
+            return previous + String.fromCharCode(element);
+        }
+
+        /**
          * Removes whitespace from both ends of the string.
          * @memberOf utilx
          * @function
@@ -1844,12 +1899,7 @@
                 testString,
                 whiteSpacesString,
                 wsTrimRX,
-                nfeTrim,
-                buildWhiteSpaceString;
-
-            function buildTestString(previous, element) {
-                return previous + String.fromCharCode(element);
-            }
+                nfeTrim;
 
             testString = utilx.arrayReduce(whiteSpacesList, buildTestString, '');
             if (utilx.isFunction(trimFN) &amp;&amp; utilx.isZero(trimFN.call(testString).length)) {
@@ -1857,11 +1907,10 @@
                     return trimFN.call(inputArg);
                 };
             } else {
-                buildWhiteSpaceString = function (previous, element) {
+                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, function (previous, element) {
                     return previous + '\\u' + utilx.padLeadingChar(element.toString(16), '0', 4);
-                };
+                }, '');
 
-                whiteSpacesString = utilx.arrayReduce(whiteSpacesList, buildWhiteSpaceString, '');
                 wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
                 tempSafariNFE = function nfeTrim(inputArg) {
                     return utilx.anyToString(utilx.checkObjectCoercible(inputArg)).replace(wsTrimRX, '');
@@ -1926,7 +1975,8 @@
                             }
 
                             for (index = start, val = -1; utilx.lt(index, length); index += 1) {
-                                if (utilx.hasProperty(object, index) &amp;&amp; utilx.strictEqual(searchElement, object[index])) {
+                                if (utilx.hasProperty(object, index) &amp;&amp; utilx.strictEqual(searchElement,
+                                                                                          object[index])) {
                                     val = index;
                                     break;
                                 }
@@ -1944,8 +1994,8 @@
         }());
 
         /**
-         * Returns an array of a given object's own enumerable properties, in the same order as that provided by a for-in loop
-         * (the difference being that a for-in loop enumerates properties in the prototype chain as well).
+         * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
+         * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -1958,7 +2008,7 @@
             var keysFN = baseObject.keys,
                 nfeKeys;
 
-            if (utilx.isFunction(keysFN)) {
+            if (utilx.isFunction(keysFN) &amp;&amp; utilx.isFunction(baseObject.hasOwnProperty)) {
                 tempSafariNFE = keysFN;
             } else {
                 tempSafariNFE = function nfeKeys(object) {
@@ -1985,7 +2035,8 @@
         }());
 
         /**
-         * Defines a new property directly on an object, or modifies an existing property on an object, and returns the object.
+         * Defines a new property directly on an object, or modifies an existing property on an object,
+         * and returns the object.
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -2121,7 +2172,8 @@
          * @return {object}
          */
         // Create our own local "getOwnPropertyDescriptor" function: native -> sham
-        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey and Blackberry bug
+        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
+        // and Blackberry bug
         utilx.objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
@@ -2199,8 +2251,9 @@
         }());
 
         /**
-         * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties from being removed;
-         * and prevents existing properties, or their enumerability, configurability, or writability, from being changed.
+         * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties
+         * from being removed; and prevents existing properties, or their enumerability, configurability, or
+         * writability, from being changed.
          * In essence the object is made effectively immutable. Returns the object being frozen.
          * @memberOf utilx
          * @function
@@ -2361,6 +2414,16 @@
         }());
 
         /**
+         * The constructor used by utilx.objectCreate if shimmed.
+         * @private
+         * @constructor
+         * @return {object}
+         */
+        function ObjectCreateFunc() {
+            return;
+        }
+
+        /**
          * The utilx.objectCreate method creates a new object with the specified prototype object and properties.
          * @memberOf utilx
          * @function
@@ -2371,25 +2434,61 @@
         utilx.objectCreate = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var objectCreateFN = baseObject.constructor.create,
+            var createdOk,
+                objectCreateFN,
                 nfeObjectCreate,
-                Func;
+                testObject;
 
-            if (utilx.isFunction(objectCreateFN)) {
-                tempSafariNFE = objectCreateFN;
-            } else if (utilx.isFunction(utilx.objectGetPrototypeOf)) {
-                Func = function () {
-                    return;
-                };
+            try {
+                objectCreateFN = baseObject.constructor.create;
+                testObject = objectCreateFN(ObjectCreateFunc.prototype, {
+                    constructor: {
+                        value: ObjectCreateFunc,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    },
 
-                tempSafariNFE = function nfeObjectCreate(prototype) {
-                    if (utilx.notStrictEqual(arguments.length, 1)) {
-                        throw new Error('Object.create implementation only accepts one parameter.');
+                    foo: {
+                        value: 'test',
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    }
+                });
+
+                if (utilx.strictEqual(testObject.foo, 'test')) {
+                    tempSafariNFE = objectCreateFN;
+                    createdOk = true;
+                } else {
+                    createdOk = false;
+                }
+            } catch (e) {
+                createdOk = false;
+            }
+
+            if (utilx.isFalse(createdOk)) {
+                tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
+                    if (!utilx.isTypeObject(prototype) &amp;&amp; !utilx.isFunction(prototype)) {
+                        throw new TypeError('Object prototype may only be an Object, but not null.');
                     }
 
-                    Func.prototype = prototype;
+                    var newObject;
 
-                    return new Func();
+                    ObjectCreateFunc.prototype = prototype;
+                    newObject = new ObjectCreateFunc();
+                    utilx.objectDefineProperty(newObject, protoName, {
+                        value: prototype,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    });
+
+                    if (utilx.isPlainObject(propertiesObject)) {
+                        utilx.objectDefineProperties(newObject, propertiesObject);
+                    }
+
+                    return newObject;
                 };
             }
 
@@ -2409,7 +2508,8 @@
             var baseObjectPrototype = utilx.objectGetPrototypeOf(baseObject);
 
             return function (object) {
-                return utilx.isObject(object) &amp;&amp; utilx.strictEqual(utilx.objectGetPrototypeOf(object), baseObjectPrototype);
+                return utilx.isObject(object) &amp;&amp; utilx.strictEqual(utilx.objectGetPrototypeOf(object),
+                                                                   baseObjectPrototype);
             };
         }());
 
@@ -2461,7 +2561,8 @@
 
         /**
          * Takes string and puts a backslash in front of every character that is part of the regular expression syntax.
-         * This is useful if you have a run-time string that you need to match in some text and the string may contain special regex characters.
+         * This is useful if you have a run-time string that you need to match in some text and the string may contain
+         * special regex characters.
          * @memberOf utilx
          * @function
          * @param {string} string
@@ -2536,7 +2637,8 @@
             }
 
             if (utilx.isTrue(opts.strict)) {
-                if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)), utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
+                if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)),
+                                    utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
                     return false;
                 }
             } else {
@@ -2633,6 +2735,7 @@
             // http://kangax.github.io/nfe
             var supported = false,
                 stringifiedValue,
+                escapableStr,
                 escapable,
                 gap,
                 indent,
@@ -2655,60 +2758,65 @@
 
                     try {
                         supported =
-                        // Firefox 3.1b1 and b2 serialize string, number, and boolean
-                        // primitives as object literals.
-                        utilx.strictEqual(JSON.stringify(0), '0') &amp;&amp;
-                        // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
-                        // literals.
-                        utilx.strictEqual(JSON.stringify(new CtrNumber()), '0') &amp;&amp; utilx.strictEqual(JSON.stringify(new CtrString()), '""') &amp;&amp;
-                        // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
-                        // does not define a canonical JSON representation (this applies to
-                        // objects with `toJSON` properties as well, *unless* they are nested
-                        // within an object or array).
-                        utilx.strictEqual(JSON.stringify(isNaN), utilx.privateUndefined) &amp;&amp;
-                        // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
-                        // 3.1b3 pass this test.
-                        utilx.strictEqual(JSON.stringify(utilx.privateUndefined), utilx.privateUndefined) &amp;&amp;
-                        // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-                        // respectively, if the stringifiedValue is omitted entirely.
-                        utilx.strictEqual(JSON.stringify(), utilx.privateUndefined) &amp;&amp;
-                        // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
-                        // string, array, object, Boolean, or `null` literal. This applies to
-                        // objects with custom `toJSON` methods as well, unless they are nested
-                        // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
-                        // methods entirely.
-                        utilx.strictEqual(JSON.stringify(stringifiedValue), '1') &amp;&amp; utilx.strictEqual(JSON.stringify([stringifiedValue]), '[1]') &amp;&amp;
-                        // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
-                        // `"[null]"`.
-                        utilx.strictEqual(JSON.stringify([utilx.privateUndefined]), '[null]') &amp;&amp;
-                        // YUI 3.0.0b1 fails to serialize `null` literals.
-                        utilx.strictEqual(JSON.stringify(null), 'null') &amp;&amp;
-                        // FF 3.1b1, 2 halts serialization if an array contains a function:
-                        // `[1, true, isNaN, 1]` serializes as "[1,true,],". These versions
-                        // of Firefox also allow trailing commas in JSON objects and arrays.
-                        // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
-                        // define custom `toJSON` methods.
-                        utilx.strictEqual(JSON.stringify([utilx.privateUndefined, isNaN, null]), '[null,null,null]') &amp;&amp;
-                        // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
-                        // where character escape codes are expected (e.g., `\b` => `\u0008`).
-                        // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
-                        // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
-                        utilx.strictEqual(JSON.stringify({
-                            'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
-                        }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &amp;&amp;
-                        // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                        utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') &amp;&amp; utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
-                        // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
-                        // serialize extended years.
-                        utilx.strictEqual(JSON.stringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
-                        // The milliseconds are optional in ES 5, but required in 5.1.
-                        utilx.strictEqual(JSON.stringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
-                        // Firefox &lt;= 11.0 incorrectly serializes years prior to 0 as negative
-                        // four-digit years instead of six-digit years. Credits: @Yaffle.
-                        utilx.strictEqual(JSON.stringify(new Date(-621987552e5)), '"-000001-01-01T00:00:00.000Z"') &amp;&amp;
-                        // Safari &lt;= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
-                        // values less than 1000. Credits: @Yaffle.
-                        utilx.strictEqual(JSON.stringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
+                            // Firefox 3.1b1 and b2 serialize string, number, and boolean
+                            // primitives as object literals.
+                            utilx.strictEqual(JSON.stringify(0), '0') &amp;&amp;
+                            // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
+                            // literals.
+                            utilx.strictEqual(JSON.stringify(new CtrNumber()), '0') &amp;&amp;
+                            utilx.strictEqual(JSON.stringify(new CtrString()), '""') &amp;&amp;
+                            // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
+                            // does not define a canonical JSON representation (this applies to
+                            // objects with `toJSON` properties as well, *unless* they are nested
+                            // within an object or array).
+                            utilx.strictEqual(JSON.stringify(isNaN), utilx.privateUndefined) &amp;&amp;
+                            // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
+                            // 3.1b3 pass this test.
+                            utilx.strictEqual(JSON.stringify(utilx.privateUndefined), utilx.privateUndefined) &amp;&amp;
+                            // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
+                            // respectively, if the stringifiedValue is omitted entirely.
+                            utilx.strictEqual(JSON.stringify(), utilx.privateUndefined) &amp;&amp;
+                            // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
+                            // string, array, object, Boolean, or `null` literal. This applies to
+                            // objects with custom `toJSON` methods as well, unless they are nested
+                            // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
+                            // methods entirely.
+                            utilx.strictEqual(JSON.stringify(stringifiedValue), '1') &amp;&amp;
+                            utilx.strictEqual(JSON.stringify([stringifiedValue]), '[1]') &amp;&amp;
+                            // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
+                            // `"[null]"`.
+                            utilx.strictEqual(JSON.stringify([utilx.privateUndefined]), '[null]') &amp;&amp;
+                            // YUI 3.0.0b1 fails to serialize `null` literals.
+                            utilx.strictEqual(JSON.stringify(null), 'null') &amp;&amp;
+                            // FF 3.1b1, 2 halts serialization if an array contains a function:
+                            // `[1, true, isNaN, 1]` serializes as "[1,true,],". These versions
+                            // of Firefox also allow trailing commas in JSON objects and arrays.
+                            // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
+                            // define custom `toJSON` methods.
+                            utilx.strictEqual(JSON.stringify([utilx.privateUndefined, isNaN, null]),
+                                              '[null,null,null]') &amp;&amp;
+                            // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
+                            // where character escape codes are expected (e.g., `\b` => `\u0008`).
+                            // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
+                            // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
+                            utilx.strictEqual(JSON.stringify({
+                                'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
+                            }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &amp;&amp;
+                            // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
+                            utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') &amp;&amp;
+                            utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
+                            // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
+                            // serialize extended years.
+                            utilx.strictEqual(JSON.stringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
+                            // The milliseconds are optional in ES 5, but required in 5.1.
+                            utilx.strictEqual(JSON.stringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
+                            // Firefox &lt;= 11.0 incorrectly serializes years prior to 0 as negative
+                            // four-digit years instead of six-digit years. Credits: @Yaffle.
+                            utilx.strictEqual(JSON.stringify(new Date(-621987552e5)),
+                                              '"-000001-01-01T00:00:00.000Z"') &amp;&amp;
+                            // Safari &lt;= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
+                            // values less than 1000. Credits: @Yaffle.
+                            utilx.strictEqual(JSON.stringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
                     } catch (e) {
                         supported = false;
                     }
@@ -2718,7 +2826,9 @@
             if (utilx.isTrue(supported)) {
                 tempSafariNFE = JSON.stringify;
             } else {
-                escapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
+                escapableStr = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
+                escapableStr += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+                escapable = new RegExp(escapableStr, 'g');
                 meta = {
                     '\b': '\\b',
                     '\t': '\\t',
@@ -2862,7 +2972,9 @@
                     }
 
                     rep = replacer;
-                    if (!utilx.isUndefinedOrNull(replacer) &amp;&amp; !utilx.isFunction(replacer) &amp;&amp; !utilx.arrayIsArray(replacer)) {
+                    if (!utilx.isUndefinedOrNull(replacer) &amp;&amp; !utilx.isFunction(replacer) &amp;&amp;
+                            !utilx.arrayIsArray(replacer)) {
+
                         throw new Error('JSON.stringify');
                     }
 
@@ -2890,10 +3002,12 @@
             // http://kangax.github.io/nfe
             var supported = false,
                 parsedValue,
+                throwsSyntaxError,
                 rx1,
                 rx2,
                 rx3,
                 rx4,
+                cxStr,
                 cx,
                 nfeJSONParse;
 
@@ -2908,7 +3022,8 @@
                         if (utilx.isZero(JSON.parse('0')) &amp;&amp; utilx.isFalse(JSON.parse(false))) {
                             // Simple parsing test.
                             parsedValue = JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                            supported = utilx.strictEqual(parsedValue.A.length, 5) &amp;&amp; utilx.strictEqual(parsedValue.A[0], 1);
+                            supported = utilx.strictEqual(parsedValue.A.length, 5);
+                            supported = supported &amp;&amp; utilx.strictEqual(parsedValue.A[0], 1);
                             if (supported) {
                                 try {
                                     // Safari &lt;= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
@@ -2932,13 +3047,31 @@
             }
 
             if (utilx.isTrue(supported)) {
-                tempSafariNFE = JSON.parse;
+                try {
+                    JSON.parse();
+                } catch (e) {
+                    throwsSyntaxError = utilx.objectInstanceOf(e, SyntaxError);
+                }
+
+                if (throwsSyntaxError) {
+                    tempSafariNFE = JSON.parse;
+                } else {
+                    tempSafariNFE = function nfeJSONParse(text, reviver) {
+                        if (utilx.isUndefined(text)) {
+                            throw new SyntaxError('JSON.parse');
+                        }
+
+                        return JSON.parse(text, reviver);
+                    };
+                }
             } else {
                 rx1 = new RegExp('^[\\],:{}\\s]*$');
                 rx2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
                 rx3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
                 rx4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
-                cx = new RegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g');
+                cxStr = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
+                cxStr += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+                cx = new RegExp(cxStr, 'g');
                 tempSafariNFE = function nfeJSONParse(text, reviver) {
                     var j;
 
@@ -2960,7 +3093,7 @@
                         return reviver.call(holder, key, value);
                     }
 
-                    text = String(text);
+                    text = utilx.anyToString(text);
                     cx.lastIndex = 0;
                     if (cx.test(text)) {
                         text = text.replace(cx, function (a) {
@@ -3032,7 +3165,7 @@
             }
 
             /*jslint nomen: true */
-            //ctor.super_ = superCtor;
+            ctor.super_ = superCtor;
             /*jslint nomen: false */
             ctor.prototype = utilx.objectCreate(superCtor.prototype);
             utilx.objectDefineProperty(ctor.prototype, 'constructor', {
@@ -3044,7 +3177,120 @@
         };
 
         /**
-         * Creates a custom Error.
+         * Custom replacer used to stringify messages that are not strings.
+         * @private
+         * @function
+         * @param {string} key Unused
+         * @param {*} value
+         * @return {string}
+         */
+        function customErrorReplacer(key, value) {
+            /*jslint unparam: true */
+            /*jshint unused: true */
+            if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) ||
+                    (utilx.isNumber(value) &amp;&amp; !utilx.numberIsFinite(value))) {
+
+                return utilx.anyToString(value);
+            }
+
+            return value;
+        }
+
+        /**
+         * Creates a custom Error constructor.
+         * @private
+         * @function
+         * @param {string} name
+         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used
+         * @return {constructor}
+         */
+        function makeCustomError(name, ErrorConstructor) {
+            function CustomError(message, stackStartFunction) {
+                var err;
+
+                if (!utilx.isString(message)) {
+                    message = utilx.stringTruncate(utilx.jsonStringify(message, customErrorReplacer), 128);
+                }
+
+                this.message = message;
+                if (!utilx.isFunction(stackStartFunction)) {
+                    stackStartFunction = CustomError;
+                }
+
+                this.stackStartFunction = stackStartFunction;
+                if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
+                    ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+                } else {
+                    err = ErrorConstructor.call(this);
+
+                    if (utilx.isString(err.stack)) {
+                        this.stack = err.stack;
+                    } else if (utilx.isString(err.stacktrace)) {
+                        this.stack = err.stacktrace;
+                    }
+                }
+            }
+
+            utilx.inherits(CustomError, ErrorConstructor);
+
+            utilx.objectDefineProperties(CustomError.prototype, {
+                /*
+                constructor: {
+                    value: CustomError
+                },
+                */
+
+                name: {
+                    value: name,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                },
+
+                toStringX: {
+                    value: function () {
+                        return this.name + ': ' + this.message;
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                }
+            });
+
+            return CustomError;
+        }
+
+        /**
+         * Tests to see if the argument is one of the seven standard Error type constructors.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isErrorTypeConstructor = function (inputArg) {
+            var result;
+
+            switch (inputArg) {
+            case Error:
+            case TypeError:
+            case SyntaxError:
+            case RangeError:
+            case EvalError:
+            case ReferenceError:
+            case URIError:
+                result = true;
+                break;
+            default:
+                result = false;
+            }
+
+            return result;
+        };
+
+        /**
+         * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
+         * If a valid native Error type constructor is provided but not supporte by the browesr the it will
+         * also default to Error. (Looking at you IE &lt; 9)
          * @memberOf utilx
          * @function
          * @param {string} name
@@ -3052,69 +3298,6 @@
          * @return {constructor}
          */
         utilx.customError = (function () {
-            function replacer(key, value) {
-                /*jslint unparam: true */
-                /*jshint unused: true */
-                if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) || (utilx.isNumber(value) &amp;&amp; !utilx.numberIsFinite(value))) {
-                    return utilx.anyToString(value);
-                }
-
-                return value;
-            }
-
-            function makeCustomError(name, ErrorConstructor) {
-                // Unused variable for JScript NFE bug
-                // http://kangax.github.io/nfe
-                function CustomError(message, stackStartFunction) {
-                    var err;
-
-                    if (!utilx.isString(message)) {
-                        message = utilx.stringTruncate(utilx.jsonStringify(message, replacer), 128);
-                    }
-
-                    if (!utilx.isFunction(stackStartFunction)) {
-                        stackStartFunction = CustomError;
-                    }
-
-                    this.message = message;
-                    this.stackStartFunction = stackStartFunction;
-
-                    if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
-                        ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
-                    } else {
-                        err = ErrorConstructor.call(this);
-
-                        if (utilx.isString(err.stack)) {
-                            this.stack = err.stack;
-                        } else if (utilx.isString(err.stacktrace)) {
-                            this.stack = err.stacktrace;
-                        }
-                    }
-                }
-
-                utilx.inherits(CustomError, ErrorConstructor);
-
-                utilx.objectDefineProperties(CustomError.prototype, {
-                    constructor: {
-                        value: CustomError
-                    },
-
-                    name: {
-                        value: name
-                    },
-
-                    toStringX: {
-                        value: function () {
-                            return this.name + ': ' + this.message;
-                        }
-                    }
-                });
-
-                return CustomError;
-            }
-
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
             var isOkToUseOtherErrors,
                 CustomSyntaxError;
 
@@ -3125,7 +3308,7 @@
                 isOkToUseOtherErrors = false;
             }
 
-            function customError(name, ErrorConstructor) {
+            return function (name, ErrorConstructor) {
                 if (!utilx.isString(name)) {
                     throw new TypeError('"name" was not a string');
                 }
@@ -3134,20 +3317,12 @@
                     throw new SyntaxError('"name" was an empty string');
                 }
 
-                if (!isOkToUseOtherErrors || utilx.isUndefined(ErrorConstructor)) {
+                if (!isOkToUseOtherErrors || !utilx.isErrorTypeConstructor(ErrorConstructor)) {
                     ErrorConstructor = Error;
                 }
 
-                if (!utilx.isUndefined(ErrorConstructor)) {
-                    if (utilx.isPrimitive(ErrorConstructor) || !utilx.isFunction(ErrorConstructor) || !utilx.objectInstanceOf(new ErrorConstructor('check'), Error)) {
-                        throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
-                    }
-                }
-
                 return makeCustomError(name, ErrorConstructor);
-            }
-
-            return customError;
+            };
         }());
 
         tempSafariNFE = null;
@@ -3176,7 +3351,9 @@
     }
 
     /*global module, define */
-    if (typeof module === 'object' &amp;&amp; null !== module &amp;&amp; typeof module.exports === 'object' &amp;&amp; null !== module.exports) {
+    if (typeof module === 'object' &amp;&amp; null !== module &amp;&amp;
+            typeof module.exports === 'object' &amp;&amp; null !== module.exports) {
+
         module.exports = publicUtil;
     } else if (typeof define === 'function' &amp;&amp; typeof define.amd === 'object' &amp;&amp; null !== define.amd) {
         define(publicUtil);
@@ -3200,7 +3377,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Dec 27 2013 18:11:39 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Dec 30 2013 05:13:54 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
