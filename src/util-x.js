@@ -3140,13 +3140,12 @@
             /*jslint nomen: true */
             ctor.super_ = superCtor;
             /*jslint nomen: false */
-            ctor.prototype = utilx.objectCreate(superCtor.prototype, {
-                constructor: {
-                    value: ctor,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                }
+            ctor.prototype = utilx.objectCreate(superCtor.prototype);
+            utilx.objectDefineProperty(ctor.prototype, 'constructor', {
+                value: ctor,
+                enumerable: false,
+                writable: true,
+                configurable: true
             });
         };
 
@@ -3208,18 +3207,26 @@
             utilx.inherits(CustomError, ErrorConstructor);
 
             utilx.objectDefineProperties(CustomError.prototype, {
+                /*
                 constructor: {
                     value: CustomError
                 },
+                */
 
                 name: {
-                    value: name
+                    value: name,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
                 },
 
                 toStringX: {
                     value: function () {
                         return this.name + ': ' + this.message;
-                    }
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
                 }
             });
 

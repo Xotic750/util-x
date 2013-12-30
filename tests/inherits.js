@@ -45,41 +45,20 @@
             }).to.not.throwException();
         });
 
-        it('#1', function () {
+        it('should not throw an error in each case', function () {
             expect(Tested.prototype).not.to.be(Test.prototype);
-        });
-
-        it('#2', function () {
             expect(Tested.prototype.foo).to.be(Test.prototype.foo);
-        });
-
-        it('#3', function () {
             expect(Tested.prototype.bar).to.be(Test.prototype.bar);
-        });
-
-        it('#4', function () {
             expect(Tested.prototype.flum).to.be(Test.prototype.flum);
-        });
-
-        it('#5', function () {
             expect(Tested.prototype.wiz).to.be(Test.prototype.wiz);
-        });
-
-        it('#6', function () {
             expect(Tested.prototype.constructor).to.be(Tested);
-        });
 
-        it('#7', function () {
             expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype))
                 .to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype));
-        });
 
-        it('#8', function () {
             expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.flum))
                 .to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.flum));
-        });
 
-        it('#9', function () {
             expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.wiz))
                 .to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.wiz));
         });
