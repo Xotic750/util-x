@@ -23,77 +23,50 @@
             expect(function () {
                 utilx.customError();
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError(null);
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
                 utilx.customError('');
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(SyntaxError);
             });
 
-            /*
-            try {
-                utilx.customError('NullError', null);
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
-            }
-
-            try {
-                utilx.customError('FnError', utilx.noop);
-            } catch (e) {
-                expect(utilx.objectInstanceOf(e, TypeError)).to.be(true);
-            }
-            */
-
             expect(function () {
                 utilx.customError('NullError', null);
-            }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
 
             expect(function () {
                 utilx.customError('FnError', utilx.noop);
-            }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MySyntaxError: test');
             });
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(MyError);
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                console.log(e.name + '\n' + e.message + '\n');
                 expect(e).to.be.a(MySyntaxError);
             });
 

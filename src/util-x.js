@@ -3227,12 +3227,11 @@
         }
 
         /**
-         * Creates a custom Error.
+         * Tests to see if the argument is one of the seven standard Error type constructors.
          * @memberOf utilx
          * @function
-         * @param {string} name
-         * @param {constructor} [ErrorConstructor] Does not work with IE < 9, only Error can be used
-         * @return {constructor}
+         * @param {*} inputArg
+         * @return {boolean}
          */
         utilx.isErrorTypeConstructor = function (inputArg) {
             var result;
@@ -3255,7 +3254,9 @@
         };
 
         /**
-         * Creates a custom Error.
+         * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
+         * If a valid native Error type constructor is provided but not supporte by the browesr the it will
+         * also default to Error. (Looking at you IE < 9)
          * @memberOf utilx
          * @function
          * @param {string} name
@@ -3282,10 +3283,8 @@
                     throw new SyntaxError('"name" was an empty string');
                 }
 
-                if (!isOkToUseOtherErrors || utilx.isUndefined(ErrorConstructor)) {
+                if (!isOkToUseOtherErrors || !utilx.isErrorTypeConstructor(ErrorConstructor)) {
                     ErrorConstructor = Error;
-                } else if (!utilx.isErrorTypeConstructor(ErrorConstructor)) {
-                    throw new TypeError('"ErrorConstructor" must be one of the Error constructors');
                 }
 
                 return makeCustomError(name, ErrorConstructor);
