@@ -11,7 +11,7 @@
         MySyntaxError;
 
     describe('customError', function () {
-        it('should not throw an error in each case', function () {
+        it('setting up should not throw an error', function () {
             expect(function () {
                 MyError = utilx.customError('MyError');
             }).to.not.throwException();
@@ -19,7 +19,9 @@
             expect(function () {
                 MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
             }).to.not.throwException();
+        });
 
+        it('should not throw an error in each case', function () {
             expect(function () {
                 utilx.customError();
             }).to.throwException(function (e) {
@@ -82,20 +84,23 @@
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
         });
 
-        /*
-        describe('should detect what the environment supports', function () {
-            if (utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError)) {
-                it('Environment supports other custom errors', function () {
-                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), SyntaxError),
-                           'customError Environment supports other custom errors');
+        describe('Detected ', function () {
+            var MySyntaxErrorX = utilx.customError('MySyntaxError', SyntaxError),
+                msex = new MySyntaxErrorX('test');
+
+            try {
+                if (!utilx.objectInstanceOf(msex, SyntaxError)) {
+                    throw msex;
+                }
+
+                it('environment supports all Error types', function () {
+                    expect(true).to.be(true);
                 });
-            } else {
-                it('Environment only supports custom Error', function () {
-                    expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error),
-                           'customError Environment only supports custom Error');
+            } catch (e) {
+                it('environment supports Error type', function () {
+                    expect(utilx.objectInstanceOf(e, Error)).to.be(true);
                 });
             }
         });
-        */
     });
 }());
