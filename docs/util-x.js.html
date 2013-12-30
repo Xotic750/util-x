@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.41
+ * @version 0.0.42
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -3138,7 +3138,7 @@
             }
 
             n = utilx.toNumber(n);
-            if (utilx.gte(n, 0) &amp;&amp; !utilx.numberIsNaN(n)) {
+            if (!utilx.numberIsNaN(n) &amp;&amp; utilx.gte(n, 0)) {
                 if (utilx.gt(s.length, n)) {
                     s = s.slice(0, n);
                 }
@@ -3177,90 +3177,6 @@
         };
 
         /**
-         * Custom replacer used to stringify messages that are not strings.
-         * @private
-         * @function
-         * @param {string} key Unused
-         * @param {*} value
-         * @return {string}
-         */
-        function customErrorReplacer(key, value) {
-            /*jslint unparam: true */
-            /*jshint unused: true */
-            if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) ||
-                    (utilx.isNumber(value) &amp;&amp; !utilx.numberIsFinite(value))) {
-
-                return utilx.anyToString(value);
-            }
-
-            return value;
-        }
-
-        /**
-         * Creates a custom Error constructor.
-         * @private
-         * @function
-         * @param {string} name
-         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used
-         * @return {constructor}
-         */
-        function makeCustomError(name, ErrorConstructor) {
-            function CustomError(message, stackStartFunction) {
-                var err;
-
-                if (!utilx.isString(message)) {
-                    message = utilx.stringTruncate(utilx.jsonStringify(message, customErrorReplacer), 128);
-                }
-
-                this.message = message;
-                if (!utilx.isFunction(stackStartFunction)) {
-                    stackStartFunction = CustomError;
-                }
-
-                this.stackStartFunction = stackStartFunction;
-                if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
-                    ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
-                } else {
-                    err = ErrorConstructor.call(this);
-
-                    if (utilx.isString(err.stack)) {
-                        this.stack = err.stack;
-                    } else if (utilx.isString(err.stacktrace)) {
-                        this.stack = err.stacktrace;
-                    }
-                }
-            }
-
-            utilx.inherits(CustomError, ErrorConstructor);
-
-            utilx.objectDefineProperties(CustomError.prototype, {
-                /*
-                constructor: {
-                    value: CustomError
-                },
-                */
-
-                name: {
-                    value: name,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                },
-
-                toStringX: {
-                    value: function () {
-                        return this.name + ': ' + this.message;
-                    },
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                }
-            });
-
-            return CustomError;
-        }
-
-        /**
          * Tests to see if the argument is one of the seven standard Error type constructors.
          * @memberOf utilx
          * @function
@@ -3288,13 +3204,122 @@
         };
 
         /**
+         * Custom replacer used to help stringify error messages.
+         * @private
+         * @function
+         * @param {string} key Unused
+         * @param {*} value
+         * @return {string}
+         */
+        utilx.customErrorReplacer = function (key, value) {
+            /*jslint unparam: true */
+            /*jshint unused: true */
+            var result;
+
+            if (utilx.isString(value)) {
+                result = value;
+            } else if (utilx.isUndefined(value) || utilx.isFunction(value) || utilx.isRegExp(value) ||
+                    (utilx.isNumber(value) &amp;&amp; !utilx.numberIsFinite(value))) {
+
+                result = utilx.anyToString(value);
+            } else {
+                result = value;
+            }
+
+            return result;
+        };
+
+        /**
+         * Creates a custom Error constructor.
+         * @private
+         * @function
+         * @param {string} name
+         * @param {constructor} ErrorConstructor Does not work with IE &lt; 9, only Error can be used
+         * @param {number|string} [maxMessageLength] Range 64 to Infinity (128 default)
+         * @return {constructor}
+         */
+        function makeCustomError(name, ErrorConstructor, maxMessageLength) {
+            if (!utilx.isString(name) || utilx.isEmptyString(name)) {
+                throw new TypeError('"name" was not a valid string');
+            }
+
+            if (!utilx.isErrorTypeConstructor(ErrorConstructor)) {
+                throw new TypeError('"ErrorConstructor" was not an Error type');
+            }
+
+            maxMessageLength = utilx.toNumber(maxMessageLength);
+            if (utilx.numberIsNaN(maxMessageLength) || utilx.lt(maxMessageLength, 64)) {
+                maxMessageLength = 128;
+            }
+
+            function CustomError(message, stackStartFunction) {
+                var err;
+
+                if (!utilx.isString(message)) {
+                    message = utilx.stringTruncate(utilx.jsonStringify(message, utilx.customErrorReplacer),
+                                                   maxMessageLength);
+                }
+
+                this.message = message;
+                if (!utilx.isFunction(stackStartFunction)) {
+                    stackStartFunction = CustomError;
+                }
+
+                this.stackStartFunction = stackStartFunction;
+                if (utilx.isFunction(ErrorConstructor.captureStackTrace)) {
+                    ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+                } else {
+                    err = ErrorConstructor.call(this);
+
+                    if (utilx.isString(err.stack)) {
+                        this.stack = err.stack;
+                    } else if (utilx.isString(err.stacktrace)) {
+                        this.stack = err.stacktrace;
+                    }
+                }
+            }
+
+            utilx.inherits(CustomError, ErrorConstructor);
+
+            utilx.objectDefineProperties(CustomError.prototype, {
+                name: {
+                    value: name,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                },
+
+                toString: {
+                    value: function () {
+                        return this.toStringX();
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                },
+
+                toStringX: {
+                    value: function () {
+                        return this.name + ': ' + this.message;
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                }
+            });
+
+            return CustomError;
+        }
+
+        /**
          * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
          * If a valid native Error type constructor is provided but not supporte by the browesr the it will
          * also default to Error. (Looking at you IE &lt; 9)
          * @memberOf utilx
          * @function
          * @param {string} name
-         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used
+         * @param {constructor} [ErrorConstructor] Does not work with IE &lt; 9, only Error can be used (defult: Error)
+         * @param {number|string} [maxMessageLength] Range 64 to Infinity (128 default)
          * @return {constructor}
          */
         utilx.customError = (function () {
@@ -3308,7 +3333,7 @@
                 isOkToUseOtherErrors = false;
             }
 
-            return function (name, ErrorConstructor) {
+            return function (name, ErrorConstructor, maxMessageLength) {
                 if (!utilx.isString(name)) {
                     throw new TypeError('"name" was not a string');
                 }
@@ -3317,11 +3342,17 @@
                     throw new SyntaxError('"name" was an empty string');
                 }
 
+                if (utilx.isUndefined(maxMessageLength) &amp;&amp;
+                        (utilx.isNumber(ErrorConstructor) || utilx.isString(ErrorConstructor))) {
+                    maxMessageLength = ErrorConstructor;
+                    ErrorConstructor = Error;
+                }
+
                 if (!isOkToUseOtherErrors || !utilx.isErrorTypeConstructor(ErrorConstructor)) {
                     ErrorConstructor = Error;
                 }
 
-                return makeCustomError(name, ErrorConstructor);
+                return makeCustomError(name, ErrorConstructor, maxMessageLength);
             };
         }());
 
@@ -3377,7 +3408,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Dec 30 2013 05:13:54 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Dec 30 2013 14:35:13 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.41",
+    "version": "0.0.42",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -48,7 +48,6 @@
     "devDependencies": {
         "uglify-js": "latest",
         "grunt": "latest",
-        "js-beautify": "latest",
         "jsdoc": "latest",
         "mocha": "latest",
         "mocha-lcov-reporter": "latest",
@@ -63,12 +62,11 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "~2.36.1"
+        "browserify": "latest"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
         "grunt": "latest",
-        "js-beautify": "latest",
         "jsdoc": "latest",
         "mocha": "latest",
         "mocha-lcov-reporter": "latest",
@@ -83,13 +81,12 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "~2.36.1"
+        "browserify": "latest"
     },
     "browser": {
         "../lib/util-x.min": false,
         "uglify-js": false,
         "grunt": false,
-        "js-beautify": false,
         "jsdoc": false,
         "grunt-cli": false,
         "grunt-contrib-jshint": false,
