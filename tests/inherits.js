@@ -46,9 +46,6 @@
             expect(Tested.prototype.flum).to.be(Test.prototype.flum);
             expect(Tested.prototype.wiz).to.be(Test.prototype.wiz);
             expect(Tested.prototype.constructor).to.be(Tested);
-            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype));
-            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.flum)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.flum));
-            expect(utilx.objectGetOwnPropertyDescriptor(Tested.prototype.wiz)).to.eql(utilx.objectGetOwnPropertyDescriptor(Test.prototype.wiz));
         });
     });
 }());
