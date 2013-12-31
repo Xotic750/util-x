@@ -3161,11 +3161,17 @@
 
             switch (inputArg) {
             case Error:
+                /* falls through */
             case TypeError:
+                /* falls through */
             case SyntaxError:
+                /* falls through */
             case RangeError:
+                /* falls through */
             case EvalError:
+                /* falls through */
             case ReferenceError:
+                /* falls through */
             case URIError:
                 result = true;
                 break;
@@ -3350,7 +3356,7 @@
         return pu;
     };
 
-    if (typeof globalThis !== 'object' && null === globalThis) {
+    if (typeof globalThis !== 'object' || null === globalThis) {
         throw new TypeError('Invalid global context');
     }
 

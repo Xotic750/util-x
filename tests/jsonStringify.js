@@ -3,7 +3,7 @@
 (function () {
     'use strict';
 
-    var required = require('./'),
+    var required = require('../scripts/'),
         utilx = required.utilx,
         expect = required.expect;
 
