@@ -1,15 +1,16 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        MyError,
-        MySyntaxError;
+        expect = required.expect;
 
     describe('customError', function () {
+        var MyError,
+            MySyntaxError;
+
         it('setting up should not throw an error', function () {
             expect(function () {
                 MyError = utilx.customError('MyError');
@@ -50,12 +51,14 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
+                console.log('"' + e.toStringX() + '"');
                 expect(e.toStringX()).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
+                console.log('"' + e.toStringX() + '"');
                 expect(e.toStringX()).to.be('MySyntaxError: test');
             });
 
