@@ -9,7 +9,22 @@
 
     describe('arrayPush', function () {
         //it('should not throw an error in each case', function () {
-        var arr = [];
+        var arr = [],
+            arrCmp = [];
+
+        utilx.arrayPush(arrCmp, utilx.privateUndefined);
+        utilx.arrayPush(arrCmp, null);
+        utilx.arrayPush(arrCmp, -1);
+        utilx.arrayPush(arrCmp, 0);
+        utilx.arrayPush(arrCmp, 1);
+        utilx.arrayPush(arrCmp, false);
+        utilx.arrayPush(arrCmp, true);
+        utilx.arrayPush(arrCmp);
+        utilx.arrayPush(arrCmp, utilx.privateUndefined);
+        utilx.arrayPush(arrCmp, '');
+        utilx.arrayPush(arrCmp, 'abc');
+        utilx.arrayPush(arrCmp, null);
+        utilx.arrayPush(arrCmp, utilx.privateUndefined);
 
         it('1', function () {
             expect(utilx.arrayPush(arr, null)).to.be(1);
@@ -51,8 +66,8 @@
             expect(utilx.arrayPush(arr, 'abc')).to.be(9);
         });
 
-        it('11', function () {
-            expect(arr).to.eql([null, -1, 0, 1, false, true, utilx.privateUndefined, '', 'abc']);
+        it('11: ' + arrCmp.toString() + ' : ' + [utilx.privateUndefined, null, -1, 0, 1, false, true, utilx.privateUndefined, '', 'abc', null, utilx.privateUndefined].toString(), function () {
+            expect(arrCmp).to.eql([utilx.privateUndefined, null, -1, 0, 1, false, true, utilx.privateUndefined, '', 'abc', null, utilx.privateUndefined]);
         });
     });
 }());
