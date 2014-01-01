@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -6,7 +6,6 @@
     var required = require('../scripts/'),
         utilx = required.utilx,
         expect = required.expect,
-        rxSplit = new RegExp('[\\r\\n]'),
         MyError,
         MySyntaxError;
 
@@ -51,13 +50,13 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MyError: test');
+                expect(e.toStringX()).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                expect(utilx.arrayFirst(utilx.stringSplit(e.toStringX(), rxSplit))).to.be('MySyntaxError: test');
+                expect(e.toStringX()).to.be('MySyntaxError: test');
             });
 
             expect(function () {

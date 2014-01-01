@@ -43,6 +43,7 @@
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
             protoName = '__proto__',
+            rxSplitNewLine = new RegExp('\\r\\n|\\n'),
 
             /**
              * For hasOwnProperty bug.
@@ -725,6 +726,41 @@
         };
 
         /**
+         * The arrayJoin() method joins all elements of an array into a string.
+         * The separator is converted to a string if necessary.
+         * If omitted, the array elements are separated with a comma.
+         * @memberOf utilx
+         * @function
+         * @param {array} inputArg
+         * @param {string} [separator]
+         * @return {*}
+         */
+        utilx.arrayJoin = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe/
+            var joinFN = baseArray.join,
+                nfeJoin;
+
+            if (utilx.strictEqual([1, 2, 3].join(), '1,2,3')) {
+                tempSafariNFE = function nfeJoin(inputArg, separator) {
+                    return joinFN.call(inputArg, separator);
+                };
+            } else {
+                tempSafariNFE = function nfeJoin(inputArg, separator) {
+                    if (utilx.isUndefined(separator)) {
+                        separator = ',';
+                    }
+
+                    return joinFN.call(inputArg, separator);
+                };
+            }
+
+            nfeJoin = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
          * Returns the first element of an array; otherwise returns undefined.
          * @memberOf utilx
          * @function
@@ -991,6 +1027,72 @@
         };
 
         /**
+         * The arrayPush() method adds one or more elements to the end of an array and
+         * returns the new length of the array.
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {...*} var_args
+         * @return {number}
+         */
+        // named utilx.arrayPush instead of push because of SpiderMonkey and Blackberry bug
+        utilx.arrayPush = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe
+            var pushFN = baseArray.push,
+                nfePush;
+
+            if (utilx.strictEqual(pushFN.call([1, 2, 3], 0), 4)) {
+                tempSafariNFE = function nfePush(array) {
+                    return pushFN.apply(array, utilx.argumentsSlice(arguments, 1));
+                };
+            } else {
+                tempSafariNFE = function nfePush(array) {
+                    pushFN.apply(array, utilx.argumentsSlice(arguments, 1));
+
+                    return array.length;
+                };
+            }
+
+            nfePush = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
+         * The arrayUnshift() method adds one or more elements to the beginning of an array and
+         * returns the new length of the array.
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {...*} var_args
+         * @return {number}
+         */
+        // named utilx.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
+        utilx.arrayUnshift = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe
+            var unshiftFN = baseArray.unshift,
+                nfeUnshift;
+
+            if (utilx.strictEqual(unshiftFN.call([], 0), 1)) {
+                tempSafariNFE = function nfeUnshift(array) {
+                    return unshiftFN.apply(array, utilx.argumentsSlice(arguments, 1));
+                };
+            } else {
+                tempSafariNFE = function nfeUnshift(array) {
+                    unshiftFN.apply(array, utilx.argumentsSlice(arguments, 1));
+
+                    return array.length;
+                };
+            }
+
+            nfeUnshift = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
          * @memberOf utilx
          * @function
          * @param {regexp} separator
@@ -1071,7 +1173,7 @@
                     while (match) {
                         lastIndex = match.index + utilx.arrayFirst(match).length;
                         if (utilx.gt(lastIndex, lastLastIndex)) {
-                            output.push(string.slice(lastLastIndex, match.index));
+                            utilx.arrayPush(output, string.slice(lastLastIndex, match.index));
                             if (utilx.isFalse(compliantExecNpcg) && utilx.gt(match.length, 1)) {
                                 stringSplitReplacer(separator2, match, arguments);
                             }
@@ -1096,10 +1198,10 @@
 
                     if (utilx.strictEqual(lastLastIndex, string.length)) {
                         if (lastLength || !separator.test('')) {
-                            output.push('');
+                            utilx.arrayPush(output, '');
                         }
                     } else {
-                        output.push(string.slice(lastLastIndex));
+                        utilx.arrayPush(output, string.slice(lastLastIndex));
                     }
 
                     if (utilx.gt(output.length, limit)) {
@@ -1677,30 +1779,6 @@
             return val;
         };
 
-        // named utilx.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
-        utilx.arrayUnshift = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var unshiftFN = baseArray.unshift,
-                nfeUnshift;
-
-            if (utilx.strictEqual(unshiftFN.call([], 0), 1)) {
-                tempSafariNFE = function nfeUnshift(array) {
-                    return unshiftFN.apply(array, utilx.argumentsSlice(arguments, 1, arguments.length));
-                };
-            } else {
-                tempSafariNFE = function nfeUnshift(array) {
-                    unshiftFN.apply(array, utilx.argumentsSlice(arguments, 1, arguments.length));
-
-                    return array.length;
-                };
-            }
-
-            nfeUnshift = null;
-
-            return tempSafariNFE;
-        }());
-
         /**
          * Creates a new array with all elements that pass the test implemented by the provided function.
          * @memberOf utilx
@@ -1994,7 +2072,7 @@
 
                     for (prop in object) {
                         if (utilx.objectHasOwnProperty(object, prop)) {
-                            props.push(prop);
+                            utilx.arrayPush(props, prop);
                         }
                     }
 
@@ -2887,9 +2965,9 @@
                                 member = '[]';
                             } else {
                                 if (gap) {
-                                    member = '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']';
+                                    member = '[\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + ']';
                                 } else {
-                                    member = '[' + partial.join(',') + ']';
+                                    member = '[' + utilx.arrayJoin(partial) + ']';
                                 }
                             }
 
@@ -2905,7 +2983,7 @@
                                 if (utilx.isString(element)) {
                                     v = str(element, value);
                                     if (v) {
-                                        partial.push(quote(element) + (gap ? ': ' : ':') + v);
+                                        utilx.arrayPush(partial, quote(element) + (gap ? ': ' : ':') + v);
                                     }
                                 }
                             });
@@ -2914,7 +2992,7 @@
                                 var v = str(k, value);
 
                                 if (v) {
-                                    partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                                    utilx.arrayPush(partial, quote(k) + (gap ? ': ' : ':') + v);
                                 }
                             });
                         }
@@ -2923,9 +3001,9 @@
                             member = '{}';
                         } else {
                             if (gap) {
-                                member = '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}';
+                                member = '{\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + '}';
                             } else {
-                                member = '{' + partial.join(',') + '}';
+                                member = '{' + utilx.arrayJoin(partial) + '}';
                             }
                         }
 
@@ -3255,7 +3333,6 @@
                     ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
                 } else {
                     err = ErrorConstructor.call(this);
-
                     if (utilx.isString(err.stack)) {
                         this.stack = err.stack;
                     } else if (utilx.isString(err.stacktrace)) {
@@ -3285,7 +3362,28 @@
 
                 toStringX: {
                     value: function () {
-                        return this.name + ': ' + this.message;
+                        var arr = utilx.stringSplit(this.message, rxSplitNewLine),
+                            str = this.name + ': ';
+
+                        if (utilx.gt(arr.length, 1)) {
+                            arr = utilx.arrayFilter(arr, function (element) {
+                                var val;
+
+                                if (!utilx.stringContains(element,
+                                                         'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
+
+                                    val = element;
+                                }
+
+                                return val;
+                            });
+
+                            str += utilx.arrayJoin(arr, '\n');
+                        } else {
+                            str += this.message;
+                        }
+
+                        return str;
                     },
                     enumerable: false,
                     writable: true,
@@ -3315,6 +3413,7 @@
                 CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
                 isOkToUseOtherErrors = utilx.objectInstanceOf(new CustomSyntaxError('test'), SyntaxError);
             } catch (e) {
+                // IE < 9
                 isOkToUseOtherErrors = false;
             }
 
