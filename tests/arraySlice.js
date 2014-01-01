@@ -33,8 +33,9 @@
                 .to.eql(utilx.arraySlice(arr, utilx.privateUndefined, utilx.privateUndefined));
         });
 
-        it('#3: ' + utilx.arraySlice(someArgs(), -1) + ' : ' + utilx.arraySlice(arr, -1), function () {
+        it('#3: ' + utilx.arraySlice(someArgs(), -1).length + ' : ' + utilx.arraySlice(arr, -1).length, function () {
             expect(utilx.arraySlice(someArgs(), -1)).to.eql(utilx.arraySlice(arr, -1));
+            expect(utilx.arraySlice(someArgs(), -1).length).to.be(1);
         });
 
         it('#4: ' + utilx.arraySlice(someArgs(), 0) + ' : ' + utilx.arraySlice(arr, 0), function () {
@@ -45,8 +46,9 @@
             expect(utilx.arraySlice(someArgs(), 3)).to.eql(utilx.arraySlice(arr, 3));
         });
 
-        it('#6: ' + utilx.arraySlice(someArgs(), -1, 4) + ' : ' + utilx.arraySlice(arr, -1, 4), function () {
+        it('#6: ' + utilx.arraySlice(someArgs(), -1, 4).length + ' : ' + utilx.arraySlice(arr, -1, 4).length, function () {
             expect(utilx.arraySlice(someArgs(), -1, 4)).to.eql(utilx.arraySlice(arr, -1, 4));
+            expect(utilx.arraySlice(someArgs(), -1, 4).length).to.be(0);
         });
 
         it('#7: ' + utilx.arraySlice(someArgs(), 0, 4) + ' : ' + utilx.arraySlice(arr, 0, 4), function () {
