@@ -1811,7 +1811,7 @@
                 sliceFN = utilx.privateUndefined;
             }
 
-            if (utilx.isFunction(sliceFN)) {
+            if (false && utilx.isFunction(sliceFN)) {
                 tempSafariNFE = function nfeSlice(array, start, end) {
                     return sliceFN.call(array, start, end);
                 };
@@ -1845,13 +1845,10 @@
                         final = Math.min(relativeEnd, length);
                     }
 
+                    val.length = Math.max(final - k, 0);
                     while (k < final) {
-                        if (utilx.objectHasOwnProperty(object, k)) {
-                            val[next] = object[k];
-                            val.length = next + 1;
-                            next += 1;
-                        }
-
+                        val[next] = object[k];
+                        next += 1;
                         k += 1;
                     }
 
