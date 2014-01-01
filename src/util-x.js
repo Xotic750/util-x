@@ -2487,20 +2487,26 @@
         }());
 
         /**
-         * Merge the contents of source object together into the target object.
+         * "shallow" extend the properties from the source objects over to the target object,
+         * and return the target object. It's in-order, so the last source will override properties of
+         * the same name in previous arguments.
          * @memberOf utilx
          * @function
          * @param {object} target
-         * @param {object} source
+         * @param {...object} [source]
          * @return {object}
          */
-        utilx.extend = function (target, source) {
+        utilx.extend = function (target) {
             if (!utilx.isTypeObject(target) && !utilx.isFunction(target)) {
-                throw new TypeError('utilx.extend called on a non-object');
+                throw new TypeError('utilx.extend "target" is a non-object');
             }
 
-            utilx.arrayForEach(utilx.objectKeys(source), function (key) {
-                utilx.objectDefineProperty(target, key, utilx.objectGetOwnPropertyDescriptor(source, key));
+            utilx.arrayForEach(utilx.argumentsSlice(arguments, 1), function (source) {
+                if (utilx.isTypeObject(source) || utilx.isFunction(source)) {
+                    utilx.arrayForEach(utilx.objectKeys(source), function (key) {
+                        utilx.objectDefineProperty(target, key, utilx.objectGetOwnPropertyDescriptor(source, key));
+                    });
+                }
             });
 
             return target;

@@ -8,7 +8,9 @@ Master
 
 [![Coverage Status](https://coveralls.io/repos/Xotic750/util-x/badge.png?branch=master)](https://coveralls.io/r/Xotic750/util-x?branch=master "Coverage status on Coveralls")
 
+[![NPM version](https://badge.fury.io/js/util-x.png)](http://badge.fury.io/js/util-x "Current NPM release")
+
 [![browser support](https://ci.testling.com/Xotic750/util-x.png)](https://ci.testling.com/Xotic750/util-x 'Browser support on Testling CI')
 
-#[util-x 0.0.43](http://xotic750.github.io/util-x/)
+#[util-x 0.0.44](http://xotic750.github.io/util-x/)
 ###### Graham Fairweather <xotic750@gmail.com>

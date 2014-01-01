@@ -8,6 +8,8 @@ Master
 
 [![Coverage Status](https://coveralls.io/repos/Xotic750/@@MODULE/badge.png?branch=master)](https://coveralls.io/r/Xotic750/@@MODULE?branch=master "Coverage status on Coveralls")
 
+[![NPM version](https://badge.fury.io/js/util-x.png)](http://badge.fury.io/js/util-x "Current NPM release")
+
 [![browser support](https://ci.testling.com/Xotic750/@@MODULE.png)](https://ci.testling.com/Xotic750/@@MODULE 'Browser support on Testling CI')
 
 #[@@MODULE @@VERSION](@@HOMEPAGE)
