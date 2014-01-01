@@ -2927,7 +2927,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3304">line 3304</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3310">line 3310</a>
     </li></ul></dd>
     
     
@@ -3108,7 +3108,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2586">line 2586</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2592">line 2592</a>
     </li></ul></dd>
     
     
@@ -3401,7 +3401,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2678">line 2678</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2684">line 2684</a>
     </li></ul></dd>
     
     
@@ -3696,7 +3696,7 @@ special regex characters.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2544">line 2544</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2550">line 2550</a>
     </li></ul></dd>
     
     
@@ -3742,7 +3742,7 @@ special regex characters.
         
             
 <dt>
-    <h4 class="name" id="extend"><span class="type-signature">&lt;static> </span>extend<span class="signature">(target, source)</span><span class="type-signature"> &rarr; {object}</span></h4>
+    <h4 class="name" id="extend"><span class="type-signature">&lt;static> </span>extend<span class="signature">(target, <span class="optional">source</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
     
     
 </dt>
@@ -3750,7 +3750,9 @@ special regex characters.
     
     
     <div class="description">
-        Merge the contents of source object together into the target object.
+        "shallow" extend the properties from the source objects over to the target object,
+and return the target object. It's in-order, so the last source will override properties of
+the same name in previous arguments.
     </div>
     
 
@@ -3771,6 +3773,8 @@ special regex characters.
 		
 		<th>Type</th>
 		
+		
+		<th>Argument</th>
 		
 		
 		
@@ -3797,6 +3801,14 @@ special regex characters.
             </td>
             
             
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
             
             
             
@@ -3819,6 +3831,18 @@ special regex characters.
             
             </td>
             
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                    &lt;repeatable><br>
+                
+                </td>
             
             
             
@@ -3854,7 +3878,7 @@ special regex characters.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2497">line 2497</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2499">line 2499</a>
     </li></ul></dd>
     
     
@@ -4308,7 +4332,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2692">line 2692</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2698">line 2698</a>
     </li></ul></dd>
     
     
@@ -4940,7 +4964,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3131">line 3131</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3137">line 3137</a>
     </li></ul></dd>
     
     
@@ -5661,7 +5685,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2516">line 2516</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2522">line 2522</a>
     </li></ul></dd>
     
     
@@ -5796,7 +5820,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2527">line 2527</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2533">line 2533</a>
     </li></ul></dd>
     
     
@@ -6342,7 +6366,7 @@ Otherwise returns null if the argument does not match the rquirements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3159">line 3159</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3165">line 3165</a>
     </li></ul></dd>
     
     
@@ -8663,7 +8687,7 @@ Otherwise returns null if the argument does not match the rquirements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2973">line 2973</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2979">line 2979</a>
     </li></ul></dd>
     
     
@@ -8848,7 +8872,7 @@ or replacing property values in a user-defined manner.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2706">line 2706</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2712">line 2712</a>
     </li></ul></dd>
     
     
@@ -12428,7 +12452,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2573">line 2573</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2579">line 2579</a>
     </li></ul></dd>
     
     
@@ -14040,7 +14064,7 @@ returning true or false as appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3108">line 3108</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3114">line 3114</a>
     </li></ul></dd>
     
     
@@ -15010,7 +15034,7 @@ the range 0 through 2^32-1,inclusive.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2560">line 2560</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line2566">line 2566</a>
     </li></ul></dd>
     
     
@@ -15075,7 +15099,7 @@ the range 0 through 2^32-1,inclusive.
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Dec 31 2013 01:50:19 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 01 2014 03:00:39 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
