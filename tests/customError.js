@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -51,14 +51,12 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                console.log('"' + e.toStringX() + '"');
                 expect(e.toStringX()).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                console.log('"' + e.toStringX() + '"');
                 expect(e.toStringX()).to.be('MySyntaxError: test');
             });
 
