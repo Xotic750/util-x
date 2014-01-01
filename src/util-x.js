@@ -1036,28 +1036,13 @@
          * @return {number}
          */
         // named utilx.arrayPush instead of push because of SpiderMonkey and Blackberry bug
-        utilx.arrayPush = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var pushFN = baseArray.push,
-                nfePush;
+        utilx.arrayPush = function nfePush(array) {
+            utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (argument) {
+                baseArray.push.call(array, argument);
+            });
 
-            if (utilx.strictEqual(pushFN.call([1, 2, 3], 0), 4)) {
-                tempSafariNFE = function nfePush(array) {
-                    return pushFN.apply(array, utilx.arraySlice(arguments, 1));
-                };
-            } else {
-                tempSafariNFE = function nfePush(array) {
-                    pushFN.apply(array, utilx.arraySlice(arguments, 1));
-
-                    return array.length;
-                };
-            }
-
-            nfePush = null;
-
-            return tempSafariNFE;
-        }());
+            return array.length;
+        };
 
         /**
          * The arrayUnshift() method adds one or more elements to the beginning of an array and
@@ -1069,28 +1054,13 @@
          * @return {number}
          */
         // named utilx.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
-        utilx.arrayUnshift = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var unshiftFN = baseArray.unshift,
-                nfeUnshift;
+        utilx.arrayUnshift = function nfeUnshift(array) {
+            utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (argument) {
+                baseArray.unshift.call(array, argument);
+            });
 
-            if (utilx.strictEqual(unshiftFN.call([], 0), 1)) {
-                tempSafariNFE = function nfeUnshift(array) {
-                    return unshiftFN.apply(array, utilx.arraySlice(arguments, 1));
-                };
-            } else {
-                tempSafariNFE = function nfeUnshift(array) {
-                    unshiftFN.apply(array, utilx.arraySlice(arguments, 1));
-
-                    return array.length;
-                };
-            }
-
-            nfeUnshift = null;
-
-            return tempSafariNFE;
-        }());
+            return array.length;
+        };
 
         /**
          * @memberOf utilx

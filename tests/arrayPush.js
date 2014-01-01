@@ -46,7 +46,7 @@
             utilx.arrayPush(arrCmp, 1);
             utilx.arrayPush(arrCmp, false);
             utilx.arrayPush(arrCmp, true);
-            utilx.arrayPush(arrCmp);
+            //utilx.arrayPush(arrCmp);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
             utilx.arrayPush(arrCmp, '');
             utilx.arrayPush(arrCmp, 'abc');
