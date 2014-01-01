@@ -260,11 +260,11 @@
             expect(utilx.isDate(null)).to.be(false);
             expect(utilx.isDate(utilx.noop)).to.be(false);
             expect(utilx.isDate(returnArgs())).to.be(false);
-            expect(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs()))).to.be(true);
-            expect(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(null)))).to.be(true);
-            expect(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(privateUndefined)))).to.be(true);
-            expect(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs(1, 2, 3)))).to.be(true);
-            expect(utilx.arrayIsArray(utilx.argumentsSlice(returnArgs({}, {}, {})))).to.be(true);
+            expect(utilx.arrayIsArray(utilx.arraySlice(returnArgs()))).to.be(true);
+            expect(utilx.arrayIsArray(utilx.arraySlice(returnArgs(null)))).to.be(true);
+            expect(utilx.arrayIsArray(utilx.arraySlice(returnArgs(privateUndefined)))).to.be(true);
+            expect(utilx.arrayIsArray(utilx.arraySlice(returnArgs(1, 2, 3)))).to.be(true);
+            expect(utilx.arrayIsArray(utilx.arraySlice(returnArgs({}, {}, {})))).to.be(true);
             expect(utilx.stringTrim('')).to.be('');
             expect(utilx.stringTrim('     ')).to.be('');
             expect(utilx.stringTrim('x ')).to.be('x');
