@@ -1811,7 +1811,7 @@
                         val;
 
                     if (utilx.lt(length, 2)) {
-                        val = sliceFN.apply(array);
+                        val = sliceFN.apply(array, []);
                     } else if (utilx.strictEqual(length, 2)) {
                         val = sliceFN.apply(array, [start]);
                     } else if (utilx.gt(length, 2)) {
