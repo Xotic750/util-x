@@ -10,7 +10,21 @@
     describe('arrayPush', function () {
         //it('should not throw an error in each case', function () {
         var arr = [],
-            arrCmp = [];
+            arrCmp = [],
+            arrCmp2 = [
+                utilx.privateUndefined,
+                null,
+                -1,
+                0,
+                1,
+                false,
+                true,
+                utilx.privateUndefined,
+                '',
+                'abc',
+                null,
+                utilx.privateUndefined
+            ];
 
         utilx.arrayPush(arrCmp, utilx.privateUndefined);
         utilx.arrayPush(arrCmp, null);
@@ -66,8 +80,16 @@
             expect(utilx.arrayPush(arr, 'abc')).to.be(9);
         });
 
-        it('11: ' + arrCmp.toString() + ' : ' + [utilx.privateUndefined, null, -1, 0, 1, false, true, utilx.privateUndefined, '', 'abc', null, utilx.privateUndefined].toString(), function () {
-            expect(arrCmp).to.eql([utilx.privateUndefined, null, -1, 0, 1, false, true, utilx.privateUndefined, '', 'abc', null, utilx.privateUndefined]);
+        it('11: ' + arrCmp.toString() + ' : ' + arrCmp2.toString(), function () {
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be.ok();
+        });
+
+        it('12: ' + arrCmp.toString() + ' : ' + arrCmp2.toString(), function () {
+            expect(arrCmp.toString()).to.be(arrCmp2.toString());
+        });
+
+        it('13: ' + arrCmp.toString() + ' : ' + arrCmp2.toString(), function () {
+            expect(arrCmp).to.eql(arrCmp2);
         });
     });
 }());
