@@ -1792,7 +1792,6 @@
                 return returnArgs(utilx.privateUndefined, null, 1, 'a', 2, 'b', null, utilx.privateUndefined);
             }
 
-            /*global console */
             try {
                 if (!utilx.strictEqual(sliceFN.call(someArgs()).toString(), ',,1,a,2,b,,') ||
                         !utilx.strictEqual(sliceFN.call(someArgs(),
@@ -1807,15 +1806,15 @@
                     sliceFN = utilx.privateUndefined;
                 }
             } catch (e) {
-                console.log(e.toString());
                 sliceFN = utilx.privateUndefined;
             }
 
-            if (false && utilx.isFunction(sliceFN)) {
+            if (utilx.isFunction(sliceFN)) {
                 tempSafariNFE = function nfeSlice(array, start, end) {
                     return sliceFN.call(array, start, end);
                 };
             } else {
+                /*global console */
                 console.log('USING POLYFIL');
                 tempSafariNFE = function nfeSlice(array, start, end) {
                     var object = utilx.toObjectFixIndexedAccess(array),
