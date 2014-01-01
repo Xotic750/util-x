@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.44",
+    "version": "0.0.45",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -33,9 +33,6 @@
         "type": "GPL3",
         "url": "http://www.gnu.org/licenses/gpl-3.0.html"
     }],
-    "files": [
-        "./"
-    ],
     "directories": {
         "lib": "lib",
         "doc": "docs"
@@ -97,7 +94,6 @@
         "istanbul": false
     },
     "scripts": {
-        "prepublish": "npm version patch; grunt default",
         "test": "./node_modules/mocha/bin/mocha --check-leaks -u bdd -t 10000 -b -R tap tests/*.js"
     },
     "testling": {
