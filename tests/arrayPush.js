@@ -23,6 +23,46 @@
             expect(utilx.arrayPush(arr, 'abc')).to.be(9);
         });
 
+        it('9', function () {
+            var arrCmp = [],
+                arrCmp2 = [
+                    utilx.privateUndefined,
+                    null,
+                    -1,
+                    0,
+                    1,
+                    false,
+                    true,
+                    utilx.privateUndefined,
+                    '',
+                    'abc',
+                    null,
+                    utilx.privateUndefined
+                ],
+                i;
+
+            arrCmp.length = 12;
+            arrCmp[0] = utilx.privateUndefined;
+            arrCmp[1] = null;
+            arrCmp[2] = -1;
+            arrCmp[3] = 0;
+            arrCmp[4] = 1;
+            arrCmp[5] = false;
+            arrCmp[6] = true;
+            arrCmp[7] = utilx.privateUndefined;
+            arrCmp[8] = '';
+            arrCmp[9] = 'abc';
+            arrCmp[10] = null;
+            arrCmp[11] = utilx.privateUndefined;
+            expect(arrCmp.length).to.be(arrCmp2.length);
+            for (i = 0; i < arrCmp2.length; i += 1) {
+                expect(arrCmp[i]).to.be(arrCmp2[i]);
+            }
+
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(arrCmp).to.eql(arrCmp2);
+        });
+
         it('10', function () {
             var arrCmp = [],
                 arrCmp2 = [
