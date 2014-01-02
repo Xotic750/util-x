@@ -61,6 +61,7 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
     });
