@@ -2731,6 +2731,7 @@
          * @return {boolean}
          */
         utilx.deepEqual = function (a, b, opts) {
+            /*global console */
             if (!utilx.isPlainObject(opts)) {
                 opts = {};
             }
@@ -2740,10 +2741,12 @@
             }
 
             if (utilx.isDate(a) && utilx.isDate(b)) {
+                console.log('# a:' + a + ' and b:' + b + ' are date');
                 return utilx.objectIs(a.getTime(), b.getTime());
             }
 
             if (utilx.isRegExp(a) && utilx.isRegExp(b)) {
+                console.log('# a:' + a + ' and b:' + b + ' are regexp');
                 return utilx.objectIs(a.source, b.source) &&
                     utilx.objectIs(a.global, b.global) &&
                     utilx.objectIs(a.multiline, b.multiline) &&
@@ -2753,25 +2756,31 @@
             }
 
             if (!utilx.isTypeObject(a) && !utilx.isTypeObject(b)) {
+                console.log('# a:' + a + ' and b:' + b + ' are not objects');
                 return utilx.isTrue(opts.strict) ? utilx.objectIs(a, b) : utilx.equal(a, b);
             }
 
             if (utilx.isTrue(opts.strict)) {
                 if (!utilx.objectIs(utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(a)),
                                     utilx.objectGetPrototypeOf(utilx.toObjectFixIndexedAccess(b)))) {
+
+                    console.log('# prototypes are not strict the same');
                     return false;
                 }
             } else {
                 if (!utilx.objectIs(a.prototype, b.prototype)) {
+                    console.log('# prototypes are not the same');
                     return false;
                 }
             }
 
             if (utilx.isArguments(a)) {
                 if (!utilx.isArguments(b)) {
+                    console.log('# a:' + a + ' is arguments b:' + b + ' is not');
                     return false;
                 }
 
+                console.log('# a:' + a + ' and b:' + b + ' are arguments');
                 return utilx.deepEqual(utilx.arraySlice(a), utilx.arraySlice(b), opts);
             }
 
@@ -2783,10 +2792,12 @@
                 ka = utilx.objectKeys(a);
                 kb = utilx.objectKeys(b);
             } catch (e) {
+                console.log('# objectKeys threw: ' + a + ' : ' + b);
                 return false;
             }
 
             if (!utilx.objectIs(ka.length, kb.length)) {
+                console.log('# keys are not the same length: ' + a + ' : ' + b);
                 return false;
             }
 
@@ -2797,6 +2808,7 @@
             });
 
             if (utilx.isTrue(status)) {
+                console.log('# keys a:' + a + ' does not match keys b:' + b);
                 return false;
             }
 
@@ -2805,6 +2817,7 @@
             });
 
             if (utilx.isTrue(status)) {
+                console.log('# values a:' + a + ' does not match values b:' + b);
                 return false;
             }
 
