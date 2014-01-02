@@ -78,9 +78,9 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -120,9 +120,9 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -163,9 +163,9 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -209,9 +209,9 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -255,9 +255,9 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
     });
