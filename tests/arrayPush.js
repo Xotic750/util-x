@@ -5,14 +5,16 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        toStringFn = Object.prototype.toString;
 
     function push(array) {
         /*jslint bitwise: true */
         var n = utilx.toUint32(array.length),
+            alen = arguments.length,
             i;
 
-        for (i = 1; i < arguments.length; n = utilx.toUint32(n + 1), i += 1) {
+        for (i = 1; i < alen; n = utilx.toUint32(n + 1), i += 1) {
             array[n] = arguments[i];
         }
 
@@ -68,6 +70,7 @@
                 ],
                 i;
 
+            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
@@ -107,6 +110,7 @@
             push(arrCmp, 'abc');
             push(arrCmp, null);
             push(arrCmp, utilx.privateUndefined);
+            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
@@ -147,6 +151,7 @@
             arrCmp[10] = null;
             arrCmp[11] = utilx.privateUndefined;
             arrCmp.length = 12;
+            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
@@ -190,6 +195,7 @@
             arrCmp.push(null);
             arrCmp.push(utilx.privateUndefined);
             arrCmp.length = 12;
+            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
@@ -233,6 +239,7 @@
             utilx.arrayPush(arrCmp, null);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
             arrCmp.length = 12;
+            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
