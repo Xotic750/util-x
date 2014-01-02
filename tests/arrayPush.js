@@ -23,22 +23,7 @@
                 'abc',
                 null,
                 utilx.privateUndefined
-            ],
-            arrCmp3 = [
-                utilx.privateUndefined,
-                null,
-                -1,
-                0,
-                1,
-                false,
-                true,
-                utilx.privateUndefined,
-                '',
-                'abc',
-                null,
-                utilx.privateUndefined
             ];
-
 
         it('should not throw an error in each case', function () {
             expect(utilx.arrayPush(arr, null)).to.be(1);
@@ -61,16 +46,17 @@
             utilx.arrayPush(arrCmp, 1);
             utilx.arrayPush(arrCmp, false);
             utilx.arrayPush(arrCmp, true);
-            //utilx.arrayPush(arrCmp);
+            utilx.arrayPush(arrCmp);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
             utilx.arrayPush(arrCmp, '');
             utilx.arrayPush(arrCmp, 'abc');
             utilx.arrayPush(arrCmp, null);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
-            console.log('# ' + utilx.deepEqual(arrCmp, arrCmp2));
-            console.log('# ' + utilx.deepEqual(arrCmp2, arrCmp3));
-            console.log('# ' + arrCmp.toString() + ' : ' + arrCmp2.toString());
-            expect(arrCmp2).to.eql(arrCmp3);
+            console.log('# ' + arrCmp.length + ' : ' + arrCmp2.length);
+            for (var i = 0; i < arrCmp2.length; i += 1) {
+                console.log('# ' + arrCmp[i] + ' : ' + arrCmp2[i]);
+            }
+
             expect(arrCmp).to.eql(arrCmp2);
         });
     });
