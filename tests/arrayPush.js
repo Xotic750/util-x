@@ -23,7 +23,22 @@
                 'abc',
                 null,
                 utilx.privateUndefined
+            ],
+            arrCmp3 = [
+                utilx.privateUndefined,
+                null,
+                -1,
+                0,
+                1,
+                false,
+                true,
+                utilx.privateUndefined,
+                '',
+                'abc',
+                null,
+                utilx.privateUndefined
             ];
+
 
         it('should not throw an error in each case', function () {
             expect(utilx.arrayPush(arr, null)).to.be(1);
@@ -53,7 +68,9 @@
             utilx.arrayPush(arrCmp, null);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
             console.log('# ' + utilx.deepEqual(arrCmp, arrCmp2));
+            console.log('# ' + utilx.deepEqual(arrCmp2, arrCmp3));
             console.log('# ' + arrCmp.toString() + ' : ' + arrCmp2.toString());
+            expect(arrCmp2).to.eql(arrCmp3);
             expect(arrCmp).to.eql(arrCmp2);
         });
     });
