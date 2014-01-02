@@ -56,7 +56,8 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "latest",
+        "deep-equal": "latest"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
@@ -75,7 +76,8 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "latest",
+        "deep-equal": "latest"
     },
     "browser": {
         "../lib/util-x.min": false,

@@ -6,6 +6,7 @@
     var required = require('../scripts/'),
         utilx = required.utilx,
         expect = required.expect,
+        deepEqual = require('deep-equal'),
         toStringFn = Object.prototype.toString;
 
     function push(array) {
@@ -76,7 +77,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -116,7 +118,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -157,7 +160,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -201,7 +205,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
 
@@ -245,7 +250,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
     });
