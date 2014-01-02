@@ -7,6 +7,7 @@
         utilx = required.utilx,
         expect = required.expect,
         deepEqual = require('deep-equal'),
+        u = require('underscore'),
         toStringFn = Object.prototype.toString;
 
     function push(array) {
@@ -77,7 +78,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
@@ -118,7 +120,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
@@ -160,7 +163,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
@@ -205,7 +209,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });
@@ -250,7 +255,8 @@
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
+            expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
+            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
             //expect(arrCmp).to.eql(arrCmp2);
         });

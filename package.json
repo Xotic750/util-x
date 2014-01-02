@@ -57,7 +57,8 @@
         "grunt-shell": "latest",
         "istanbul": "latest",
         "browserify": "latest",
-        "deep-equal": "latest"
+        "deep-equal": "latest",
+        "underscore": "latest"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
@@ -77,7 +78,8 @@
         "grunt-shell": "latest",
         "istanbul": "latest",
         "browserify": "latest",
-        "deep-equal": "latest"
+        "deep-equal": "latest",
+        "underscore": "latest"
     },
     "browser": {
         "../lib/util-x.min": false,
