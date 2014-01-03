@@ -34,6 +34,9 @@
             expect(utilx.arrayPush(arr, false)).to.be(6);
             expect(utilx.arrayPush(arr, true)).to.be(7);
             expect(utilx.arrayPush(arr)).to.be(7);
+            expect(utilx.arrayPush(arr)).to.be(7);
+            expect(utilx.arrayPush(arr)).to.be(7);
+            expect(utilx.arrayPush(arr)).to.be(7);
             expect(utilx.arrayPush(arr, utilx.privateUndefined)).to.be(8);
             expect(utilx.arrayPush(arr, '')).to.be(9);
             expect(utilx.arrayPush(arr, 'abc')).to.be(10);

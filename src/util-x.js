@@ -1041,10 +1041,12 @@
                 throw new TypeError('called on a non-array');
             }
 
-            index = utilx.numberToInteger(index);
-            if (utilx.inRange(index, 0, MAX_UINT32 - 1)) {
-                array[index] = value;
-                array.length = Math.min(array.length, index + 1);
+            if (utilx.gte(arguments.length, 3)) {
+                index = utilx.numberToInteger(index);
+                if (utilx.inRange(index, 0, MAX_UINT32 - 1)) {
+                    array[index] = value;
+                    array.length = Math.min(array.length, index + 1);
+                }
             }
 
             return array.length;

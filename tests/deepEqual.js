@@ -134,6 +134,16 @@
             expect(utilx.deepEqual(d0, d1)).to.be.ok();
         });
 
+        it('regexp', function () {
+            var r0 = /test/gi,
+                r1 = new RegExp('test', 'gi');
+
+            expect(utilx.deepEqual(r0, r1)).to.be.ok();
+
+            r0 = /test/g;
+            r1 = new RegExp('test', 'gi');
+            expect(utilx.deepEqual(r0, r1)).to.not.be.ok();
+        });
 
         it('arrays', function () {
             var arrCmp = [
@@ -180,6 +190,9 @@
             utilx.arrayAssign(arrCmp, 9, 'abc');
             utilx.arrayAssign(arrCmp, 10, null);
             utilx.arrayAssign(arrCmp, 11, utilx.privateUndefined);
+            utilx.arrayAssign(arrCmp, 12);
+            utilx.arrayAssign(arrCmp, 13);
+            utilx.arrayAssign(arrCmp, 14);
             expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
 
             arrCmp = [];
