@@ -1027,6 +1027,30 @@
         };
 
         /**
+         * The arrayAssign() method assigns a value to a specific element of an array and
+         * returns the new length of the array.
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {number|string} index
+         * @param {*} value
+         * @return {number}
+         */
+        utilx.arrayAssign = function (array, index, value) {
+            if (!utilx.arrayIsArray(array)) {
+                throw new TypeError('called on a non-array');
+            }
+
+            index = utilx.numberToInteger(index);
+            if (utilx.inRange(index, 0, MAX_UINT32 - 1)) {
+                array[index] = value;
+                array.length = Math.min(array.length, index + 1);
+            }
+
+            return array.length;
+        };
+
+        /**
          * The arrayPush() method adds one or more elements to the end of an array and
          * returns the new length of the array.
          * @memberOf utilx
@@ -1036,7 +1060,7 @@
          * @return {number}
          */
         // named utilx.arrayPush instead of push because of SpiderMonkey and Blackberry bug
-        utilx.arrayPush = function nfePush(array) {
+        utilx.arrayPush = function (array) {
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (argument) {
                 baseArray.push.call(array, argument);
             });
@@ -1054,7 +1078,7 @@
          * @return {number}
          */
         // named utilx.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
-        utilx.arrayUnshift = function nfeUnshift(array) {
+        utilx.arrayUnshift = function (array) {
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (argument) {
                 baseArray.unshift.call(array, argument);
             });
@@ -1076,7 +1100,7 @@
             utilx.arrayFirst(match).replace(separator, function () {
                 for (index = 1; utilx.lt(index, length); index += 1) {
                     if (utilx.isUndefined(arguments[index])) {
-                        match[index] = utilx.privateUndefined;
+                        utilx.arrayAssign(match, index, utilx.privateUndefined);
                     }
                 }
             });
@@ -1133,7 +1157,7 @@
                     if (utilx.isUndefined(limit)) {
                         limit = MAX_UINT32;
                     } else {
-                        limit = utilx.toUint32(limit);
+                        limit = utilx.clamp(utilx.numberToInteger(limit), 0, MAX_UINT32);
                     }
 
                     output = [];
@@ -1631,7 +1655,8 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    for (index = 0, length = utilx.toUint32(object.length); utilx.lt(index, length); index += 1) {
+                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index)) {
                             fn.call(thisArg, object[index], index, object);
                         }
@@ -1675,7 +1700,7 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    length = utilx.toUint32(object.length);
+                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
                     val = false;
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index) && fn.call(thisArg, object[index], index, object)) {
@@ -1724,10 +1749,10 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    length = utilx.toUint32(object.length);
+                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
                     arr = [];
                     for (index = 0; utilx.lt(index, length); index += 1) {
-                        arr[index] = fn.call(thisArg, object[index], index, object);
+                        utilx.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
                     }
 
                     return arr;
@@ -1784,12 +1809,10 @@
                     return sliceFN.call(array, start, end);
                 };
             } else {
-                /*global console */
-                console.log('USING POLYFIL');
                 tempSafariNFE = function nfeSlice(array, start, end) {
                     var object = utilx.toObjectFixIndexedAccess(array),
                         relativeStart = utilx.numberToInteger(start),
-                        length = object.length,
+                        length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32),
                         val = [],
                         next = 0,
                         relativeEnd,
@@ -1816,7 +1839,8 @@
 
                     val.length = Math.max(final - k, 0);
                     while (k < final) {
-                        val[next] = object[k];
+                        utilx.arrayAssign(val, next, object[k]);
+
                         next += 1;
                         k += 1;
                     }
@@ -1863,12 +1887,12 @@
                         throw new TypeError(fn + ' is not a function');
                     }
 
-                    length = utilx.toUint32(object.length);
+                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
                     arr = [];
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         element = object[index];
                         if (fn.call(thisArg, element, index, object)) {
-                            arr[next] = element;
+                            utilx.arrayAssign(arr, next, element);
                             next += 1;
                         }
                     }
@@ -1922,7 +1946,8 @@
                         isValueSet = true;
                     }
 
-                    for (index = 0, length = object.length; utilx.lt(index, length); index += 1) {
+                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.objectHasOwnProperty(object, index)) {
                             value = fn(value, object[index], index, object);
                             if (utilx.isFalse(isValueSet)) {
@@ -2049,7 +2074,7 @@
             } else {
                 tempSafariNFE = function nfeIndexOf(array, searchElement, fromIndex) {
                     var object = utilx.toObjectFixIndexedAccess(array),
-                        length = utilx.toUint32(object.length),
+                        length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32),
                         index,
                         start,
                         val;
@@ -2731,7 +2756,6 @@
          * @return {boolean}
          */
         utilx.deepEqual = function (a, b, opts) {
-            /*global console */
             if (!utilx.isPlainObject(opts)) {
                 opts = {};
             }
@@ -2791,11 +2815,9 @@
             if (!utilx.objectIs(ka.length, kb.length)) {
                 if (utilx.arrayIsArray(a) && utilx.arrayIsArray(b)) {
                     if (!utilx.objectIs(a.length, b.length)) {
-                        console.log('# arrays are not the same length: ' + a + ' : ' + b);
                         return false;
                     }
                 } else {
-                    console.log('# keys are not the same length: ' + ka + ' : ' + kb);
                     return false;
                 }
             } else {
@@ -2806,7 +2828,6 @@
                 });
 
                 if (utilx.isTrue(status)) {
-                    console.log('# keys ka:' + ka + ' does not match keys kb:' + kb);
                     return false;
                 }
             }
@@ -2816,7 +2837,6 @@
             });
 
             if (utilx.isTrue(status)) {
-                console.log('# values a:' + a + ' does not match values b:' + b);
                 return false;
             }
 
@@ -3018,7 +3038,7 @@
                         if (utilx.arrayIsArray(value)) {
                             length = value.length;
                             for (index = 0; index < length; index += 1) {
-                                partial[index] = str(index, value) || 'null';
+                                utilx.arrayAssign(partial, index, str(index, value) || 'null');
                             }
 
                             if (utilx.isZero(partial.length)) {

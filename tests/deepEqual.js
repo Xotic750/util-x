@@ -133,5 +133,72 @@
 
             expect(utilx.deepEqual(d0, d1)).to.be.ok();
         });
+
+
+        it('arrays', function () {
+            var arrCmp = [
+                    utilx.privateUndefined,
+                    null,
+                    -1,
+                    0,
+                    1,
+                    false,
+                    true,
+                    utilx.privateUndefined,
+                    '',
+                    'abc',
+                    null,
+                    utilx.privateUndefined
+                ],
+                arrCmp2 = [
+                    utilx.privateUndefined,
+                    null,
+                    -1,
+                    0,
+                    1,
+                    false,
+                    true,
+                    utilx.privateUndefined,
+                    '',
+                    'abc',
+                    null,
+                    utilx.privateUndefined
+                ];
+
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+
+            arrCmp = [];
+            utilx.arrayAssign(arrCmp, 0, utilx.privateUndefined);
+            utilx.arrayAssign(arrCmp, 1, null);
+            utilx.arrayAssign(arrCmp, 2, -1);
+            utilx.arrayAssign(arrCmp, 3, 0);
+            utilx.arrayAssign(arrCmp, 4, 1);
+            utilx.arrayAssign(arrCmp, 5, false);
+            utilx.arrayAssign(arrCmp, 6, true);
+            utilx.arrayAssign(arrCmp, 7, utilx.privateUndefined);
+            utilx.arrayAssign(arrCmp, 8, '');
+            utilx.arrayAssign(arrCmp, 9, 'abc');
+            utilx.arrayAssign(arrCmp, 10, null);
+            utilx.arrayAssign(arrCmp, 11, utilx.privateUndefined);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+
+            arrCmp = [];
+            utilx.arrayPush(arrCmp, utilx.privateUndefined);
+            utilx.arrayPush(arrCmp, null);
+            utilx.arrayPush(arrCmp, -1);
+            utilx.arrayPush(arrCmp, 0);
+            utilx.arrayPush(arrCmp, 1);
+            utilx.arrayPush(arrCmp, false);
+            utilx.arrayPush(arrCmp, true);
+            utilx.arrayPush(arrCmp);
+            utilx.arrayPush(arrCmp);
+            utilx.arrayPush(arrCmp);
+            utilx.arrayPush(arrCmp, utilx.privateUndefined);
+            utilx.arrayPush(arrCmp, '');
+            utilx.arrayPush(arrCmp, 'abc');
+            utilx.arrayPush(arrCmp, null);
+            utilx.arrayPush(arrCmp, utilx.privateUndefined);
+            expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
+        });
     });
 }());
