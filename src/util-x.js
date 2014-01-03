@@ -2887,13 +2887,11 @@
             if (typeof JSON === 'object' && !utilx.isNull(JSON)) {
                 if (utilx.isFunction(JSON.stringify)) {
                     // A test function object with a custom `toJSON` method.
-                    (function () {
-                        stringifiedValue = function () {
-                            return 1;
-                        };
-                    }());
+                    stringifiedValue = function () {
+                        return 1;
+                    };
 
-                    stringifiedValue.toJSON = stringifiedValue;
+                    stringifiedValue.toJSON = stringifiedValue().toString();
 
                     try {
                         supported =
@@ -3023,13 +3021,13 @@
                         return quote(value);
                     case 'number':
                         if (utilx.numberIsFinite(value)) {
-                            return String(value);
+                            return utilx.anyToString(value);
                         }
 
                         return 'null';
                     case 'boolean':
                     case 'null':
-                        return String(value);
+                        return utilx.anyToString(value);
                     case 'object':
                         if (utilx.isNull(value)) {
                             return 'null';
