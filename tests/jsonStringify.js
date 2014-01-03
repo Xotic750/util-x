@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -25,9 +25,6 @@
                 'B': null
             })).to.be('{"B":null}');
 
-            console.log(utilx.jsonStringify({
-                'A': [1, true, false, null, '\u0000\b\n\f\r\t']
-            }));
             expect(utilx.jsonStringify({
                 'A': [1, true, false, null, '\u0000\b\n\f\r\t']
             })).to.be('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}');
