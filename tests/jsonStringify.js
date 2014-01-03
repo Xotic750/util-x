@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -16,20 +16,25 @@
             expect(utilx.jsonStringify(false)).to.be('false');
             expect(utilx.jsonStringify(true)).to.be('true');
             expect(utilx.jsonStringify()).to.be(utilx.privateUndefined);
-            //expect(utilx.jsonStringify(utilx.privateUndefined)).to.be(utilx.privateUndefined);
+            expect(utilx.jsonStringify(utilx.privateUndefined)).to.be(utilx.privateUndefined);
             expect(utilx.jsonStringify('')).to.be('""');
             expect(utilx.jsonStringify('abc')).to.be('"abc"');
 
-            /*
+            console.log(utilx.jsonStringify({
+                'A': utilx.privateUndefined,
+                'B': null
+            }));
             expect(utilx.jsonStringify({
                 'A': utilx.privateUndefined,
                 'B': null
             })).to.be('{"B":null}');
 
+            console.log(utilx.jsonStringify({
+                'A': [1, true, false, null, '\u0000\b\n\f\r\t']
+            }));
             expect(utilx.jsonStringify({
                 'A': [1, true, false, null, '\u0000\b\n\f\r\t']
             })).to.be('{"A":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}');
-            */
         });
     });
 }());
