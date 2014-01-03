@@ -736,6 +736,7 @@
          * @return {*}
          */
         utilx.arrayJoin = function (inputArg, separator) {
+            utilx.checkObjectCoercible(inputArg);
             if (utilx.isUndefined(separator)) {
                 separator = ',';
             }
