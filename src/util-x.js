@@ -2798,17 +2798,17 @@
                     console.log('# keys are not the same length: ' + ka + ' : ' + kb);
                     return false;
                 }
-            }
+            } else {
+                ka.sort();
+                kb.sort();
+                status = utilx.arraySome(ka, function (aKey, index) {
+                    return !utilx.objectIs(aKey, kb[index]);
+                });
 
-            ka.sort();
-            kb.sort();
-            status = utilx.arraySome(ka, function (aKey, index) {
-                return !utilx.objectIs(aKey, kb[index]);
-            });
-
-            if (utilx.isTrue(status)) {
-                console.log('# keys ka:' + ka + ' does not match keys kb:' + kb);
-                return false;
+                if (utilx.isTrue(status)) {
+                    console.log('# keys ka:' + ka + ' does not match keys kb:' + kb);
+                    return false;
+                }
             }
 
             status = utilx.arraySome(ka, function (aKey) {
