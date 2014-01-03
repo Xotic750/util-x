@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.46",
+    "version": "0.0.47",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -56,9 +56,7 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest",
-        "deep-equal": "latest",
-        "underscore": "latest"
+        "browserify": "latest"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
@@ -77,9 +75,7 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest",
-        "deep-equal": "latest",
-        "underscore": "latest"
+        "browserify": "latest"
     },
     "browser": {
         "../lib/util-x.min": false,
@@ -104,9 +100,17 @@
         "harness": "mocha",
         "files": "tests/*.js",
         "browsers": [
-            "iexplore/6.0..9.0",
-            "firefox/3..4",
-            "opera/10..11"
+            "iexplore/6.0..latest",
+            "firefox/3..latest",
+            "firefox/nightly",
+            "chrome/4..latest",
+            "chrome/canary",
+            "opera/10..latest",
+            "opera/next",
+            "safari/4..latest",
+            "ipad/6.0..latest",
+            "iphone/6.0..latest",
+            "android-browser/4.2..latest"
         ]
     }
 }
