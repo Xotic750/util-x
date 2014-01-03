@@ -3472,11 +3472,23 @@
                 if (utilx.strictEqual(e.message, 'Should we patch IE6&7?') &&
                         utilx.strictEqual(e.toString(), '[object Error]')) {
 
-                    /*jshint freeze: false */
-                    Error.prototype.toString = function () {
-                        return this.name + ': ' + this.message;
-                    };
-                    /*jshint freeze: true */
+                    utilx.objectDefineProperties(Error.prototype, {
+                        toString : {
+                            value: function () {
+                                return this.name + ': ' + this.message;
+                            },
+                            enumerable: false,
+                            writable: true,
+                            configurable: true
+                        },
+
+                        isPatched: {
+                            value: true,
+                            enumerable: false,
+                            writable: true,
+                            configurable: true
+                        }
+                    });
                 }
             }
 
