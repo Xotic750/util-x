@@ -735,30 +735,13 @@
          * @param {string} [separator]
          * @return {*}
          */
-        utilx.arrayJoin = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe/
-            var joinFN = baseArray.join,
-                nfeJoin;
-
-            if (utilx.strictEqual([1, 2, 3].join(), '1,2,3')) {
-                tempSafariNFE = function nfeJoin(inputArg, separator) {
-                    return joinFN.call(inputArg, separator);
-                };
-            } else {
-                tempSafariNFE = function nfeJoin(inputArg, separator) {
-                    if (utilx.isUndefined(separator)) {
-                        separator = ',';
-                    }
-
-                    return joinFN.call(inputArg, separator);
-                };
+        utilx.arrayJoin = function (inputArg, separator) {
+            if (utilx.isUndefined(separator)) {
+                separator = ',';
             }
 
-            nfeJoin = null;
-
-            return tempSafariNFE;
-        }());
+            return baseArray.join.call(inputArg, separator);
+        };
 
         /**
          * Returns the first element of an array; otherwise returns undefined.

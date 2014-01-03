@@ -20,10 +20,6 @@
             expect(utilx.jsonStringify('')).to.be('""');
             expect(utilx.jsonStringify('abc')).to.be('"abc"');
 
-            console.log(utilx.jsonStringify({
-                'A': utilx.privateUndefined,
-                'B': null
-            }));
             expect(utilx.jsonStringify({
                 'A': utilx.privateUndefined,
                 'B': null
