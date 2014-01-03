@@ -51,13 +51,13 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(e.toStringX()).to.be('MyError: test');
+                expect(e.toString()).to.be('MyError: test');
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                expect(e.toStringX()).to.be('MySyntaxError: test');
+                expect(e.toString()).to.be('MySyntaxError: test');
             });
 
             expect(function () {
