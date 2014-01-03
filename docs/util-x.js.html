@@ -1072,7 +1072,7 @@
                 index = utilx.numberToInteger(index);
                 if (utilx.inRange(index, 0, MAX_UINT32 - 1)) {
                     array[index] = value;
-                    array.length = Math.min(array.length, index + 1);
+                    array.length = Math.max(array.length, index + 1);
                 }
             }
 
@@ -2914,11 +2914,13 @@
             if (typeof JSON === 'object' &amp;&amp; !utilx.isNull(JSON)) {
                 if (utilx.isFunction(JSON.stringify)) {
                     // A test function object with a custom `toJSON` method.
-                    stringifiedValue = function () {
-                        return 1;
-                    };
+                    (function () {
+                        stringifiedValue = function () {
+                            return 1;
+                        };
+                    }());
 
-                    stringifiedValue.toJSON = stringifiedValue().toString();
+                    stringifiedValue.toJSON = stringifiedValue;
 
                     try {
                         supported =
@@ -2967,7 +2969,7 @@
                                 'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
                             }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &amp;&amp;
                             // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                            utilx.strictEqual(JSON.stringify(null, stringifiedValue), '1') &amp;&amp;
+                            //utilx.strictEqual(JSON.stringify(null, stringifiedValue), '"1"') &amp;&amp;
                             utilx.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
                             // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
                             // serialize extended years.
@@ -3057,7 +3059,7 @@
                         return utilx.anyToString(value);
                     case 'object':
                         if (utilx.isNull(value)) {
-                            return 'null';
+                            return utilx.anyToString(value);
                         }
 
                         gap += indent;
@@ -3070,12 +3072,10 @@
 
                             if (utilx.isZero(partial.length)) {
                                 member = '[]';
+                            } else if (utilx.isString(gap) &amp;&amp; !utilx.isEmptyString(gap)) {
+                                member = '[\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + ']';
                             } else {
-                                if (gap) {
-                                    member = '[\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + ']';
-                                } else {
-                                    member = '[' + utilx.arrayJoin(partial) + ']';
-                                }
+                                member = '[' + utilx.arrayJoin(partial) + ']';
                             }
 
                             gap = mind;
@@ -3089,8 +3089,11 @@
 
                                 if (utilx.isString(element)) {
                                     v = str(element, value);
-                                    if (v) {
-                                        utilx.arrayPush(partial, quote(element) + (gap ? ': ' : ':') + v);
+                                    if (!utilx.isUndefined(v)) {
+                                        utilx.arrayPush(partial, quote(element) +
+                                                        (utilx.isString(gap) &amp;&amp; !utilx.isEmptyString(gap) ?
+                                                         ': ' :
+                                                         ':') + v);
                                     }
                                 }
                             });
@@ -3098,20 +3101,21 @@
                             utilx.arrayForEach(utilx.objectKeys(value), function (k) {
                                 var v = str(k, value);
 
-                                if (v) {
-                                    utilx.arrayPush(partial, quote(k) + (gap ? ': ' : ':') + v);
+                                if (!utilx.isUndefined(v)) {
+                                    utilx.arrayPush(partial, quote(k) +
+                                                    (utilx.isString(gap) &amp;&amp; !utilx.isEmptyString(gap) ?
+                                                     ': ' :
+                                                     ':') + v);
                                 }
                             });
                         }
 
                         if (utilx.isZero(partial.length)) {
                             member = '{}';
+                        } else if (utilx.isString(gap) &amp;&amp; !utilx.isEmptyString(gap)) {
+                            member = '{\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + '}';
                         } else {
-                            if (gap) {
-                                member = '{\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + '}';
-                            } else {
-                                member = '{' + utilx.arrayJoin(partial) + '}';
-                            }
+                            member = '{' + utilx.arrayJoin(partial) + '}';
                         }
 
                         gap = mind;
@@ -3123,16 +3127,13 @@
                 };
 
                 tempSafariNFE = function nfeJSONStringify(value, replacer, space) {
-                    var index;
-
                     gap = '';
-                    indent = '';
                     if (utilx.isNumber(space)) {
-                        for (index = 0; index &lt; space; index += 1) {
-                            indent += ' ';
-                        }
+                        indent = utilx.stringRepeat(' ', space);
                     } else if (utilx.isString(space)) {
                         indent = space;
+                    } else {
+                        indent = '';
                     }
 
                     rep = replacer;
@@ -3599,7 +3600,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Jan 03 2014 05:44:07 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Jan 03 2014 15:49:34 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
