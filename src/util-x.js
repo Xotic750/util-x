@@ -2795,7 +2795,7 @@
                         return false;
                     }
                 } else {
-                    console.log('# keys are not the same length: ' + a + ' : ' + b);
+                    console.log('# keys are not the same length: ' + ka + ' : ' + kb);
                     return false;
                 }
             }
@@ -2807,7 +2807,7 @@
             });
 
             if (utilx.isTrue(status)) {
-                console.log('# keys a:' + a + ' does not match keys b:' + b);
+                console.log('# keys ka:' + ka + ' does not match keys kb:' + kb);
                 return false;
             }
 
