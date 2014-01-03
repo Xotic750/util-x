@@ -1,14 +1,11 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        deepEqual = require('deep-equal'),
-        u = require('underscore'),
-        toStringFn = Object.prototype.toString;
+        expect = required.expect;
 
     function push(array) {
         /*jslint bitwise: true */
@@ -72,7 +69,6 @@
                 ],
                 i;
 
-            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
@@ -114,16 +110,12 @@
             push(arrCmp, 'abc');
             push(arrCmp, null);
             push(arrCmp, utilx.privateUndefined);
-            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(arrCmp).to.eql(arrCmp2);
         });
 
         it('9', function () {
@@ -157,16 +149,12 @@
             arrCmp[10] = null;
             arrCmp[11] = utilx.privateUndefined;
             arrCmp.length = 12;
-            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(arrCmp).to.eql(arrCmp2);
         });
 
         it('10', function () {
@@ -203,16 +191,12 @@
             arrCmp.push(null);
             arrCmp.push(utilx.privateUndefined);
             arrCmp.length = 12;
-            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(arrCmp).to.eql(arrCmp2);
         });
 
         it('11', function () {
@@ -249,16 +233,12 @@
             utilx.arrayPush(arrCmp, null);
             utilx.arrayPush(arrCmp, utilx.privateUndefined);
             arrCmp.length = 12;
-            console.log('#: ' + toStringFn.call(arrCmp) + ' : ' + toStringFn.call(arrCmp2));
             expect(arrCmp.length).to.be(arrCmp2.length);
             for (i = 0; i < arrCmp2.length; i += 1) {
                 expect(arrCmp[i]).to.be(arrCmp2[i]);
             }
 
-            //expect(u.isEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(deepEqual(arrCmp, arrCmp2)).to.be(true);
             expect(utilx.deepEqual(arrCmp, arrCmp2)).to.be(true);
-            //expect(arrCmp).to.eql(arrCmp2);
         });
     });
 }());
