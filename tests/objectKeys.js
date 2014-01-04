@@ -31,17 +31,26 @@
 
         it('should not throw an error in each case', function () {
             expect(keys.length).to.be(10);
-            expect(utilx.arrayIsArray(keys)).to.be(true);
+        });
 
+        it('1', function () {
+            expect(utilx.arrayIsArray(keys)).to.be.ok();
+        });
+
+        it('2', function () {
             utilx.arrayForEach(keys, function (name) {
-                expect(utilx.objectHasOwnProperty(obj, name)).to.be(true);
+                expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
             });
+        });
 
+        it('3', function () {
             utilx.arrayForEach(keys, function (name) {
                 // should return names which are enumerable
                 expect(utilx.arrayIndexOf(loopedValues, name)).not.to.be(-1);
             });
+        });
 
+        it('4', function () {
             expect(function () {
                 utilx.objectKeys(42);
             }).to.throwException(function (e) {
