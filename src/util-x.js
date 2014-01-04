@@ -1483,7 +1483,13 @@
                 bocProto;
 
             if (utilx.isFunction(getPrototypeOfFN)) {
-                tempSafariNFE = getPrototypeOfFN;
+                tempSafariNFE = function nfeGetPrototypeOf(object) {
+                    if (utilx.isPrimitive(object)) {
+                        throw new TypeError('Object.getPrototypeOf called on non-object');
+                    }
+
+                    return getPrototypeOfFN(object);
+                };
             } else if (utilx.isNull(baseObject.constructor.prototype[protoName])) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
