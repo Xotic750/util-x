@@ -1,6 +1,6 @@
 /*global require, describe, it */
 
-(function (privateUndefined) {
+(function () {
     'use strict';
 
     var required = require('../scripts/'),
@@ -16,7 +16,10 @@
                 'bool': true,
                 'num': 42,
                 'null': null,
-                'undefined': privateUndefined
+                'undefined': utilx.privateUndefined,
+                'toString': utilx.noop,
+                'toLocaleString': utilx.noop,
+                'valueOf': utilx.noop
             },
             keys = utilx.objectKeys(obj),
             k;
@@ -27,7 +30,7 @@
         }
 
         it('should not throw an error in each case', function () {
-            expect(keys.length).to.be(7);
+            expect(keys.length).to.be(10);
             expect(utilx.arrayIsArray(keys)).to.be(true);
 
             utilx.arrayForEach(keys, function (name) {
