@@ -2118,8 +2118,8 @@
             // http://kangax.github.io/nfe
             var keysFN = baseObject.constructor.keys,
                 supported = false,
+                hasDontEnumBug = true,
                 testObject,
-                hasDontEnumBug,
                 nfeKeys;
 
             /*jshint -W001 */
