@@ -40,16 +40,12 @@
             utilx.arrayForEach(keys, function (name) {
                 expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
             });
-        });
 
-        it('3', function () {
             utilx.arrayForEach(keys, function (name) {
                 // should return names which are enumerable
                 expect(utilx.arrayIndexOf(loopedValues, name)).not.to.be(-1);
             });
-        });
 
-        it('4', function () {
             expect(function () {
                 utilx.objectKeys(42);
             }).to.throwException(function (e) {
