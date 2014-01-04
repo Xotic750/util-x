@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -30,27 +30,23 @@
         }
 
         it('should not throw an error in each case', function () {
+            console.log('# LENGTH: ' + keys.length);
+            console.log('# KEYS: ' + utilx.jsonStringify(keys));
             expect(keys.length).to.be(10);
         });
 
         it('1', function () {
             expect(utilx.arrayIsArray(keys)).to.be.ok();
-        });
 
-        it('2', function () {
             utilx.arrayForEach(keys, function (name) {
                 expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
             });
-        });
 
-        it('3', function () {
             utilx.arrayForEach(keys, function (name) {
                 // should return names which are enumerable
                 expect(utilx.arrayIndexOf(loopedValues, name)).not.to.be(-1);
             });
-        });
 
-        it('4', function () {
             expect(function () {
                 utilx.objectKeys(42);
             }).to.throwException(function (e) {
