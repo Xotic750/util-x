@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -35,6 +35,7 @@
             keys = utilx.objectKeys(obj);
 
         it('should not throw an error in each case', function () {
+            console.log('# KEYS: ' + utilx.jsonStringify(keys));
             expect(keys.length).to.be(10);
             expect(utilx.arrayIsArray(keys)).to.be.ok();
             utilx.arrayForEach(keys, function (name) {
