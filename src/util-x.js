@@ -2119,11 +2119,12 @@
         utilx.objectKeys = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var keysFN = baseObject.keys,
+            var keysFN = baseObject.constructor.keys,
                 supported = false,
                 testObject,
                 nfeKeys;
 
+            console.log('# IS FUNCTION:' + utilx.isFunction(keysFN) + ' : ' + keysFN);
             if (utilx.isFunction(keysFN)) {
                 try {
                     /*jshint -W001 */
@@ -2138,12 +2139,15 @@
                     };
                     /*jshint +W001 */
 
-                    supported = utilx.strictEqual(keysFN.call(testObject).length, 7);
+                    console.log('# LENGTH SHOULD BE 7:' + keysFN(testObject).length);
+                    supported = utilx.strictEqual(keysFN(testObject).length, 7);
                 } catch (e) {
+                    console.log('# TEST THREW:' + e.toString());
                     supported = false;
                 }
             }
 
+            console.log('# WORKING OBJECT.KEYS:' + supported);
             if (utilx.isTrue(supported)) {
                 tempSafariNFE = keysFN;
             } else {
