@@ -1482,7 +1482,9 @@
                 nfeGetPrototypeOf,
                 bocProto;
 
+            /*global console */
             if (utilx.isFunction(getPrototypeOfFN)) {
+                console.log('#: USING NATIVE');
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1491,6 +1493,7 @@
                     return getPrototypeOfFN(object);
                 };
             } else if (utilx.isNull(baseObject.constructor.prototype[protoName])) {
+                console.log('#: USING PROTO');
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1499,6 +1502,7 @@
                     return object[protoName];
                 };
             } else {
+                console.log('#: USING POLY');
                 bocProto = baseObject.constructor.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
