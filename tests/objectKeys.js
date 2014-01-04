@@ -8,7 +8,18 @@
         expect = required.expect;
 
     describe('objectKeys', function () {
-        var loopedValues = [],
+        var loopedValues = [
+                'str',
+                'obj',
+                'arr',
+                'bool',
+                'num',
+                'null',
+                'undefined',
+                'toString',
+                'toLocaleString',
+                'valueOf'
+            ],
             obj = {
                 'str': 'boz',
                 'obj': {},
@@ -21,23 +32,11 @@
                 'toLocaleString': utilx.noop,
                 'valueOf': utilx.noop
             },
-            keys = utilx.objectKeys(obj),
-            k;
-
-        for (k in obj) {
-            /*jslint forin: true */
-            loopedValues.push(k);
-        }
+            keys = utilx.objectKeys(obj);
 
         it('should not throw an error in each case', function () {
             expect(keys.length).to.be(10);
-        });
-
-        it('1', function () {
             expect(utilx.arrayIsArray(keys)).to.be.ok();
-        });
-
-        it('2', function () {
             utilx.arrayForEach(keys, function (name) {
                 expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
             });
