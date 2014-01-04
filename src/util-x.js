@@ -2162,6 +2162,12 @@
                         }
                     }
 
+                    utilx.arrayForEach(defaultProperties, function (property) {
+                        if (utilx.objectHasOwnProperty(object, property)) {
+                            utilx.arrayPush(props, property);
+                        }
+                    });
+
                     return props;
                 };
             }
