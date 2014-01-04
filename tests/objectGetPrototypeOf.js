@@ -55,6 +55,12 @@
         });
 
         it('2', function () {
+            console.log('#: ' + returnArgs());
+            console.log('#: ' + typeof returnArgs());
+            console.log('#: ' + Object.prototype.toString.call(returnArgs()));
+            console.log('#: ' + returnArgs().prototype);
+            console.log('#: ' + typeof returnArgs().prototype);
+            console.log('#: ' + Object.prototype.toString.call(returnArgs().prototype));
             expect(utilx.objectGetPrototypeOf(returnArgs())).to.be(Object.prototype);
         });
 
