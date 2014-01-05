@@ -3548,6 +3548,7 @@
                 return CustomError;
             }
 
+            /* Is this really needed now?
             // I am unable to make this fix for IE6&7 unobtrusive
             try {
                 throw new Error('Should we patch IE6&7?');
@@ -3574,6 +3575,7 @@
                     });
                 }
             }
+            */
 
             try {
                 CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
