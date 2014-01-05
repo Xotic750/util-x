@@ -8,6 +8,7 @@
         expect = required.expect;
 
     describe('objectKeys', function () {
+        /*jshint -W001 */
         var loopedValues = [
                 'str',
                 'obj',
@@ -18,7 +19,11 @@
                 'undefined',
                 'toString',
                 'toLocaleString',
-                'valueOf'
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
             ],
             obj = {
                 'str': 'boz',
@@ -30,12 +35,17 @@
                 'undefined': utilx.privateUndefined,
                 'toString': utilx.noop,
                 'toLocaleString': utilx.noop,
-                'valueOf': utilx.noop
+                'valueOf': utilx.noop,
+                'hasOwnProperty': utilx.noop,
+                'isPrototypeOf': utilx.noop,
+                'propertyIsEnumerable': utilx.noop,
+                'constructor': utilx.noop
             },
             keys = utilx.objectKeys(obj);
+            /*jshint +W001 */
 
         it('should not throw an error in each case', function () {
-            expect(keys.length).to.be(10);
+            expect(keys.length).to.be(14);
             expect(utilx.arrayIsArray(keys)).to.be.ok();
             utilx.arrayForEach(keys, function (name) {
                 expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
