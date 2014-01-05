@@ -180,6 +180,21 @@
             expect(utilx.lastCharIs('abcdef', 'f')).to.be.ok();
             expect(utilx.firstCharIs('abcdef', 'f')).to.not.be.ok();
             expect(utilx.lastCharIs('abcdef', 'a')).to.not.be.ok();
+            expect(utilx.countCharacter('abacadaeafa', 'a')).to.be(6);
+            expect(utilx.countCharacter('abacadaeafa', 'z')).to.be(0);
+            expect(utilx.countCharacter('abacadaeafa', '')).to.be(Infinity);
+
+            expect(function () {
+                utilx.countCharacter('abacadaeafa');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.countCharacter('abacadaeafa', null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
             expect(utilx.hasProperty({
                 foo: privateUndefined

@@ -28,7 +28,6 @@
             expect(utilx.numberToInteger([])).to.be(0);
             expect(utilx.numberToInteger([10.123])).to.be(10);
             expect(utilx.numberToInteger(new RegExp('c'))).to.be(0);
-            expect(utilx.numberToInteger(new Date(2013, 11, 11))).to.be(1386716400000);
             expect(utilx.numberToInteger(new Error('x'))).to.be(0);
         });
     });

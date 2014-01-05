@@ -1284,8 +1284,17 @@
          * @return {number}
          */
         utilx.countCharacter = function (inputArg, character) {
-            return utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
-                                                 utilx.firstChar(character)).length - 1, 0, Number.POSITIVE_INFINITY);
+            var firstChar = utilx.firstChar(character),
+                val;
+
+            if (utilx.isEmptyString(firstChar)) {
+                val = Infinity;
+            } else {
+                val = utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
+                                                 utilx.firstChar(character)).length - 1, 0, Infinity);
+            }
+
+            return val;
         };
 
         /**
