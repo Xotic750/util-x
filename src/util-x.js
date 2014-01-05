@@ -1355,7 +1355,7 @@
         utilx.stringStartsWith = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var startsWithFN = baseString.constructor.startsWith,
+            var startsWithFN = baseString.startsWith,
                 nfeStartsWith;
 
             if (utilx.isFunction(startsWithFN)) {
@@ -1391,7 +1391,7 @@
         utilx.stringEndsWith = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var endsWithFN = baseString.constructor.endsWith,
+            var endsWithFN = baseString.endsWith,
                 nfeEndsWith;
 
             if (utilx.isFunction(endsWithFN)) {
@@ -1438,7 +1438,7 @@
         utilx.stringContains = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var containsFN = baseString.constructor.contains,
+            var containsFN = baseString.contains,
                 nfeContains;
 
             if (utilx.isFunction(containsFN)) {
