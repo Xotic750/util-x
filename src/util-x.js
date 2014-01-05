@@ -1021,15 +1021,26 @@
          * @return {number}
          */
         utilx.arrayAssign = function (array, index, value) {
-            if (!utilx.arrayIsArray(array)) {
-                throw new TypeError('called on a non-array');
+            if (utilx.isPrimitive(array) || utilx.isFunction(array)) {
+                throw new TypeError('called on a invalid object');
             }
 
+            if (!utilx.objectHasOwnProperty(array, 'length') || !utilx.isNumber(array.length)) {
+                throw new TypeError('invalid length property');
+            }
+
+            var numIndex;
+
             if (utilx.gte(arguments.length, 3)) {
-                index = utilx.numberToInteger(index);
-                if (utilx.inRange(index, 0, MAX_UINT32 - 1)) {
-                    array[index] = value;
-                    array.length = Math.max(array.length, index + 1);
+                numIndex = utilx.numberToInteger(index);
+                if (utilx.inRange(numIndex, 0, MAX_UINT32 - 1)) {
+                    array[numIndex] = value;
+                    numIndex += 1;
+                    if (utilx.gt(numIndex, array.length)) {
+                        array.length = numIndex;
+                    }
+                } else {
+                    array[utilx.anyToString(index)] = value;
                 }
             }
 
