@@ -1,6 +1,6 @@
 /*global require, describe, it */
 
-(function (privateUndefined) {
+(function () {
     'use strict';
 
     var required = require('../scripts/'),
@@ -14,7 +14,7 @@
     describe('toObjectString', function () {
         it('should not throw an error in each case', function () {
             expect(utilx.toObjectString()).to.be('[object Undefined]');
-            expect(utilx.toObjectString(privateUndefined)).to.be('[object Undefined]');
+            expect(utilx.toObjectString(utilx.privateUndefined)).to.be('[object Undefined]');
             expect(utilx.toObjectString(null)).to.be('[object Null]');
             expect(utilx.toObjectString(1)).to.be('[object Number]');
             expect(utilx.toObjectString(true)).to.be('[object Boolean]');
