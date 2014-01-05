@@ -168,6 +168,18 @@
             expect(utilx.stringTrim('    x x x    ')).to.be('x x x');
             expect(utilx.isDateValid(new Date())).to.be(true);
             expect(utilx.isDateValid(new Date(NaN))).to.be(false);
+            expect(utilx.arrayFirst([])).to.be(utilx.privateUndefined);
+            expect(utilx.arrayLast([])).to.be(utilx.privateUndefined);
+            expect(utilx.arrayFirst([1, 2, 3])).to.be(1);
+            expect(utilx.arrayLast([1, 2, 3])).to.be(3);
+            expect(utilx.arrayFirst(returnArgs(1, 2, 3))).to.be(1);
+            expect(utilx.arrayLast(returnArgs(1, 2, 3))).to.be(3);
+            expect(utilx.firstChar('abcdef')).to.be('a');
+            expect(utilx.lastChar('abcdef')).to.be('f');
+            expect(utilx.firstCharIs('abcdef', 'a')).to.be.ok();
+            expect(utilx.lastCharIs('abcdef', 'f')).to.be.ok();
+            expect(utilx.firstCharIs('abcdef', 'f')).to.not.be.ok();
+            expect(utilx.lastCharIs('abcdef', 'a')).to.not.be.ok();
 
             expect(utilx.hasProperty({
                 foo: privateUndefined

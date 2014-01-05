@@ -723,6 +723,7 @@
                     throw new TypeError('invalid length property');
                 }
             }
+
             return utilx.isZero(inputArg.length);
         };
 
@@ -753,13 +754,17 @@
          * @return {*}
          */
         utilx.arrayFirst = function (inputArg) {
-            var val;
+            if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
+                if (utilx.isPrimitive(inputArg) || utilx.isFunction(inputArg)) {
+                    throw new TypeError('called on a invalid object');
+                }
 
-            if (utilx.arrayIsArray(inputArg) || utilx.isArguments(inputArg)) {
-                val = inputArg[0];
+                if (!utilx.objectHasOwnProperty(inputArg, 'length') || !utilx.isNumber(inputArg.length)) {
+                    throw new TypeError('invalid length property');
+                }
             }
 
-            return val;
+            return inputArg[0];
         };
 
         /**
@@ -770,13 +775,17 @@
          * @return {*}
          */
         utilx.arrayLast = function (inputArg) {
-            var val;
+            if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
+                if (utilx.isPrimitive(inputArg) || utilx.isFunction(inputArg)) {
+                    throw new TypeError('called on a invalid object');
+                }
 
-            if (utilx.arrayIsArray(inputArg) || utilx.isArguments(inputArg)) {
-                val = inputArg[inputArg.length - 1];
+                if (!utilx.objectHasOwnProperty(inputArg, 'length') || !utilx.isNumber(inputArg.length)) {
+                    throw new TypeError('invalid length property');
+                }
             }
 
-            return val;
+            return inputArg[inputArg.length - 1];
         };
 
         /**
