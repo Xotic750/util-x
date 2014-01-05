@@ -41,7 +41,26 @@
                 'propertyIsEnumerable': utilx.noop,
                 'constructor': utilx.noop
             },
-            keys = utilx.objectKeys(obj);
+            keys = utilx.objectKeys(obj),
+            loopedValues2 = [
+                'str',
+                'obj',
+                'arr',
+                'bool',
+                'num',
+                'null',
+                'undefined'
+            ],
+            obj2 = {
+                'str': 'boz',
+                'obj': {},
+                'arr': [],
+                'bool': true,
+                'num': 42,
+                'null': null,
+                'undefined': utilx.privateUndefined
+            },
+            keys2 = utilx.objectKeys(obj2);
             /*jshint +W001 */
 
         it('should not throw an error in each case', function () {
@@ -60,6 +79,17 @@
                 utilx.objectKeys(42);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
+            });
+
+            expect(keys2.length).to.be(7);
+            expect(utilx.arrayIsArray(keys2)).to.be.ok();
+            utilx.arrayForEach(keys2, function (name) {
+                expect(utilx.objectHasOwnProperty(obj, name)).to.be.ok();
+            });
+
+            utilx.arrayForEach(keys2, function (name) {
+                // should return names which are enumerable
+                expect(utilx.arrayIndexOf(loopedValues2, name)).not.to.be(-1);
             });
         });
     });
