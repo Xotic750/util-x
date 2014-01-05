@@ -16,9 +16,13 @@
                 MyError = utilx.customError('MyError');
             }).to.not.throwException();
 
+            expect(MyError.prototype.constructor).to.be(MyError);
+
             expect(function () {
                 MySyntaxError = utilx.customError('MySyntaxError', SyntaxError);
             }).to.not.throwException();
+
+            expect(MySyntaxError.prototype.constructor).to.be(MySyntaxError);
         });
 
         it('should not throw an error in each case', function () {
