@@ -58,15 +58,10 @@
             });
 
             expect(function () {
-                var obj = utilx.objectDefineProperty({}, 'foo', {});
-
-                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
-                expect(obj.foo).to.be(utilx.privateUndefined);
-            }).to.not.throwException();
-
-            expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
-                    value: utilx.privateUndefined
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
@@ -75,7 +70,22 @@
 
             expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
-                    value: null
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
@@ -83,40 +93,124 @@
             }).to.not.throwException();
 
             expect(function () {
-                var obj = utilx.objectDefineProperty([], '0', {});
+                var obj = utilx.objectDefineProperty([], '0', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
 
                 expect(utilx.objectHasOwnProperty(obj, '0')).to.be.ok();
+                expect(obj.length).to.be(1);
                 expect(obj[0]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
 
             expect(function () {
                 var obj = utilx.objectDefineProperty([], '0', {
-                    value: utilx.privateUndefined
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, '0')).to.be.ok();
+                expect(obj.length).to.be(1);
                 expect(obj[0]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
 
             expect(function () {
                 var obj = utilx.objectDefineProperty([], '0', {
-                    value: null
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, '0')).to.be.ok();
+                expect(obj.length).to.be(1);
                 expect(obj[0]).to.be(null);
             }).to.not.throwException();
 
             expect(function () {
-                var obj = utilx.objectDefineProperty(function () {}, 'foo', {});
+                var obj = utilx.objectDefineProperty([], '1', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
 
-                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
-                expect(obj.foo).to.be(utilx.privateUndefined);
+                expect(utilx.objectHasOwnProperty(obj, '1')).to.be.ok();
+                expect(obj.length).to.be(2);
+                expect(obj[0]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '1', {
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '1')).to.be.ok();
+                expect(obj.length).to.be(2);
+                expect(obj[1]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '1', {
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '1')).to.be.ok();
+                expect(obj.length).to.be(2);
+                expect(obj[1]).to.be(null);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '1.1', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '1.1')).to.be.ok();
+                expect(obj.length).to.be(0);
+                expect(obj[1.1]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '1.1', {
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '1.1')).to.be.ok();
+                expect(obj.length).to.be(0);
+                expect(obj[1.1]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '1.1', {
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '1.1')).to.be.ok();
+                expect(obj.length).to.be(0);
+                expect(obj[1.1]).to.be(null);
             }).to.not.throwException();
 
             expect(function () {
                 var obj = utilx.objectDefineProperty(function () {}, 'foo', {
-                    value: utilx.privateUndefined
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
@@ -125,7 +219,22 @@
 
             expect(function () {
                 var obj = utilx.objectDefineProperty(function () {}, 'foo', {
-                    value: null
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () {}, 'foo', {
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
