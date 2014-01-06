@@ -2562,6 +2562,49 @@
         };
 
         /**
+         * Deep set an object's property descriptors.
+         * @memberOf utilx
+         * @function
+         * @param {object} object
+         * @return {object}
+         */
+        utilx.deepDefineDescriptors = function (object, descriptor) {
+            var desc;
+
+            if (utilx.isPlainObject(descriptor)) {
+                desc = {};
+                if (utilx.isBoolean(descriptor.enumerable)) {
+                    desc.enumerable = descriptor.enumerable;
+                } else {
+                    desc.enumerable = false;
+                }
+
+                if (utilx.isBoolean(descriptor.writable)) {
+                    desc.writable = descriptor.writable;
+                } else {
+                    desc.writable = false;
+                }
+
+                if (utilx.isBoolean(descriptor.configurable)) {
+                    desc.configurable = descriptor.configurable;
+                } else {
+                    desc.configurable = false;
+                }
+
+                utilx.arrayForEach(utilx.objectKeys(object), function (propKey) {
+                    var prop = object[propKey];
+
+                    utilx.objectDefineProperty(object, propKey, desc);
+                    if (utilx.isTypeObject(prop) || utilx.isFunction(prop)) {
+                        utilx.deepDefineDescriptors(prop);
+                    }
+                });
+            }
+
+            return object;
+        };
+
+        /**
          * The function tests whether an object has in its prototype chain the prototype property of a constructor.
          * @memberOf utilx
          * @function
@@ -3691,6 +3734,18 @@
 
         tempSafariNFE = null;
 
+        utilx.deepDefineDescriptors(utilx, {
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
+
+        utilx.objectDefineProperty(utilx, 'privateUndefined', {
+            enumerable: false,
+            writable: false,
+            configurable: false
+        });
+
         return utilx;
     }
 
@@ -3711,38 +3766,78 @@
             typeof module.exports === 'object' && null !== module.exports) {
 
         publicUtil = factory(require('stacktrace-js'));
-        publicUtil.factory = function () {
-            var pu = factory(require('stacktrace-js'));
+        publicUtil.objectDefineProperty(publicUtil, 'factory', {
+            value: function () {
+                var pu = factory(require('stacktrace-js'));
 
-            pu.factory = publicUtil.factory;
+                publicUtil.objectDefineProperty(pu, 'factory', {
+                    value: publicUtil.factory,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
 
-            return pu;
-        };
+                return pu;
+            },
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
 
-        module.exports = publicUtil;
+        publicUtil.objectDefineProperty(module, 'exports', {
+            value: publicUtil,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
         define(['stacktrace'], function (stackstrace) {
             publicUtil = factory(stackstrace);
-            publicUtil.factory = function () {
-                var pu = factory(stackstrace);
+            publicUtil.objectDefineProperty(publicUtil, 'factory', {
+                value: function () {
+                    var pu = factory(stackstrace);
 
-                pu.factory = publicUtil.factory;
+                    publicUtil.objectDefineProperty(pu, 'factory', {
+                        value: publicUtil.factory,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    });
 
-                return pu;
-            };
+                    return pu;
+                },
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
 
             return publicUtil;
         });
     } else {
         publicUtil = factory(globalThis.printStackTrace);
-        publicUtil.factory = function () {
-            var pu = factory(globalThis.printStackTrace);
+        publicUtil.objectDefineProperty(publicUtil, 'factory', {
+            value: function () {
+                var pu = factory(globalThis.printStackTrace);
 
-            pu.factory = publicUtil.factory;
+                publicUtil.objectDefineProperty(pu, 'factory', {
+                    value: publicUtil.factory,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
 
-            return pu;
-        };
+                return pu;
+            },
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
 
-        globalThis.utilx = publicUtil;
+        publicUtil.objectDefineProperty(globalThis, 'utilx', {
+            value: publicUtil,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
     }
 }(this));
