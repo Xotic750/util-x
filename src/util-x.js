@@ -2307,7 +2307,8 @@
                     if (!utilx.objectHasOwnProperty(descriptor, 'get') &&
                             !utilx.objectHasOwnProperty(descriptor, 'set')) {
 
-                        if (utilx.objectHasOwnProperty(descriptor, 'value')) {
+                        if (utilx.objectHasOwnProperty(descriptor, 'value') ||
+                                !utilx.objectHasOwnProperty(object, property)) {
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
