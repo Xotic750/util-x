@@ -27,11 +27,12 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.67
+ * @version 0.0.68
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
  * @module util-x
+ * @requires stacktrace-js
  */
 
 /*
@@ -53,7 +54,7 @@
     /* jshint -W034 */
     'use strict';
 
-    function factory() {
+    function factory(printStackTrace) {
         /**
          * @namespace utilx
          */
@@ -70,7 +71,6 @@
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
             protoName = '__proto__',
-            rxSplitNewLine = new RegExp('\\r\\n|\\n'),
 
             /**
              * For hasOwnProperty bug.
@@ -3468,6 +3468,42 @@
         };
 
         /**
+         * Pathces IE6 &amp; 7 Error.prototype.toString to make it function as expected in all other browsers.
+         * This is an obtrusive fix.
+         * @memberOf utilx
+         * @function
+         * @return {boolean}
+         */
+        utilx.normaliseErrorIEToString = function () {
+            // I am unable to make this fix for IE6&amp;7 unobtrusive
+            var patched = false,
+                message = 'Should we patch IE6&amp;7?';
+
+            try {
+                throw new Error(message);
+            } catch (e) {
+                if (utilx.strictEqual(e.message, message) &amp;&amp;
+                        utilx.strictEqual(e.toString(), '[object Error]')) {
+
+                    utilx.objectDefineProperties(Error.prototype, {
+                        toString: {
+                            value: function () {
+                                return this.name + ': ' + this.message;
+                            },
+                            enumerable: false,
+                            writable: true,
+                            configurable: true
+                        }
+                    });
+
+                    patched = true;
+                }
+            }
+
+            return patched;
+        };
+
+        /**
          * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
          * If a valid native Error type constructor is provided but not supporte by the browesr the it will
          * also default to Error. (Looking at you IE &lt; 9)
@@ -3527,6 +3563,8 @@
                             this.stack = err.stack;
                         } else if (utilx.isString(err.stacktrace)) {
                             this.stack = err.stacktrace;
+                        } else {
+                            this.stack = utilx.arrayJoin(printStackTrace(), '\n');
                         }
                     }
                 }
@@ -3543,28 +3581,7 @@
 
                     toString: {
                         value: function () {
-                            var arr = utilx.stringSplit(this.message, rxSplitNewLine),
-                                str = this.name + ': ';
-
-                            if (utilx.gt(arr.length, 1)) {
-                                arr = utilx.arrayFilter(arr, function (element) {
-                                    var val;
-
-                                    if (!utilx.stringContains(element,
-                                                             'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-
-                                        val = element;
-                                    }
-
-                                    return val;
-                                });
-
-                                str += utilx.arrayJoin(arr, '\n');
-                            } else {
-                                str += this.message;
-                            }
-
-                            return str;
+                            return this.name + ': ' + this.message;
                         },
                         enumerable: false,
                         writable: true,
@@ -3573,33 +3590,6 @@
                 });
 
                 return CustomError;
-            }
-
-            // I am unable to make this fix for IE6&amp;7 unobtrusive
-            try {
-                throw new Error('Should we patch IE6&amp;7?');
-            } catch (e) {
-                if (utilx.strictEqual(e.message, 'Should we patch IE6&amp;7?') &amp;&amp;
-                        utilx.strictEqual(e.toString(), '[object Error]')) {
-
-                    utilx.objectDefineProperties(Error.prototype, {
-                        toString: {
-                            value: function () {
-                                return this.name + ': ' + this.message;
-                            },
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        },
-
-                        isPatched: {
-                            value: true,
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        }
-                    });
-                }
             }
 
             try {
@@ -3633,6 +3623,14 @@
             };
         }());
 
+        /**
+         * Framework-agnostic, micro-library for getting stack traces in all web browsers
+         * @see {@link https://github.com/stacktracejs/stacktrace.js stacktrace.js} for further information.
+         * @memberOf utilx
+         * @function
+         */
+        utilx.printStackTrace = printStackTrace;
+
         tempSafariNFE = null;
 
         return utilx;
@@ -3644,28 +3642,49 @@
      *
      */
 
-    var publicUtil = factory();
-
-    publicUtil.factory = function () {
-        var pu = factory();
-
-        pu.factory = publicUtil.factory;
-
-        return pu;
-    };
-
     if (typeof globalThis !== 'object' || null === globalThis) {
         throw new TypeError('Invalid global context');
     }
 
-    /*global module, define */
+    var publicUtil;
+
+    /*global require, module, define */
     if (typeof module === 'object' &amp;&amp; null !== module &amp;&amp;
             typeof module.exports === 'object' &amp;&amp; null !== module.exports) {
 
+        publicUtil = factory(require('stacktrace-js'));
+        publicUtil.factory = function () {
+            var pu = factory(require('stacktrace-js'));
+
+            pu.factory = publicUtil.factory;
+
+            return pu;
+        };
+
         module.exports = publicUtil;
     } else if (typeof define === 'function' &amp;&amp; typeof define.amd === 'object' &amp;&amp; null !== define.amd) {
-        define(publicUtil);
+        define(['stacktrace'], function (stackstrace) {
+            publicUtil = factory(stackstrace);
+            publicUtil.factory = function () {
+                var pu = factory(stackstrace);
+
+                pu.factory = publicUtil.factory;
+
+                return pu;
+            };
+
+            return publicUtil;
+        });
     } else {
+        publicUtil = factory(globalThis.printStackTrace);
+        publicUtil.factory = function () {
+            var pu = factory(globalThis.printStackTrace);
+
+            pu.factory = publicUtil.factory;
+
+            return pu;
+        };
+
         globalThis.utilx = publicUtil;
     }
 }(this));
@@ -3685,7 +3704,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Sun Jan 05 2014 13:58:40 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 06 2014 03:19:06 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
