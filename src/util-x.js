@@ -2285,7 +2285,10 @@
                         throw new TypeError('Property description must be an object');
                     }
 
-                    if (utilx.objectHasOwnProperty(descriptor, 'value')) {
+                    if (utilx.objectHasOwnProperty(descriptor, 'value') ||
+                            (!utilx.objectHasOwnProperty(descriptor, 'get') &&
+                                !utilx.objectHasOwnProperty(descriptor, 'set'))) {
+
                         if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
                             prototype = object[protoName];
                             object[protoName] = utilx.objectGetPrototypeOf(baseObject);
