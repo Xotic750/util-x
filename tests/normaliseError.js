@@ -14,7 +14,7 @@
             try {
                 throw new Error(message);
             } catch (e) {
-                if (utilx.strictEqual(e.message, 'We want a normalised toString!') &&
+                if (utilx.strictEqual(e.message, message) &&
                         utilx.strictEqual(e.toString(), '[object Error]')) {
 
                     expect(utilx.normaliseErrorIEToString()).to.be.ok();
@@ -25,7 +25,7 @@
                 throw new Error(message);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(Error);
-                expect(e.toString()).to.be('Error: ' + message);
+                expect(e.toString()).to.match(new RegExp('^Error: ' + message));
             });
         });
     });

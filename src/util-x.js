@@ -3449,12 +3449,13 @@
          */
         utilx.normaliseErrorIEToString = function () {
             // I am unable to make this fix for IE6&7 unobtrusive
-            var patched = false;
+            var patched = false,
+                message = 'Should we patch IE6&7?';
 
             try {
-                throw new Error('Should we patch IE6&7?');
+                throw new Error(message);
             } catch (e) {
-                if (utilx.strictEqual(e.message, 'Should we patch IE6&7?') &&
+                if (utilx.strictEqual(e.message, message) &&
                         utilx.strictEqual(e.toString(), '[object Error]')) {
 
                     utilx.objectDefineProperties(Error.prototype, {
