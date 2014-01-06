@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.67",
+    "version": "0.0.68",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -38,6 +38,7 @@
         "doc": "docs"
     },
     "dependencies": {
+        "stacktrace.js": "git+https://github.com/stacktracejs/stacktrace.js.git"
     },
     "devDependencies": {
         "uglify-js": "latest",

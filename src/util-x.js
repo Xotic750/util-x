@@ -26,7 +26,7 @@
     /* jshint -W034 */
     'use strict';
 
-    function factory() {
+    function factory(printStackTrace) {
         /**
          * @namespace utilx
          */
@@ -43,7 +43,6 @@
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
             protoName = '__proto__',
-            rxSplitNewLine = new RegExp('\\r\\n|\\n'),
 
             /**
              * For hasOwnProperty bug.
@@ -3536,6 +3535,8 @@
                             this.stack = err.stack;
                         } else if (utilx.isString(err.stacktrace)) {
                             this.stack = err.stacktrace;
+                        } else {
+                            this.stack = utilx.arrayJoin(printStackTrace(), '\n');
                         }
                     }
                 }
@@ -3552,28 +3553,7 @@
 
                     toString: {
                         value: function () {
-                            var arr = utilx.stringSplit(this.message, rxSplitNewLine),
-                                str = this.name + ': ';
-
-                            if (utilx.gt(arr.length, 1)) {
-                                arr = utilx.arrayFilter(arr, function (element) {
-                                    var val;
-
-                                    if (!utilx.stringContains(element,
-                                                             'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-
-                                        val = element;
-                                    }
-
-                                    return val;
-                                });
-
-                                str += utilx.arrayJoin(arr, '\n');
-                            } else {
-                                str += this.message;
-                            }
-
-                            return str;
+                            return this.name + ': ' + this.message;
                         },
                         enumerable: false,
                         writable: true,
@@ -3615,6 +3595,15 @@
             };
         }());
 
+        /**
+         * Framework-agnostic, micro-library for getting stack traces in all web browsers
+         * @see {@link foo} for further information.
+         * @see {@link https://github.com/stacktracejs/stacktrace.js stacktrace.js} for further information.
+         * @memberOf utilx
+         * @function
+         */
+        utilx.printStackTrace = printStackTrace;
+
         tempSafariNFE = null;
 
         return utilx;
@@ -3626,28 +3615,49 @@
      *
      */
 
-    var publicUtil = factory();
-
-    publicUtil.factory = function () {
-        var pu = factory();
-
-        pu.factory = publicUtil.factory;
-
-        return pu;
-    };
-
     if (typeof globalThis !== 'object' || null === globalThis) {
         throw new TypeError('Invalid global context');
     }
 
-    /*global module, define */
+    var publicUtil;
+
+    /*global require, module, define */
     if (typeof module === 'object' && null !== module &&
             typeof module.exports === 'object' && null !== module.exports) {
 
+        publicUtil = factory(require('stacktrace-js'));
+        publicUtil.factory = function () {
+            var pu = factory(require('stacktrace-js'));
+
+            pu.factory = publicUtil.factory;
+
+            return pu;
+        };
+
         module.exports = publicUtil;
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
-        define(publicUtil);
+        define(['stacktrace'], function (stackstrace) {
+            publicUtil = factory(stackstrace);
+            publicUtil.factory = function () {
+                var pu = factory(stackstrace);
+
+                pu.factory = publicUtil.factory;
+
+                return pu;
+            };
+
+            return publicUtil;
+        });
     } else {
+        publicUtil = factory(globalThis.printStackTrace);
+        publicUtil.factory = function () {
+            var pu = factory(globalThis.printStackTrace);
+
+            pu.factory = publicUtil.factory;
+
+            return pu;
+        };
+
         globalThis.utilx = publicUtil;
     }
 }(this));

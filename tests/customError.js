@@ -55,13 +55,13 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(e.toString()).to.be('MyError: test');
+                expect(e.toString()).to.match(new RegExp('^MyError: test'));
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                expect(e.toString()).to.be('MySyntaxError: test');
+                expect(e.toString()).to.match(new RegExp('^MySyntaxError: test'));
             });
 
             expect(function () {
