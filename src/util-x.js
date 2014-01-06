@@ -3445,10 +3445,12 @@
          * This is an obtrusive fix.
          * @memberOf utilx
          * @function
-         * @return {undefined}
+         * @return {boolean}
          */
         utilx.normaliseErrorIEToString = function () {
             // I am unable to make this fix for IE6&7 unobtrusive
+            var patched = false;
+
             try {
                 throw new Error('Should we patch IE6&7?');
             } catch (e) {
@@ -3465,8 +3467,12 @@
                             configurable: true
                         }
                     });
+
+                    patched = true;
                 }
             }
+
+            return patched;
         };
 
         /**

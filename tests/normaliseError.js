@@ -17,7 +17,7 @@
                 if (utilx.strictEqual(e.message, 'We want a normalised toString!') &&
                         utilx.strictEqual(e.toString(), '[object Error]')) {
 
-                    utilx.normaliseErrorIE();
+                    expect(utilx.normaliseErrorIEToString()).to.be.ok();
                 }
             }
 
