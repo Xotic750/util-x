@@ -5,6 +5,7 @@
  * @copyright @@COPYRIGHT @@AUTHORNAME
  * @license {@link <@@LICLINK> @@LICENSE}
  * @module @@MODULE
+ * @requires stacktrace-js
  */
 
 /*
@@ -3597,7 +3598,6 @@
 
         /**
          * Framework-agnostic, micro-library for getting stack traces in all web browsers
-         * @see {@link foo} for further information.
          * @see {@link https://github.com/stacktracejs/stacktrace.js stacktrace.js} for further information.
          * @memberOf utilx
          * @function

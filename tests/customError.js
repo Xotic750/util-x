@@ -86,6 +86,14 @@
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error)).to.be(true);
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError)).to.be(true);
             expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
+
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(e.toString()).to.match(new RegExp('^MyError: test'));
+                /*global console */
+                console.log('# ' + utilx.arrayJoin(utilx.stringSplit(e.stack, '\n'), '\n# '));
+            });
         });
 
         describe('Detected ', function () {
