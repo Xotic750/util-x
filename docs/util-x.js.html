@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.68
+ * @version 0.0.69
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -71,6 +71,7 @@
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
             protoName = '__proto__',
+            rxSplitNewLine = new RegExp('\\r\\n|\\n'),
 
             /**
              * For hasOwnProperty bug.
@@ -3471,37 +3472,100 @@
          * Pathces IE6 &amp; 7 Error.prototype.toString to make it function as expected in all other browsers.
          * This is an obtrusive fix.
          * @memberOf utilx
-         * @function
-         * @return {boolean}
+         * @namespace
          */
-        utilx.normaliseErrorIEToString = function () {
-            // I am unable to make this fix for IE6&amp;7 unobtrusive
+        // I am unable to make this fix for IE6&amp;7 unobtrusive
+        utilx.normaliseErrorIEToString = (function () {
             var patched = false,
-                message = 'Should we patch IE6&amp;7?';
+                previous;
 
-            try {
-                throw new Error(message);
-            } catch (e) {
-                if (utilx.strictEqual(e.message, message) &amp;&amp;
-                        utilx.strictEqual(e.toString(), '[object Error]')) {
+            return utilx.objectDefineProperties({}, {
+                /**
+                 * Pathces IE6 &amp; 7 Error.prototype.toString to make it function as expected in all other browsers.
+                 * This is an obtrusive fix.
+                 * @memberOf utilx.normaliseErrorIEToString
+                 * @function
+                 * @return {boolean}
+                 */
+                on: {
+                    value: function () {
+                        var message = 'Should we patch IE6&amp;7?';
 
-                    utilx.objectDefineProperties(Error.prototype, {
-                        toString: {
-                            value: function () {
-                                return this.name + ': ' + this.message;
-                            },
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
+                        try {
+                            throw new Error(message);
+                        } catch (e) {
+                            if (utilx.strictEqual(e.message, message) &amp;&amp;
+                                    utilx.strictEqual(e.toString(), '[object Error]')) {
+
+                                previous = Error.prototype.toString;
+                                utilx.objectDefineProperties(Error.prototype, {
+                                    toString: {
+                                        value: function () {
+                                            return this.name + ': ' + this.message;
+                                        },
+                                        enumerable: false,
+                                        writable: true,
+                                        configurable: true
+                                    }
+                                });
+
+                                patched = true;
+                            }
                         }
-                    });
 
-                    patched = true;
+                        return patched;
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                },
+
+                /**
+                 * Pathces IE6 &amp; 7 Error.prototype.toString to make it function as expected in all other browsers.
+                 * This is an obtrusive fix.
+                 * @memberOf utilx.normaliseErrorIEToString
+                 * @function
+                 * @return {boolean}
+                 */
+                off: {
+                    value: function () {
+                        if (utilx.isTrue(patched)) {
+                            utilx.objectDefineProperties(Error.prototype, {
+                                toString: {
+                                    value: previous,
+                                    enumerable: false,
+                                    writable: true,
+                                    configurable: true
+                                }
+                            });
+
+                            patched = false;
+                        }
+
+                        return patched;
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                },
+
+                /**
+                 * Pathces IE6 &amp; 7 Error.prototype.toString to make it function as expected in all other browsers.
+                 * This is an obtrusive fix.
+                 * @memberOf utilx.normaliseErrorIEToString
+                 * @function
+                 * @return {boolean}
+                 */
+                state: {
+                    value: function () {
+                        return patched;
+                    },
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
                 }
-            }
-
-            return patched;
-        };
+            });
+        }());
 
         /**
          * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
@@ -3581,7 +3645,28 @@
 
                     toString: {
                         value: function () {
-                            return this.name + ': ' + this.message;
+                            var arr = utilx.stringSplit(this.message, rxSplitNewLine),
+                                str = this.name + ': ';
+
+                            if (utilx.gt(arr.length, 1)) {
+                                arr = utilx.arrayFilter(arr, function (element) {
+                                    var val;
+
+                                    if (!utilx.stringContains(element,
+                                                             'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
+
+                                        val = element;
+                                    }
+
+                                    return val;
+                                });
+
+                                str += utilx.arrayJoin(arr, '\n');
+                            } else {
+                                str += this.message;
+                            }
+
+                            return str;
                         },
                         enumerable: false,
                         writable: true,
@@ -3698,13 +3783,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="utilx.html">utilx</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="utilx.html">utilx</a></li><li><a href="utilx.normaliseErrorIEToString.html">normaliseErrorIEToString</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 06 2014 03:19:06 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 06 2014 04:38:59 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
