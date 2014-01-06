@@ -2289,14 +2289,16 @@
                             (!utilx.objectHasOwnProperty(descriptor, 'get') &&
                                 !utilx.objectHasOwnProperty(descriptor, 'set'))) {
 
-                        if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
-                            prototype = object[protoName];
-                            object[protoName] = utilx.objectGetPrototypeOf(baseObject);
-                            delete object[property];
-                            object[property] = descriptor.value;
-                            object[protoName] = prototype;
-                        } else {
-                            object[property] = descriptor.value;
+                        if (utilx.objectHasOwnProperty(descriptor, 'value')) {
+                            if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
+                                prototype = object[protoName];
+                                object[protoName] = utilx.objectGetPrototypeOf(baseObject);
+                                delete object[property];
+                                object[property] = descriptor.value;
+                                object[protoName] = prototype;
+                            } else {
+                                object[property] = descriptor.value;
+                            }
                         }
                     } else {
                         if (!utilx.isFunction(defineGetterFN) || !utilx.isFunction(defineSetterFN)) {
