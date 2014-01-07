@@ -1,6 +1,6 @@
 /*global require, describe, it */
 
-(function (privateUndefined) {
+(function () {
     'use strict';
 
     var required = require('../scripts/'),
@@ -10,7 +10,7 @@
     describe('numberToInteger', function () {
         it('should not throw an error in each case', function () {
             expect(utilx.numberToInteger()).to.be(0);
-            expect(utilx.numberToInteger(privateUndefined)).to.be(0);
+            expect(utilx.numberToInteger(utilx.privateUndefined)).to.be(0);
             expect(utilx.numberToInteger(null)).to.be(0);
             expect(utilx.numberToInteger(-10.123)).to.be(-10);
             expect(utilx.numberToInteger(0)).to.be(0);
