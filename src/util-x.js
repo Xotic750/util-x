@@ -864,8 +864,6 @@
                         val = 1;
                     }
 
-                    /*global console */
-                    console.log('# VAL: ' + val + ' : ' + typeof val + ' : ' + utilx.anyToString(value));
                     return val;
                 };
             }

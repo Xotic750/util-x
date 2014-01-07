@@ -43,13 +43,13 @@
             expect(utilx.numberIsNaN(utilx.mathSign(new Error('x')))).to.be.ok();
 
             // we also verify that [[ToNumber]] is being called
-            [Infinity, 1].forEach(function (value) {
+            utilx.arrayForEach([Infinity, 1], function (value) {
                 expect(utilx.mathSign(value)).to.be(1);
                 expect(utilx.mathSign(value.toString())).to.be(1);
             });
-            expect(utilx.mathSign(true)).to.be(1);
 
-            [-Infinity, -1].forEach(function (value) {
+            expect(utilx.mathSign(true)).to.be(1);
+            utilx.arrayForEach([-Infinity, -1], function (value) {
                 expect(utilx.mathSign(value)).to.be(-1);
                 expect(utilx.mathSign(value.toString())).to.be(-1);
             });
