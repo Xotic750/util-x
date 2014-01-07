@@ -25,6 +25,7 @@
             expect(utilx.toNumber('Infinity')).to.be(Infinity);
             expect(utilx.toNumber('-Infinity')).to.be(-Infinity);
             expect(utilx.isNumber(utilx.toNumber(new Date(2013, 11, 11)))).to.be.ok();
+            expect(utilx.numberIsNaN(utilx.toNumber(new Date(2013, 11, 11)))).to.not.be.ok();
             expect(isNaN(utilx.toNumber('NaN'))).to.be(true);
             expect(utilx.toNumber('Infinity')).to.be(Infinity);
             expect(utilx.toNumber('-Infinity')).to.be(-Infinity);
