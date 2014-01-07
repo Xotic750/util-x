@@ -35,11 +35,15 @@
         var utilx = {},
             UWORD32 = Math.pow(2, 32),
             MAX_UINT32 = UWORD32 - 1,
+            MAX_INT = Math.pow(2, 53) - 1,
+            MIN_INT = -MAX_INT,
             baseObject = {},
             baseArray = [],
             baseString = '',
             baseNumber = 0,
             baseBoolean = true,
+            CtrObject = baseObject.constructor,
+            noNewCtrObject = CtrObject,
             CtrBoolean = baseBoolean.constructor,
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
@@ -746,7 +750,7 @@
         utilx.objectIs = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isIsFn = baseObject.constructor.is,
+            var isIsFn = CtrObject.is,
                 nfeIs;
 
             if (utilx.isFunction(isIsFn)) {
@@ -785,7 +789,7 @@
         utilx.numberIsNaN = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isNaNFN = baseNumber.constructor.isNaN,
+            var isNaNFN = CtrNumber.isNaN,
                 nfeIsNaN;
 
             if (utilx.isFunction(isNaNFN)) {
@@ -813,7 +817,7 @@
         utilx.numberIsFinite = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isFiniteFN = baseNumber.constructor.isFinite,
+            var isFiniteFN = CtrNumber.isFinite,
                 nfeIsFinite;
 
             if (utilx.isFunction(isFiniteFN)) {
@@ -880,7 +884,7 @@
         utilx.numberToInteger = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var toIntegerFN = Number.toInteger,
+            var toIntegerFN = CtrNumber.toInteger,
                 nfeToInteger;
 
             if (utilx.isFunction(toIntegerFN)) {
@@ -903,6 +907,37 @@
             }
 
             nfeToInteger = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
+         * The Number.isInteger() method determines whether the passed value is an integer.
+         * If the target value is an integer, return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        // named utilx.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
+        utilx.numberIsInteger = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe/
+            var isIntegerFN = CtrNumber.isInteger,
+                nfeIsInteger;
+
+            if (utilx.isFunction(isIntegerFN)) {
+                tempSafariNFE = isIntegerFN;
+            } else {
+                tempSafariNFE = function nfeIsInteger(inputArg) {
+                    return utilx.numberIsFinite(inputArg) &&
+                        utilx.inRange(inputArg, MIN_INT, MAX_INT) &&
+                        utilx.strictEqual(utilx.numberToInteger(inputArg), inputArg);
+                };
+            }
+
+            nfeIsInteger = null;
 
             return tempSafariNFE;
         }());
@@ -1406,7 +1441,7 @@
         utilx.objectGetPrototypeOf = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var getPrototypeOfFN = baseObject.constructor.getPrototypeOf,
+            var getPrototypeOfFN = CtrObject.getPrototypeOf,
                 nfeGetPrototypeOf,
                 bocProto;
 
@@ -1418,7 +1453,7 @@
 
                     return getPrototypeOfFN(object);
                 };
-            } else if (utilx.isNull(baseObject.constructor.prototype[protoName])) {
+            } else if (utilx.isNull(CtrObject.prototype[protoName])) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1427,7 +1462,7 @@
                     return object[protoName];
                 };
             } else {
-                bocProto = baseObject.constructor.prototype;
+                bocProto = CtrObject.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1639,7 +1674,7 @@
         utilx.toObjectFixIndexedAccess = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var boxedString = baseObject.constructor('a'),
+            var boxedString = noNewCtrObject('a'),
                 splitString = utilx.notStrictEqual(boxedString[0], 'a') || !utilx.hasProperty(boxedString, 0),
                 nfeToObjectFixIndexedAccess;
 
@@ -2164,7 +2199,7 @@
         utilx.objectKeys = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var keysFN = baseObject.constructor.keys,
+            var keysFN = CtrObject.keys,
                 supported = false,
                 hasDontEnumBug = true,
                 testObject,
@@ -2285,7 +2320,33 @@
             }
 
             if (utilx.isFunction(definePropertyFN)) {
-                tempSafariNFE = definePropertyFN;
+                // patch nodejs bug
+                try {
+                    tempSafariNFE = definePropertyFN([], '1.', {
+                        value: null,
+                        enumerable: true,
+                        writable: true,
+                        configurable: true
+                    });
+
+                    if (utilx.notStrictEqual(tempSafariNFE[1], null)) {
+                        throw new Error();
+                    }
+
+                    tempSafariNFE = definePropertyFN;
+                } catch (e) {
+                    tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
+                        if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                utilx.isString(property) &&
+                                !utilx.isEmptyString(property) &&
+                                utilx.numberIsInteger(utilx.toNumber(property))) {
+
+                            property = utilx.toNumber(property);
+                        }
+
+                        return definePropertyFN(object, property, descriptor);
+                    };
+                }
             } else {
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
@@ -2309,6 +2370,16 @@
 
                         if (utilx.objectHasOwnProperty(descriptor, 'value') ||
                                 !utilx.objectHasOwnProperty(object, property)) {
+
+                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                    ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
+                                     (utilx.isString(property) && utilx.isDigits(property)) ||
+                                     (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                        utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                utilx.arrayAssign(object, property, descriptor.value);
+                            }
+
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
@@ -2316,14 +2387,7 @@
                                 object[property] = descriptor.value;
                                 object[protoName] = prototype;
                             } else {
-                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
-                                        (utilx.isNumber(property) || utilx.isString(property)) &&
-                                        utilx.isDigits(property)) {
-
-                                    utilx.arrayAssign(property, descriptor.value);
-                                } else {
-                                    object[property] = descriptor.value;
-                                }
+                                object[property] = descriptor.value;
                             }
                         }
                     } else {

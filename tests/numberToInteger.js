@@ -29,6 +29,13 @@
             expect(utilx.numberToInteger([10.123])).to.be(10);
             expect(utilx.numberToInteger(new RegExp('c'))).to.be(0);
             expect(utilx.numberToInteger(new Error('x'))).to.be(0);
+            /*jshint -W047 */
+            expect(utilx.numberToInteger(10.)).to.be(10);
+            /*jshint +W047 */
+            expect(utilx.numberToInteger(10.0)).to.be(10);
+            expect(utilx.numberToInteger('10.')).to.be(10);
+            expect(utilx.numberToInteger('10.0')).to.be(10);
+            expect(utilx.numberToInteger('10.123')).to.be(10);
         });
     });
 }());
