@@ -78,35 +78,37 @@
                 new RegExp('a', 'g'),
                 {}
             ];
-            nonNumbers.forEach(function (thing) {
-                expect(utilx.numberIsInteger(thing)).to.equal(false);
+
+            utilx.arrayForEach(nonNumbers, function (thing) {
+                expect(utilx.numberIsInteger(thing)).to.not.be.ok();
             });
         });
 
         it('should be false when NaN', function () {
-            expect(utilx.numberIsInteger(NaN)).to.equal(false);
+            expect(utilx.numberIsInteger(NaN)).to.not.be.ok();
         });
 
         it('should be false when Infinity', function () {
-            expect(utilx.numberIsInteger(Infinity)).to.equal(false);
-            expect(utilx.numberIsInteger(-Infinity)).to.equal(false);
+            expect(utilx.numberIsInteger(Infinity)).to.not.be.ok();
+            expect(utilx.numberIsInteger(-Infinity)).to.not.be.ok();
         });
 
         it('should be false when number is not integer', function () {
-            expect(utilx.numberIsInteger(3.4)).to.equal(false);
-            expect(utilx.numberIsInteger(-3.4)).to.equal(false);
+            expect(utilx.numberIsInteger(3.4)).to.not.be.ok();
+            expect(utilx.numberIsInteger(-3.4)).to.not.be.ok();
         });
 
         it('should be false when abs(number) is 2^53 or larger', function () {
-            expect(utilx.numberIsInteger(Math.pow(2, 53))).to.equal(false);
-            expect(utilx.numberIsInteger(-Math.pow(2, 53))).to.equal(false);
+            expect(utilx.numberIsInteger(Math.pow(2, 53))).to.not.be.ok();
+            expect(utilx.numberIsInteger(-Math.pow(2, 53))).to.not.be.ok();
         });
 
         it('should be true when abs(number) is less than 2^53', function () {
             var safeIntegers = [0, 1, Math.pow(2, 53) - 1];
-            safeIntegers.forEach(function (int) {
-                expect(utilx.numberIsInteger(int)).to.equal(true);
-                expect(utilx.numberIsInteger(-int)).to.equal(true);
+
+            utilx.arrayForEach(safeIntegers, function (int) {
+                expect(utilx.numberIsInteger(int)).to.be.ok();
+                expect(utilx.numberIsInteger(-int)).to.be.ok();
             });
         });
     });
