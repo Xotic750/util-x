@@ -12,6 +12,9 @@
             expect(utilx.isPositiveZero(0)).to.be.ok();
             expect(utilx.isPositiveZero(+0)).to.be.ok();
             expect(utilx.isPositiveZero(-0)).to.not.be.ok();
+            expect(utilx.isPositiveZero(0.0)).to.be.ok();
+            expect(utilx.isPositiveZero(+0.0)).to.be.ok();
+            expect(utilx.isPositiveZero(-0.0)).to.not.be.ok();
             expect(utilx.isPositiveZero(1)).to.not.be.ok();
             expect(utilx.isPositiveZero('0')).to.not.be.ok();
             expect(utilx.isPositiveZero()).to.not.be.ok();
