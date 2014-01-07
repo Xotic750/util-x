@@ -23,6 +23,9 @@
             expect(utilx.hasProperty(arr, 'foo')).to.not.be.ok();
             expect(utilx.hasProperty(arr, 'bar')).to.not.be.ok();
             expect(utilx.hasProperty(arr, 'fuz')).to.not.be.ok();
+            expect(utilx.hasProperty({
+                foo: utilx.privateUndefined
+            }, 'foo')).to.be.ok();
         });
     });
 }());

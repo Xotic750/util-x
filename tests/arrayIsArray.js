@@ -7,9 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
 
     describe('arrayIsArray', function () {
         it('should not throw an error in each case', function () {
@@ -25,7 +22,7 @@
             expect(utilx.arrayIsArray(utilx.noop)).to.not.be.ok();
             expect(utilx.arrayIsArray([])).to.be.ok();
             expect(utilx.arrayIsArray({})).to.not.be.ok();
-            expect(utilx.arrayIsArray(returnArgs())).to.not.be.ok();
+            expect(utilx.arrayIsArray(utilx.returnArgs())).to.not.be.ok();
         });
     });
 }());

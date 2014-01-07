@@ -7,10 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
     describe('objectIs', function () {
         var date = new Date(),
             rx = new RegExp('x'),
@@ -23,7 +19,7 @@
             expect(utilx.objectIs(true, true)).to.be.ok();
             expect(utilx.objectIs('x', 'x')).to.be.ok();
             expect(utilx.objectIs([1, 2, 3], [1, 2, 3])).to.not.be.ok();
-            expect(utilx.objectIs(returnArgs(), returnArgs())).to.not.be.ok();
+            expect(utilx.objectIs(utilx.returnArgs(), utilx.returnArgs())).to.not.be.ok();
             expect(utilx.objectIs({}, {}), false, 'objectIs');
             expect(utilx.objectIs(utilx.noop, utilx.noop)).to.be.ok();
             expect(utilx.objectIs(new RegExp('c'), new RegExp('c'))).to.not.be.ok();
@@ -34,6 +30,8 @@
             expect(utilx.objectIs(err, err)).to.be.ok();
             expect(utilx.objectIs(NaN, NaN)).to.be.ok();
             expect(utilx.objectIs(0, -0)).to.not.be.ok();
+            expect(utilx.objectIs(0, 0)).to.be.ok();
+            expect(utilx.objectIs(0, +0)).to.be.ok();
         });
     });
 }());

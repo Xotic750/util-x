@@ -7,10 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
     function F() {
         return;
     }
@@ -30,7 +26,7 @@
             expect(utilx.isObject([])).to.not.be.ok();
             expect(utilx.isObject({})).to.be.ok();
             expect(utilx.isObject(new F())).to.be.ok();
-            expect(utilx.isObject(returnArgs())).to.not.be.ok();
+            expect(utilx.isObject(utilx.returnArgs())).to.not.be.ok();
         });
     });
 }());

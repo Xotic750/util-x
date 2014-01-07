@@ -43,6 +43,13 @@
             expect(utilx.objectHasOwnProperty(obj2, 'foo')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'bar')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'fuz')).to.not.be.ok();
+
+            expect(utilx.objectHasOwnProperty({
+                toString: utilx.privateUndefined
+            }, 'toString')).to.be.ok();
+
+            expect(utilx.objectHasOwnProperty({}, 'toString')).to.not.be.ok();
+            expect(utilx.objectHasOwnProperty({}, 'bar')).to.not.be.ok();
         });
     });
 }());

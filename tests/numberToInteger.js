@@ -21,6 +21,7 @@
             expect(utilx.numberToInteger(-Infinity)).to.be(-Infinity);
             expect(utilx.numberToInteger(NaN)).to.be(0);
             expect(utilx.numberToInteger('')).to.be(0);
+            expect(utilx.numberToInteger(' ')).to.be(0);
             expect(utilx.numberToInteger('x')).to.be(0);
             expect(utilx.numberToInteger(true)).to.be(1);
             expect(utilx.numberToInteger(false)).to.be(0);
@@ -34,8 +35,17 @@
             /*jshint +W047 */
             expect(utilx.numberToInteger(10.0)).to.be(10);
             expect(utilx.numberToInteger('10.')).to.be(10);
+            expect(utilx.numberToInteger(' 10.')).to.be(10);
+            expect(utilx.numberToInteger('10. ')).to.be(10);
+            expect(utilx.numberToInteger(' 10. ')).to.be(10);
             expect(utilx.numberToInteger('10.0')).to.be(10);
+            expect(utilx.numberToInteger(' 10.0')).to.be(10);
+            expect(utilx.numberToInteger('10.0 ')).to.be(10);
+            expect(utilx.numberToInteger(' 10.0 ')).to.be(10);
             expect(utilx.numberToInteger('10.123')).to.be(10);
+            expect(utilx.numberToInteger(' 10.123')).to.be(10);
+            expect(utilx.numberToInteger('10.123 ')).to.be(10);
+            expect(utilx.numberToInteger(' 10.123 ')).to.be(10);
         });
     });
 }());

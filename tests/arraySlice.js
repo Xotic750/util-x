@@ -10,12 +10,8 @@
     describe('arraySlice', function () {
         var arr = [utilx.privateUndefined, null, 1, 'a', 2, 'b', null, utilx.privateUndefined];
 
-        function returnArgs() {
-            return arguments;
-        }
-
         function someArgs() {
-            return returnArgs(utilx.privateUndefined, null, 1, 'a', 2, 'b', null, utilx.privateUndefined);
+            return utilx.returnArgs.apply(null, arr);
         }
 
         it('should not throw an error in each case', function () {

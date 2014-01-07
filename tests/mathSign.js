@@ -7,37 +7,29 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function isPositiveZero(zero) {
-        return utilx.isZero(zero) && utilx.strictEqual(1 / zero, Infinity);
-    }
-
-    function isNegativeZero(zero) {
-        return utilx.isZero(zero) && utilx.strictEqual(1 / zero, -Infinity);
-    }
-
     describe('mathSign', function () {
         it('should not throw an error in each case', function () {
             expect(utilx.numberIsNaN(utilx.mathSign())).to.be.ok();
             expect(utilx.numberIsNaN(utilx.mathSign(utilx.privateUndefined))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign(null))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign(null))).to.be.ok();
             expect(utilx.mathSign(-1)).to.be(-1);
-            expect(isPositiveZero(utilx.mathSign(+0))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign('0'))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign('+0'))).to.be.ok();
-            expect(isNegativeZero(utilx.mathSign(-0))).to.be.ok();
-            expect(isNegativeZero(utilx.mathSign('-0'))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign(+0))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign('0'))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign('+0'))).to.be.ok();
+            expect(utilx.isNegativeZero(utilx.mathSign(-0))).to.be.ok();
+            expect(utilx.isNegativeZero(utilx.mathSign('-0'))).to.be.ok();
             expect(utilx.mathSign(1)).to.be(1);
             expect(utilx.mathSign(Infinity)).to.be(1);
             expect(utilx.mathSign(-Infinity)).to.be(-1);
             expect(utilx.numberIsNaN(utilx.mathSign(NaN))).to.be.ok();
             expect(utilx.numberIsNaN(utilx.mathSign('NaN'))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign(''))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign(' '))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign(''))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign(' '))).to.be.ok();
             expect(utilx.mathSign(true)).to.be(1);
-            expect(isPositiveZero(utilx.mathSign(false))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign(false))).to.be.ok();
             expect(utilx.numberIsNaN(utilx.mathSign(utilx.noop))).to.be.ok();
             expect(utilx.numberIsNaN(utilx.mathSign({}))).to.be.ok();
-            expect(isPositiveZero(utilx.mathSign([]))).to.be.ok();
+            expect(utilx.isPositiveZero(utilx.mathSign([]))).to.be.ok();
             expect(utilx.numberIsNaN(utilx.mathSign(new RegExp('c')))).to.be.ok();
             expect(utilx.mathSign(new Date(2013, 11, 11))).to.be(1);
             expect(utilx.numberIsNaN(utilx.mathSign(new Error('x')))).to.be.ok();

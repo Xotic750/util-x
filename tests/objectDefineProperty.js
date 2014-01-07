@@ -14,65 +14,49 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('1', function () {
             expect(function () {
                 utilx.objectDefineProperty(utilx.privateUndefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('2', function () {
             expect(function () {
                 utilx.objectDefineProperty(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('3', function () {
             expect(function () {
                 utilx.objectDefineProperty({}, 'foo');
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('4', function () {
             expect(function () {
                 utilx.objectDefineProperty({}, 'foo', utilx.privateUndefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('5', function () {
             expect(function () {
                 utilx.objectDefineProperty({}, 'foo', null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('6', function () {
             expect(function () {
                 utilx.objectDefineProperty({}, 'foo', true);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('7', function () {
             expect(function () {
                 utilx.objectDefineProperty({}, 'foo', 1);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-        });
 
-        it('8', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
                     enumerable: true,
@@ -83,9 +67,7 @@
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(utilx.privateUndefined);
             }).to.not.throwException();
-        });
 
-        it('9', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
                     value: utilx.privateUndefined,
@@ -97,9 +79,7 @@
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(utilx.privateUndefined);
             }).to.not.throwException();
-        });
 
-        it('10', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
                     value: null,
@@ -164,7 +144,7 @@
                 });
 
                 expect(obj.length).to.be(2);
-                expect(obj[0]).to.be(utilx.privateUndefined);
+                expect(obj[1]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
         });
 
@@ -210,9 +190,7 @@
                 expect(obj.length).to.be(0);
                 expect(obj[1.1]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
-        });
 
-        it('18', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 1.1, {
                     value: utilx.privateUndefined,
@@ -225,9 +203,7 @@
                 expect(obj.length).to.be(0);
                 expect(obj[1.1]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
-        });
 
-        it('19', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 1.1, {
                     value: null,

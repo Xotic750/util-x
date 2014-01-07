@@ -7,10 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
     describe('objectGetPrototypeOf', function () {
         it('should not throw an error in each case', function () {
             expect(function () {
@@ -53,9 +49,9 @@
 
             try {
                 // true on all browsers except Opera 10
-                expect(utilx.objectGetPrototypeOf(returnArgs())).to.be(Object.prototype);
+                expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
             } catch (e) {
-                expect(utilx.objectGetPrototypeOf(returnArgs())).to.be(returnArgs().constructor.prototype);
+                expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
             }
 
             expect(utilx.objectGetPrototypeOf({})).to.be(Object.prototype);

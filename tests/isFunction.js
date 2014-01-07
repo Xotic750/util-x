@@ -7,10 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
     describe('isFunction', function () {
         it('should not throw an error in each case', function () {
             expect(utilx.isFunction()).to.not.be.ok();
@@ -25,7 +21,7 @@
             expect(utilx.isFunction(utilx.noop)).to.be.ok();
             expect(utilx.isFunction([])).to.not.be.ok();
             expect(utilx.isFunction({})).to.not.be.ok();
-            expect(utilx.isFunction(returnArgs())).to.not.be.ok();
+            expect(utilx.isFunction(utilx.returnArgs())).to.not.be.ok();
         });
     });
 }());

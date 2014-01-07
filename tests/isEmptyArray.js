@@ -7,10 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    function returnArgs() {
-        return arguments;
-    }
-
     function F() {
         return;
     }
@@ -90,9 +86,9 @@
             });
 
             expect(utilx.isEmptyArray([])).to.be.ok();
-            expect(utilx.isEmptyArray(returnArgs())).to.be.ok();
+            expect(utilx.isEmptyArray(utilx.returnArgs())).to.be.ok();
             expect(utilx.isEmptyArray([''])).to.not.be.ok();
-            expect(utilx.isEmptyArray(returnArgs(''))).to.not.be.ok();
+            expect(utilx.isEmptyArray(utilx.returnArgs(''))).to.not.be.ok();
         });
     });
 }());
