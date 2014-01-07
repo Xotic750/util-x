@@ -2297,7 +2297,7 @@
         utilx.objectDefineProperty = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var definePropertyFN = baseObject.constructor.defineProperty,
+            var definePropertyFN = CtrObject.defineProperty,
                 defineGetter = '__defineGetter__',
                 defineSetter = '__defineSetter__',
                 defineGetterFN,
@@ -2426,7 +2426,7 @@
         utilx.objectDefineProperties = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var definePropertiesFN = baseObject.constructor.defineProperties,
+            var definePropertiesFN = CtrObject.defineProperties,
                 nfeDefineProperties;
 
             if (utilx.isFunction(definePropertiesFN)) {
@@ -2469,7 +2469,7 @@
         utilx.objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var getOwnPropertyDescriptorFN = baseObject.constructor.getOwnPropertyDescriptor,
+            var getOwnPropertyDescriptorFN = CtrObject.getOwnPropertyDescriptor,
                 lookupGetter = '__lookupGetter__',
                 lookupSetter = '__lookupSetter__',
                 lookupGetterFN,
@@ -2492,7 +2492,28 @@
             }
 
             if (utilx.isFunction(getOwnPropertyDescriptorFN)) {
-                tempSafariNFE = getOwnPropertyDescriptorFN;
+                try {
+                    if (utilx.isTrue(getOwnPropertyDescriptorFN(function (a) {
+                            return a;
+                        }, 'length').writable)) {
+
+                        throw new Error();
+                    }
+
+                    tempSafariNFE = getOwnPropertyDescriptorFN;
+                } catch (e) {
+                    tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
+                        var descriptor = getOwnPropertyDescriptorFN(object, property);
+
+                        if (utilx.isFunction(object) && utilx.strictEqual(property, 'length') &&
+                                utilx.isTrue(descriptor.writable)) {
+
+                            descriptor.writable = false;
+                        }
+
+                        return descriptor;
+                    };
+                }
             } else {
                 lookupGetterFN = baseObject[lookupGetter];
                 lookupSetterFN = baseObject[lookupSetter];
@@ -2507,10 +2528,13 @@
                     }
 
                     if (utilx.objectHasOwnProperty(object, property)) {
-                        descriptor = {
-                            enumerable: true,
-                            configurable: true
-                        };
+                        descriptor = {};
+                        descriptor.configurable = true;
+                        try {
+                            descriptor.enumerable = CtrObject.propertyIsEnumerable.call(object, property);
+                        } catch (e) {
+                            descriptor.enumerable = true;
+                        }
 
                         if (utilx.isFunction(lookupGetterFN) && utilx.isFunction(lookupSetterFN)) {
                             prototype = object[protoName];
@@ -2530,7 +2554,53 @@
                         }
 
                         descriptor.value = object[property];
-                        descriptor.writable = true;
+                        if (utilx.isFunction(object) && utilx.strictEqual(property, 'length')) {
+                            descriptor.writable = false;
+                            descriptor.configurable = false;
+                        } else if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                   utilx.strictEqual(property, 'length')) {
+
+                            descriptor.writable = true;
+                            descriptor.configurable = false;
+                        } else if (utilx.strictEqual(property, 'prototype')) {
+                            switch (object) {
+                            case Object:
+                                /* falls through */
+                            case Array:
+                                /* falls through */
+                            case Function:
+                                /* falls through */
+                            case Boolean:
+                                /* falls through */
+                            case String:
+                                /* falls through */
+                            case Date:
+                                /* falls through */
+                            case RegExp:
+                                /* falls through */
+                            case Error:
+                                /* falls through */
+                            case TypeError:
+                                /* falls through */
+                            case SyntaxError:
+                                /* falls through */
+                            case RangeError:
+                                /* falls through */
+                            case EvalError:
+                                /* falls through */
+                            case ReferenceError:
+                                /* falls through */
+                            case URIError:
+                                descriptor.writable = false;
+                                descriptor.configurable = false;
+                                break;
+                            default:
+                                descriptor.writable = true;
+                                descriptor.configurable = false;
+                            }
+                        } else {
+                            descriptor.writable = true;
+                        }
                     }
 
                     return descriptor;
@@ -2557,7 +2627,7 @@
         utilx.objectFreeze = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var freezeFN = baseObject.constructor.freeze,
+            var freezeFN = CtrObject.freeze,
                 nfeFreeze;
 
             if (utilx.isFunction(freezeFN)) {
@@ -2616,7 +2686,7 @@
         utilx.objectIsFrozen = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var isFrozenFN = baseObject.constructor.isFrozen,
+            var isFrozenFN = CtrObject.isFrozen,
                 nfeIsFrozen;
 
             if (utilx.isFunction(isFrozenFN)) {
@@ -2711,7 +2781,7 @@
         utilx.objectInstanceOf = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var isPrototypeOfFN = baseObject.constructor.prototype.isPrototypeOf,
+            var isPrototypeOfFN = CtrObject.prototype.isPrototypeOf,
                 nfeInstanceOf;
 
             if (utilx.isFunction(isPrototypeOfFN)) {
@@ -2775,7 +2845,7 @@
                 testObject;
 
             try {
-                objectCreateFN = baseObject.constructor.create;
+                objectCreateFN = CtrObject.create;
                 testObject = objectCreateFN(ObjectCreateFunc.prototype, {
                     constructor: {
                         value: ObjectCreateFunc,
