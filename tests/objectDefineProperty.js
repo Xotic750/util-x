@@ -93,7 +93,7 @@
             }).to.not.throwException();
         });
 
-        it('7', function () {
+        it('6', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 'foo', {
                     value: null,
@@ -104,6 +104,19 @@
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
+            }).to.not.throwException();
+        });
+
+        it('7', function () {
+            expect(function () {
+                var obj = utilx.objectDefineProperty([10], '0', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                //expect(obj.length).to.be(1);
+                expect(obj[0]).to.be(10);
             }).to.not.throwException();
         });
 
