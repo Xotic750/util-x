@@ -2782,23 +2782,33 @@
                         if (utilx.objectHasOwnProperty(descriptor, 'value') ||
                                 !utilx.objectHasOwnProperty(object, property)) {
 
-                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
-                                    ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
-                                     (utilx.isString(property) && utilx.isDigits(property)) ||
-                                     (utilx.isString(property) && !utilx.isEmptyString(property) &&
-                                        utilx.numberIsInteger(utilx.toNumber(property))))) {
-
-                                utilx.arrayAssign(object, property, descriptor.value);
-                            }
-
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 delete object[property];
-                                object[property] = descriptor.value;
+                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                        ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
+                                         (utilx.isString(property) && utilx.isDigits(property)) ||
+                                         (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                            utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                } else {
+                                    object[property] = descriptor.value;
+                                }
+
                                 object[protoName] = prototype;
                             } else {
-                                object[property] = descriptor.value;
+                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                        ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
+                                         (utilx.isString(property) && utilx.isDigits(property)) ||
+                                         (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                            utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                } else {
+                                    object[property] = descriptor.value;
+                                }
                             }
                         }
                     } else {
@@ -4295,20 +4305,6 @@
 
         tempSafariNFE = null;
 
-        return utilx;
-    }
-
-    /*
-     *
-     * UMD
-     *
-     */
-
-    if (typeof globalThis !== 'object' || null === globalThis) {
-        throw new TypeError('Invalid global context');
-    }
-
-    function setDescriptors(utilx) {
         utilx.deepDefineDescriptors(utilx, {
             enumerable: false,
             writable: true,
@@ -4460,6 +4456,18 @@
                 configurable: false
             }
         });
+
+        return utilx;
+    }
+
+    /*
+     *
+     * UMD
+     *
+     */
+
+    if (typeof globalThis !== 'object' || null === globalThis) {
+        throw new TypeError('Invalid global context');
     }
 
     var publicUtil;
@@ -4469,12 +4477,10 @@
             typeof module.exports === 'object' && null !== module.exports) {
 
         publicUtil = factory(require('stacktrace-js'));
-        setDescriptors(publicUtil);
         publicUtil.objectDefineProperty(publicUtil, 'factory', {
             value: function () {
                 var pu = factory(require('stacktrace-js'));
 
-                setDescriptors(pu);
                 publicUtil.objectDefineProperty(pu, 'factory', {
                     value: publicUtil.factory,
                     enumerable: false,
@@ -4498,12 +4504,10 @@
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
         define(['stacktrace'], function (stackstrace) {
             publicUtil = factory(stackstrace);
-            setDescriptors(publicUtil);
             publicUtil.objectDefineProperty(publicUtil, 'factory', {
                 value: function () {
                     var pu = factory(stackstrace);
 
-                    setDescriptors(pu);
                     publicUtil.objectDefineProperty(pu, 'factory', {
                         value: publicUtil.factory,
                         enumerable: false,
@@ -4522,12 +4526,10 @@
         });
     } else {
         publicUtil = factory(globalThis.printStackTrace);
-        setDescriptors(publicUtil);
         publicUtil.objectDefineProperty(publicUtil, 'factory', {
             value: function () {
                 var pu = factory(globalThis.printStackTrace);
 
-                setDescriptors(pu);
                 publicUtil.objectDefineProperty(pu, 'factory', {
                     value: publicUtil.factory,
                     enumerable: false,
