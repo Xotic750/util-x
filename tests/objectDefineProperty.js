@@ -93,6 +93,48 @@
             }).to.not.throwException();
         });
 
+        it('8', function () {
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '0', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                //expect(obj.length).to.be(1);
+                expect(obj[0]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+        });
+
+        it('9', function () {
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '0', {
+                    value: utilx.privateUndefined,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(obj.length).to.be(1);
+                //expect(obj[0]).to.be(utilx.privateUndefined);
+            }).to.not.throwException();
+        });
+
+        it('10', function () {
+            expect(function () {
+                var obj = utilx.objectDefineProperty([], '0', {
+                    value: null,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, '0')).to.be.ok();
+                //expect(obj.length).to.be(1);
+                //expect(obj[0]).to.be(null);
+            }).to.not.throwException();
+        });
+
         it('11', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], '0', {
