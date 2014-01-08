@@ -2715,8 +2715,10 @@
                 defineGetterFN,
                 defineSetterFN,
                 testObject,
+                previousFN,
                 definePropertyFN,
-                nfeDefineProperty;
+                nfeDefineProperty,
+                nfeDefinePropertyX;
 
             /*global console */
             if (utilx.isFunction(nativeFN)) {
@@ -2767,26 +2769,22 @@
                         }
                     } catch (e) {
                         console.log('# FAILED ARRAY');
-                        nativeFN = definePropertyFN;
-                        definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
+                        previousFN = definePropertyFN;
+                        definePropertyFN = function nfeDefinePropertyX(object, property, descriptor) {
                             console.log('# IN PATCHED FN');
-                            var val;
-
                             if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
                                     ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                      (utilx.isString(property) && utilx.isDigits(property)) ||
                                      (utilx.isString(property) && !utilx.isEmptyString(property) &&
                                         utilx.numberIsInteger(utilx.toNumber(property))))) {
 
-                                console.log('# ASSIGN TO ARRAY');
-                                utilx.arrayAssign(object, property, descriptor.value);
-                                val = object;
-                            } else {
-                                console.log('# NOT ASSIGN TO ARRAY');
-                                val = nativeFN(object, property, descriptor);
+                                if (utilx.objectHasOwnProperty(descriptor, 'value')) {
+                                    console.log('# ASSIGN TO ARRAY: ' + property);
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                }
                             }
 
-                            return val;
+                            return previousFN(object, property, descriptor);
                         };
                     }
                 } catch (exception) {
@@ -2872,6 +2870,7 @@
             }
 
             nfeDefineProperty = null;
+            nfeDefinePropertyX = null;
 
             return tempSafariNFE;
         }());
