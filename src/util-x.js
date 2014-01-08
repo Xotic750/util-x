@@ -2769,6 +2769,7 @@
                         console.log('# FAILED ARRAY');
                         nativeFN = definePropertyFN;
                         definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
+                            console.log('# IN PATCHED FN');
                             var val;
 
                             if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
@@ -2781,6 +2782,7 @@
                                 utilx.arrayAssign(object, property, descriptor.value);
                                 val = object;
                             } else {
+                                console.log('# NOT ASSIGN TO ARRAY');
                                 val = nativeFN(object, property, descriptor);
                             }
 
