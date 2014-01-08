@@ -4504,11 +4504,11 @@
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
         require.config({
             paths: {
-                'stacktrace': '//cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.5.3'
+                'stacktrace': 'https://cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.5.3/stacktrace.min'
             }
         });
 
-        define(['stacktrace.min'], function (stackstrace) {
+        define(['stacktrace'], function (stackstrace) {
             publicUtil = factory(stackstrace);
             publicUtil.objectDefineProperty(publicUtil, 'factory', {
                 value: function () {
