@@ -11,7 +11,8 @@
         it('should be truthy on integers', function () {
             expect(utilx.numberIsInteger(4)).to.be.ok();
             expect(utilx.numberIsInteger(4.0)).to.be.ok();
-            expect(utilx.numberIsInteger(1801439850948)).to.be.ok();
+            expect(utilx.numberIsInteger(utilx.MAX_INTEGER)).to.be.ok();
+            expect(utilx.numberIsInteger(utilx.MIN_INTEGER)).to.be.ok();
         });
 
         it('should be falsy on non-integers', function () {

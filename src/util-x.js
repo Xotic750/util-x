@@ -33,10 +33,29 @@
          */
 
         var utilx = {},
-            UWORD32 = Math.pow(2, 32),
-            MAX_UINT32 = UWORD32 - 1,
-            MAX_INT = Math.pow(2, 53) - 1,
-            MIN_INT = -MAX_INT,
+            WORD8 = 128,
+            UWORD8 = 256,
+            WORD16 = 32768,
+            UWORD16 = 65536,
+            WORD32 = 2147483648,
+            UWORD32 = 4294967296,
+            MAX_UINT32 = 4294967295,
+            MAX_INT32 = 2147483647,
+            MIN_INT32 = -2147483648,
+            MAX_UINT16 = 65535,
+            MAX_INT16 = 32767,
+            MIN_INT16 = -32768,
+            MAX_UINT8 = 255,
+            MAX_INT8 = 127,
+            MIN_INT8 = -128,
+            MAX_INTEGER = 9007199254740991,
+            MIN_INTEGER = -9007199254740991,
+            POSITIVE_INFINITY = Number.POSITIVE_INFINITY,
+            NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY,
+            MAX_VALUE = 1.7976931348623157e+308,
+            MIN_VALUE = 5e-324,
+            NAN = NaN,
+            EPSILON = 2.220446049250313e-16,
             baseObject = {},
             baseArray = [],
             baseString = '',
@@ -70,6 +89,167 @@
             tempSafariNFE;
 
         /**
+         * 128
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD8 = WORD8;
+
+        /**
+         * 256
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD8 = UWORD8;
+
+        /**
+         * 65536
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD16 = WORD16;
+
+        /**
+         * 32768
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD16 = UWORD16;
+
+        /**
+         * 2147483648
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD32 = WORD32;
+
+        /**
+         * 4294967296
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD32 = UWORD32;
+
+        /**
+         * 4294967295
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT32 = MAX_UINT32;
+
+        /**
+         * 214783647
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT32 = MAX_INT32;
+
+        /**
+         * -214783648
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT32 = MIN_INT32;
+
+        /**
+         * 65535
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT16 = MAX_UINT16;
+
+        /**
+         * 32767
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT16 = MAX_INT16;
+
+        /**
+         * -32768
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT16 = MIN_INT16;
+
+        /**
+         * 255
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT8 = MAX_UINT8;
+
+        /**
+         * 127
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT8 = MAX_INT8;
+
+        /**
+         * -128
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT8 = MIN_INT8;
+
+        /**
+         * 9007199254740991
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INTEGER = MAX_INTEGER;
+
+        /**
+         * -9007199254740991
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INTEGER = MIN_INTEGER;
+
+        /**
+         * Infinity
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.POSITIVE_INFINITY = POSITIVE_INFINITY;
+
+        /**
+         * -Infinity
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.NEGATIVE_INFINITY = NEGATIVE_INFINITY;
+
+        /**
+         * 1.7976931348623157e+308
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_VALUE = MAX_VALUE;
+
+        /**
+         * 5e-324
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_VALUE = MIN_VALUE;
+
+        /**
+         * NaN
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.NAN = NAN;
+
+        /**
+         * 2.220446049250313e-16
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.EPSILON = EPSILON;
+
+        /**
          * Returns the primitive value undefined.
          * @memberOf utilx
          * @function
@@ -80,6 +260,7 @@
         };
 
         /**
+         * undefined
          * @memberOf utilx
          * @type {undefined}
          */
@@ -210,6 +391,8 @@
          * number1 modulo number2, in the preceding statement, where number1 and number2 are numbers.
          * The modulo function is the integer remainder of dividing number1 by number2.
          * For example, 12 % 5 returns 2. The result will have the same sign as number1; that is, -1 % 2 returns -1.
+         * Truncating division
+         * @see {@link http://www.ecma-international.org/ecma-262/5.1/#sec-11.5.3 Applying the % Operator}
          * @memberOf utilx
          * @function
          * @param {number} number1
@@ -937,7 +1120,7 @@
         }());
 
         /**
-         * The Number.isInteger() method determines whether the passed value is an integer.
+         * The utilx.numberIsInteger() method determines whether the passed value is an integer.
          * If the target value is an integer, return true, otherwise return false.
          * If the value is NaN or infinite, return false.
          * @memberOf utilx
@@ -965,7 +1148,7 @@
             } else {
                 tempSafariNFE = function nfeIsInteger(inputArg) {
                     return !utilx.numberIsNaN(inputArg) && utilx.numberIsFinite(inputArg) &&
-                        utilx.inRange(inputArg, MIN_INT, MAX_INT) &&
+                        utilx.inRange(inputArg, MIN_INTEGER, MAX_INTEGER) &&
                         utilx.strictEqual(utilx.numberToInteger(inputArg), inputArg);
                 };
             }
@@ -985,21 +1168,50 @@
          */
         utilx.toInt32 = function (inputArg) {
             var number = utilx.toNumber(inputArg),
-                int32bit,
                 val;
 
             if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
                 val = +0;
             } else {
-                int32bit = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
-                if (utilx.gt(int32bit, UWORD32)) {
-                    val = int32bit - UWORD32;
-                } else {
-                    val = int32bit;
+                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
+                if (utilx.gt(val, MAX_INT32)) {
+                    val -= UWORD32;
+                } else if (utilx.lt(val, MIN_INT32)) {
+                    val += UWORD32;
                 }
             }
 
             return val;
+        };
+
+        /**
+         * The utilx.isInt32() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^31 through 2^31-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt32 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, MIN_INT32, MAX_INT32);
+        };
+
+        /**
+         * The modulo function is a modified implementation of the `%` operator. This algorithm uses the
+         * formula `remainder = dividend - divisor * quotient`; the `%` operator uses a truncating division.
+         * Rounding division
+         * @see {@link http://www.ecma-international.org/ecma-262/5.1/#sec-11.5.3 Applying the % Operator}
+         * @memberOf utilx
+         * @function
+         * @param {number} dividend
+         * @param {number} divisor
+         * @return {number}
+         */
+        utilx.modulo = function (dividend, divisor) {
+            return dividend - divisor * Math.floor(dividend / divisor);
         };
 
         /**
@@ -1017,10 +1229,179 @@
             if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
                 val = +0;
             } else {
-                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD32);
             }
 
             return val;
+        };
+
+        /**
+         * The utilx.isUint32() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^32-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint32 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, 0, MAX_UINT32);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^16 integer values in
+         * the range -2^15 through 2^15-1, inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toInt16 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD16);
+                if (utilx.gt(val, MAX_INT16)) {
+                    val -= UWORD16;
+                } else if (utilx.lt(val, MIN_INT16)) {
+                    val += UWORD16;
+                }
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isInt16() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^15 through 2^15-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt16 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, MIN_INT16, MAX_INT16);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^16 integer values in
+         * the range 0 through 2^16-1,inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toUint16 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD16);
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isUint16() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^16-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint16 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, 0, MAX_UINT16);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^8 integer values in
+         * the range -2^7 through 2^7-1, inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toInt8 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val  = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD8);
+                if (utilx.gt(val, MAX_INT8)) {
+                    val -= UWORD8;
+                } else if (utilx.lt(val, MIN_INT8)) {
+                    val += UWORD8;
+                }
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isInt8() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^7 through 2^7-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt8 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, MIN_INT8, MAX_INT8);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^8 integer values in
+         * the range 0 through 2^8-1,inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toUint8 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD8);
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isUint8() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^8-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint8 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                utilx.inRange(inputArg, 0, MAX_UINT8);
         };
 
         /**
@@ -1296,7 +1677,7 @@
         utilx.stringRepeat = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var repeatFN = baseString.constructor.repeat,
+            var repeatFN = CtrString.repeat,
                 nfeRepeat;
 
             function rep(s, times) {
@@ -3918,10 +4299,150 @@
             configurable: true
         });
 
-        utilx.objectDefineProperty(utilx, 'privateUndefined', {
-            enumerable: false,
-            writable: false,
-            configurable: false
+        utilx.objectDefineProperties(utilx, {
+            privateUndefined: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INTEGER: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INTEGER: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            POSITIVE_INFINITY: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            NEGATIVE_INFINITY: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_VALUE: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_VALUE: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            NAN: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            EPSILON: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            }
         });
 
         return utilx;
