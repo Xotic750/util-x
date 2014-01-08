@@ -52,21 +52,6 @@
             expect(Tested.prototype.flum).to.be(Test.prototype.flum);
             expect(Tested.prototype.wiz).to.be(Test.prototype.wiz);
             expect(Tested.prototype.constructor).to.be(Tested);
-
-            try {
-                if (utilx.isNull(Object.getOwnPropertyDescriptor({sentinel: null}, 'sentinel').value)) {
-                    throw new Error();
-                }
-            } catch (e) {
-                expect(Object.getOwnPropertyDescriptor(Tested.prototype))
-                    .to.eql(Object.getOwnPropertyDescriptor(Test.prototype));
-
-                expect(Object.getOwnPropertyDescriptor(Tested.prototype.flum))
-                    .to.eql(Object.getOwnPropertyDescriptor(Test.prototype.flum));
-
-                expect(Object.getOwnPropertyDescriptor(Tested.prototype.wiz))
-                    .to.eql(Object.getOwnPropertyDescriptor(Test.prototype.wiz));
-            }
         });
     });
 }());
