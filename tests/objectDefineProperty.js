@@ -91,9 +91,7 @@
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
             }).to.not.throwException();
-        });
 
-        it('6', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 'foo', {
                     value: null,
@@ -105,9 +103,7 @@
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
             }).to.not.throwException();
-        });
 
-        it('7', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([10], '0', {
                     enumerable: true,
@@ -115,7 +111,7 @@
                     configurable: true
                 });
 
-                //expect(obj.length).to.be(1);
+                expect(obj.length).to.be(1);
                 expect(obj[0]).to.be(10);
             }).to.not.throwException();
         });
@@ -128,7 +124,7 @@
                     configurable: true
                 });
 
-                //expect(obj.length).to.be(1);
+                expect(obj.length).to.be(1);
                 expect(obj[0]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
         });
@@ -143,7 +139,7 @@
                 });
 
                 expect(obj.length).to.be(1);
-                //expect(obj[0]).to.be(utilx.privateUndefined);
+                expect(obj[0]).to.be(utilx.privateUndefined);
             }).to.not.throwException();
         });
 
@@ -157,8 +153,8 @@
                 });
 
                 expect(utilx.objectHasOwnProperty(obj, '0')).to.be.ok();
-                //expect(obj.length).to.be(1);
-                //expect(obj[0]).to.be(null);
+                expect(obj.length).to.be(1);
+                expect(obj[0]).to.be(null);
             }).to.not.throwException();
         });
 

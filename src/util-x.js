@@ -2778,7 +2778,9 @@
                                      (utilx.isString(property) && !utilx.isEmptyString(property) &&
                                         utilx.numberIsInteger(utilx.toNumber(property))))) {
 
-                                if (utilx.objectHasOwnProperty(descriptor, 'value')) {
+                                if (utilx.objectHasOwnProperty(descriptor, 'value') ||
+                                        !utilx.objectHasOwnProperty(object, property)) {
+
                                     console.log('# ASSIGN TO ARRAY: ' + property);
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 }
