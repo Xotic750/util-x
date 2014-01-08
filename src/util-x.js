@@ -2703,7 +2703,7 @@
          * @param {object} descriptor
          * @return {object}
          */
-        // http://ecma-international.org/ecma-262/5.1/#sec-15.4.4.14
+        // http://ecma-international.org/ecma-262/5.1/#sec-15.2.3.6
         // Create our own local "defineProperty" function: native -> sham
         // named utilx.objectDefineProperty instead of defineProperty because of SpiderMonkey and Blackberry bug
         utilx.objectDefineProperty = (function () {
@@ -2717,6 +2717,7 @@
                 testObject,
                 nfeDefineProperty;
 
+            /*global console */
             if (utilx.isFunction(definePropertyFN)) {
                 try {
                     testObject = definePropertyFN({}, 'sentinel', {
@@ -2727,6 +2728,7 @@
                         definePropertyFN = null;
                     }
                 } catch (exception) {
+                    console.log('# FAILED SENTNEL');
                     definePropertyFN = null;
                 }
             }
@@ -2746,10 +2748,10 @@
 
                     tempSafariNFE = definePropertyFN;
                 } catch (e) {
+                    console.log('# FAILED NATIVE CHECK');
                     tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
                         if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
-                                utilx.isString(property) &&
-                                !utilx.isEmptyString(property) &&
+                                utilx.isString(property) && !utilx.isEmptyString(property) &&
                                 utilx.numberIsInteger(utilx.toNumber(property))) {
 
                             property = utilx.toNumber(property);
@@ -2759,6 +2761,7 @@
                     };
                 }
             } else {
+                console.log('# USING SHIM');
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
@@ -2783,6 +2786,7 @@
                                 !utilx.objectHasOwnProperty(object, property)) {
 
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
+                                console.log('# USING __PROTO__');
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 delete object[property];
@@ -2799,6 +2803,7 @@
 
                                 object[protoName] = prototype;
                             } else {
+                                console.log('# USING STANDARD');
                                 if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
