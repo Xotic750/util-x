@@ -4313,6 +4313,7 @@
         });
         */
 
+        /*
         utilx.arrayForEach(utilx.objectKeys(utilx), function (key) {
             utilx.objectDefineProperty(utilx, key, {
                 enumerable: false,
@@ -4466,6 +4467,7 @@
                 configurable: false
             }
         });
+        */
 
         return utilx;
     }
@@ -4514,7 +4516,7 @@
     } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
         require.config({
             paths: {
-                'stacktrace': '//cdnjs.cloudflare.com/ajax/libs/stacktrace.js/0.5.3/stacktrace.min'
+                'stacktrace': '//raw.github.com/stacktracejs/stacktrace.js/master/stacktrace'
             }
         });
 
