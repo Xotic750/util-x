@@ -84,6 +84,8 @@
                 'constructor'
             ],
 
+            objectGetOwnPropertyDescriptor,
+
             // Safari 2.x NFE bug fix
             // http://kangax.github.io/nfe/
             tempSafariNFE;
@@ -2866,16 +2868,16 @@
         /**
          * Returns a property descriptor for an own property (that is, one directly present on an object,
          * not present by dint of being along an object's prototype chain) of a given object.
-         * @memberOf utilx
+         * @private
          * @function
          * @param {object} object
          * @param {string} property
          * @return {object}
          */
         // Create our own local "getOwnPropertyDescriptor" function: native -> sham
-        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
+        // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
         // and Blackberry bug
-        utilx.objectGetOwnPropertyDescriptor = (function () {
+        objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var getOwnPropertyDescriptorFN = CtrObject.getOwnPropertyDescriptor,
@@ -2933,7 +2935,7 @@
                         setter;
 
                     if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
-                        throw new TypeError('Object.getOwnPropertyDescriptor called on a non-object');
+                        throw new TypeError('getOwnPropertyDescriptor called on a non-object');
                     }
 
                     if (utilx.objectHasOwnProperty(object, property)) {
@@ -3345,7 +3347,7 @@
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (source) {
                 if (utilx.isTypeObject(source) || utilx.isFunction(source)) {
                     utilx.arrayForEach(utilx.objectKeys(source), function (key) {
-                        utilx.objectDefineProperty(target, key, utilx.objectGetOwnPropertyDescriptor(source, key));
+                        utilx.objectDefineProperty(target, key, objectGetOwnPropertyDescriptor(source, key));
                     });
                 }
             });
