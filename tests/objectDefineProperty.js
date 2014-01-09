@@ -193,7 +193,20 @@
             }).to.not.throwException();
         });
 
-        it('should not throw an error definining properties on arrays', function () {
+        it('should not throw an error redefinining elements on arrays', function () {
+            expect(function () {
+                var obj = utilx.objectDefineProperty([10], '0', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(obj.length).to.be(1);
+                expect(obj[0]).to.be(10);
+            }).to.not.throwException();
+        });
+
+        it('should not throw an error definining elements/properties on arrays', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 'foo', {
                     value: null,
@@ -204,17 +217,6 @@
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
-            }).to.not.throwException();
-
-            expect(function () {
-                var obj = utilx.objectDefineProperty([10], '0', {
-                    enumerable: true,
-                    writable: true,
-                    configurable: true
-                });
-
-                expect(obj.length).to.be(1);
-                expect(obj[0]).to.be(10);
             }).to.not.throwException();
 
             expect(function () {

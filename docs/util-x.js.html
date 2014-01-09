@@ -2749,7 +2749,6 @@
                 nfeDefineProperty1,
                 nfeDefineProperty2;
 
-            /*global console */
             if (utilx.isFunction(nativeFN)) {
                 try {
                     testObject = nativeFN({}, 'sentinel', {
@@ -2772,14 +2771,12 @@
 
                         definePropertyFN = nativeFN;
                     } catch (e) {
-                        console.log('# FAILED INTEGER');
                         definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
                             if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
                                     utilx.isString(property) &amp;&amp; !utilx.isEmptyString(property) &amp;&amp;
                                     !utilx.isDigits(property) &amp;&amp;
                                     utilx.numberIsInteger(utilx.toNumber(property))) {
 
-                                console.log('# CONVERT TOINTEGER');
                                 property = utilx.toNumber(property).toString();
                             }
 
@@ -2797,10 +2794,8 @@
                             throw new Error('Fails array check');
                         }
                     } catch (e) {
-                        console.log('# FAILED ARRAY');
                         previousFN1 = definePropertyFN;
                         definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
-                            console.log('# IN PATCHED1 FN');
                             if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
                                     ((utilx.isNumber(property) &amp;&amp; utilx.numberIsInteger(property)) ||
                                      (utilx.isString(property) &amp;&amp; utilx.isDigits(property)) ||
@@ -2810,7 +2805,6 @@
                                 if (utilx.objectHasOwnProperty(descriptor, 'value') ||
                                         !utilx.objectHasOwnProperty(object, property)) {
 
-                                    console.log('# ASSIGN TO ARRAY1: ' + property);
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 }
                             }
@@ -2822,38 +2816,32 @@
                     // Test overwrite array property when no value defined
                     try {
                         tempSafariNFE = definePropertyFN([10], '0', {});
-
                         if (utilx.notStrictEqual(tempSafariNFE[0], 10)) {
-                            console.log('# TEST FAILED: ' + tempSafariNFE[0]);
                             throw new Error('Fails overwrite check');
                         }
                     } catch (e) {
-                        console.log('# FAILED OVERWRITE: ' + e);
                         previousFN2 = definePropertyFN;
                         definePropertyFN = function nfeDefineProperty2(object, property, descriptor) {
-                            console.log('# IN PATCHED2 FN');
                             if (!utilx.objectHasOwnProperty(descriptor, 'value')) {
-                                console.log('# ASSIGN VALUE: ' + property);
                                 descriptor.value = object[property];
                             }
 
                             return previousFN2(object, property, descriptor);
                         };
                     }
-                } catch (exception) {
-                    console.log('# FAILED SENTNEL');
-                }
+                } catch (ignore) {}
             }
 
             if (utilx.isFunction(definePropertyFN)) {
-                console.log('# ASSIGN FUNCTION');
                 tempSafariNFE = definePropertyFN;
             } else {
-                console.log('# USING SHIM');
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
-                    utilx.checkObjectCoercible(object);
+                    if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
+                        throw new TypeError('objectDefineProperty called on non-object');
+                    }
+
                     if (!utilx.isTypeObject(descriptor) &amp;&amp; !utilx.isFunction(descriptor)) {
                         throw new TypeError('Property description must be an object: ' + utilx.anyToString(descriptor));
                     }
@@ -2874,7 +2862,6 @@
                                 !utilx.objectHasOwnProperty(object, property)) {
 
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
-                                console.log('# USING __PROTO__');
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 delete object[property];
@@ -2891,7 +2878,6 @@
 
                                 object[protoName] = prototype;
                             } else {
-                                console.log('# USING STANDARD');
                                 if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
                                         ((utilx.isNumber(property) &amp;&amp; utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) &amp;&amp; utilx.isDigits(property)) ||
@@ -2938,37 +2924,23 @@
          * @return {object}
          */
         // Create our own local "defineProperties" function: native -> sham
+        // we don't use the native otherwise we need all the same patches applied to objectDefineProperty
         // named utilx.objectDefineProperties instead of defineProperties because of SpiderMonkey and Blackberry bug
-        utilx.objectDefineProperties = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var definePropertiesFN = CtrObject.defineProperties,
-                nfeDefineProperties;
-
-            if (utilx.isFunction(definePropertiesFN)) {
-                tempSafariNFE = definePropertiesFN;
-            } else {
-                tempSafariNFE = function nfeDefineProperties(object, props) {
-                    if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
-                        throw new TypeError('Object.defineProperties called on non-object');
-                    }
-
-                    if (!utilx.isTypeObject(props) &amp;&amp; !utilx.isFunction(props)) {
-                        throw new TypeError('Property description must be an object');
-                    }
-
-                    utilx.arrayForEach(utilx.objectKeys(props), function (key) {
-                        utilx.objectDefineProperty(object, key, props[key]);
-                    });
-
-                    return object;
-                };
+        utilx.objectDefineProperties = function (object, props) {
+            if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
+                throw new TypeError('objectDefineProperties called on non-object');
             }
 
-            nfeDefineProperties = null;
+            if (!utilx.isTypeObject(props) &amp;&amp; !utilx.isFunction(props)) {
+                throw new TypeError('Property description must be an object');
+            }
 
-            return tempSafariNFE;
-        }());
+            utilx.arrayForEach(utilx.objectKeys(props), function (key) {
+                utilx.objectDefineProperty(object, key, props[key]);
+            });
+
+            return object;
+        };
 
         /**
          * Returns a property descriptor for an own property (that is, one directly present on an object,
@@ -4416,6 +4388,7 @@
                 configurable: true
             });
         });
+        */
 
         utilx.objectDefineProperties(utilx, {
             privateUndefined: {
@@ -4562,7 +4535,6 @@
                 configurable: false
             }
         });
-        */
 
         return utilx;
     }
@@ -4681,7 +4653,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Thu Jan 09 2014 01:53:10 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Thu Jan 09 2014 02:14:38 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
