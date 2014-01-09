@@ -49,12 +49,10 @@
 
             expect(utilx.objectGetPrototypeOf([1, 2, 3])).to.be(Array.prototype);
 
-            try {
-                // true on all browsers except Opera 10
-                expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
-            } catch (e) {
-                expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
-            }
+            // true on all browsers except Opera 10
+            expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
+            // on Opera 10
+            //expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
 
             expect(utilx.objectGetPrototypeOf({})).to.be(Object.prototype);
             expect(utilx.objectGetPrototypeOf(utilx.noop)).to.be(Function.prototype);
