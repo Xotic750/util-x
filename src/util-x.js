@@ -1930,19 +1930,23 @@
                 nfeGetPrototypeOf,
                 bocProto;
 
+            /*global console */
             if (utilx.isFunction(getPrototypeOfFN)) {
+                console.log('# USING NATIVE');
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return getPrototypeOfFN(object);
                 };
             } else if (utilx.isNull(CtrObject.prototype[protoName])) {
+                console.log('# USING __PROTO__');
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return object[protoName];
                 };
             } else {
+                console.log('# USING SHAM');
                 bocProto = CtrObject.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     throwIfIsNotTypeObjectOrIsNotFunction(object);

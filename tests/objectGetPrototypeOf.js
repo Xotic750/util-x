@@ -8,9 +8,7 @@
         expect = required.expect;
 
     describe('objectGetPrototypeOf', function () {
-        it('should not throw an error in each case', function () {
-            var MyError;
-
+        it('primitive argument should throw an TypeError in each case', function () {
             expect(function () {
                 utilx.objectGetPrototypeOf();
             }).to.throwException(function (e) {
@@ -46,30 +44,53 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
-            expect(utilx.objectGetPrototypeOf([1, 2, 3])).to.be(Array.prototype);
-
-            // true on all browsers except Opera 10
-            expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
-            // on Opera 10
-            //expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
-
+        it('native objects should return their own prototype', function () {
+            expect(utilx.objectGetPrototypeOf([])).to.be(Array.prototype);
             expect(utilx.objectGetPrototypeOf({})).to.be(Object.prototype);
             expect(utilx.objectGetPrototypeOf(utilx.noop)).to.be(Function.prototype);
             expect(utilx.objectGetPrototypeOf(new RegExp('c'))).to.be(RegExp.prototype);
             expect(utilx.objectGetPrototypeOf(new Date())).to.be(Date.prototype);
             expect(utilx.objectGetPrototypeOf(new Error('x'))).to.be(Error.prototype);
+        });
 
-            MyError = utilx.customError('MyError');
+        it('arguments object should return Object.prototype', function () {
+            /*global console */
+            console.log('# isPrototypeOf: ' + Object.prototype.isPrototypeOf(utilx.returnArgs()));
+            // true on all browsers except Opera 10
+            expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
+            expect(utilx.returnArgs().constructor.prototype).to.be(Object.prototype);
+            // on Opera 10
+            //expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
+        });
+
+        it('custom error should return own prototype', function () {
+            var MyError = utilx.customError('MyError');
+
             expect(utilx.objectGetPrototypeOf(new MyError('x'))).to.be(MyError.prototype);
+        });
 
-            function MyObject() {
+        it('other custom objects should return their own prototype', function () {
+            function Person() {
                 return;
             }
 
-            utilx.inherits(MyObject, MyError);
-            expect(utilx.objectGetPrototypeOf(new MyError('x'))).to.be(MyError.prototype);
-            expect(utilx.objectGetPrototypeOf(new MyObject('x'))).to.be(MyObject.prototype);
+            function Employee() {
+                return;
+            }
+
+            utilx.inherits(Employee, Person);
+
+            function Manager() {
+                return;
+            }
+
+            utilx.inherits(Manager, Employee);
+
+            expect(utilx.objectGetPrototypeOf(new Person())).to.be(Person.prototype);
+            expect(utilx.objectGetPrototypeOf(new Employee())).to.be(Employee.prototype);
+            expect(utilx.objectGetPrototypeOf(new Manager())).to.be(Manager.prototype);
         });
     });
 }());
