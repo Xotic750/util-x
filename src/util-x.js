@@ -890,6 +890,17 @@
         };
 
         /**
+         * Returns true if the operand inputArg is an object or function but not null.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function isRealObject(inputArg) {
+            return utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg);
+        }
+
+        /**
          * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
          * whose class internal property is "Array"; otherwise it returns false.
          * @memberOf utilx
@@ -1084,6 +1095,17 @@
         }());
 
         /**
+         * Returns true if the argument is zero or not finite.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function isZeroOrNotFinite(inputArg) {
+            return utilx.isZero(inputArg) || !utilx.numberIsFinite(inputArg);
+        }
+
+        /**
          * The function evaluates the passed value and converts it to an integer.
          * @memberOf utilx
          * @function
@@ -1106,7 +1128,7 @@
 
                     if (utilx.numberIsNaN(number)) {
                         val = +0;
-                    } else if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                    } else if (isZeroOrNotFinite(number)) {
                         val = number;
                     } else {
                         val = utilx.mathSign(number) * Math.floor(Math.abs(number));
@@ -1172,7 +1194,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
@@ -1228,7 +1250,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val = utilx.modulo(utilx.numberToInteger(number), UWORD32);
@@ -1264,7 +1286,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD16);
@@ -1305,7 +1327,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val = utilx.modulo(utilx.numberToInteger(number), UWORD16);
@@ -1341,7 +1363,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val  = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD8);
@@ -1382,7 +1404,7 @@
             var number = utilx.toNumber(inputArg),
                 val;
 
-            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+            if (isZeroOrNotFinite(number)) {
                 val = +0;
             } else {
                 val = utilx.modulo(utilx.numberToInteger(number), UWORD8);
@@ -1863,16 +1885,16 @@
 
             if (utilx.isFunction(getPrototypeOfFN)) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (utilx.isPrimitive(object)) {
-                        throw new TypeError('Object.getPrototypeOf called on non-object');
+                    if (!isRealObject(object)) {
+                        throw new TypeError('objectGetPrototypeOf called on non-object');
                     }
 
                     return getPrototypeOfFN(object);
                 };
             } else if (utilx.isNull(CtrObject.prototype[protoName])) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (utilx.isPrimitive(object)) {
-                        throw new TypeError('Object.getPrototypeOf called on non-object');
+                    if (!isRealObject(object)) {
+                        throw new TypeError('objectGetPrototypeOf called on non-object');
                     }
 
                     return object[protoName];
@@ -1880,15 +1902,21 @@
             } else {
                 bocProto = CtrObject.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (utilx.isPrimitive(object)) {
-                        throw new TypeError('Object.getPrototypeOf called on non-object');
+                    if (!isRealObject(object)) {
+                        throw new TypeError('objectGetPrototypeOf called on non-object');
                     }
 
                     if (utilx.strictEqual(object, bocProto)) {
                         return null;
                     }
 
-                    var ctrProto = object.constructor.prototype;
+                    var ctrProto;
+
+                    if (utilx.isObject(object[protoName])) {
+                        ctrProto = object[protoName];
+                    } else {
+                        ctrProto = object.constructor.prototype;
+                    }
 
                     if (utilx.strictEqual(object, ctrProto)) {
                         return bocProto;
@@ -1986,7 +2014,7 @@
          */
         utilx.isEmptyArray = function (inputArg) {
             if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (utilx.isPrimitive(inputArg) || utilx.isFunction(inputArg)) {
+                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
                     throw new TypeError('called on a invalid object');
                 }
 
@@ -2008,7 +2036,7 @@
          */
         utilx.arrayFirst = function (inputArg) {
             if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (utilx.isPrimitive(inputArg) || utilx.isFunction(inputArg)) {
+                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
                     throw new TypeError('called on a invalid object');
                 }
 
@@ -2029,7 +2057,7 @@
          */
         utilx.arrayLast = function (inputArg) {
             if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (utilx.isPrimitive(inputArg) || utilx.isFunction(inputArg)) {
+                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
                     throw new TypeError('called on a invalid object');
                 }
 
@@ -2053,7 +2081,7 @@
          */
         utilx.arrayAssign = function (array, index, value) {
             if (!utilx.arrayIsArray(array) && !utilx.isArguments(array)) {
-                if (utilx.isPrimitive(array) || utilx.isFunction(array)) {
+                if (!utilx.isTypeObject(array) || utilx.isFunction(array)) {
                     throw new TypeError('called on a invalid object');
                 }
 
@@ -2648,7 +2676,7 @@
                 }
 
                 tempSafariNFE = function nfeKeys(object) {
-                    if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+                    if (!isRealObject(object)) {
                         throw new TypeError('Object.keys called on a non-object');
                     }
 
@@ -2811,11 +2839,11 @@
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
-                    if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+                    if (!isRealObject(object)) {
                         throw new TypeError('objectDefineProperty called on non-object');
                     }
 
-                    if (!utilx.isTypeObject(descriptor) && !utilx.isFunction(descriptor)) {
+                    if (!isRealObject(descriptor)) {
                         throw new TypeError('Property description must be an object: ' + utilx.anyToString(descriptor));
                     }
 
@@ -2900,11 +2928,11 @@
         // we don't use the native otherwise we need all the same patches applied to objectDefineProperty
         // named utilx.objectDefineProperties instead of defineProperties because of SpiderMonkey and Blackberry bug
         utilx.objectDefineProperties = function (object, props) {
-            if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+            if (!isRealObject(object)) {
                 throw new TypeError('objectDefineProperties called on non-object');
             }
 
-            if (!utilx.isTypeObject(props) && !utilx.isFunction(props)) {
+            if (!isRealObject(props)) {
                 throw new TypeError('Property description must be an object');
             }
 
@@ -2984,7 +3012,7 @@
                         getter,
                         setter;
 
-                    if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+                    if (!isRealObject(object)) {
                         throw new TypeError('getOwnPropertyDescriptor called on a non-object');
                     }
 
@@ -3095,7 +3123,7 @@
                 tempSafariNFE = freezeFN;
             } else {
                 tempSafariNFE = function nfeFreeze(object) {
-                    if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+                    if (!isRealObject(object)) {
                         throw new TypeError('Object.freeze called on non-object');
                     }
 
@@ -3154,7 +3182,7 @@
                 tempSafariNFE = isFrozenFN;
             } else {
                 tempSafariNFE = function nfeIsFrozen(object) {
-                    if (!utilx.isTypeObject(object) && !utilx.isFunction(object)) {
+                    if (!isRealObject(object)) {
                         throw new TypeError('Object.isFrozen called on non-object');
                     }
 
@@ -3179,7 +3207,7 @@
             utilx.arrayForEach(utilx.objectKeys(object), function (propKey) {
                 var prop = object[propKey];
 
-                if ((utilx.isTypeObject(prop) || utilx.isFunction(prop)) && !utilx.objectIsFrozen(prop)) {
+                if (isRealObject(prop) && !utilx.objectIsFrozen(prop)) {
                     utilx.deepFreeze(prop);
                 }
             });
@@ -3292,7 +3320,7 @@
 
             if (utilx.isFalse(createdOk)) {
                 tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
-                    if (!utilx.isTypeObject(prototype) && !utilx.isFunction(prototype)) {
+                    if (!isRealObject(prototype)) {
                         throw new TypeError('Object prototype may only be an Object, but not null.');
                     }
 
@@ -3331,8 +3359,8 @@
             var baseObjectPrototype = utilx.objectGetPrototypeOf(baseObject);
 
             return function (object) {
-                return utilx.isObject(object) && utilx.strictEqual(utilx.objectGetPrototypeOf(object),
-                                                                   baseObjectPrototype);
+                return utilx.isTypeObject(object) && utilx.isObject(object) &&
+                    utilx.strictEqual(utilx.objectGetPrototypeOf(object), baseObjectPrototype);
             };
         }());
 
@@ -3347,12 +3375,12 @@
          * @return {object}
          */
         utilx.extend = function (target) {
-            if (!utilx.isTypeObject(target) && !utilx.isFunction(target)) {
+            if (!isRealObject(target)) {
                 throw new TypeError('utilx.extend "target" is a non-object');
             }
 
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (source) {
-                if (utilx.isTypeObject(source) || utilx.isFunction(source)) {
+                if (isRealObject(source)) {
                     utilx.arrayForEach(utilx.objectKeys(source), function (key) {
                         utilx.objectDefineProperty(target, key, objectGetOwnPropertyDescriptor(source, key));
                     });
@@ -3689,7 +3717,7 @@
                         partial,
                         value = holder[key];
 
-                    if ((utilx.isTypeObject(value) || utilx.isFunction(value)) && utilx.isFunction(value.toJSON)) {
+                    if (isRealObject(value) && utilx.isFunction(value.toJSON)) {
                         value = value.toJSON(key);
                     }
 

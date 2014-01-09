@@ -9,6 +9,8 @@
 
     describe('objectGetPrototypeOf', function () {
         it('should not throw an error in each case', function () {
+            var MyError;
+
             expect(function () {
                 utilx.objectGetPrototypeOf();
             }).to.throwException(function (e) {
@@ -59,6 +61,17 @@
             expect(utilx.objectGetPrototypeOf(new RegExp('c'))).to.be(RegExp.prototype);
             expect(utilx.objectGetPrototypeOf(new Date())).to.be(Date.prototype);
             expect(utilx.objectGetPrototypeOf(new Error('x'))).to.be(Error.prototype);
+
+            MyError = utilx.customError('MyError');
+            expect(utilx.objectGetPrototypeOf(new MyError('x'))).to.be(MyError.prototype);
+
+            function MyObject() {
+                return;
+            }
+
+            utilx.inherits(MyObject, MyError);
+            expect(utilx.objectGetPrototypeOf(new MyError('x'))).to.be(MyError.prototype);
+            expect(utilx.objectGetPrototypeOf(new MyObject('x'))).to.be(MyObject.prototype);
         });
     });
 }());
