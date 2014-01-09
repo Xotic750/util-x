@@ -95,23 +95,6 @@
             }).to.not.throwException();
         });
 
-        it('under investigation in older versions of Chrome', function () {
-            expect(function () {
-                var obj = utilx.objectDefineProperty([10], '0', {
-                    enumerable: true,
-                    writable: true,
-                    configurable: true
-                });
-
-                /*global console */
-                console.log('# LENGTH: ' + obj.length);
-                expect(obj.length).to.be(1);
-                console.log('# INTEGER VALUE: ' + obj[0]);
-                console.log('# STRING VALUE: ' + obj['0']);
-                expect(obj[0]).to.be(10);
-            }).to.not.throwException();
-        });
-
         it('should not throw an error deifnining properties on arrays', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 'foo', {
@@ -123,6 +106,17 @@
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty([10], '0', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(obj.length).to.be(1);
+                expect(obj[0]).to.be(10);
             }).to.not.throwException();
 
             expect(function () {
@@ -426,6 +420,78 @@
 
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: {},
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.eql({});
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: [],
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.eql([]);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: '',
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be('');
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: true,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(true);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: 1,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(1);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
+                    value: utilx.noop,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(utilx.noop);
             }).to.not.throwException();
         });
     });
