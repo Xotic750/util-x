@@ -2715,10 +2715,12 @@
                 defineGetterFN,
                 defineSetterFN,
                 testObject,
-                previousFN,
+                previousFN1,
+                previousFN2,
                 definePropertyFN,
                 nfeDefineProperty,
-                nfeDefinePropertyX;
+                nfeDefineProperty1,
+                nfeDefineProperty2;
 
             /*global console */
             if (utilx.isFunction(nativeFN)) {
@@ -2737,7 +2739,7 @@
                             value: null
                         });
 
-                        if (utilx.notStrictEqual(tempSafariNFE[1], null)) {
+                        if (!utilx.isNull(tempSafariNFE[1])) {
                             throw new Error('Fails integer check');
                         }
 
@@ -2764,14 +2766,14 @@
                             value: null
                         });
 
-                        if (utilx.notStrictEqual(tempSafariNFE[0], null)) {
+                        if (!utilx.isNull(tempSafariNFE[0])) {
                             throw new Error('Fails array check');
                         }
                     } catch (e) {
                         console.log('# FAILED ARRAY');
-                        previousFN = definePropertyFN;
-                        definePropertyFN = function nfeDefinePropertyX(object, property, descriptor) {
-                            console.log('# IN PATCHED FN');
+                        previousFN1 = definePropertyFN;
+                        definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
+                            console.log('# IN PATCHED1 FN');
                             if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
                                     ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                      (utilx.isString(property) && utilx.isDigits(property)) ||
@@ -2781,12 +2783,34 @@
                                 if (utilx.objectHasOwnProperty(descriptor, 'value') ||
                                         !utilx.objectHasOwnProperty(object, property)) {
 
-                                    console.log('# ASSIGN TO ARRAY: ' + property);
+                                    console.log('# ASSIGN TO ARRAY1: ' + property);
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 }
                             }
 
-                            return previousFN(object, property, descriptor);
+                            return previousFN1(object, property, descriptor);
+                        };
+                    }
+
+                    // Test overwrite array property when no value defined
+                    try {
+                        tempSafariNFE = definePropertyFN([10], '0', {});
+
+                        if (utilx.notStrictEqual(tempSafariNFE[0], 10)) {
+                            console.log('# TEST FAILED: ' + tempSafariNFE[0]);
+                            throw new Error('Fails overwrite check');
+                        }
+                    } catch (e) {
+                        console.log('# FAILED OVERWRITE: ' + e);
+                        previousFN2 = definePropertyFN;
+                        definePropertyFN = function nfeDefineProperty2(object, property, descriptor) {
+                            console.log('# IN PATCHED2 FN');
+                            if (!utilx.objectHasOwnProperty(descriptor, 'value')) {
+                                console.log('# ASSIGN VALUE: ' + property);
+                                descriptor.value = object[property];
+                            }
+
+                            return previousFN2(object, property, descriptor);
                         };
                     }
                 } catch (exception) {
@@ -2872,7 +2896,8 @@
             }
 
             nfeDefineProperty = null;
-            nfeDefinePropertyX = null;
+            nfeDefineProperty1 = null;
+            nfeDefineProperty2 = null;
 
             return tempSafariNFE;
         }());
