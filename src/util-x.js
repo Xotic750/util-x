@@ -48,6 +48,7 @@
             MAX_UINT8 = 255,
             MAX_INT8 = 127,
             MIN_INT8 = -128,
+            UNSAFE_INTEGER = 9007199254740992,
             MAX_INTEGER = 9007199254740991,
             MIN_INTEGER = -9007199254740991,
             POSITIVE_INFINITY = Number.POSITIVE_INFINITY,
@@ -896,11 +897,28 @@
          * @param {*} inputArg
          * @return {boolean}
          */
-        function isRealObject(inputArg) {
+        function isTypeObjectOrIsFunction(inputArg) {
             return utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg);
         }
 
         /**
+         * Throws a TypeError if the operand inputArg is not an object or not a function,
+         * otherise returns the object.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {object}
+         */
+        function throwIfIsNotTypeObjectOrIsNotFunction(inputArg) {
+            if (!isTypeObjectOrIsFunction(inputArg)) {
+                throw new TypeError('called on non-object');
+            }
+
+            return inputArg;
+        }
+
+        /**
+         *
          * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
          * whose class internal property is "Array"; otherwise it returns false.
          * @memberOf utilx
@@ -1160,16 +1178,12 @@
                 nfeIsInteger;
 
             try {
-                if (utilx.numberIsInteger(UWORD32) || utilx.numberIsInteger(-UWORD32)) {
-                    throw new Error();
+                if (isIntegerFN(UNSAFE_INTEGER) || isIntegerFN(-UNSAFE_INTEGER)) {
+                    throw new Error('Failed unsafe integer check');
                 }
-            } catch (e) {
-                isIntegerFN = utilx.privateUndefined;
-            }
 
-            if (utilx.isFunction(isIntegerFN)) {
                 tempSafariNFE = isIntegerFN;
-            } else {
+            } catch (e) {
                 tempSafariNFE = function nfeIsInteger(inputArg) {
                     return !utilx.numberIsNaN(inputArg) && utilx.numberIsFinite(inputArg) &&
                         utilx.inRange(inputArg, MIN_INTEGER, MAX_INTEGER) &&
@@ -1485,6 +1499,28 @@
         }
 
         /**
+         * Returns a string only if the arguments is coercible otherwise throws an error.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {string}
+         */
+        function onlyCoercibleToString(inputArg) {
+            return utilx.anyToString(utilx.checkObjectCoercible(inputArg));
+        }
+
+        /**
+         * Returns an integer clamped to the range set by min and max.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {string}
+         */
+        function clampInteger(number, min, max) {
+            return utilx.clamp(utilx.numberToInteger(number), utilx.numberToInteger(min), utilx.numberToInteger(max));
+        }
+
+        /**
          * Splits a String object into an array of strings by separating the string into substrings.
          * @memberOf utilx
          * @function
@@ -1499,7 +1535,7 @@
                 compliantExecNpcg = utilx.isUndefined(new RegExp('()??').exec('')[1]);
 
             return function (str, separator, limit) {
-                var string = utilx.anyToString(utilx.checkObjectCoercible(str)),
+                var string = onlyCoercibleToString(str),
                     output,
                     flags,
                     lastLastIndex,
@@ -1535,7 +1571,7 @@
                     if (utilx.isUndefined(limit)) {
                         limit = MAX_UINT32;
                     } else {
-                        limit = utilx.clamp(utilx.numberToInteger(limit), 0, MAX_UINT32);
+                        limit = clampInteger(limit, 0, MAX_UINT32);
                     }
 
                     output = [];
@@ -1599,7 +1635,7 @@
          * @return {string}
          */
         utilx.firstChar = function (inputArg) {
-            return utilx.anyToString(utilx.checkObjectCoercible(inputArg)).charAt(0);
+            return onlyCoercibleToString(inputArg).charAt(0);
         };
 
         /**
@@ -1625,7 +1661,7 @@
          * @return {string}
          */
         utilx.lastChar = function (inputArg) {
-            var thisStr = utilx.anyToString(utilx.checkObjectCoercible(inputArg));
+            var thisStr = onlyCoercibleToString(inputArg);
 
             return thisStr.charAt(thisStr.length - 1);
         };
@@ -1659,12 +1695,23 @@
             if (utilx.isEmptyString(firstChar)) {
                 val = Infinity;
             } else {
-                val = utilx.clamp(utilx.stringSplit(utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
+                val = clampInteger(utilx.stringSplit(inputArg,
                                                  utilx.firstChar(character)).length - 1, 0, Infinity);
             }
 
             return val;
         };
+
+        /**
+         * Returns true if arguments is less than zero or is equal to positive infinity
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function isLtZeroOrPositiveInfinity(inputArg) {
+            return utilx.lt(inputArg, 0) || utilx.strictEqual(inputArg, Infinity);
+        }
 
         /**
          * Coerces inputArg to a string and repeatedly adds the argument character to the beginning until
@@ -1678,11 +1725,11 @@
          * @return {string}
          */
         utilx.padLeadingChar = function (inputArg, character, size) {
-            var string = utilx.anyToString(utilx.checkObjectCoercible(inputArg)),
+            var string = onlyCoercibleToString(inputArg),
                 singleChar = utilx.firstChar(character),
                 count = utilx.numberToInteger(size) - string.length;
 
-            if (utilx.lt(count, 0) || utilx.strictEqual(count, Infinity)) {
+            if (isLtZeroOrPositiveInfinity(count)) {
                 count = 0;
             }
 
@@ -1726,10 +1773,10 @@
                 };
             } else {
                 tempSafariNFE = function nfeRepeat(string, count) {
-                    var thisString = utilx.anyToString(utilx.checkObjectCoercible(string)),
+                    var thisString = onlyCoercibleToString(string),
                         times = utilx.numberToInteger(count);
 
-                    if (utilx.lt(times, 0) || utilx.strictEqual(times, Infinity)) {
+                    if (isLtZeroOrPositiveInfinity(times)) {
                         throw new RangeError();
                     }
 
@@ -1765,9 +1812,9 @@
                 };
             } else {
                 tempSafariNFE = function nfeStartsWith(string, searchString, position) {
-                    var thisStr = utilx.anyToString(utilx.checkObjectCoercible(string)),
+                    var thisStr = onlyCoercibleToString(string),
                         searchStr = utilx.anyToString(searchString),
-                        start = utilx.clamp(utilx.numberToInteger(position), 0, thisStr.length);
+                        start = clampInteger(position, 0, thisStr.length);
 
                     return utilx.strictEqual(thisStr.slice(start, start + searchStr.length), searchStr);
                 };
@@ -1801,7 +1848,7 @@
                 };
             } else {
                 tempSafariNFE = function nfeEndsWith(string, searchString, position) {
-                    var thisStr = utilx.anyToString(utilx.checkObjectCoercible(string)),
+                    var thisStr = onlyCoercibleToString(string),
                         searchStr = utilx.anyToString(searchString),
                         thisLen = thisStr.length,
                         end,
@@ -1848,7 +1895,7 @@
                 };
             } else {
                 tempSafariNFE = function nfeContains(string, searchString, position) {
-                    var thisStr = utilx.anyToString(utilx.checkObjectCoercible(string)),
+                    var thisStr = onlyCoercibleToString(string),
                         searchStr = utilx.anyToString(searchString),
                         thisLen = thisStr.length;
 
@@ -1885,27 +1932,20 @@
 
             if (utilx.isFunction(getPrototypeOfFN)) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('objectGetPrototypeOf called on non-object');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return getPrototypeOfFN(object);
                 };
             } else if (utilx.isNull(CtrObject.prototype[protoName])) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('objectGetPrototypeOf called on non-object');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return object[protoName];
                 };
             } else {
                 bocProto = CtrObject.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('objectGetPrototypeOf called on non-object');
-                    }
-
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
                     if (utilx.strictEqual(object, bocProto)) {
                         return null;
                     }
@@ -2007,6 +2047,71 @@
         }());
 
         /**
+         * Returns true if argument is null, not an object or is a function.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function isNotTypeObjectOrIsFunction(inputArg) {
+            return !utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg);
+        }
+
+        /**
+         * Returns true if argument is an object that has own property of length which is a number of uint32
+         * but is not a function.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function hasValidLength(inputArg) {
+            return utilx.isTypeObject(inputArg) && utilx.objectHasOwnProperty(inputArg, 'length') &&
+                utilx.isNumber(inputArg.length) && utilx.isUint32(inputArg.length);
+        }
+
+        /**
+         * Throws TypeError if argument is null, not an object or is a function otherwise return the object.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {object}
+         */
+        function throwIfIsNotTypeObjectOrIsFunction(inputArg) {
+            if (isNotTypeObjectOrIsFunction(inputArg)) {
+                throw new TypeError('called on a invalid object');
+            }
+
+            return inputArg;
+        }
+
+        /**
+         * Throws TypeError if argument has not got a valid length otherwise return the object.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {object}
+         */
+        function throwIfIsNotHasValidLength(inputArg) {
+            if (!hasValidLength(inputArg)) {
+                throw new TypeError('invalid length property');
+            }
+
+            return inputArg;
+        }
+
+        /**
+         * Returns true if arguments is an array or an arguments object.
+         * @private
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        function isArrayOrArguments(inputArg) {
+            return utilx.arrayIsArray(inputArg) || utilx.isArguments(inputArg);
+        }
+
+        /**
          * The function takes one argument inputArg, if the argument is an object whose class internal
          * property is "Array" or is an Object whose class internal property is "Arguments";
          * returns true if length is zero otherwise it returns false.
@@ -2017,14 +2122,9 @@
          * @return {(boolean|null)}
          */
         utilx.isEmptyArray = function (inputArg) {
-            if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
-                    throw new TypeError('called on a invalid object');
-                }
-
-                if (!utilx.objectHasOwnProperty(inputArg, 'length') || !utilx.isNumber(inputArg.length)) {
-                    throw new TypeError('invalid length property');
-                }
+            if (!isArrayOrArguments(inputArg)) {
+                throwIfIsNotTypeObjectOrIsFunction(inputArg);
+                throwIfIsNotHasValidLength(inputArg);
             }
 
             return utilx.isZero(inputArg.length);
@@ -2039,14 +2139,9 @@
          * @return {*}
          */
         utilx.arrayFirst = function (inputArg) {
-            if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
-                    throw new TypeError('called on a invalid object');
-                }
-
-                if (!utilx.objectHasOwnProperty(inputArg, 'length') || !utilx.isNumber(inputArg.length)) {
-                    throw new TypeError('invalid length property');
-                }
+            if (!isArrayOrArguments(inputArg)) {
+                throwIfIsNotTypeObjectOrIsFunction(inputArg);
+                throwIfIsNotHasValidLength(inputArg);
             }
 
             return inputArg[0];
@@ -2060,14 +2155,9 @@
          * @return {*}
          */
         utilx.arrayLast = function (inputArg) {
-            if (!utilx.arrayIsArray(inputArg) && !utilx.isArguments(inputArg)) {
-                if (!utilx.isTypeObject(inputArg) || utilx.isFunction(inputArg)) {
-                    throw new TypeError('called on a invalid object');
-                }
-
-                if (!utilx.objectHasOwnProperty(inputArg, 'length') || !utilx.isNumber(inputArg.length)) {
-                    throw new TypeError('invalid length property');
-                }
+            if (!isArrayOrArguments(inputArg)) {
+                throwIfIsNotTypeObjectOrIsFunction(inputArg);
+                throwIfIsNotHasValidLength(inputArg);
             }
 
             return inputArg[inputArg.length - 1];
@@ -2084,14 +2174,9 @@
          * @return {number}
          */
         utilx.arrayAssign = function (array, index, value) {
-            if (!utilx.arrayIsArray(array) && !utilx.isArguments(array)) {
-                if (!utilx.isTypeObject(array) || utilx.isFunction(array)) {
-                    throw new TypeError('called on a invalid object');
-                }
-
-                if (!utilx.objectHasOwnProperty(array, 'length') || !utilx.isNumber(array.length)) {
-                    throw new TypeError('invalid length property');
-                }
+            if (!isArrayOrArguments(array)) {
+                throwIfIsNotTypeObjectOrIsFunction(array);
+                throwIfIsNotHasValidLength(array);
             }
 
             var numIndex;
@@ -2144,6 +2229,21 @@
         }());
 
         /**
+         * Throws a TypeError if arguments is not a function otherwise returns the function.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {function}
+         */
+        function throwIfNotAFunction(inputArg) {
+            if (!utilx.isFunction(inputArg)) {
+                throw new TypeError(inputArg + ' is not a function');
+            }
+
+            return inputArg;
+        }
+
+        /**
          * Executes a provided function once per array element.
          * @memberOf utilx
          * @function
@@ -2168,11 +2268,8 @@
                         length,
                         index;
 
-                    if (!utilx.isFunction(fn)) {
-                        throw new TypeError(fn + ' is not a function');
-                    }
-
-                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    throwIfNotAFunction(fn);
+                    length = clampInteger(object.length, 0, MAX_UINT32);
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index)) {
                             fn.call(thisArg, object[index], index, object);
@@ -2213,11 +2310,8 @@
                         index,
                         val;
 
-                    if (!utilx.isFunction(fn)) {
-                        throw new TypeError(fn + ' is not a function');
-                    }
-
-                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    throwIfNotAFunction(fn);
+                    length = clampInteger(object.length, 0, MAX_UINT32);
                     val = false;
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.hasProperty(object, index) && fn.call(thisArg, object[index], index, object)) {
@@ -2262,11 +2356,8 @@
                         index,
                         arr;
 
-                    if (!utilx.isFunction(fn)) {
-                        throw new TypeError(fn + ' is not a function');
-                    }
-
-                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    throwIfNotAFunction(fn);
+                    length = clampInteger(object.length, 0, MAX_UINT32);
                     arr = [];
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         utilx.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
@@ -2325,7 +2416,7 @@
                 tempSafariNFE = function nfeSlice(array, start, end) {
                     var object = utilx.toObjectFixIndexedAccess(array),
                         relativeStart = utilx.numberToInteger(start),
-                        length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32),
+                        length = clampInteger(object.length, 0, MAX_UINT32),
                         val = [],
                         next = 0,
                         relativeEnd,
@@ -2351,9 +2442,8 @@
                     }
 
                     val.length = Math.max(final - k, 0);
-                    while (k < final) {
+                    while (utilx.lt(k, final)) {
                         utilx.arrayAssign(val, next, object[k]);
-
                         next += 1;
                         k += 1;
                     }
@@ -2396,11 +2486,8 @@
                         index,
                         element;
 
-                    if (!utilx.isFunction(fn)) {
-                        throw new TypeError(fn + ' is not a function');
-                    }
-
-                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    throwIfNotAFunction(fn);
+                    length = clampInteger(object.length, 0, MAX_UINT32);
                     arr = [];
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         element = object[index];
@@ -2448,16 +2535,13 @@
                         length,
                         index;
 
-                    if (!utilx.isFunction(fn)) {
-                        throw new TypeError(fn + ' is not a function');
-                    }
-
+                    throwIfNotAFunction(fn);
                     if (utilx.gt(arguments.length, 2)) {
                         value = initialValue;
                         isValueSet = true;
                     }
 
-                    length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32);
+                    length = clampInteger(object.length, 0, MAX_UINT32);
                     for (index = 0; utilx.lt(index, length); index += 1) {
                         if (utilx.objectHasOwnProperty(object, index)) {
                             value = fn(value, object[index], index, object);
@@ -2551,7 +2635,7 @@
 
                 wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
                 tempSafariNFE = function nfeTrim(inputArg) {
-                    return utilx.anyToString(utilx.checkObjectCoercible(inputArg)).replace(wsTrimRX, '');
+                    return onlyCoercibleToString(inputArg).replace(wsTrimRX, '');
                 };
             }
 
@@ -2585,7 +2669,7 @@
             } else {
                 tempSafariNFE = function nfeIndexOf(array, searchElement, fromIndex) {
                     var object = utilx.toObjectFixIndexedAccess(array),
-                        length = utilx.clamp(utilx.numberToInteger(object.length), 0, MAX_UINT32),
+                        length = clampInteger(object.length, 0, MAX_UINT32),
                         index,
                         start,
                         val;
@@ -2680,9 +2764,7 @@
                 }
 
                 tempSafariNFE = function nfeKeys(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('Object.keys called on a non-object');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     var props = [],
                         prop;
@@ -2777,7 +2859,7 @@
                         definePropertyFN = nativeFN;
                     } catch (e) {
                         definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
-                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                            if (isArrayOrArguments(object) &&
                                     utilx.isString(property) && !utilx.isEmptyString(property) &&
                                     !utilx.isDigits(property) &&
                                     utilx.numberIsInteger(utilx.toNumber(property))) {
@@ -2801,7 +2883,7 @@
                     } catch (e) {
                         previousFN1 = definePropertyFN;
                         definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
-                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                            if (isArrayOrArguments(object) &&
                                     ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                      (utilx.isString(property) && utilx.isDigits(property)) ||
                                      (utilx.isString(property) && !utilx.isEmptyString(property) &&
@@ -2843,11 +2925,8 @@
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('objectDefineProperty called on non-object');
-                    }
-
-                    if (!isRealObject(descriptor)) {
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
+                    if (!isTypeObjectOrIsFunction(descriptor)) {
                         throw new TypeError('Property description must be an object: ' + utilx.anyToString(descriptor));
                     }
 
@@ -2870,7 +2949,7 @@
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 delete object[property];
-                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
                                          (utilx.isString(property) && !utilx.isEmptyString(property) &&
@@ -2883,7 +2962,7 @@
 
                                 object[protoName] = prototype;
                             } else {
-                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
+                                if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
                                          (utilx.isString(property) && !utilx.isEmptyString(property) &&
@@ -2932,11 +3011,8 @@
         // we don't use the native otherwise we need all the same patches applied to objectDefineProperty
         // named utilx.objectDefineProperties instead of defineProperties because of SpiderMonkey and Blackberry bug
         utilx.objectDefineProperties = function (object, props) {
-            if (!isRealObject(object)) {
-                throw new TypeError('objectDefineProperties called on non-object');
-            }
-
-            if (!isRealObject(props)) {
+            throwIfIsNotTypeObjectOrIsNotFunction(object);
+            if (!isTypeObjectOrIsFunction(props)) {
                 throw new TypeError('Property description must be an object');
             }
 
@@ -3016,10 +3092,7 @@
                         getter,
                         setter;
 
-                    if (!isRealObject(object)) {
-                        throw new TypeError('getOwnPropertyDescriptor called on a non-object');
-                    }
-
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
                     if (utilx.objectHasOwnProperty(object, property)) {
                         descriptor = {};
                         descriptor.configurable = true;
@@ -3047,14 +3120,14 @@
                         }
 
                         descriptor.value = object[property];
-                        if (utilx.isFunction(object) && utilx.strictEqual(property, 'length')) {
-                            descriptor.writable = false;
-                            descriptor.configurable = false;
-                        } else if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &&
-                                   utilx.strictEqual(property, 'length')) {
-
-                            descriptor.writable = true;
-                            descriptor.configurable = false;
+                        if (utilx.strictEqual(property, 'length')) {
+                            if (utilx.isFunction(object)) {
+                                descriptor.writable = false;
+                                descriptor.configurable = false;
+                            } else if (isArrayOrArguments(object)) {
+                                descriptor.writable = true;
+                                descriptor.configurable = false;
+                            }
                         } else if (utilx.strictEqual(property, 'prototype')) {
                             switch (object) {
                             case Object:
@@ -3127,9 +3200,7 @@
                 tempSafariNFE = freezeFN;
             } else {
                 tempSafariNFE = function nfeFreeze(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('Object.freeze called on non-object');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return object;
                 };
@@ -3186,9 +3257,7 @@
                 tempSafariNFE = isFrozenFN;
             } else {
                 tempSafariNFE = function nfeIsFrozen(object) {
-                    if (!isRealObject(object)) {
-                        throw new TypeError('Object.isFrozen called on non-object');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(object);
 
                     return false;
                 };
@@ -3211,7 +3280,7 @@
             utilx.arrayForEach(utilx.objectKeys(object), function (propKey) {
                 var prop = object[propKey];
 
-                if (isRealObject(prop) && !utilx.objectIsFrozen(prop)) {
+                if (isTypeObjectOrIsFunction(prop) && !utilx.objectIsFrozen(prop)) {
                     utilx.deepFreeze(prop);
                 }
             });
@@ -3236,21 +3305,17 @@
 
             if (utilx.isFunction(isPrototypeOfFN)) {
                 tempSafariNFE = function nfeInstanceOf(object, ctr) {
-                    if (!utilx.isFunction(ctr)) {
-                        throw new TypeError('Expecting a function in instanceOf check');
-                    }
+                    throwIfNotAFunction(ctr);
 
                     return isPrototypeOfFN.call(ctr.prototype, object);
                 };
             } else if (utilx.isFunction(utilx.objectGetPrototypeOf)) {
                 tempSafariNFE = function nfeInstanceOf(object, ctr) {
-                    if (!utilx.isFunction(ctr)) {
-                        throw new TypeError('Expecting a function in instanceOf check');
-                    }
+                    throwIfNotAFunction(ctr);
 
                     var val = false;
 
-                    while (object) {
+                    while (utilx.toBoolean(object)) {
                         if (utilx.strictEqual(object, ctr.prototype)) {
                             val = true;
                             break;
@@ -3324,9 +3389,7 @@
 
             if (utilx.isFalse(createdOk)) {
                 tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
-                    if (!isRealObject(prototype)) {
-                        throw new TypeError('Object prototype may only be an Object, but not null.');
-                    }
+                    throwIfIsNotTypeObjectOrIsNotFunction(prototype);
 
                     var newObject;
 
@@ -3379,12 +3442,9 @@
          * @return {object}
          */
         utilx.extend = function (target) {
-            if (!isRealObject(target)) {
-                throw new TypeError('utilx.extend "target" is a non-object');
-            }
-
+            throwIfIsNotTypeObjectOrIsNotFunction(target);
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (source) {
-                if (isRealObject(source)) {
+                if (isTypeObjectOrIsFunction(source)) {
                     utilx.arrayForEach(utilx.objectKeys(source), function (key) {
                         utilx.objectDefineProperty(target, key, objectGetOwnPropertyDescriptor(source, key));
                     });
@@ -3721,7 +3781,7 @@
                         partial,
                         value = holder[key];
 
-                    if (isRealObject(value) && utilx.isFunction(value.toJSON)) {
+                    if (isTypeObjectOrIsFunction(value) && utilx.isFunction(value.toJSON)) {
                         value = value.toJSON(key);
                     }
 
@@ -4005,14 +4065,8 @@
          * @return {undefined}
          */
         utilx.inherits = function (ctor, superCtor) {
-            if (!utilx.isFunction(ctor)) {
-                throw new TypeError(ctor + ' is not a function');
-            }
-
-            if (!utilx.isFunction(superCtor)) {
-                throw new TypeError(superCtor + ' is not a function');
-            }
-
+            throwIfNotAFunction(ctor);
+            throwIfNotAFunction(superCtor);
             /*jslint nomen: true */
             ctor.super_ = superCtor;
             /*jslint nomen: false */
