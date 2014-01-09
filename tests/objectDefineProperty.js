@@ -58,7 +58,7 @@
             });
         });
 
-        it('should not throw an error deifnining properties on plain objects', function () {
+        it('should not throw an error definining properties on plain objects', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty({}, 'foo', {
                     enumerable: true,
@@ -93,9 +93,107 @@
                 expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
                 expect(obj.foo).to.be(null);
             }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: 1,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(1);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: true,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(true);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: '',
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be('');
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: {},
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.eql({});
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: [],
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.eql([]);
+            }).to.not.throwException();
+
+            expect(function () {
+                var obj = utilx.objectDefineProperty({}, 'foo', {
+                    value: utilx.noop,
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(utilx.noop);
+            }).to.not.throwException();
         });
 
-        it('should not throw an error deifnining properties on arrays', function () {
+        it('should not throw an error redefinining properties on plain objects', function () {
+            expect(function () {
+                var obj = {
+                    foo: 10
+                };
+
+                utilx.objectDefineProperty(obj, 'foo', {
+                    enumerable: true,
+                    writable: true,
+                    configurable: true
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(10);
+
+                utilx.objectDefineProperty(obj, 'foo', {
+                    enumerable: false,
+                    writable: false,
+                    configurable: false
+                });
+
+                expect(utilx.objectHasOwnProperty(obj, 'foo')).to.be.ok();
+                expect(obj.foo).to.be(10);
+            }).to.not.throwException();
+        });
+
+        it('should not throw an error definining properties on arrays', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty([], 'foo', {
                     value: null,
@@ -386,7 +484,7 @@
             /*jshint +W047 */
         });
 
-        it('should not throw an error deifnining properties on functions', function () {
+        it('should not throw an error definining properties on functions', function () {
             expect(function () {
                 var obj = utilx.objectDefineProperty(function () { return; }, 'foo', {
                     enumerable: true,

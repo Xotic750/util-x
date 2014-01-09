@@ -4389,7 +4389,6 @@
                 configurable: true
             });
         });
-        */
 
         utilx.objectDefineProperties(utilx, {
             privateUndefined: {
@@ -4536,6 +4535,7 @@
                 configurable: false
             }
         });
+        */
 
         return utilx;
     }
