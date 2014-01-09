@@ -1915,7 +1915,11 @@
                     if (utilx.isObject(object[protoName])) {
                         ctrProto = object[protoName];
                     } else {
-                        ctrProto = object.constructor.prototype;
+                        if (utilx.isFunction(object.constructor)) {
+                            ctrProto = object.constructor.prototype;
+                        } else {
+                            ctrProto = bocProto;
+                        }
                     }
 
                     if (utilx.strictEqual(object, ctrProto)) {
