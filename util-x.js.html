@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.69
+ * @version 0.0.72
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -60,13 +60,36 @@
          */
 
         var utilx = {},
-            UWORD32 = Math.pow(2, 32),
-            MAX_UINT32 = UWORD32 - 1,
+            WORD8 = 128,
+            UWORD8 = 256,
+            WORD16 = 32768,
+            UWORD16 = 65536,
+            WORD32 = 2147483648,
+            UWORD32 = 4294967296,
+            MAX_UINT32 = 4294967295,
+            MAX_INT32 = 2147483647,
+            MIN_INT32 = -2147483648,
+            MAX_UINT16 = 65535,
+            MAX_INT16 = 32767,
+            MIN_INT16 = -32768,
+            MAX_UINT8 = 255,
+            MAX_INT8 = 127,
+            MIN_INT8 = -128,
+            MAX_INTEGER = 9007199254740991,
+            MIN_INTEGER = -9007199254740991,
+            POSITIVE_INFINITY = Number.POSITIVE_INFINITY,
+            NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY,
+            MAX_VALUE = 1.7976931348623157e+308,
+            MIN_VALUE = 5e-324,
+            NAN = NaN,
+            EPSILON = 2.220446049250313e-16,
             baseObject = {},
             baseArray = [],
             baseString = '',
             baseNumber = 0,
             baseBoolean = true,
+            CtrObject = baseObject.constructor,
+            noNewCtrObject = CtrObject,
             CtrBoolean = baseBoolean.constructor,
             CtrNumber = baseNumber.constructor,
             CtrString = baseString.constructor,
@@ -88,9 +111,172 @@
                 'constructor'
             ],
 
+            objectGetOwnPropertyDescriptor,
+
             // Safari 2.x NFE bug fix
             // http://kangax.github.io/nfe/
             tempSafariNFE;
+
+        /**
+         * 128
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD8 = WORD8;
+
+        /**
+         * 256
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD8 = UWORD8;
+
+        /**
+         * 65536
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD16 = WORD16;
+
+        /**
+         * 32768
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD16 = UWORD16;
+
+        /**
+         * 2147483648
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.WORD32 = WORD32;
+
+        /**
+         * 4294967296
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.UWORD32 = UWORD32;
+
+        /**
+         * 4294967295
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT32 = MAX_UINT32;
+
+        /**
+         * 214783647
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT32 = MAX_INT32;
+
+        /**
+         * -214783648
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT32 = MIN_INT32;
+
+        /**
+         * 65535
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT16 = MAX_UINT16;
+
+        /**
+         * 32767
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT16 = MAX_INT16;
+
+        /**
+         * -32768
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT16 = MIN_INT16;
+
+        /**
+         * 255
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_UINT8 = MAX_UINT8;
+
+        /**
+         * 127
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INT8 = MAX_INT8;
+
+        /**
+         * -128
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INT8 = MIN_INT8;
+
+        /**
+         * 9007199254740991
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_INTEGER = MAX_INTEGER;
+
+        /**
+         * -9007199254740991
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_INTEGER = MIN_INTEGER;
+
+        /**
+         * Infinity
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.POSITIVE_INFINITY = POSITIVE_INFINITY;
+
+        /**
+         * -Infinity
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.NEGATIVE_INFINITY = NEGATIVE_INFINITY;
+
+        /**
+         * 1.7976931348623157e+308
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MAX_VALUE = MAX_VALUE;
+
+        /**
+         * 5e-324
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.MIN_VALUE = MIN_VALUE;
+
+        /**
+         * NaN
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.NAN = NAN;
+
+        /**
+         * 2.220446049250313e-16
+         * @memberOf utilx
+         * @type {number}
+         */
+        utilx.EPSILON = EPSILON;
 
         /**
          * Returns the primitive value undefined.
@@ -103,12 +289,24 @@
         };
 
         /**
+         * undefined
          * @memberOf utilx
          * @type {undefined}
          */
         utilx.privateUndefined = (function () {
             return utilx.noop();
         }());
+
+        /**
+         * Returns an arguments object of the srguments supplied.
+         * @memberOf utilx
+         * @function
+         * @argument {...*} var_args
+         * @return {undefined}
+         */
+        utilx.returnArgs = function () {
+            return arguments;
+        };
 
         /**
          * Coerces an input to a number.
@@ -222,6 +420,8 @@
          * number1 modulo number2, in the preceding statement, where number1 and number2 are numbers.
          * The modulo function is the integer remainder of dividing number1 by number2.
          * For example, 12 % 5 returns 2. The result will have the same sign as number1; that is, -1 % 2 returns -1.
+         * Truncating division
+         * @see {@link http://www.ecma-international.org/ecma-262/5.1/#sec-11.5.3 Applying the % Operator}
          * @memberOf utilx
          * @function
          * @param {number} number1
@@ -355,6 +555,28 @@
          */
         utilx.isZero = function (inputArg) {
             return utilx.strictEqual(inputArg, 0);
+        };
+
+        /**
+         * Returns true if the operand inputArg is the number 0 or +0.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isPositiveZero = function (inputArg) {
+            return utilx.isZero(inputArg) &amp;&amp; utilx.strictEqual(1 / inputArg, Infinity);
+        };
+
+        /**
+         * Returns true if the operand inputArg is the number -0.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isNegativeZero = function (inputArg) {
+            return utilx.isZero(inputArg) &amp;&amp; utilx.strictEqual(1 / inputArg, -Infinity);
         };
 
         /**
@@ -552,12 +774,8 @@
                 firstCheck,
                 nfeIsArguments;
 
-            function returnArgs() {
-                return arguments;
-            }
-
             tempSafariNFE = null;
-            if (utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+            if (utilx.strictEqual(toStringFN.call(utilx.returnArgs()), argumentsString)) {
                 tempSafariNFE = function nfeIsArguments(inputArg) {
                     return utilx.strictEqual(toStringFN.call(inputArg), argumentsString);
                 };
@@ -612,15 +830,11 @@
                 argumentsString = '[object Arguments]',
                 nfeToObjectString;
 
-            function returnArgs() {
-                return arguments;
-            }
-
             try {
                 tempSafariNFE = null;
                 if (utilx.strictEqual(toStringFN.call(), undefinedString) &amp;&amp;
                         utilx.strictEqual(toStringFN.call(null), nullString) &amp;&amp;
-                        utilx.strictEqual(toStringFN.call(returnArgs()), argumentsString)) {
+                        utilx.strictEqual(toStringFN.call(utilx.returnArgs()), argumentsString)) {
 
                     tempSafariNFE = function nfeToObjectString(object) {
                         return toStringFN.call(object);
@@ -773,7 +987,7 @@
         utilx.objectIs = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isIsFn = baseObject.constructor.is,
+            var isIsFn = CtrObject.is,
                 nfeIs;
 
             if (utilx.isFunction(isIsFn)) {
@@ -812,7 +1026,7 @@
         utilx.numberIsNaN = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isNaNFN = baseNumber.constructor.isNaN,
+            var isNaNFN = CtrNumber.isNaN,
                 nfeIsNaN;
 
             if (utilx.isFunction(isNaNFN)) {
@@ -840,7 +1054,7 @@
         utilx.numberIsFinite = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var isFiniteFN = baseNumber.constructor.isFinite,
+            var isFiniteFN = CtrNumber.isFinite,
                 nfeIsFinite;
 
             if (utilx.isFunction(isFiniteFN)) {
@@ -907,7 +1121,7 @@
         utilx.numberToInteger = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
-            var toIntegerFN = Number.toInteger,
+            var toIntegerFN = CtrNumber.toInteger,
                 nfeToInteger;
 
             if (utilx.isFunction(toIntegerFN)) {
@@ -935,6 +1149,45 @@
         }());
 
         /**
+         * The utilx.numberIsInteger() method determines whether the passed value is an integer.
+         * If the target value is an integer, return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        // named utilx.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
+        utilx.numberIsInteger = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe/
+            var isIntegerFN = CtrNumber.isInteger,
+                nfeIsInteger;
+
+            try {
+                if (utilx.numberIsInteger(UWORD32) || utilx.numberIsInteger(-UWORD32)) {
+                    throw new Error();
+                }
+            } catch (e) {
+                isIntegerFN = utilx.privateUndefined;
+            }
+
+            if (utilx.isFunction(isIntegerFN)) {
+                tempSafariNFE = isIntegerFN;
+            } else {
+                tempSafariNFE = function nfeIsInteger(inputArg) {
+                    return !utilx.numberIsNaN(inputArg) &amp;&amp; utilx.numberIsFinite(inputArg) &amp;&amp;
+                        utilx.inRange(inputArg, MIN_INTEGER, MAX_INTEGER) &amp;&amp;
+                        utilx.strictEqual(utilx.numberToInteger(inputArg), inputArg);
+                };
+            }
+
+            nfeIsInteger = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
          * The abstract operation converts its argument to one of 2^32 integer values in
          * the range -2^31 through 2^31-1, inclusive.
          * @memberOf utilx
@@ -944,21 +1197,50 @@
          */
         utilx.toInt32 = function (inputArg) {
             var number = utilx.toNumber(inputArg),
-                int32bit,
                 val;
 
             if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
                 val = +0;
             } else {
-                int32bit = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
-                if (utilx.gt(int32bit, UWORD32)) {
-                    val = int32bit - UWORD32;
-                } else {
-                    val = int32bit;
+                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
+                if (utilx.gt(val, MAX_INT32)) {
+                    val -= UWORD32;
+                } else if (utilx.lt(val, MIN_INT32)) {
+                    val += UWORD32;
                 }
             }
 
             return val;
+        };
+
+        /**
+         * The utilx.isInt32() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^31 through 2^31-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt32 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, MIN_INT32, MAX_INT32);
+        };
+
+        /**
+         * The modulo function is a modified implementation of the `%` operator. This algorithm uses the
+         * formula `remainder = dividend - divisor * quotient`; the `%` operator uses a truncating division.
+         * Rounding division
+         * @see {@link http://www.ecma-international.org/ecma-262/5.1/#sec-11.5.3 Applying the % Operator}
+         * @memberOf utilx
+         * @function
+         * @param {number} dividend
+         * @param {number} divisor
+         * @return {number}
+         */
+        utilx.modulo = function (dividend, divisor) {
+            return dividend - divisor * Math.floor(dividend / divisor);
         };
 
         /**
@@ -976,10 +1258,179 @@
             if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
                 val = +0;
             } else {
-                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD32);
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD32);
             }
 
             return val;
+        };
+
+        /**
+         * The utilx.isUint32() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^32-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint32 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, 0, MAX_UINT32);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^16 integer values in
+         * the range -2^15 through 2^15-1, inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toInt16 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD16);
+                if (utilx.gt(val, MAX_INT16)) {
+                    val -= UWORD16;
+                } else if (utilx.lt(val, MIN_INT16)) {
+                    val += UWORD16;
+                }
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isInt16() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^15 through 2^15-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt16 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, MIN_INT16, MAX_INT16);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^16 integer values in
+         * the range 0 through 2^16-1,inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toUint16 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD16);
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isUint16() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^16-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint16 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, 0, MAX_UINT16);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^8 integer values in
+         * the range -2^7 through 2^7-1, inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toInt8 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val  = utilx.mod(utilx.mathSign(number) * Math.floor(Math.abs(number)), UWORD8);
+                if (utilx.gt(val, MAX_INT8)) {
+                    val -= UWORD8;
+                } else if (utilx.lt(val, MIN_INT8)) {
+                    val += UWORD8;
+                }
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isInt8() method determines whether the passed value is an integer.
+         * If the target value is an integer in the range -2^7 through 2^7-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isInt8 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, MIN_INT8, MAX_INT8);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^8 integer values in
+         * the range 0 through 2^8-1,inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toUint8 = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (utilx.isZero(number) || !utilx.numberIsFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.modulo(utilx.numberToInteger(number), UWORD8);
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isUint8() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^8-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint8 = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &amp;&amp;
+                utilx.inRange(inputArg, 0, MAX_UINT8);
         };
 
         /**
@@ -1255,7 +1706,7 @@
         utilx.stringRepeat = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var repeatFN = baseString.constructor.repeat,
+            var repeatFN = CtrString.repeat,
                 nfeRepeat;
 
             function rep(s, times) {
@@ -1433,7 +1884,7 @@
         utilx.objectGetPrototypeOf = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var getPrototypeOfFN = baseObject.constructor.getPrototypeOf,
+            var getPrototypeOfFN = CtrObject.getPrototypeOf,
                 nfeGetPrototypeOf,
                 bocProto;
 
@@ -1445,7 +1896,7 @@
 
                     return getPrototypeOfFN(object);
                 };
-            } else if (utilx.isNull(baseObject.constructor.prototype[protoName])) {
+            } else if (utilx.isNull(CtrObject.prototype[protoName])) {
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1454,7 +1905,7 @@
                     return object[protoName];
                 };
             } else {
-                bocProto = baseObject.constructor.prototype;
+                bocProto = CtrObject.prototype;
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     if (utilx.isPrimitive(object)) {
                         throw new TypeError('Object.getPrototypeOf called on non-object');
@@ -1666,7 +2117,7 @@
         utilx.toObjectFixIndexedAccess = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var boxedString = baseObject.constructor('a'),
+            var boxedString = noNewCtrObject('a'),
                 splitString = utilx.notStrictEqual(boxedString[0], 'a') || !utilx.hasProperty(boxedString, 0),
                 nfeToObjectFixIndexedAccess;
 
@@ -1840,12 +2291,8 @@
             var sliceFN = baseArray.slice,
                 nfeSlice;
 
-            function returnArgs() {
-                return arguments;
-            }
-
             function someArgs() {
-                return returnArgs(utilx.privateUndefined, null, 1, 'a', 2, 'b', null, utilx.privateUndefined);
+                return utilx.returnArgs(utilx.privateUndefined, null, 1, 'a', 2, 'b', null, utilx.privateUndefined);
             }
 
             try {
@@ -2191,7 +2638,7 @@
         utilx.objectKeys = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var keysFN = baseObject.constructor.keys,
+            var keysFN = CtrObject.keys,
                 supported = false,
                 hasDontEnumBug = true,
                 testObject,
@@ -2259,6 +2706,21 @@
         }());
 
         /**
+         * Returns true if the operand inputArg is a String and only contains numerical digits.
+         * @memberOf utilx
+         * @function
+         * @param {*} string
+         * @return {boolean}
+         */
+        utilx.isDigits = (function () {
+            var rxNotDigits = new RegExp('^\\d+$');
+
+            return function (string) {
+                return utilx.isString(string) &amp;&amp; rxNotDigits.test(string);
+            };
+        }());
+
+        /**
          * Defines a new property directly on an object, or modifies an existing property on an object,
          * and returns the object.
          * @memberOf utilx
@@ -2268,32 +2730,106 @@
          * @param {object} descriptor
          * @return {object}
          */
-        // http://ecma-international.org/ecma-262/5.1/#sec-15.4.4.14
+        // http://ecma-international.org/ecma-262/5.1/#sec-15.2.3.6
         // Create our own local "defineProperty" function: native -> sham
         // named utilx.objectDefineProperty instead of defineProperty because of SpiderMonkey and Blackberry bug
         utilx.objectDefineProperty = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var definePropertyFN = baseObject.constructor.defineProperty,
+            var nativeFN = CtrObject.defineProperty,
                 defineGetter = '__defineGetter__',
                 defineSetter = '__defineSetter__',
                 defineGetterFN,
                 defineSetterFN,
                 testObject,
-                nfeDefineProperty;
+                previousFN1,
+                previousFN2,
+                definePropertyFN,
+                nfeDefineProperty,
+                nfeDefineProperty1,
+                nfeDefineProperty2;
 
-            if (utilx.isFunction(definePropertyFN)) {
+            if (utilx.isFunction(nativeFN)) {
                 try {
-                    testObject = definePropertyFN({}, 'sentinel', {
+                    testObject = nativeFN({}, 'sentinel', {
                         value: null
                     });
 
                     if (!utilx.isNull(testObject.sentinel)) {
-                        definePropertyFN = null;
+                        throw new Error('Fails sentinel check');
                     }
-                } catch (exception) {
-                    definePropertyFN = null;
-                }
+
+                    // Test string integer
+                    try {
+                        tempSafariNFE = nativeFN([], '1.', {
+                            value: null
+                        });
+
+                        if (!utilx.isNull(tempSafariNFE[1])) {
+                            throw new Error('Fails integer check');
+                        }
+
+                        definePropertyFN = nativeFN;
+                    } catch (e) {
+                        definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
+                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
+                                    utilx.isString(property) &amp;&amp; !utilx.isEmptyString(property) &amp;&amp;
+                                    !utilx.isDigits(property) &amp;&amp;
+                                    utilx.numberIsInteger(utilx.toNumber(property))) {
+
+                                property = utilx.toNumber(property).toString();
+                            }
+
+                            return nativeFN(object, property, descriptor);
+                        };
+                    }
+
+                    // Test assign to array
+                    try {
+                        tempSafariNFE = definePropertyFN([], '0', {
+                            value: null
+                        });
+
+                        if (!utilx.isNull(tempSafariNFE[0])) {
+                            throw new Error('Fails array check');
+                        }
+                    } catch (e) {
+                        previousFN1 = definePropertyFN;
+                        definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
+                            if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
+                                    ((utilx.isNumber(property) &amp;&amp; utilx.numberIsInteger(property)) ||
+                                     (utilx.isString(property) &amp;&amp; utilx.isDigits(property)) ||
+                                     (utilx.isString(property) &amp;&amp; !utilx.isEmptyString(property) &amp;&amp;
+                                        utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                if (utilx.objectHasOwnProperty(descriptor, 'value') ||
+                                        !utilx.objectHasOwnProperty(object, property)) {
+
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                }
+                            }
+
+                            return previousFN1(object, property, descriptor);
+                        };
+                    }
+
+                    // Test overwrite array property when no value defined
+                    try {
+                        tempSafariNFE = definePropertyFN([10], '0', {});
+                        if (utilx.notStrictEqual(tempSafariNFE[0], 10)) {
+                            throw new Error('Fails overwrite check');
+                        }
+                    } catch (e) {
+                        previousFN2 = definePropertyFN;
+                        definePropertyFN = function nfeDefineProperty2(object, property, descriptor) {
+                            if (!utilx.objectHasOwnProperty(descriptor, 'value')) {
+                                descriptor.value = object[property];
+                            }
+
+                            return previousFN2(object, property, descriptor);
+                        };
+                    }
+                } catch (ignore) {}
             }
 
             if (utilx.isFunction(definePropertyFN)) {
@@ -2302,25 +2838,57 @@
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
-                    var prototype;
-
                     if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
-                        throw new TypeError('Object.defineProperty called on non-object');
+                        throw new TypeError('objectDefineProperty called on non-object');
                     }
 
                     if (!utilx.isTypeObject(descriptor) &amp;&amp; !utilx.isFunction(descriptor)) {
-                        throw new TypeError('Property description must be an object');
+                        throw new TypeError('Property description must be an object: ' + utilx.anyToString(descriptor));
                     }
 
-                    if (utilx.objectHasOwnProperty(descriptor, 'value')) {
-                        if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
-                            prototype = object[protoName];
-                            object[protoName] = utilx.objectGetPrototypeOf(baseObject);
-                            delete object[property];
-                            object[property] = descriptor.value;
-                            object[protoName] = prototype;
-                        } else {
-                            object[property] = descriptor.value;
+                    if (utilx.objectHasOwnProperty(descriptor, 'value') &amp;&amp;
+                            (utilx.objectHasOwnProperty(descriptor, 'get') ||
+                                utilx.objectHasOwnProperty(descriptor, 'set'))) {
+
+                        throw new TypeError('Invalid property. A property cannot have accessors and a value');
+                    }
+
+                    var prototype;
+
+                    if (!utilx.objectHasOwnProperty(descriptor, 'get') &amp;&amp;
+                            !utilx.objectHasOwnProperty(descriptor, 'set')) {
+
+                        if (utilx.objectHasOwnProperty(descriptor, 'value') ||
+                                !utilx.objectHasOwnProperty(object, property)) {
+
+                            if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
+                                prototype = object[protoName];
+                                object[protoName] = utilx.objectGetPrototypeOf(baseObject);
+                                delete object[property];
+                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
+                                        ((utilx.isNumber(property) &amp;&amp; utilx.numberIsInteger(property)) ||
+                                         (utilx.isString(property) &amp;&amp; utilx.isDigits(property)) ||
+                                         (utilx.isString(property) &amp;&amp; !utilx.isEmptyString(property) &amp;&amp;
+                                            utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                } else {
+                                    object[property] = descriptor.value;
+                                }
+
+                                object[protoName] = prototype;
+                            } else {
+                                if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
+                                        ((utilx.isNumber(property) &amp;&amp; utilx.numberIsInteger(property)) ||
+                                         (utilx.isString(property) &amp;&amp; utilx.isDigits(property)) ||
+                                         (utilx.isString(property) &amp;&amp; !utilx.isEmptyString(property) &amp;&amp;
+                                            utilx.numberIsInteger(utilx.toNumber(property))))) {
+
+                                    utilx.arrayAssign(object, property, descriptor.value);
+                                } else {
+                                    object[property] = descriptor.value;
+                                }
+                            }
                         }
                     } else {
                         if (!utilx.isFunction(defineGetterFN) || !utilx.isFunction(defineSetterFN)) {
@@ -2341,6 +2909,8 @@
             }
 
             nfeDefineProperty = null;
+            nfeDefineProperty1 = null;
+            nfeDefineProperty2 = null;
 
             return tempSafariNFE;
         }());
@@ -2354,54 +2924,40 @@
          * @return {object}
          */
         // Create our own local "defineProperties" function: native -> sham
+        // we don't use the native otherwise we need all the same patches applied to objectDefineProperty
         // named utilx.objectDefineProperties instead of defineProperties because of SpiderMonkey and Blackberry bug
-        utilx.objectDefineProperties = (function () {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var definePropertiesFN = baseObject.constructor.defineProperties,
-                nfeDefineProperties;
-
-            if (utilx.isFunction(definePropertiesFN)) {
-                tempSafariNFE = definePropertiesFN;
-            } else {
-                tempSafariNFE = function nfeDefineProperties(object, props) {
-                    if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
-                        throw new TypeError('Object.defineProperties called on non-object');
-                    }
-
-                    if (!utilx.isTypeObject(props) &amp;&amp; !utilx.isFunction(props)) {
-                        throw new TypeError('Property description must be an object');
-                    }
-
-                    utilx.arrayForEach(utilx.objectKeys(props), function (key) {
-                        utilx.objectDefineProperty(object, key, props[key]);
-                    });
-
-                    return object;
-                };
+        utilx.objectDefineProperties = function (object, props) {
+            if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
+                throw new TypeError('objectDefineProperties called on non-object');
             }
 
-            nfeDefineProperties = null;
+            if (!utilx.isTypeObject(props) &amp;&amp; !utilx.isFunction(props)) {
+                throw new TypeError('Property description must be an object');
+            }
 
-            return tempSafariNFE;
-        }());
+            utilx.arrayForEach(utilx.objectKeys(props), function (key) {
+                utilx.objectDefineProperty(object, key, props[key]);
+            });
+
+            return object;
+        };
 
         /**
          * Returns a property descriptor for an own property (that is, one directly present on an object,
          * not present by dint of being along an object's prototype chain) of a given object.
-         * @memberOf utilx
+         * @private
          * @function
          * @param {object} object
          * @param {string} property
          * @return {object}
          */
         // Create our own local "getOwnPropertyDescriptor" function: native -> sham
-        // named utilx.objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
+        // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
         // and Blackberry bug
-        utilx.objectGetOwnPropertyDescriptor = (function () {
+        objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var getOwnPropertyDescriptorFN = baseObject.constructor.getOwnPropertyDescriptor,
+            var getOwnPropertyDescriptorFN = CtrObject.getOwnPropertyDescriptor,
                 lookupGetter = '__lookupGetter__',
                 lookupSetter = '__lookupSetter__',
                 lookupGetterFN,
@@ -2424,7 +2980,28 @@
             }
 
             if (utilx.isFunction(getOwnPropertyDescriptorFN)) {
-                tempSafariNFE = getOwnPropertyDescriptorFN;
+                try {
+                    if (utilx.isTrue(getOwnPropertyDescriptorFN(function (a) {
+                            return a;
+                        }, 'length').writable)) {
+
+                        throw new Error();
+                    }
+
+                    tempSafariNFE = getOwnPropertyDescriptorFN;
+                } catch (e) {
+                    tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
+                        var descriptor = getOwnPropertyDescriptorFN(object, property);
+
+                        if (utilx.isFunction(object) &amp;&amp; utilx.strictEqual(property, 'length') &amp;&amp;
+                                utilx.isTrue(descriptor.writable)) {
+
+                            descriptor.writable = false;
+                        }
+
+                        return descriptor;
+                    };
+                }
             } else {
                 lookupGetterFN = baseObject[lookupGetter];
                 lookupSetterFN = baseObject[lookupSetter];
@@ -2435,14 +3012,17 @@
                         setter;
 
                     if (!utilx.isTypeObject(object) &amp;&amp; !utilx.isFunction(object)) {
-                        throw new TypeError('Object.getOwnPropertyDescriptor called on a non-object');
+                        throw new TypeError('getOwnPropertyDescriptor called on a non-object');
                     }
 
                     if (utilx.objectHasOwnProperty(object, property)) {
-                        descriptor = {
-                            enumerable: true,
-                            configurable: true
-                        };
+                        descriptor = {};
+                        descriptor.configurable = true;
+                        try {
+                            descriptor.enumerable = CtrObject.propertyIsEnumerable.call(object, property);
+                        } catch (e) {
+                            descriptor.enumerable = true;
+                        }
 
                         if (utilx.isFunction(lookupGetterFN) &amp;&amp; utilx.isFunction(lookupSetterFN)) {
                             prototype = object[protoName];
@@ -2462,7 +3042,53 @@
                         }
 
                         descriptor.value = object[property];
-                        descriptor.writable = true;
+                        if (utilx.isFunction(object) &amp;&amp; utilx.strictEqual(property, 'length')) {
+                            descriptor.writable = false;
+                            descriptor.configurable = false;
+                        } else if ((utilx.arrayIsArray(object) || utilx.isArguments(object)) &amp;&amp;
+                                   utilx.strictEqual(property, 'length')) {
+
+                            descriptor.writable = true;
+                            descriptor.configurable = false;
+                        } else if (utilx.strictEqual(property, 'prototype')) {
+                            switch (object) {
+                            case Object:
+                                /* falls through */
+                            case Array:
+                                /* falls through */
+                            case Function:
+                                /* falls through */
+                            case Boolean:
+                                /* falls through */
+                            case String:
+                                /* falls through */
+                            case Date:
+                                /* falls through */
+                            case RegExp:
+                                /* falls through */
+                            case Error:
+                                /* falls through */
+                            case TypeError:
+                                /* falls through */
+                            case SyntaxError:
+                                /* falls through */
+                            case RangeError:
+                                /* falls through */
+                            case EvalError:
+                                /* falls through */
+                            case ReferenceError:
+                                /* falls through */
+                            case URIError:
+                                descriptor.writable = false;
+                                descriptor.configurable = false;
+                                break;
+                            default:
+                                descriptor.writable = true;
+                                descriptor.configurable = false;
+                            }
+                        } else {
+                            descriptor.writable = true;
+                        }
                     }
 
                     return descriptor;
@@ -2489,7 +3115,7 @@
         utilx.objectFreeze = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var freezeFN = baseObject.constructor.freeze,
+            var freezeFN = CtrObject.freeze,
                 nfeFreeze;
 
             if (utilx.isFunction(freezeFN)) {
@@ -2548,7 +3174,7 @@
         utilx.objectIsFrozen = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var isFrozenFN = baseObject.constructor.isFrozen,
+            var isFrozenFN = CtrObject.isFrozen,
                 nfeIsFrozen;
 
             if (utilx.isFunction(isFrozenFN)) {
@@ -2600,7 +3226,7 @@
         utilx.objectInstanceOf = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var isPrototypeOfFN = baseObject.constructor.prototype.isPrototypeOf,
+            var isPrototypeOfFN = CtrObject.prototype.isPrototypeOf,
                 nfeInstanceOf;
 
             if (utilx.isFunction(isPrototypeOfFN)) {
@@ -2664,7 +3290,7 @@
                 testObject;
 
             try {
-                objectCreateFN = baseObject.constructor.create;
+                objectCreateFN = CtrObject.create;
                 testObject = objectCreateFN(ObjectCreateFunc.prototype, {
                     constructor: {
                         value: ObjectCreateFunc,
@@ -2755,7 +3381,7 @@
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (source) {
                 if (utilx.isTypeObject(source) || utilx.isFunction(source)) {
                     utilx.arrayForEach(utilx.objectKeys(source), function (key) {
-                        utilx.objectDefineProperty(target, key, utilx.objectGetOwnPropertyDescriptor(source, key));
+                        utilx.objectDefineProperty(target, key, objectGetOwnPropertyDescriptor(source, key));
                     });
                 }
             });
@@ -2773,21 +3399,6 @@
         utilx.isDateValid = function (dateObject) {
             return utilx.isDate(dateObject) &amp;&amp; !utilx.numberIsNaN(dateObject.getTime());
         };
-
-        /**
-         * Returns true if the operand inputArg is a String and only contains numerical digits.
-         * @memberOf utilx
-         * @function
-         * @param {*} string
-         * @return {boolean}
-         */
-        utilx.isDigits = (function () {
-            var rxNotDigits = new RegExp('^\\d+$');
-
-            return function (string) {
-                return utilx.isString(string) &amp;&amp; rxNotDigits.test(string);
-            };
-        }());
 
         /**
          * Takes string and puts a backslash in front of every character that is part of the regular expression syntax.
@@ -3627,7 +4238,7 @@
                             this.stack = err.stack;
                         } else if (utilx.isString(err.stacktrace)) {
                             this.stack = err.stacktrace;
-                        } else {
+                        } else if (utilx.isFunction(printStackTrace)) {
                             this.stack = utilx.arrayJoin(printStackTrace(), '\n');
                         }
                     }
@@ -3708,6 +4319,24 @@
             };
         }());
 
+        // set the properties of stacktrace to not enumerable
+        utilx.arrayForEach(utilx.objectKeys(printStackTrace), function (key) {
+            utilx.objectDefineProperty(printStackTrace, key, {
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        });
+
+        // set the properties of stacktrace.prototype to not enumerable
+        utilx.arrayForEach(utilx.objectKeys(printStackTrace.prototype), function (key) {
+            utilx.objectDefineProperty(printStackTrace, key, {
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        });
+
         /**
          * Framework-agnostic, micro-library for getting stack traces in all web browsers
          * @see {@link https://github.com/stacktracejs/stacktrace.js stacktrace.js} for further information.
@@ -3715,6 +4344,162 @@
          * @function
          */
         utilx.printStackTrace = printStackTrace;
+
+        // set the properties of utilx to not enumerable
+        utilx.arrayForEach(utilx.objectKeys(utilx), function (key) {
+            utilx.objectDefineProperty(utilx, key, {
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        });
+
+        // set the properties of the constants
+        utilx.objectDefineProperties(utilx, {
+            privateUndefined: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            WORD32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            UWORD32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT32: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT16: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_UINT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INT8: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_INTEGER: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_INTEGER: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            POSITIVE_INFINITY: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            NEGATIVE_INFINITY: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MAX_VALUE: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            MIN_VALUE: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            NAN: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            },
+
+            EPSILON: {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            }
+        });
 
         tempSafariNFE = null;
 
@@ -3738,39 +4523,85 @@
             typeof module.exports === 'object' &amp;&amp; null !== module.exports) {
 
         publicUtil = factory(require('stacktrace-js'));
-        publicUtil.factory = function () {
-            var pu = factory(require('stacktrace-js'));
+        publicUtil.objectDefineProperty(publicUtil, 'factory', {
+            value: function () {
+                var pu = factory(require('stacktrace-js'));
 
-            pu.factory = publicUtil.factory;
-
-            return pu;
-        };
-
-        module.exports = publicUtil;
-    } else if (typeof define === 'function' &amp;&amp; typeof define.amd === 'object' &amp;&amp; null !== define.amd) {
-        define(['stacktrace'], function (stackstrace) {
-            publicUtil = factory(stackstrace);
-            publicUtil.factory = function () {
-                var pu = factory(stackstrace);
-
-                pu.factory = publicUtil.factory;
+                publicUtil.objectDefineProperty(pu, 'factory', {
+                    value: publicUtil.factory,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
 
                 return pu;
-            };
+            },
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
+
+        publicUtil.objectDefineProperty(module, 'exports', {
+            value: publicUtil,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
+    } else if (typeof define === 'function' &amp;&amp; typeof define.amd === 'object' &amp;&amp; null !== define.amd) {
+        require.config({
+            paths: {
+                'stacktrace': '//raw.github.com/stacktracejs/stacktrace.js/master/stacktrace'
+            }
+        });
+
+        define(['stacktrace'], function (stackstrace) {
+            publicUtil = factory(stackstrace);
+            publicUtil.objectDefineProperty(publicUtil, 'factory', {
+                value: function () {
+                    var pu = factory(stackstrace);
+
+                    publicUtil.objectDefineProperty(pu, 'factory', {
+                        value: publicUtil.factory,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    });
+
+                    return pu;
+                },
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
 
             return publicUtil;
         });
     } else {
         publicUtil = factory(globalThis.printStackTrace);
-        publicUtil.factory = function () {
-            var pu = factory(globalThis.printStackTrace);
+        publicUtil.objectDefineProperty(publicUtil, 'factory', {
+            value: function () {
+                var pu = factory(globalThis.printStackTrace);
 
-            pu.factory = publicUtil.factory;
+                publicUtil.objectDefineProperty(pu, 'factory', {
+                    value: publicUtil.factory,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
 
-            return pu;
-        };
+                return pu;
+            },
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
 
-        globalThis.utilx = publicUtil;
+        publicUtil.objectDefineProperty(globalThis, 'utilx', {
+            value: publicUtil,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
     }
 }(this));
 </code></pre>
@@ -3789,7 +4620,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 06 2014 04:38:59 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Thu Jan 09 2014 03:04:45 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
