@@ -53,16 +53,7 @@
             expect(utilx.objectGetPrototypeOf(new RegExp('c'))).to.be(RegExp.prototype);
             expect(utilx.objectGetPrototypeOf(new Date())).to.be(Date.prototype);
             expect(utilx.objectGetPrototypeOf(new Error('x'))).to.be(Error.prototype);
-        });
-
-        it('arguments object should return Object.prototype', function () {
-            /*global console */
-            console.log('# isPrototypeOf: ' + Object.prototype.isPrototypeOf(utilx.returnArgs()));
-            // true on all browsers except Opera 10
             expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
-            expect(utilx.returnArgs().constructor.prototype).to.be(Object.prototype);
-            // on Opera 10
-            //expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(utilx.returnArgs().constructor.prototype);
         });
 
         it('custom error should return own prototype', function () {
