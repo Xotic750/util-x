@@ -2954,10 +2954,14 @@
                                 !utilx.objectHasOwnProperty(object, property)) {
 
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
-                                console.log('# __PROTO__');
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 console.log('# OK: ' + property + ' : ' + utilx.toNumber(property));
+                                console.log('# ISARRAY: ' + isArrayOrArguments(object));
+                                console.log('# ISINT: ' + utilx.isNumber(property) && utilx.numberIsInteger(property));
+                                console.log('# ISSTRINGINT: ' + utilx.isString(property) &&
+                                            !utilx.isEmptyString(property) &&
+                                            utilx.numberIsInteger(utilx.toNumber(property)));
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
@@ -2967,7 +2971,6 @@
                                     console.log('# ARRAY');
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 } else {
-                                    console.log('# NOT ARRAY');
                                     delete object[property];
                                     object[property] = descriptor.value;
                                 }
