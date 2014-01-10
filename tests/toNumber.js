@@ -34,32 +34,32 @@
 
         it('objects with only toString function should not throw', function () {
             expect(utilx.toNumber({
-                valueOf: function () {
+                toString: function () {
                     return '';
                 }
             })).to.be(0);
 
             expect(utilx.toNumber({
-                valueOf: function () {
+                toString: function () {
                     return '1';
                 }
             })).to.be(1);
 
             expect(utilx.toNumber({
-                valueOf: function () {
+                toString: function () {
                     return 1;
                 }
             })).to.be(1);
 
             expect(utilx.toNumber({
-                valueOf: function () {
+                toString: function () {
                     return 1.1;
                 }
             })).to.be(1.1);
 
             /*jshint -W047 */
             expect(utilx.toNumber({
-                valueOf: function () {
+                toString: function () {
                     return 1.;
                 }
             })).to.be(1);

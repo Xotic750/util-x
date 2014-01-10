@@ -974,8 +974,7 @@
          */
         utilx.toNumber = (function () {
             var testObject = {
-                    toString: 1,
-                    valueOf: 1
+                    toString: 1
                 };
 
             /*global console */
@@ -988,11 +987,11 @@
                         return +inputArg;
                     }
 
-                    console.log('# INPUTARG: ' + inputArg);
+                    console.log('# INPUTARG: ' + typeof inputArg + ' : "' + inputArg + '"');
                     if (utilx.isFunction(inputArg.valueOf)) {
                         val = inputArg.valueOf();
                         if (utilx.isPrimitive(val)) {
-                            console.log('# VALUEOF: ' + val);
+                            console.log('# VALUEOF: ' + typeof val + ' : "' + val + '"');
                             return +val;
                         }
                     }
@@ -1000,7 +999,7 @@
                     if (utilx.isFunction(inputArg.toString)) {
                         val = utilx.anyToString(inputArg);
                         if (utilx.isPrimitive(val)) {
-                            console.log('# TOSTRING: ' + val);
+                            console.log('# TOSTRING: ' + typeof val + ' : "' + val + '"');
                             return +val;
                         }
                     }
