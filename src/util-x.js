@@ -1928,6 +1928,7 @@
             // http://kangax.github.io/nfe
             var getPrototypeOfFN = CtrObject.getPrototypeOf,
                 baseObjectPrototype,
+                fixOpera10,
                 nfeGetPrototypeOf;
 
             /*global console */
@@ -1948,6 +1949,10 @@
             } else {
                 console.log('# USING SHAM');
                 baseObjectPrototype = CtrObject.prototype;
+                if (utilx.notStrictEqual(utilx.returnArgs().constructor.prototype, baseObjectPrototype)) {
+                    fixOpera10 = true;
+                }
+
                 tempSafariNFE = function nfeGetPrototypeOf(object) {
                     throwIfIsNotTypeObjectOrIsNotFunction(object);
                     if (utilx.strictEqual(object, baseObjectPrototype)) {
@@ -1958,7 +1963,11 @@
                     var ctrProto;
 
                     if (utilx.isFunction(object.constructor)) {
-                        ctrProto = object.constructor.prototype;
+                        if (fixOpera10 && utilx.isArguments(object)) {
+                            ctrProto = baseObjectPrototype;
+                        } else {
+                            ctrProto = object.constructor.prototype;
+                        }
                     } else if (utilx.isObject(object[protoName])) {
                         console.log('# USING  object[protoName]');
                         ctrProto = object[protoName];
