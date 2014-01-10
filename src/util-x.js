@@ -895,8 +895,12 @@
             try {
                 testObject = +testObject;
                 tempSafariNFE = function (inputArg) {
-                    if (utilx.isObject(inputArg) && Number(inputArg)) {
-                        throw new TypeError('Cannot convert object to primitive value');
+                    if (utilx.isObject(inputArg)) {
+                        if (!utilx.isFunction(inputArg.valueOf)) {
+                            if (!utilx.isFunction(inputArg.toString)) {
+                                throw new TypeError('Cannot convert object to primitive value');
+                            }
+                        }
                     }
 
                     return +inputArg;

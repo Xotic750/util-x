@@ -32,6 +32,40 @@
             /*jshint +W047 */
         });
 
+        it('objects with only toString function should not throw', function () {
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '';
+                }
+            })).to.be(0);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '1';
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1;
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.1;
+                }
+            })).to.be(1.1);
+
+            /*jshint -W047 */
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.;
+                }
+            })).to.be(1);
+            /*jshint +W047 */
+        });
+
         it('cast objects with only toString should throw an TypeError in each case', function () {
             expect(function () {
                 utilx.toNumber(Number({toString: ''}));
@@ -64,6 +98,40 @@
             expect(utilx.numberIsNaN(utilx.toNumber({valueOf: 1.1}))).to.be.ok();
             /*jshint -W047 */
             expect(utilx.numberIsNaN(utilx.toNumber({valueOf: 1.}))).to.be.ok();
+            /*jshint +W047 */
+        });
+
+        it('objects with only valueOf function should not throw', function () {
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '';
+                }
+            })).to.be(0);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '1';
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1;
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.1;
+                }
+            })).to.be(1.1);
+
+            /*jshint -W047 */
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.;
+                }
+            })).to.be(1);
             /*jshint +W047 */
         });
 
@@ -153,6 +221,60 @@
                     valueOf: 1.
                 }));
             }).to.throwException(TypeError);
+            /*jshint +W047 */
+        });
+
+        it('objects with toString and valueOf function should not throw', function () {
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '';
+                },
+
+                toString: function () {
+                    return '1';
+                }
+            })).to.be(0);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return '1';
+                },
+
+                toString: function () {
+                    return '2';
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1;
+                },
+
+                toString: function () {
+                    return '';
+                }
+            })).to.be(1);
+
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.1;
+                },
+
+                toString: function () {
+                    return '';
+                }
+            })).to.be(1.1);
+
+            /*jshint -W047 */
+            expect(utilx.toNumber({
+                valueOf: function () {
+                    return 1.;
+                },
+
+                toString: function () {
+                    return '';
+                }
+            })).to.be(1);
             /*jshint +W047 */
         });
 
