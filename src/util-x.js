@@ -937,8 +937,7 @@
                 tempSafariNFE = isArrayFN;
             } else {
                 tempSafariNFE = function nfeIsArray(inputArg) {
-                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]') &&
-                        utilx.isNumber(inputArg.length);
+                    return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Array]');
                 };
             }
 
