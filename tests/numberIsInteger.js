@@ -29,6 +29,53 @@
             expect(utilx.numberIsInteger(false)).to.not.be.ok();
             expect(utilx.numberIsInteger('str')).to.not.be.ok();
             expect(utilx.numberIsInteger({})).to.not.be.ok();
+
+            expect(utilx.numberIsInteger(-10.123)).to.not.be.ok();
+            expect(utilx.numberIsInteger(0)).to.be.ok();
+            expect(utilx.numberIsInteger(0.123)).to.not.be.ok();
+            expect(utilx.numberIsInteger(10)).to.be.ok();
+            expect(utilx.numberIsInteger(10.123)).to.not.be.ok();
+            expect(utilx.numberIsInteger([])).to.not.be.ok();
+            expect(utilx.numberIsInteger([10.123])).to.not.be.ok();
+            expect(utilx.numberIsInteger(new RegExp('c'))).to.not.be.ok();
+            expect(utilx.numberIsInteger(new Error('x'))).to.not.be.ok();
+            /*jshint -W047 */
+            expect(utilx.numberIsInteger(10.)).to.be.ok();
+            /*jshint +W047 */
+            expect(utilx.numberIsInteger(10.0)).to.be.ok();
+            expect(utilx.numberIsInteger('10.')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10.')).to.not.be.ok();
+            expect(utilx.numberIsInteger('10. ')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10. ')).to.not.be.ok();
+            expect(utilx.numberIsInteger('10.0')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10.0')).to.not.be.ok();
+            expect(utilx.numberIsInteger('10.0 ')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10.0 ')).to.not.be.ok();
+            expect(utilx.numberIsInteger('10.123')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10.123')).to.not.be.ok();
+            expect(utilx.numberIsInteger('10.123 ')).to.not.be.ok();
+            expect(utilx.numberIsInteger(' 10.123 ')).to.not.be.ok();
+
+            expect(utilx.numberIsInteger('-1')).to.not.be.ok();
+            expect(utilx.numberIsInteger('0')).to.not.be.ok();
+            expect(utilx.numberIsInteger('1')).to.not.be.ok();
+            expect(utilx.numberIsInteger('-1.')).to.not.be.ok();
+            expect(utilx.numberIsInteger('0.')).to.not.be.ok();
+            expect(utilx.numberIsInteger('1.')).to.not.be.ok();
+            /*jshint -W047 */
+            expect(utilx.numberIsInteger(-1.)).to.be.ok();
+            expect(utilx.numberIsInteger(0.)).to.be.ok();
+            expect(utilx.numberIsInteger(1.)).to.be.ok();
+            /*jshint +W047 */
+            expect(utilx.numberIsInteger(new Date(2013, 11, 11))).to.not.be.ok();
+            expect(utilx.numberIsInteger(new Date(2013, 11, 11).getTime())).to.be.ok();
+            expect(utilx.numberIsInteger('NaN')).to.not.be.ok();
+            expect(utilx.numberIsInteger('Infinity')).to.not.be.ok();
+            expect(utilx.numberIsInteger('-Infinity')).to.not.be.ok();
+            expect(utilx.numberIsInteger([])).to.not.be.ok();
+            expect(utilx.numberIsInteger([1])).to.not.be.ok();
+            expect(utilx.numberIsInteger([1.1])).to.not.be.ok();
+
             expect(utilx.numberIsInteger({
                 valueOf: function () {
                     return 3;
