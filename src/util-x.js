@@ -2925,7 +2925,6 @@
                 } catch (ignore) {}
             }
 
-            /*global console */
             if (utilx.isFunction(definePropertyFN)) {
                 tempSafariNFE = definePropertyFN;
             } else {
@@ -2955,19 +2954,12 @@
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
-                                console.log('# OBJECT: ' + object);
-                                console.log('# ISARRAY1: ' + utilx.arrayIsArray(object));
-                                console.log('# ISARRAY2: ' + isArrayOrArguments(object));
-                                console.log('# ISSTRINGINT: ' + utilx.isString(property) &&
-                                            !utilx.isEmptyString(property) &&
-                                            utilx.numberIsInteger(utilx.toNumber(property)));
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
                                          (utilx.isString(property) && !utilx.isEmptyString(property) &&
                                             utilx.numberIsInteger(utilx.toNumber(property))))) {
 
-                                    console.log('# ARRAY');
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 } else {
                                     delete object[property];
