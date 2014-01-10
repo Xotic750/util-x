@@ -980,7 +980,7 @@
 
             /*global console */
             try {
-                testObject = +testObject;
+                //testObject = +testObject;
                 tempSafariNFE = function (inputArg) {
                     var val;
 
