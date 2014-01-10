@@ -2926,7 +2926,9 @@
                 } catch (ignore) {}
             }
 
+            /*global console */
             if (utilx.isFunction(definePropertyFN)) {
+                console.log('# NATIVE');
                 tempSafariNFE = definePropertyFN;
             } else {
                 defineGetterFN = baseObject[defineGetter];
@@ -2953,6 +2955,7 @@
                                 !utilx.objectHasOwnProperty(object, property)) {
 
                             if (utilx.isNull(utilx.objectGetPrototypeOf(baseObject)[protoName])) {
+                                console.log('# __PROTO__');
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 delete object[property];
@@ -2969,6 +2972,7 @@
 
                                 object[protoName] = prototype;
                             } else {
+                                console.log('# BASIC');
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||

@@ -91,8 +91,11 @@
                 throw new MyError('test');
             }).to.throwException(function (e) {
                 expect(e.toString()).to.match(new RegExp('^MyError: test'));
-                /*global console */
-                console.log('# ' + utilx.arrayJoin(utilx.stringSplit(e.stack, '\n'), '\n# '));
+                if (utilx.isString(e.stack)) {
+                    /*global console */
+                    console.log('# ' + utilx.arrayJoin(utilx.stringSplit(e.stack, '\n'), '\n# '));
+                }
+
             });
         });
 
