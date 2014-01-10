@@ -66,30 +66,6 @@
             /*jshint +W047 */
         });
 
-        it('cast objects with only toString should throw an TypeError in each case', function () {
-            expect(function () {
-                utilx.toNumber(Number({toString: ''}));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({toString: '1'}));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({toString: 1}));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({toString: 1.1}));
-            }).to.throwException(TypeError);
-
-            /*jshint -W047 */
-            expect(function () {
-                utilx.toNumber(Number({toString: 1.}));
-            }).to.throwException(TypeError);
-            /*jshint +W047 */
-        });
-
         it('objects with only valueOf should be NaN', function () {
             expect(utilx.numberIsNaN(utilx.toNumber({}))).to.be.ok();
             expect(utilx.numberIsNaN(utilx.toNumber({valueOf: ''}))).to.be.ok();
@@ -135,17 +111,6 @@
             /*jshint +W047 */
         });
 
-        it('cast objects with only valueOf should be NaN', function () {
-            expect(utilx.numberIsNaN(utilx.toNumber(Number({})))).to.be.ok();
-            expect(utilx.numberIsNaN(utilx.toNumber(Number({valueOf: ''})))).to.be.ok();
-            expect(utilx.numberIsNaN(utilx.toNumber(Number({valueOf: '1'})))).to.be.ok();
-            expect(utilx.numberIsNaN(utilx.toNumber(Number({valueOf: 1})))).to.be.ok();
-            expect(utilx.numberIsNaN(utilx.toNumber(Number({valueOf: 1.1})))).to.be.ok();
-            /*jshint -W047 */
-            expect(utilx.numberIsNaN(utilx.toNumber({valueOf: 1.}))).to.be.ok();
-            /*jshint +W047 */
-        });
-
         it('objects with toString and valueOf should throw an TypeError in each case', function () {
             expect(function () {
                 utilx.toNumber({
@@ -181,45 +146,6 @@
                     toString: 1.,
                     valueOf: 1.
                 });
-            }).to.throwException(TypeError);
-            /*jshint +W047 */
-        });
-
-        it('cast objects with toString and valueOf should throw an TypeError in each case', function () {
-            expect(function () {
-                utilx.toNumber(Number({
-                    toString: '',
-                    valueOf: ''
-                }));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({
-                    toString: '1',
-                    valueOf: '1'
-                }));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({
-                    toString: 1,
-                    valueOf: 1
-                }));
-            }).to.throwException(TypeError);
-
-            expect(function () {
-                utilx.toNumber(Number({
-                    toString: 1.1,
-                    valueOf: 1.1
-                }));
-            }).to.throwException(TypeError);
-
-            /*jshint -W047 */
-            expect(function () {
-                utilx.toNumber(Number({
-                    toString: 1.,
-                    valueOf: 1.
-                }));
             }).to.throwException(TypeError);
             /*jshint +W047 */
         });
