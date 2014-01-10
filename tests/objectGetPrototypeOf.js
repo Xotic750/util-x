@@ -53,6 +53,9 @@
             expect(utilx.objectGetPrototypeOf(new RegExp('c'))).to.be(RegExp.prototype);
             expect(utilx.objectGetPrototypeOf(new Date())).to.be(Date.prototype);
             expect(utilx.objectGetPrototypeOf(new Error('x'))).to.be(Error.prototype);
+        });
+
+        it('arguments object should return Object.prototype', function () {
             expect(utilx.objectGetPrototypeOf(utilx.returnArgs())).to.be(Object.prototype);
         });
 
