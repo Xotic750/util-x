@@ -1958,22 +1958,19 @@
                     var ctrProto;
 
                     if (utilx.isFunction(object.constructor)) {
-                        console.log('# USING object.constructor.prototype');
                         ctrProto = object.constructor.prototype;
                     } else if (utilx.isObject(object[protoName])) {
-                        console.log('# object[protoName]');
+                        console.log('# USING  object[protoName]');
                         ctrProto = object[protoName];
                     } else {
-                        console.log('# baseObjectPrototype');
+                        console.log('# USING  baseObjectPrototype');
                         ctrProto = baseObjectPrototype;
                     }
 
                     if (utilx.strictEqual(object, ctrProto)) {
-                        console.log('# MATCHED ctrProto RETURNING baseObjectPrototype');
                         return baseObjectPrototype;
                     }
 
-                    console.log('# RETURNING ctrProto');
                     return ctrProto;
                 };
             }
