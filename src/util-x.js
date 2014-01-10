@@ -2957,6 +2957,7 @@
                                 console.log('# __PROTO__');
                                 prototype = object[protoName];
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
+                                console.log('# OK');
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
                                          (utilx.isString(property) && utilx.isDigits(property)) ||
@@ -2966,6 +2967,7 @@
                                     console.log('# ARRAY');
                                     utilx.arrayAssign(object, property, descriptor.value);
                                 } else {
+                                    console.log('# NOT ARRAY');
                                     delete object[property];
                                     object[property] = descriptor.value;
                                 }
