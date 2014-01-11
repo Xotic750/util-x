@@ -11,6 +11,7 @@
         it('objects with only toString should throw a TypeError in each case', function () {
             try {
                 utilx.toNumber({toString: ''});
+                console.log('# 1 WTF');
             } catch (e) {
                 console.log('# 1: ' + e.name + ': ' + e.message);
             }
@@ -21,6 +22,7 @@
 
             try {
                 utilx.toNumber({toString: '1'});
+                console.log('# 2 WTF');
             } catch (e) {
                 console.log('# 2: ' + e.name + ': ' + e.message);
             }
@@ -31,6 +33,7 @@
 
             try {
                 utilx.toNumber({toString: 1});
+                console.log('# 3 WTF');
             } catch (e) {
                 console.log('# 3: ' + e.name + ': ' + e.message);
             }
@@ -41,8 +44,9 @@
 
             try {
                 utilx.toNumber({toString: 1.1});
+                console.log('# 4 WTF');
             } catch (e) {
-                console.log('# 1: ' + e.name + ': ' + e.message);
+                console.log('# 4: ' + e.name + ': ' + e.message);
             }
 
             expect(function () {
@@ -52,8 +56,9 @@
             /*jshint -W047 */
             try {
                 utilx.toNumber({toString: 1.});
+                console.log('# 5 WTF');
             } catch (e) {
-                console.log('# 4: ' + e.name + ': ' + e.message);
+                console.log('# 5: ' + e.name + ': ' + e.message);
             }
 
             expect(function () {

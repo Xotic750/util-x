@@ -988,6 +988,7 @@
                     }
 
                     console.log('# INPUTARG: ' + typeof inputArg + ' : "' + inputArg + '"');
+                    console.log('# ISFUNCTION VALUEOF: ' + utilx.isFunction(inputArg.valueOf));
                     if (utilx.isFunction(inputArg.valueOf)) {
                         val = inputArg.valueOf();
                         if (utilx.isPrimitive(val)) {
@@ -996,6 +997,7 @@
                         }
                     }
 
+                    console.log('# ISFUNCTION TOSTRING: ' + utilx.isFunction(inputArg.toString));
                     if (utilx.isFunction(inputArg.toString)) {
                         val = utilx.anyToString(inputArg);
                         if (utilx.isPrimitive(val)) {
