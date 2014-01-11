@@ -86,24 +86,34 @@
 
             expect(function () {
                 utilx.numberToInteger({toString: ''});
-            }).to.throwException(TypeError);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
             expect(function () {
                 utilx.numberToInteger({toString: '1'});
-            }).to.throwException(TypeError);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
             expect(function () {
                 utilx.numberToInteger({toString: 1});
-            }).to.throwException(TypeError);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
             expect(function () {
                 utilx.numberToInteger({toString: 1.1});
-            }).to.throwException(TypeError);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
 
             /*jshint -W047 */
             expect(function () {
                 utilx.numberToInteger({toString: 1.});
-            }).to.throwException(TypeError);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
             /*jshint +W047 */
 
             expect(utilx.numberToInteger(function () { return 1; })).to.be(0);

@@ -283,6 +283,17 @@
         };
 
         /**
+         * Coerces an input to a number.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toNumber = function (inputArg) {
+            return +inputArg;
+        };
+
+        /**
          * Returns true if the operands are loosely equal.
          * @memberOf utilx
          * @function
@@ -964,61 +975,6 @@
         utilx.isDate = function (inputArg) {
             return utilx.strictEqual(utilx.toObjectString(inputArg), '[object Date]');
         };
-
-        /**
-         * Coerces an input to a number.
-         * @memberOf utilx
-         * @function
-         * @param {*} inputArg
-         * @return {number}
-         */
-        utilx.toNumber = (function () {
-            var testObject = {
-                    toString: 1
-                };
-
-            /*global console */
-            try {
-                //testObject = +testObject;
-                tempSafariNFE = function (inputArg) {
-                    var val;
-
-                    if (utilx.isPrimitive(inputArg) || utilx.isDate(inputArg)) {
-                        return +inputArg;
-                    }
-
-                    console.log('# INPUTARG: ' + typeof inputArg + ' : "' + inputArg + '"');
-                    console.log('# ISFUNCTION VALUEOF: ' + utilx.isFunction(inputArg.valueOf));
-                    if (utilx.isFunction(inputArg.valueOf)) {
-                        val = inputArg.valueOf();
-                        if (utilx.isPrimitive(val)) {
-                            console.log('# VALUEOF: ' + typeof val + ' : "' + val + '"');
-                            return +val;
-                        }
-                    }
-
-                    console.log('# ISFUNCTION TOSTRING: ' + utilx.isFunction(inputArg.toString));
-                    if (utilx.isFunction(inputArg.toString)) {
-                        val = utilx.anyToString(inputArg);
-                        if (utilx.isPrimitive(val)) {
-                            console.log('# TOSTRING: ' + typeof val + ' : "' + val + '"');
-                            return +val;
-                        }
-                    }
-
-                    console.log('# THROW');
-                    throw new TypeError('Cannot convert object to primitive value');
-                };
-
-                console.log('# PATCHED');
-            } catch (e) {
-                tempSafariNFE = function (inputArg) {
-                    return +inputArg;
-                };
-            }
-
-            return tempSafariNFE;
-        }());
 
         /**
          * Determines whether two values are the same value.
