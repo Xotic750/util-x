@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -8,7 +8,13 @@
         expect = required.expect;
 
     describe('toNumber', function () {
-        it('objects with only toString should throw an TypeError in each case', function () {
+        it('objects with only toString should throw a TypeError in each case', function () {
+            try {
+                utilx.toNumber({toString: ''});
+            } catch (e) {
+                console.log('# NAME: ' + e.name + ': ' + e.message);
+            }
+
             expect(function () {
                 utilx.toNumber({toString: ''});
             }).to.throwException(TypeError);
