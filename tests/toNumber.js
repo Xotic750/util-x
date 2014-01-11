@@ -12,26 +12,50 @@
             try {
                 utilx.toNumber({toString: ''});
             } catch (e) {
-                console.log('# NAME: ' + e.name + ': ' + e.message);
+                console.log('# 1: ' + e.name + ': ' + e.message);
             }
 
             expect(function () {
                 utilx.toNumber({toString: ''});
             }).to.throwException(TypeError);
 
+            try {
+                utilx.toNumber({toString: '1'});
+            } catch (e) {
+                console.log('# 2: ' + e.name + ': ' + e.message);
+            }
+
             expect(function () {
                 utilx.toNumber({toString: '1'});
             }).to.throwException(TypeError);
 
+            try {
+                utilx.toNumber({toString: 1});
+            } catch (e) {
+                console.log('# 3: ' + e.name + ': ' + e.message);
+            }
+
             expect(function () {
                 utilx.toNumber({toString: 1});
             }).to.throwException(TypeError);
+
+            try {
+                utilx.toNumber({toString: 1.1});
+            } catch (e) {
+                console.log('# 1: ' + e.name + ': ' + e.message);
+            }
 
             expect(function () {
                 utilx.toNumber({toString: 1.1});
             }).to.throwException(TypeError);
 
             /*jshint -W047 */
+            try {
+                utilx.toNumber({toString: 1.});
+            } catch (e) {
+                console.log('# 4: ' + e.name + ': ' + e.message);
+            }
+
             expect(function () {
                 utilx.toNumber({toString: 1.});
             }).to.throwException(TypeError);
