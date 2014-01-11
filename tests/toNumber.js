@@ -10,6 +10,7 @@
     describe('toNumber', function () {
         it('objects with only toString should throw a TypeError in each case', function () {
             try {
+                console.log('# 1 BEGIN');
                 utilx.toNumber({toString: ''});
                 console.log('# 1 WTF');
             } catch (e) {
@@ -21,6 +22,7 @@
             }).to.throwException(TypeError);
 
             try {
+                console.log('# 2 BEGIN');
                 utilx.toNumber({toString: '1'});
                 console.log('# 2 WTF');
             } catch (e) {
@@ -32,6 +34,7 @@
             }).to.throwException(TypeError);
 
             try {
+                console.log('# 3 BEGIN');
                 utilx.toNumber({toString: 1});
                 console.log('# 3 WTF');
             } catch (e) {
@@ -43,6 +46,7 @@
             }).to.throwException(TypeError);
 
             try {
+                console.log('# 4 BEGIN');
                 utilx.toNumber({toString: 1.1});
                 console.log('# 4 WTF');
             } catch (e) {
@@ -55,6 +59,7 @@
 
             /*jshint -W047 */
             try {
+                console.log('# 5 BEGIN');
                 utilx.toNumber({toString: 1.});
                 console.log('# 5 WTF');
             } catch (e) {
