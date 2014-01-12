@@ -1100,10 +1100,10 @@
             }
 
             if (!utilx.isNumber(value) && !utilx.isString(value)) {
-                throw new TypeError('arguments must be a numbers or strings');
+                throw new TypeError('arguments must be either numbers or strings');
             }
 
-            if (utilx.objectIs(min, max)) {
+            if (utilx.strictEqual(min, max)) {
                 throw new RangeError('min and max do not define a range');
             }
 
