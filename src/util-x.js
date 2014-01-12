@@ -1095,7 +1095,7 @@
          * @return {boolean}
          */
         utilx.inRange = function (value, min, max) {
-            if (!utilx.areSameObjectClass(value, min, max)) {
+            if (!utilx.areSameTypeOf(value, min, max)) {
                 throw new TypeError('arguments must be of the same type');
             }
 
