@@ -600,11 +600,10 @@
          * @function
          * @param {*} inputArg
          * @return {boolean}
-        /*
+         */
         utilx.isNotPrimitive = function (inputArg) {
             return !utilx.isPrimitive(inputArg);
         };
-        */
 
         /**
          * Returns true if the operand inputArg is typeof Object.
@@ -665,11 +664,9 @@
          * @param {*} inputArg
          * @return {boolean}
          */
-        /*
         utilx.isStringNotEmpty = function (inputArg) {
             return utilx.isString(inputArg) &amp;&amp; !utilx.isEmptyString(inputArg, '');
         };
-        */
 
         /**
          * Returns true if the operand inputArg is deemed numeric.
@@ -1125,17 +1122,15 @@
          * @return {boolean}
          */
         utilx.inRange = function (value, min, max) {
-            /*
             if (!utilx.areSameTypeOf(value, min, max)) {
                 throw new TypeError('arguments must be of the same type');
             }
-            */
 
             if (!utilx.isNumber(value) &amp;&amp; !utilx.isString(value)) {
                 throw new TypeError('arguments must be either numbers or strings');
             }
 
-            if (utilx.strictEqual(min, max)) {
+            if (utilx.strictEqual(min, max) || utilx.numberIsNaN(min) || utilx.numberIsNaN(max)) {
                 throw new RangeError('min and max do not define a range');
             }
 
@@ -1287,6 +1282,25 @@
         }());
 
         /**
+         * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
+         * @private
+         * @function
+         * @param {number} value
+         * @param {number} min
+         * @param {number} max
+         * @return {boolean}
+         */
+        function numberInRange(value, min, max) {
+            if (!utilx.isNumber(value) || !utilx.isNumber(min) || !utilx.isNumber(max) ||
+                    utilx.numberIsNaN(min) || utilx.numberIsNaN(max)) {
+
+                throw new Error('Internal numberInRange error');
+            }
+
+            return utilx.gte(value, min) &amp;&amp; utilx.lte(value, max);
+        }
+
+        /**
          * The utilx.numberIsInteger() method determines whether the passed value is an integer.
          * If the target value is an integer, return true, otherwise return false.
          * If the value is NaN or infinite, return false.
@@ -1311,7 +1325,7 @@
             } catch (e) {
                 tempSafariNFE = function nfeIsInteger(inputArg) {
                     return !utilx.numberIsNaN(inputArg) &amp;&amp; utilx.numberIsFinite(inputArg) &amp;&amp;
-                        utilx.inRange(inputArg, MIN_INTEGER, MAX_INTEGER) &amp;&amp;
+                        numberInRange(inputArg, MIN_INTEGER, MAX_INTEGER) &amp;&amp;
                         utilx.strictEqual(utilx.numberToInteger(inputArg), inputArg);
                 };
             }
@@ -1359,7 +1373,7 @@
          */
         utilx.isInt32 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, MIN_INT32, MAX_INT32);
+                numberInRange(inputArg, MIN_INT32, MAX_INT32);
         };
 
         /**
@@ -1410,7 +1424,7 @@
          */
         utilx.isUint32 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, 0, MAX_UINT32);
+                numberInRange(inputArg, 0, MAX_UINT32);
         };
 
         /**
@@ -1451,7 +1465,7 @@
          */
         utilx.isInt16 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, MIN_INT16, MAX_INT16);
+                numberInRange(inputArg, MIN_INT16, MAX_INT16);
         };
 
         /**
@@ -1487,7 +1501,7 @@
          */
         utilx.isUint16 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, 0, MAX_UINT16);
+                numberInRange(inputArg, 0, MAX_UINT16);
         };
 
         /**
@@ -1528,7 +1542,7 @@
          */
         utilx.isInt8 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, MIN_INT8, MAX_INT8);
+                numberInRange(inputArg, MIN_INT8, MAX_INT8);
         };
 
         /**
@@ -1564,7 +1578,7 @@
          */
         utilx.isUint8 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &amp;&amp;
-                utilx.inRange(inputArg, 0, MAX_UINT8);
+                numberInRange(inputArg, 0, MAX_UINT8);
         };
 
         /**
@@ -2316,7 +2330,7 @@
 
             if (utilx.gte(arguments.length, 3)) {
                 numIndex = utilx.numberToInteger(index);
-                if (utilx.inRange(numIndex, 0, MAX_UINT32 - 1)) {
+                if (numberInRange(numIndex, 0, MAX_UINT32 - 1)) {
                     array[numIndex] = value;
                     numIndex += 1;
                     if (utilx.gt(numIndex, array.length)) {
@@ -4812,7 +4826,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Sun Jan 12 2014 11:32:40 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Sun Jan 12 2014 11:59:07 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

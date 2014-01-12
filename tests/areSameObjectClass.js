@@ -7,7 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    /*
     describe('areSameObjectClass', function () {
         it('should throw particular error types', function () {
             expect(function () {
@@ -83,5 +82,4 @@
             expect(utilx.areSameObjectClass({}, new Date())).to.not.be.ok();
         });
     });
-    */
 }());

@@ -7,7 +7,6 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    /*
     describe('areSameTypeOf', function () {
         it('should throw particular error types', function () {
             expect(function () {
@@ -83,5 +82,4 @@
             expect(utilx.areSameTypeOf(1, 2, 3, 4, 5, 6, 7, 8, 9, '0')).to.not.be.ok();
         });
     });
-    */
 }());

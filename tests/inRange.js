@@ -9,7 +9,6 @@
 
     describe('inRange', function () {
         it('should throw particular error types', function () {
-            /*
             expect(function () {
                 utilx.inRange();
             }).to.throwException(function (e) {
@@ -87,10 +86,21 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-            */
 
             expect(function () {
                 utilx.inRange(-10, 1, 1);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(RangeError);
+            });
+
+            expect(function () {
+                utilx.inRange(-10, NaN, 1);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(RangeError);
+            });
+
+            expect(function () {
+                utilx.inRange(-10, 1, NaN);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(RangeError);
             });
@@ -110,6 +120,7 @@
             expect(utilx.inRange(0, -5, 5)).to.be.ok();
             expect(utilx.inRange(+0, -5, 5)).to.be.ok();
             expect(utilx.inRange(-0, -5, 5)).to.be.ok();
+            expect(utilx.inRange(0, -Infinity, Infinity)).to.be.ok();
             expect(utilx.inRange(-Infinity, -5, 5)).to.not.be.ok();
             expect(utilx.inRange(Infinity, -5, 5)).to.not.be.ok();
             expect(utilx.inRange(NaN, -5, 5)).to.not.be.ok();
