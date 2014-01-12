@@ -9,7 +9,6 @@
 
     describe('inRange', function () {
         it('should throw particular error types', function () {
-            /*
             expect(function () {
                 utilx.inRange();
             }).to.throwException(function (e) {
@@ -87,7 +86,6 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-            */
 
             expect(function () {
                 utilx.inRange(-10, 1, 1);
