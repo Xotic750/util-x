@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -61,7 +61,9 @@
         });
 
         it('should be ok in each case', function () {
+            console.log('# OBJECT: ' + utilx.objectKeys({}));
             expect(utilx.isEmptyObject({})).to.be.ok();
+            console.log('# ARRAY: ' + utilx.objectKeys([]));
             expect(utilx.isEmptyObject([])).to.be.ok();
             expect(utilx.isEmptyObject(utilx.noop)).to.be.ok();
             expect(utilx.isEmptyObject(new Date())).to.be.ok();
