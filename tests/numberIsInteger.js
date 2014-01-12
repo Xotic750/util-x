@@ -28,6 +28,7 @@
             expect(utilx.numberIsInteger(true)).to.not.be.ok();
             expect(utilx.numberIsInteger(false)).to.not.be.ok();
             expect(utilx.numberIsInteger('str')).to.not.be.ok();
+            expect(utilx.numberIsInteger('')).to.not.be.ok();
             expect(utilx.numberIsInteger({})).to.not.be.ok();
 
             expect(utilx.numberIsInteger(-10.123)).to.not.be.ok();

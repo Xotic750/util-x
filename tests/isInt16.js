@@ -28,6 +28,7 @@
             expect(utilx.isInt16(true)).to.not.be.ok();
             expect(utilx.isInt16(false)).to.not.be.ok();
             expect(utilx.isInt16('str')).to.not.be.ok();
+            expect(utilx.isInt16('')).to.not.be.ok();
             expect(utilx.isInt16({})).to.not.be.ok();
             expect(utilx.isInt16({
                 valueOf: function () {

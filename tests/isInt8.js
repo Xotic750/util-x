@@ -28,6 +28,7 @@
             expect(utilx.isInt8(true)).to.not.be.ok();
             expect(utilx.isInt8(false)).to.not.be.ok();
             expect(utilx.isInt8('str')).to.not.be.ok();
+            expect(utilx.isInt8('')).to.not.be.ok();
             expect(utilx.isInt8({})).to.not.be.ok();
             expect(utilx.isInt8({
                 valueOf: function () {

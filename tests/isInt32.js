@@ -28,6 +28,7 @@
             expect(utilx.isInt32(true)).to.not.be.ok();
             expect(utilx.isInt32(false)).to.not.be.ok();
             expect(utilx.isInt32('str')).to.not.be.ok();
+            expect(utilx.isInt32('')).to.not.be.ok();
             expect(utilx.isInt32({})).to.not.be.ok();
             expect(utilx.isInt32({
                 valueOf: function () {

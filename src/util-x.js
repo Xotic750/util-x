@@ -655,7 +655,7 @@
                 var val = false,
                     string;
 
-                if (utilx.isNumber(inputArg) || utilx.isString(inputArg)) {
+                if (utilx.isNumber(inputArg) || utilx.isStringNotEmpty(inputArg)) {
                     string = inputArg.toString().replace(rxPlusMinus, '');
                     if (!isNaN(parseFloat(string)) && isFinite(string)) {
                         val = true;
@@ -1087,6 +1087,27 @@
 
         /**
          * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
+         * @private
+         * @function
+         * @param {(number|string)} value
+         * @param {(number|string)} min
+         * @param {(number|string)} max
+         * @return {boolean}
+         */
+        function inRange(value, min, max) {
+            if (!utilx.isNumber(value) && !utilx.isString(value)) {
+                throw new TypeError('arguments must be either numbers or strings');
+            }
+
+            if (utilx.strictEqual(min, max) || utilx.numberIsNaN(min) || utilx.numberIsNaN(max)) {
+                throw new RangeError('min and max do not define a range');
+            }
+
+            return utilx.gte(value, min) && utilx.lte(value, max);
+        }
+
+        /**
+         * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
          * @memberOf utilx
          * @function
          * @param {(number|string)} value
@@ -1099,15 +1120,7 @@
                 throw new TypeError('arguments must be of the same type');
             }
 
-            if (!utilx.isNumber(value) && !utilx.isString(value)) {
-                throw new TypeError('arguments must be either numbers or strings');
-            }
-
-            if (utilx.strictEqual(min, max) || utilx.numberIsNaN(min) || utilx.numberIsNaN(max)) {
-                throw new RangeError('min and max do not define a range');
-            }
-
-            return utilx.gte(value, min) && utilx.lte(value, max);
+            return inRange(value, min, max);
         };
 
         /**
@@ -1255,25 +1268,6 @@
         }());
 
         /**
-         * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
-         * @private
-         * @function
-         * @param {*} value
-         * @param {number} min
-         * @param {number} max
-         * @return {boolean}
-         */
-        function numberInRange(value, min, max) {
-            if (!utilx.isNumber(min) || !utilx.isNumber(max) ||
-                    utilx.numberIsNaN(min) || utilx.numberIsNaN(max) || utilx.strictEqual(min, max)) {
-
-                throw new Error('Internal numberInRange error');
-            }
-
-            return utilx.gte(value, min) && utilx.lte(value, max);
-        }
-
-        /**
          * The utilx.numberIsInteger() method determines whether the passed value is an integer.
          * If the target value is an integer, return true, otherwise return false.
          * If the value is NaN or infinite, return false.
@@ -1298,7 +1292,7 @@
             } catch (e) {
                 tempSafariNFE = function nfeIsInteger(inputArg) {
                     return !utilx.numberIsNaN(inputArg) && utilx.numberIsFinite(inputArg) &&
-                        numberInRange(inputArg, MIN_INTEGER, MAX_INTEGER) &&
+                        inRange(inputArg, MIN_INTEGER, MAX_INTEGER) &&
                         utilx.strictEqual(utilx.numberToInteger(inputArg), inputArg);
                 };
             }
@@ -1346,7 +1340,7 @@
          */
         utilx.isInt32 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, MIN_INT32, MAX_INT32);
+                inRange(inputArg, MIN_INT32, MAX_INT32);
         };
 
         /**
@@ -1397,7 +1391,7 @@
          */
         utilx.isUint32 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, 0, MAX_UINT32);
+                inRange(inputArg, 0, MAX_UINT32);
         };
 
         /**
@@ -1438,7 +1432,7 @@
          */
         utilx.isInt16 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, MIN_INT16, MAX_INT16);
+                inRange(inputArg, MIN_INT16, MAX_INT16);
         };
 
         /**
@@ -1474,7 +1468,7 @@
          */
         utilx.isUint16 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, 0, MAX_UINT16);
+                inRange(inputArg, 0, MAX_UINT16);
         };
 
         /**
@@ -1515,7 +1509,7 @@
          */
         utilx.isInt8 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, MIN_INT8, MAX_INT8);
+                inRange(inputArg, MIN_INT8, MAX_INT8);
         };
 
         /**
@@ -1551,7 +1545,7 @@
          */
         utilx.isUint8 = function (inputArg) {
             return utilx.numberIsInteger(inputArg) &&
-                numberInRange(inputArg, 0, MAX_UINT8);
+                inRange(inputArg, 0, MAX_UINT8);
         };
 
         /**
@@ -2303,7 +2297,7 @@
 
             if (utilx.gte(arguments.length, 3)) {
                 numIndex = utilx.numberToInteger(index);
-                if (numberInRange(numIndex, 0, MAX_UINT32 - 1)) {
+                if (inRange(numIndex, 0, MAX_UINT32 - 1)) {
                     array[numIndex] = value;
                     numIndex += 1;
                     if (utilx.gt(numIndex, array.length)) {
@@ -2913,6 +2907,17 @@
         }());
 
         /**
+         * Check to see if an object is empty (contains no enumerable properties).
+         * @memberOf utilx
+         * @function
+         * @param {object} inputArg
+         * @return {boolean}
+         */
+        utilx.isEmptyObject = function (inputArg) {
+            return utilx.isZero(utilx.objectKeys(inputArg).length);
+        };
+
+        /**
          * Returns true if the operand inputArg is a String and only contains numerical digits.
          * @memberOf utilx
          * @function
@@ -2923,7 +2928,7 @@
             var rxNotDigits = new RegExp('^\\d+$');
 
             return function (string) {
-                return utilx.isString(string) && rxNotDigits.test(string);
+                return utilx.isStringNotEmpty(string) && rxNotDigits.test(string);
             };
         }());
 
@@ -3005,8 +3010,8 @@
                         definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
                             if (isArrayOrArguments(object) &&
                                     ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
-                                     (utilx.isString(property) && utilx.isDigits(property)) ||
-                                     (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                     utilx.isDigits(property) ||
+                                     (utilx.isStringNotEmpty(property) &&
                                         utilx.numberIsInteger(utilx.toNumber(property))))) {
 
                                 if (utilx.objectHasOwnProperty(descriptor, 'value') ||
@@ -3070,8 +3075,8 @@
                                 object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
-                                         (utilx.isString(property) && utilx.isDigits(property)) ||
-                                         (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                         utilx.isDigits(property) ||
+                                         (utilx.isStringNotEmpty(property) &&
                                             utilx.numberIsInteger(utilx.toNumber(property))))) {
 
                                     utilx.arrayAssign(object, property, descriptor.value);
@@ -3084,8 +3089,8 @@
                             } else {
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
-                                         (utilx.isString(property) && utilx.isDigits(property)) ||
-                                         (utilx.isString(property) && !utilx.isEmptyString(property) &&
+                                         utilx.isDigits(property) ||
+                                         (utilx.isStringNotEmpty(property) &&
                                             utilx.numberIsInteger(utilx.toNumber(property))))) {
 
                                     utilx.arrayAssign(object, property, descriptor.value);
@@ -3427,7 +3432,7 @@
                 tempSafariNFE = function nfeInstanceOf(object, ctr) {
                     throwIfNotAFunction(ctr);
 
-                    return !utilx.isPrimitive(object) && isPrototypeOfFN.call(ctr.prototype, object);
+                    return utilx.isNotPrimitive(object) && isPrototypeOfFN.call(ctr.prototype, object);
                 };
             } else if (utilx.isFunction(utilx.objectGetPrototypeOf)) {
                 tempSafariNFE = function nfeInstanceOf(object, ctr) {
@@ -3435,7 +3440,7 @@
 
                     var val = false;
 
-                    if (!utilx.isPrimitive(object)) {
+                    if (utilx.isNotPrimitive(object)) {
                         while (utilx.toBoolean(object)) {
                             if (utilx.strictEqual(object, ctr.prototype)) {
                                 val = true;
@@ -3938,7 +3943,7 @@
 
                             if (utilx.isZero(partial.length)) {
                                 member = '[]';
-                            } else if (utilx.isString(gap) && !utilx.isEmptyString(gap)) {
+                            } else if (utilx.isStringNotEmpty(gap)) {
                                 member = '[\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + ']';
                             } else {
                                 member = '[' + utilx.arrayJoin(partial) + ']';
@@ -3957,9 +3962,7 @@
                                     v = str(element, value);
                                     if (!utilx.isUndefined(v)) {
                                         utilx.arrayPush(partial, quote(element) +
-                                                        (utilx.isString(gap) && !utilx.isEmptyString(gap) ?
-                                                         ': ' :
-                                                         ':') + v);
+                                                        (utilx.isStringNotEmpty(gap)  ? ': ' : ':') + v);
                                     }
                                 }
                             });
@@ -3969,16 +3972,14 @@
 
                                 if (!utilx.isUndefined(v)) {
                                     utilx.arrayPush(partial, quote(k) +
-                                                    (utilx.isString(gap) && !utilx.isEmptyString(gap) ?
-                                                     ': ' :
-                                                     ':') + v);
+                                                    (utilx.isStringNotEmpty(gap) ? ': ' : ':') + v);
                                 }
                             });
                         }
 
                         if (utilx.isZero(partial.length)) {
                             member = '{}';
-                        } else if (utilx.isString(gap) && !utilx.isEmptyString(gap)) {
+                        } else if (utilx.isStringNotEmpty(gap)) {
                             member = '{\n' + gap + utilx.arrayJoin(partial, ',\n' + gap) + '\n' + mind + '}';
                         } else {
                             member = '{' + utilx.arrayJoin(partial) + '}';
