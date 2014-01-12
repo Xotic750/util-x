@@ -2832,6 +2832,16 @@
         /**
          * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
          * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
+         * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
+         * IE 6 to 9: Error: description, message
+         * IE 10: Error: description
+         * FF 3 to 5: Error: message, fileName, lineNumber, stack
+         * FF 3 to 3.5: Function: prototype
+         * Chrome 5 to 9: Error: message, stack
+         * Chrome 10 to 13: Error: arguments, type, message, stack
+         * V8 Error object has: captureStackTrace, stackTraceLimit
+         * There are most probably other native objects that do not agree: Object and Array should be fine in all
+         * environments.
          * @memberOf utilx
          * @function
          * @param {object} object
@@ -2908,6 +2918,16 @@
 
         /**
          * Check to see if an object is empty (contains no enumerable properties).
+         * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
+         * IE 6 to 9: Error: description, message
+         * IE 10: Error: description
+         * FF 3 to 5: Error: message, fileName, lineNumber, stack
+         * FF 3 to 3.5: Function: prototype
+         * Chrome 5 to 9: Error: message, stack
+         * Chrome 10 to 13: Error: arguments, type, message, stack
+         * V8 Error object has: captureStackTrace, stackTraceLimit
+         * There are most probably other native objects that do not agree: Object and Array should be fine in all
+         * environments.
          * @memberOf utilx
          * @function
          * @param {object} inputArg
@@ -4406,7 +4426,13 @@
                                                        maxMessageLength);
                     }
 
-                    this.message = message;
+                    utilx.objectDefineProperty(this, 'message', {
+                        value: message,
+                        enumerable: false,
+                        writable: true,
+                        configurable: true
+                    });
+
                     if (!utilx.isFunction(stackStartFunction)) {
                         stackStartFunction = CustomError;
                     }
@@ -4417,11 +4443,26 @@
                     } else {
                         err = ErrorConstructor.call(this);
                         if (utilx.isString(err.stack)) {
-                            this.stack = err.stack;
+                            utilx.objectDefineProperty(this, 'stack', {
+                                value: err.stack,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            });
                         } else if (utilx.isString(err.stacktrace)) {
-                            this.stack = err.stacktrace;
+                            utilx.objectDefineProperty(this, 'stack', {
+                                value: err.stacktrace,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            });
                         } else if (utilx.isFunction(printStackTrace)) {
-                            this.stack = utilx.arrayJoin(printStackTrace(), '\n');
+                            utilx.objectDefineProperty(this, 'stack', {
+                                value: utilx.arrayJoin(printStackTrace(), '\n'),
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            });
                         }
                     }
                 }
@@ -4501,23 +4542,25 @@
             };
         }());
 
-        // set the properties of stacktrace to not enumerable
-        utilx.arrayForEach(utilx.objectKeys(printStackTrace), function (key) {
-            utilx.objectDefineProperty(printStackTrace, key, {
-                enumerable: false,
-                writable: true,
-                configurable: true
+        if (utilx.isFunction(printStackTrace)) {
+            // set the properties of stacktrace to not enumerable
+            utilx.arrayForEach(utilx.objectKeys(printStackTrace), function (key) {
+                utilx.objectDefineProperty(printStackTrace, key, {
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
             });
-        });
 
-        // set the properties of stacktrace.prototype to not enumerable
-        utilx.arrayForEach(utilx.objectKeys(printStackTrace.prototype), function (key) {
-            utilx.objectDefineProperty(printStackTrace, key, {
-                enumerable: false,
-                writable: true,
-                configurable: true
+            // set the properties of stacktrace.prototype to not enumerable
+            utilx.arrayForEach(utilx.objectKeys(printStackTrace.prototype), function (key) {
+                utilx.objectDefineProperty(printStackTrace, key, {
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
             });
-        });
+        }
 
         /**
          * Framework-agnostic, micro-library for getting stack traces in all web browsers
@@ -4686,6 +4729,33 @@
         tempSafariNFE = null;
 
         return utilx;
+    }
+
+    publicUtil = factory();
+    if (publicUtil.isFunction(baseObject.propertyIsEnumerable)) {
+        if (baseObject.propertyIsEnumerable.call(Function, 'prototype')) {
+            publicUtil.objectDefineProperty(Function, 'prototype', {
+                enumerable: false,
+                writable: false,
+                configurable: false
+            });
+        }
+
+        if (baseObject.propertyIsEnumerable.call(Error, 'captureStackTrace')) {
+            publicUtil.objectDefineProperty(Error, 'captureStackTrace', {
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        }
+
+        if (baseObject.propertyIsEnumerable.call(Error, 'stackTraceLimit')) {
+            publicUtil.objectDefineProperty(Error, 'stackTraceLimit', {
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        }
     }
 
     /*

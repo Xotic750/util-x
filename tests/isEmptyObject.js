@@ -69,10 +69,12 @@
             expect(utilx.isEmptyObject(utilx.noop)).to.be.ok();
             console.log('# DATE: ' + utilx.objectKeys(new Date()));
             expect(utilx.isEmptyObject(new Date())).to.be.ok();
-            console.log('# ERROR: ' + utilx.objectKeys(new Error('x')));
+            console.log('# ERROR1: ' + utilx.objectKeys(new Error('x')));
             expect(utilx.isEmptyObject(new Error('x'))).to.be.ok();
             console.log('# FUNCTION: ' + utilx.objectKeys(new Error('x')));
             expect(utilx.isEmptyObject(X)).to.be.ok();
+            console.log('# ERROR2: ' + utilx.objectKeys(Error));
+            expect(utilx.isEmptyObject(Error)).to.be.ok();
         });
 
         it('should not be ok in each case', function () {
