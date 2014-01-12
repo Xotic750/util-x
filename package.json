@@ -1,6 +1,6 @@
 {
     "name": "util-x",
-    "version": "0.0.76",
+    "version": "0.0.77",
     "description": "A Javascript utility library.",
     "homepage": "http://xotic750.github.io/util-x/",
     "author": {
@@ -104,7 +104,7 @@
             "iexplore/6.0..latest",
             "firefox/3.0..latest",
             "firefox/nightly",
-            "chrome/4..latest",
+            "chrome/5..latest",
             "chrome/canary",
             "opera/10..latest",
             "opera/next",
