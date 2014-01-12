@@ -65,9 +65,13 @@
             expect(utilx.isEmptyObject({})).to.be.ok();
             console.log('# ARRAY: ' + utilx.objectKeys([]));
             expect(utilx.isEmptyObject([])).to.be.ok();
+            console.log('# FUNCTION: ' + utilx.objectKeys(utilx.noop));
             expect(utilx.isEmptyObject(utilx.noop)).to.be.ok();
+            console.log('# DATE: ' + utilx.objectKeys(new Date()));
             expect(utilx.isEmptyObject(new Date())).to.be.ok();
+            console.log('# ERROR: ' + utilx.objectKeys(new Error('x')));
             expect(utilx.isEmptyObject(new Error('x'))).to.be.ok();
+            console.log('# FUNCTION: ' + utilx.objectKeys(new Error('x')));
             expect(utilx.isEmptyObject(X)).to.be.ok();
         });
 
