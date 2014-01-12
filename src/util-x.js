@@ -1258,14 +1258,14 @@
          * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
          * @private
          * @function
-         * @param {number} value
+         * @param {*} value
          * @param {number} min
          * @param {number} max
          * @return {boolean}
          */
         function numberInRange(value, min, max) {
-            if (!utilx.isNumber(value) || !utilx.isNumber(min) || !utilx.isNumber(max) ||
-                    utilx.numberIsNaN(min) || utilx.numberIsNaN(max)) {
+            if (!utilx.isNumber(min) || !utilx.isNumber(max) ||
+                    utilx.numberIsNaN(min) || utilx.numberIsNaN(max) || utilx.strictEqual(min, max)) {
 
                 throw new Error('Internal numberInRange error');
             }
