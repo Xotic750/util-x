@@ -21,7 +21,7 @@
             obj2 = {};
         /*jshint +W001 */
 
-        it('should not throw an error in each case', function () {
+        it('defined on object should be ok in each case', function () {
             expect(utilx.objectPropertyIsEnumerable(obj, 'toString')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'toLocaleString')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'valueOf')).to.be.ok();
@@ -32,7 +32,9 @@
             expect(utilx.objectPropertyIsEnumerable(obj, 'foo')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'bar')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'fuz')).to.not.be.ok();
+        });
 
+        it('not defined on object should be ok in each case', function () {
             expect(utilx.objectPropertyIsEnumerable(obj2, 'toString')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'toLocaleString')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'valueOf')).to.not.be.ok();
@@ -43,13 +45,12 @@
             expect(utilx.objectPropertyIsEnumerable(obj2, 'foo')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'bar')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'fuz')).to.not.be.ok();
+        });
 
+        it('defined on object with undefined value should be ok in each case', function () {
             expect(utilx.objectPropertyIsEnumerable({
                 toString: utilx.privateUndefined
             }, 'toString')).to.be.ok();
-
-            expect(utilx.objectPropertyIsEnumerable({}, 'toString')).to.not.be.ok();
-            expect(utilx.objectPropertyIsEnumerable({}, 'bar')).to.not.be.ok();
         });
     });
 }());

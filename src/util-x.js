@@ -1577,7 +1577,7 @@
          */
         // named utilx.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
         utilx.arrayUnshift = function (array) {
-            utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (argument) {
+            utilx.arrayForEach(utilx.arraySlice(arguments, 1).reverse(), function (argument) {
                 baseArray.unshift.call(array, argument);
             });
 
@@ -2121,7 +2121,6 @@
                 nfePropertyIsEnumerable;
 
             // use nfePropertyIsEnumerable to save a var
-            /*
             for (nfePropertyIsEnumerable in testObject) {
                 if (utilx.strictEqual(nfePropertyIsEnumerable, 'toString') &&
                         utilx.isNull(testObject[nfePropertyIsEnumerable])) {
@@ -2129,7 +2128,6 @@
                     hasDontEnumBug = false;
                 }
             }
-            */
 
             function checkDontEnums(object, property) {
                 return hasDontEnumBug && utilx.arrayContains(defaultProperties, property) &&

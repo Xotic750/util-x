@@ -21,7 +21,7 @@
             obj2 = {};
         /*jshint +W001 */
 
-        it('should not throw an error in each case', function () {
+        it('defined on object should be ok in each case', function () {
             expect(utilx.objectHasOwnProperty(obj, 'toString')).to.be.ok();
             expect(utilx.objectHasOwnProperty(obj, 'toLocaleString')).to.be.ok();
             expect(utilx.objectHasOwnProperty(obj, 'valueOf')).to.be.ok();
@@ -32,7 +32,9 @@
             expect(utilx.objectHasOwnProperty(obj, 'foo')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj, 'bar')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj, 'fuz')).to.not.be.ok();
+        });
 
+        it('not defined on object should be ok in each case', function () {
             expect(utilx.objectHasOwnProperty(obj2, 'toString')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'toLocaleString')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'valueOf')).to.not.be.ok();
@@ -43,13 +45,12 @@
             expect(utilx.objectHasOwnProperty(obj2, 'foo')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'bar')).to.not.be.ok();
             expect(utilx.objectHasOwnProperty(obj2, 'fuz')).to.not.be.ok();
+        });
 
+        it('defined on object with undefined value should be ok in each case', function () {
             expect(utilx.objectHasOwnProperty({
                 toString: utilx.privateUndefined
             }, 'toString')).to.be.ok();
-
-            expect(utilx.objectHasOwnProperty({}, 'toString')).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty({}, 'bar')).to.not.be.ok();
         });
     });
 }());
