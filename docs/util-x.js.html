@@ -2142,6 +2142,7 @@
             // http://kangax.github.io/nfe/
             var propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
                 hasDontEnumBug = true,
+                hasFuncProtoBug = false,
                 testObject = {
                     toString: null
                 },
@@ -2156,16 +2157,41 @@
                 }
             }
 
-            function checkDontEnums(object, property) {
-                return hasDontEnumBug &amp;&amp; utilx.arrayContains(defaultProperties, property) &amp;&amp;
-                    utilx.hasProperty(object, property) &amp;&amp;
-                    utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
+            testObject = function () {
+                return;
+            };
+
+            for (nfePropertyIsEnumerable in testObject) {
+                if (utilx.strictEqual(nfePropertyIsEnumerable, 'prototype')) {
+                    hasFuncProtoBug = true;
+                }
             }
 
             if (utilx.isFunction(propertyIsEnumerableFN)) {
-                tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
-                    return propertyIsEnumerableFN.call(object, property) || checkDontEnums(object, property);
-                };
+                if (hasDontEnumBug) {
+                    tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
+                        return propertyIsEnumerableFN.call(object, property) ||
+                            (utilx.arrayContains(defaultProperties, property) &amp;&amp;
+                                utilx.hasProperty(object, property) &amp;&amp;
+                                !utilx.objectIs(object[property], utilx.objectGetPrototypeOf(object)[property]));
+                    };
+                } else if (hasFuncProtoBug) {
+                    tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
+                        var val;
+
+                        if (utilx.isFunction(object) &amp;&amp; utilx.strictEqual(property, 'prototype')) {
+                            val = false;
+                        } else {
+                            val = propertyIsEnumerableFN.call(object, property);
+                        }
+
+                        return val;
+                    };
+                } else {
+                    tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
+                        return propertyIsEnumerableFN.call(object, property);
+                    };
+                }
             } else {
                 tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
                     return utilx.hasProperty(object, property) &amp;&amp;
@@ -2196,8 +2222,8 @@
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var hasOwnPropertyFN = baseObject.hasOwnProperty, // to combat old IE8- issues, min support IE6
-                propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
                 hasDontEnumBug = true,
+                hasFuncProtoBug = false,
                 testObject = {
                     toString: null
                 },
@@ -2210,20 +2236,41 @@
                 }
             }
 
-            function checkDontEnums(object, property) {
-                return hasDontEnumBug &amp;&amp; utilx.arrayContains(defaultProperties, property) &amp;&amp;
-                    utilx.hasProperty(object, property) &amp;&amp;
-                    utilx.notStrictEqual(object[property], utilx.objectGetPrototypeOf(object)[property]);
+            testObject = function () {
+                return;
+            };
+
+            for (nfeHasOwnProperty in testObject) {
+                if (utilx.strictEqual(nfeHasOwnProperty, 'prototype')) {
+                    hasFuncProtoBug = true;
+                }
             }
 
             if (utilx.isFunction(hasOwnPropertyFN)) {
-                tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return hasOwnPropertyFN.call(object, property) || checkDontEnums(object, property);
-                };
-            } else if (utilx.isFunction(propertyIsEnumerableFN)) {
-                tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return propertyIsEnumerableFN.call(object, property) || checkDontEnums(object, property);
-                };
+                if (hasDontEnumBug) {
+                    tempSafariNFE = function nfeHasOwnProperty(object, property) {
+                        return hasOwnPropertyFN.call(object, property) ||
+                            (utilx.arrayContains(defaultProperties, property) &amp;&amp;
+                                utilx.hasProperty(object, property) &amp;&amp;
+                                !utilx.objectIs(object[property], utilx.objectGetPrototypeOf(object)[property]));
+                    };
+                } else if (hasFuncProtoBug) {
+                    tempSafariNFE = function nfeHasOwnProperty(object, property) {
+                        var val;
+
+                        if (utilx.isFunction(object) &amp;&amp; utilx.strictEqual(property, 'prototype')) {
+                            val = false;
+                        } else {
+                            val = hasOwnPropertyFN.call(object, property);
+                        }
+
+                        return val;
+                    };
+                } else {
+                    tempSafariNFE = function nfeHasOwnProperty(object, property) {
+                        return hasOwnPropertyFN.call(object, property);
+                    };
+                }
             } else {
                 tempSafariNFE = function nfeHasOwnProperty(object, property) {
                     return utilx.hasProperty(object, property) &amp;&amp;
@@ -2948,11 +2995,15 @@
                 nfeTrim;
 
             testString = utilx.arrayReduce(whiteSpacesList, buildTestString, '');
-            if (utilx.isFunction(trimFN) &amp;&amp; utilx.isZero(trimFN.call(testString).length)) {
-                tempSafariNFE = function nfeTrim(inputArg) {
-                    return trimFN.call(inputArg);
-                };
-            } else {
+            try {
+                if (utilx.isFunction(trimFN) &amp;&amp; utilx.isZero(trimFN.call(testString).length)) {
+                    tempSafariNFE = function nfeTrim(inputArg) {
+                        return trimFN.call(inputArg);
+                    };
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
                 whiteSpacesString = utilx.arrayReduce(whiteSpacesList, function (previous, element) {
                     return previous + '\\u' + utilx.padLeadingChar(element.toString(16), '0', 4);
                 }, '');
@@ -5080,7 +5131,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 13 2014 07:49:53 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 13 2014 11:42:47 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

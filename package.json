@@ -104,7 +104,7 @@
             "iexplore/6.0..latest",
             "firefox/3.0..latest",
             "firefox/nightly",
-            "chrome/5..latest",
+            "chrome/4..latest",
             "chrome/canary",
             "opera/10..latest",
             "opera/next",
