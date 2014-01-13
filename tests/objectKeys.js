@@ -93,9 +93,7 @@
             });
         });
 
-        it('should not list prototype and constructor', function () {
-            expect(utilx.objectKeys(utilx.noop).length).to.be(0);
-
+        it('should not list prototype or constructor 1', function () {
             function Constructor() {
                 this.constructor = this.prototype = 1;
             }
@@ -103,6 +101,15 @@
             Constructor.prototype.constructor = 1;
             expect(utilx.objectKeys(Constructor).length).to.be(0);
             expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
+        });
+
+        it('should list prototype and constructor', function () {
+            function Constructor() {
+                this.constructor = this.prototype = 1;
+            }
+
+            Constructor.prototype.constructor = 1;
+            expect(utilx.objectKeys(new Constructor()).length).to.be(2);
         });
     });
 }());
