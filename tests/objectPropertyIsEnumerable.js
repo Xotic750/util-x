@@ -52,5 +52,29 @@
                 toString: utilx.privateUndefined
             }, 'toString')).to.be.ok();
         });
+
+        it('should not list prototype or constructor 1', function () {
+            function Constructor() {
+                this.constructor = this.prototype = 1;
+            }
+
+            Constructor.prototype.constructor = 1;
+            expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Constructor, 'constructor')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Constructor.prototype, 'prototype')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')).to.not.be.ok();
+        });
+
+        it('should list prototype and constructor', function () {
+            function Constructor() {
+                this.constructor = this.prototype = 1;
+            }
+
+            Constructor.prototype.constructor = 1;
+            expect(utilx.objectPropertyIsEnumerable(new Constructor(), 'prototype')).to.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(new Constructor(), 'constructor')).to.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'prototype')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
+        });
     });
 }());
