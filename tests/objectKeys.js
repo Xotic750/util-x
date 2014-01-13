@@ -93,7 +93,7 @@
             });
         });
 
-        it('should not list prototype or constructor 1', function () {
+        it('should not list prototype or constructor', function () {
             function Constructor() {
                 this.constructor = this.prototype = 1;
             }

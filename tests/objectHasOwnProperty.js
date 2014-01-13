@@ -53,16 +53,13 @@
             }, 'toString')).to.be.ok();
         });
 
-        it('should not list prototype or constructor 1', function () {
+        it('should not list prototype or constructor', function () {
             function Constructor() {
                 this.constructor = this.prototype = 1;
             }
 
             Constructor.prototype.constructor = 1;
-            expect(utilx.objectHasOwnProperty(Constructor, 'prototype')).to.be.ok();
             expect(utilx.objectHasOwnProperty(Constructor, 'constructor')).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty(Constructor.prototype, 'prototype')).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
         });
 
         it('should list prototype and constructor', function () {
@@ -71,10 +68,10 @@
             }
 
             Constructor.prototype.constructor = 1;
+            expect(utilx.objectHasOwnProperty(Constructor, 'prototype')).to.be.ok();
+            expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
             expect(utilx.objectHasOwnProperty(new Constructor(), 'prototype')).to.be.ok();
             expect(utilx.objectHasOwnProperty(new Constructor(), 'constructor')).to.be.ok();
-            expect(utilx.objectHasOwnProperty(new Constructor().prototype, 'prototype')).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty(new Constructor().prototype, 'constructor')).to.not.be.ok();
         });
     });
 }());

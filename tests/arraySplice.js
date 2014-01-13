@@ -129,7 +129,6 @@
             expect(test).to.eql(a);
         });
 
-        //TODO:: Is this realy TRUE behavior?
         it('should set first argument to 0 if first argument is set but undefined', function () {
             test = utilx.arraySlice(a, 0);
 
