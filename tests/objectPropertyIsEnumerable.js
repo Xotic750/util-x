@@ -34,7 +34,7 @@
             expect(utilx.objectPropertyIsEnumerable(obj, 'fuz')).to.not.be.ok();
         });
 
-        it('not defined on object should be ok in each case', function () {
+        it('not defined on object should be not ok in each case', function () {
             expect(utilx.objectPropertyIsEnumerable(obj2, 'toString')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'toLocaleString')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj2, 'valueOf')).to.not.be.ok();

@@ -99,7 +99,9 @@
             }
 
             Constructor.prototype.constructor = 1;
+            console.log('# Constructor: ' + utilx.objectKeys(Constructor));
             expect(utilx.objectKeys(Constructor).length).to.be(0);
+            console.log('# Constructor.prototype: ' + utilx.objectKeys(Constructor.prototype));
             expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
         });
 
