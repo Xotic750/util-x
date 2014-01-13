@@ -2420,31 +2420,23 @@
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var spliceFN = baseArray.splice,
-                basicFN,
-                nfeSplice,
-                nfeSplice1;
+                nfeSplice;
 
             if (utilx.isFunction(spliceFN) && utilx.strictEqual(spliceFN.call([1, 2], 0).length, 2)) {
-                basicFN = function nfeSplice(array, start, deleteCount) {
-                    /*jshint unused: false */
-                    return spliceFN.apply(array, utilx.arraySlice(arguments, 1));
-                };
-
-                try {
-                    if (utilx.isZero(spliceFN.call([1, 2]).length)) {
-                        tempSafariNFE = basicFN;
-                    }
-                } catch (ignore) {}
-
-                if (!utilx.isFunction(tempSafariNFE)) {
-                    tempSafariNFE = function nfeSplice1(array, start, deleteCount) {
+                if (utilx.isZero(spliceFN.call([1, 2]).length)) {
+                    tempSafariNFE = function nfeSplice(array, start, deleteCount) {
+                        /*jshint unused: false */
+                        return spliceFN.apply(array, utilx.arraySlice(arguments, 1));
+                    };
+                } else {
+                    tempSafariNFE = function nfeSplice(array, start, deleteCount) {
                         /*jshint unused: false */
                         var val;
 
                         if (utilx.lt(arguments.length, 2)) {
                             val = [];
                         } else {
-                            val = basicFN.apply(array, utilx.arraySlice(arguments, 1));
+                            val = spliceFN.apply(array, utilx.arraySlice(arguments, 1));
                         }
 
                         return val;
@@ -2540,7 +2532,6 @@
             }
 
             nfeSplice = null;
-            nfeSplice1 = null;
 
             return tempSafariNFE;
         }());
@@ -3071,7 +3062,7 @@
             if (utilx.isTrue(supported)) {
                 tempSafariNFE = keysFN;
             } else {
-                // reuse to save a var
+                // reuse nfeKeys to save a var
                 for (nfeKeys in testObject) {
                     if (utilx.strictEqual(nfeKeys, 'toString') && utilx.isNull(testObject[nfeKeys])) {
                         hasDontEnumBug = false;

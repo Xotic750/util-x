@@ -92,5 +92,17 @@
                 expect(utilx.arrayIndexOf(loopedValues2, name)).not.to.be(-1);
             });
         });
+
+        it('should not list prototype and constructor', function () {
+            expect(utilx.objectKeys(utilx.noop).length).to.be(0);
+
+            function Constructor() {
+                this.constructor = this.prototype = 1;
+            }
+
+            Constructor.prototype.constructor = 1;
+            expect(utilx.objectKeys(Constructor).length).to.be(0);
+            expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
+        });
     });
 }());
