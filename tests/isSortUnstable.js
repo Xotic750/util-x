@@ -10,10 +10,12 @@
     describe('isSortUnstable', function () {
         it('should not throw an error in each case', function () {
             expect(function () {
+                utilx.isSortUnstable(5, 2);
+            }).to.not.throwException();
+
+            expect(function () {
                 utilx.isSortUnstable(5, 2, utilx.privateUndefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
 
             expect(function () {
                 utilx.isSortUnstable(5, 2, null);
@@ -41,6 +43,10 @@
         });
 
         it('expect results to match', function () {
+            function sortFN(a, b) {
+                return a.u - b.u;
+            }
+
             function isSortUnstable(count, bins) {
                 var unstable = false,
                     iter,
@@ -50,14 +56,9 @@
                     u,
                     v;
 
-                function sortFN(a, b) {
-                    return a.u - b.u;
-                }
-
                 for (iter = 0; iter < 10; iter += 1) {
-                    array = [];
-                    for (i = 0; i < count; i += 1) {
-                        array.push({
+                    for (i = 0, array = []; utilx.lt(i, count); i += 1) {
+                        utilx.arrayPush(array, {
                             u: Math.floor(Math.random() * bins),
                             i: i
                         });
@@ -67,12 +68,12 @@
 
                     u = -1;
                     i = -1;
-                    for (ii = 0; ii < count; ii += 1) {
+                    for (ii = 0, u = -1, i = -1; utilx.lt(ii, count); ii += 1) {
                         v = array[ii];
-                        if (v.u > u) {
+                        if (utilx.gt(v.u, u)) {
                             u = v.u;
                             i = -1;
-                        } else if (v.i > i) {
+                        } else if (utilx.gt(v.i, i)) {
                             i = v.i;
                         } else {
                             unstable = true;

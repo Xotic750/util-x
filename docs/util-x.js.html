@@ -2994,14 +2994,13 @@
          * @return {boolean}
          */
         utilx.isSortUnstable = function (elementCount, elementLimit, fn) {
-            if (utilx.gt(arguments.length, 2)) {
-                throwIfNotAFunction(fn);
-            } else {
+            if (utilx.isUndefined(fn)) {
                 fn = function (array, sortFunction) {
                     baseArray.sort.call(array, sortFunction);
                 };
             }
 
+            throwIfNotAFunction(fn);
             elementCount = utilx.toUint32(elementCount);
             elementLimit = utilx.numberToInteger(elementLimit);
 
@@ -3052,7 +3051,7 @@
                 val;
 
             if (utilx.strictEqual(leftS, rightS)) {
-                val = 0;
+                val = +0;
             } else if (utilx.lt(leftS, rightS)) {
                 val = -1;
             } else {
@@ -3072,12 +3071,6 @@
          * @return {array}
          */
         function merge(left, right, comparison) {
-            if (!utilx.arrayIsArray(left) || !utilx.arrayIsArray(right)) {
-                throw new TypeError('internal merge error');
-            }
-
-            throwIfNotAFunction(comparison);
-
             var result = [];
 
             while (!utilx.isZero(left.length) &amp;&amp; !utilx.isZero(right.length)) {
@@ -3108,21 +3101,14 @@
          * @return {array}
          */
         function mergeSort(array, comparefn) {
-            if (!utilx.arrayIsArray(array)) {
-                throw new TypeError('internal mergeSort error');
-            }
-
-            throwIfNotAFunction(comparefn);
-
-            var length = array.length,
+            var length = clampInteger(array.length, 0, MAX_UINT32),
                 middle,
                 val;
 
             if (utilx.lt(length, 2)) {
-                val = array;
+                val = utilx.arraySlice(array);
             } else {
                 middle = Math.ceil(length / 2);
-
                 val = merge(mergeSort(utilx.arraySlice(array, 0, middle), comparefn),
                              mergeSort(utilx.arraySlice(array, middle), comparefn), comparefn);
             }
@@ -3139,21 +3125,21 @@
          * @return {array}
          */
         utilx.arrayStableSort = function (array, comparefn) {
-            if (!utilx.arrayIsArray(array)) {
-                throw new TypeError('argument must be an array');
+            var object = utilx.toObjectFixIndexedAccess(array),
+                length,
+                index;
+
+            if (utilx.isUndefined(comparefn)) {
+                comparefn = defaultComparison;
             }
 
-            if (utilx.gt(array.length, 1)) {
-                if (utilx.lt(arguments.length, 2) || !utilx.isFunction(comparefn)) {
-                    comparefn = defaultComparison;
+            throwIfNotAFunction(comparefn);
+            length = clampInteger(object.length, 0, MAX_UINT32);
+            if (utilx.gt(length, 1)) {
+                object = mergeSort(object, comparefn);
+                for (index = 0; utilx.lt(index, length); index += 1) {
+                    array[index] = object[index];
                 }
-
-                var sorted = mergeSort(array, comparefn);
-
-                array.length = 0;
-                utilx.arrayForEach(sorted, function (element) {
-                    utilx.arrayPush(array, element);
-                });
             }
 
             return array;
@@ -3172,38 +3158,69 @@
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe/
             var sortFN = baseArray.sort,
-                smallUnstable = utilx.isSortUnstable(5, 2) &amp;&amp; utilx.isSortUnstable(10, 2),
-                largeUnstable = utilx.isSortUnstable(11, 3) &amp;&amp; utilx.isSortUnstable(100, 3) &amp;&amp;
-                                    utilx.isSortUnstable(1000, 3) &amp;&amp; utilx.isSortUnstable(10000, 4),
-                nfeSort;
+                unstable = utilx.isSortUnstable(5, 2) || utilx.isSortUnstable(10, 2) ||
+                                utilx.isSortUnstable(11, 3) || utilx.isSortUnstable(100, 3) ||
+                                utilx.isSortUnstable(1000, 3) || utilx.isSortUnstable(10000, 4),
+                supported = !unstable,
+                testArray,
+                nfeSort,
+                idx;
 
-            if (utilx.isFalse(smallUnstable) &amp;&amp; utilx.isFalse(largeUnstable)) {
+            testArray = {
+                0: 5,
+                1: 2,
+                2: 4,
+                3: 6,
+                4: 1,
+                5: 3
+            };
+
+            sortFN.call(testArray);
+            for (idx = 0; utilx.lt(idx, 6); idx += 1) {
+                if (utilx.notStrictEqual(testArray[idx], {0: 5, 1: 2, 2: 4, 3: 6, 4: 1, 5: 3}[idx])) {
+                    supported = false;
+                }
+            }
+
+            if (!utilx.isUndefined(testArray.length)) {
+                supported = false;
+            }
+
+            testArray = {
+                0: 5,
+                1: 2,
+                2: 4,
+                3: 6,
+                4: 1,
+                5: 3,
+                length: 6
+            };
+
+            sortFN.call(testArray);
+            for (idx = 0; utilx.lt(idx, 6); idx += 1) {
+                if (utilx.notStrictEqual(testArray[idx], {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, length: 6}[idx])) {
+                    supported = false;
+                }
+            }
+
+            if (utilx.notStrictEqual(testArray.length, 6)) {
+                supported = false;
+            }
+
+            if (supported) {
                 tempSafariNFE = function nfeSort(array, comparefn) {
+                    utilx.checkObjectCoercible(array);
+                    if (utilx.isUndefined(comparefn)) {
+                        comparefn = defaultComparison;
+                    }
+
+                    throwIfNotAFunction(comparefn);
+
                     return sortFN.call(array, comparefn);
                 };
             } else {
                 tempSafariNFE = function nfeSort(array, comparefn) {
-                    if (!utilx.arrayIsArray(array)) {
-                        throw new TypeError('argument must be an array');
-                    }
-
-                    var val;
-
-                    if (utilx.lte(array.length, 10)) {
-                        if (utilx.isTrue(smallUnstable)) {
-                            val = utilx.arrayStableSort(array, comparefn);
-                        } else {
-                            val = sortFN.call(array, comparefn);
-                        }
-                    } else {
-                        if (utilx.isTrue(largeUnstable)) {
-                            val = utilx.arrayStableSort(array, comparefn);
-                        } else {
-                            val = sortFN.call(array, comparefn);
-                        }
-                    }
-
-                    return val;
+                    return utilx.arrayStableSort(array, comparefn);
                 };
             }
 
@@ -4286,8 +4303,8 @@
                     return false;
                 }
             } else {
-                utilx.arraySort(ka);
-                utilx.arraySort(kb);
+                ka.sort();
+                kb.sort();
                 status = utilx.arraySome(ka, function (aKey, index) {
                     return !utilx.objectIs(aKey, kb[index]);
                 });
@@ -5406,7 +5423,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Jan 14 2014 15:10:25 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Jan 14 2014 18:02:48 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
