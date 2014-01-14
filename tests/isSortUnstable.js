@@ -8,6 +8,8 @@
         expect = required.expect;
 
     describe('isSortUnstable', function () {
+        var results = [];
+
         it('should not throw an error in each case', function () {
             expect(function () {
                 utilx.isSortUnstable(5, 2);
@@ -84,12 +86,18 @@
                 return unstable;
             }
 
-            expect(utilx.isSortUnstable(5, 2)).to.be(isSortUnstable(5, 2));
-            expect(utilx.isSortUnstable(10, 2)).to.be(isSortUnstable(10, 2));
-            expect(utilx.isSortUnstable(11, 3)).to.be(isSortUnstable(11, 3));
-            expect(utilx.isSortUnstable(100, 3)).to.be(isSortUnstable(100, 3));
-            expect(utilx.isSortUnstable(1000, 3)).to.be(isSortUnstable(1000, 3));
-            expect(utilx.isSortUnstable(10000, 4)).to.be(isSortUnstable(10000, 4));
+            utilx.arrayPush(results, utilx.isSortUnstable(5, 2));
+            utilx.arrayPush(results, utilx.isSortUnstable(10, 2));
+            utilx.arrayPush(results, utilx.isSortUnstable(11, 3));
+            utilx.arrayPush(results, utilx.isSortUnstable(100, 3));
+            utilx.arrayPush(results, utilx.isSortUnstable(1000, 3));
+            utilx.arrayPush(results, utilx.isSortUnstable(10000, 4));
+            expect(results[0]).to.be(isSortUnstable(5, 2));
+            expect(results[1]).to.be(isSortUnstable(10, 2));
+            expect(results[2]).to.be(isSortUnstable(11, 3));
+            expect(results[3]).to.be(isSortUnstable(100, 3));
+            expect(results[4]).to.be(isSortUnstable(1000, 3));
+            expect(results[5]).to.be(isSortUnstable(10000, 4));
         });
 
         it('Report of native sort', function () {
@@ -107,12 +115,12 @@
 
             expect(function () {
                 console.log('# Is native sort stable?');
-                console.log('# 5 items: ' + toText(utilx.isSortUnstable(5, 2)));
-                console.log('# 10 items: ' + toText(utilx.isSortUnstable(10, 2)));
-                console.log('# 11 items: ' + toText(utilx.isSortUnstable(11, 3)));
-                console.log('# 100 items: ' + toText(utilx.isSortUnstable(100, 3)));
-                console.log('# 1000 items: ' + toText(utilx.isSortUnstable(1000, 3)));
-                console.log('# 10000 items: ' + toText(utilx.isSortUnstable(10000, 4)));
+                console.log('# 5 items: ' + toText(results[0]));
+                console.log('# 10 items: ' + toText(results[1]));
+                console.log('# 11 items: ' + toText(results[2]));
+                console.log('# 100 items: ' + toText(results[3]));
+                console.log('# 1000 items: ' + toText(results[4]));
+                console.log('# 10000 items: ' + toText(results[5]));
             }).to.not.throwException();
         });
     });

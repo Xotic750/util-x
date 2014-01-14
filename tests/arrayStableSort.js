@@ -8,7 +8,17 @@
         expect = required.expect;
 
     describe('arrayStableSort', function () {
-        var testArray;
+        var testArray,
+            testArray1 = [],
+            testArray2,
+            n = 100,
+            i;
+
+        for (i = 0; i < n; i += 1) {
+            utilx.arrayPush(testArray1, utilx.padLeadingChar(Math.floor(Math.random() * n), '0', 3));
+        }
+
+        testArray2 = utilx.arraySlice(testArray1);
 
         function descending(left, right) {
             var leftS = utilx.anyToString(left),
@@ -144,17 +154,9 @@
         });
 
         it('sorted ascending result should find only greater or equal values while ascending', function () {
-            var n = 10000,
-                array = [],
-                i;
-
-            for (i = 0; i < n; i += 1) {
-                utilx.arrayPush(Math.floor(Math.random() * n));
-            }
-
-            utilx.arrayStableSort(array);
-            for (i = 0; i < array.length - 1; i += 1) {
-                expect(array[i] <= array[i + 1]).to.be.ok();
+            utilx.arrayStableSort(testArray1);
+            for (i = 0; i < testArray1.length - 1; i += 1) {
+                expect(testArray1[i] <= testArray1[i + 1]).to.be.ok();
             }
         });
 
@@ -201,17 +203,9 @@
         });
 
         it('sorted descending result should find only lesser or equal values while descending', function () {
-            var n = 10000,
-                array = [],
-                i;
-
-            for (i = 0; i < n; i += 1) {
-                utilx.arrayPush(Math.floor(Math.random() * n));
-            }
-
-            utilx.arrayStableSort(array, descending);
-            for (i = 0; i < array.length - 1; i += 1) {
-                expect(array[i] >= array[i + 1]).to.be.ok();
+            utilx.arrayStableSort(testArray2, descending);
+            for (i = 0; i < testArray2.length - 1; i += 1) {
+                expect(testArray2[i] >= testArray2[i + 1]).to.be.ok();
             }
         });
 
