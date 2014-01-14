@@ -15,7 +15,7 @@
             i;
 
         for (i = 0; i < n; i += 1) {
-            utilx.arrayPush(testArray1, utilx.padLeadingChar(Math.floor(Math.random() * n), '0', 3));
+            utilx.arrayPush(testArray1, utilx.padLeadingChar(utilx.getRandomInt(n), '0', 3));
         }
 
         testArray2 = utilx.arraySlice(testArray1);

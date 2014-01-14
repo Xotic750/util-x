@@ -2945,6 +2945,46 @@
         }());
 
         /**
+         * Returns a random integer between the supplied min and max arguments.
+         * If no arguments are supplied or are the same then 0 and 1 will be used.
+         * If min is not supplied then 0 is used.
+         * @memberOf utilx
+         * @function
+         * @param {number} [min]
+         * @param {number} max
+         * @return {number}
+         */
+        utilx.getRandomInt = function (min, max) {
+            if (utilx.strictEqual(arguments.length, 1)) {
+                max = min;
+                min = 0;
+            }
+
+            min = utilx.numberToInteger(min);
+            max = utilx.numberToInteger(max);
+            if (utilx.objectIs(min, max)) {
+                max = 1;
+                min = 0;
+            }
+
+            var mult,
+                val;
+
+            if (utilx.lt(min, 0) && utilx.gt(max, 0) && utilx.gt(max - min + 1, MAX_INTEGER)) {
+                mult = Math.floor(Math.random() * 2);
+                if (utilx.isZero(mult)) {
+                    mult = -1;
+                }
+
+                val = Math.floor(Math.random() * UNSAFE_INTEGER) * mult;
+            } else {
+                val = Math.floor(Math.random() * (max - min + 1) + min);
+            }
+
+            return val;
+        };
+
+        /**
          * Custom compare function for isSortStabil.
          * @private
          * @function
@@ -2988,7 +3028,7 @@
             for (iter = 0; utilx.lt(iter, 10); iter += 1) {
                 for (i = 0, array = []; utilx.lt(i, elementCount); i += 1) {
                     utilx.arrayPush(array, {
-                        u: Math.floor(Math.random() * elementLimit),
+                        u: utilx.getRandomInt(elementLimit),
                         i: i
                     });
                 }
@@ -4187,18 +4227,6 @@
          */
         utilx.replaceAll = function (string, pattern, characters) {
             return string.replace(new RegExp(utilx.escapeRegex(pattern), 'g'), characters);
-        };
-
-        /**
-         * Returns a random integer between the supplied min and max arguments.
-         * @memberOf utilx
-         * @function
-         * @param {number} min
-         * @param {number} max
-         * @return {number}
-         */
-        utilx.getRandomInt = function (min, max) {
-            return Math.floor(Math.random() * (max - min + 1) + min);
         };
 
         /**

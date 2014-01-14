@@ -61,7 +61,7 @@
                 for (iter = 0; iter < 10; iter += 1) {
                     for (i = 0, array = []; utilx.lt(i, count); i += 1) {
                         utilx.arrayPush(array, {
-                            u: Math.floor(Math.random() * bins),
+                            u: utilx.getRandomInt(bins),
                             i: i
                         });
                     }
