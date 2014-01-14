@@ -902,6 +902,21 @@
         };
 
         /**
+         * Throws a TypeError if arguments is not a function otherwise returns the function.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {function}
+         */
+        function throwIfNotAFunction(inputArg) {
+            if (!utilx.isFunction(inputArg)) {
+                throw new TypeError(inputArg + ' is not a function');
+            }
+
+            return inputArg;
+        }
+
+        /**
          * Returns true if the operand inputArg is an object or function but not null.
          * @private
          * @function
@@ -1356,6 +1371,42 @@
          */
         utilx.modulo = function (dividend, divisor) {
             return dividend - divisor * Math.floor(dividend / divisor);
+        };
+
+        /**
+         * The abstract operation converts its argument to one of 2^53 integer values in
+         * the range 0 through 2^53-1,inclusive.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {number}
+         */
+        utilx.toUint = function (inputArg) {
+            var number = utilx.toNumber(inputArg),
+                val;
+
+            if (isZeroOrNotFinite(number)) {
+                val = +0;
+            } else {
+                val = utilx.modulo(utilx.numberToInteger(number), UNSAFE_INTEGER);
+            }
+
+            return val;
+        };
+
+        /**
+         * The utilx.isUint() method determines whether the passed value is an integer.
+         * If the target value is an integer in the  range 0 through 2^53-1, inclusive,
+         * return true, otherwise return false.
+         * If the value is NaN or infinite, return false.
+         * @memberOf utilx
+         * @function
+         * @param {*} inputArg
+         * @return {boolean}
+         */
+        utilx.isUint = function (inputArg) {
+            return utilx.numberIsInteger(inputArg) &&
+                inRange(inputArg, 0, MAX_INTEGER);
         };
 
         /**
@@ -2438,21 +2489,6 @@
         }());
 
         /**
-         * Throws a TypeError if arguments is not a function otherwise returns the function.
-         * @memberOf utilx
-         * @function
-         * @param {*} inputArg
-         * @return {function}
-         */
-        function throwIfNotAFunction(inputArg) {
-            if (!utilx.isFunction(inputArg)) {
-                throw new TypeError(inputArg + ' is not a function');
-            }
-
-            return inputArg;
-        }
-
-        /**
          * The utilx.arraySplice() method changes the content of an array,
          * adding new elements while removing old elements.
          * @memberOf utilx
@@ -2904,6 +2940,247 @@
             }
 
             nfeReduce = null;
+
+            return tempSafariNFE;
+        }());
+
+        /**
+         * Custom compare function for isSortStabil.
+         * @private
+         * @function
+         * @param {object} a
+         * @param {object} b
+         * @return {number}
+         */
+        function isSortStableCompare(a, b) {
+            return a.u - b.u;
+        }
+
+        /**
+         * Test if a sort function is unstable for some known conditions, does not guarantee stability.
+         * If a function is not supplied then Array.prototype.sort will be tested
+         * @memberOf utilx
+         * @function
+         * @param {number} elementCount The number of array elements to test.
+         * @param {number} elementLimit
+         * @param {Function} [fn] The sort function to be tested (form: function mySort(array, sortFunction) { ... }).
+         * @return {boolean}
+         */
+        utilx.isSortUnstable = function (elementCount, elementLimit, fn) {
+            if (utilx.gt(arguments.length, 2)) {
+                throwIfNotAFunction(fn);
+            } else {
+                fn = function (array, sortFunction) {
+                    baseArray.sort.call(array, sortFunction);
+                };
+            }
+
+            elementCount = utilx.toUint32(elementCount);
+            elementLimit = utilx.numberToInteger(elementLimit);
+
+            var unstable = false,
+                iter,
+                array,
+                ii,
+                i,
+                u,
+                v;
+
+            for (iter = 0; utilx.lt(iter, 10); iter += 1) {
+                for (i = 0, array = []; utilx.lt(i, elementCount); i += 1) {
+                    utilx.arrayPush(array, {
+                        u: Math.floor(Math.random() * elementLimit),
+                        i: i
+                    });
+                }
+
+                fn(array, isSortStableCompare);
+                for (ii = 0, u = -1, i = -1; utilx.lt(ii, elementCount); ii += 1) {
+                    v = array[ii];
+                    if (utilx.gt(v.u, u)) {
+                        u = v.u;
+                        i = -1;
+                    } else if (utilx.gt(v.i, i)) {
+                        i = v.i;
+                    } else {
+                        unstable = true;
+                    }
+                }
+            }
+
+            return unstable;
+        };
+
+        /**
+         * Default compare function for stableSort.
+         * @private
+         * @function
+         * @param {object} left
+         * @param {object} right
+         * @return {number}
+         */
+        function defaultComparison(left, right) {
+            var leftS = utilx.anyToString(left),
+                rightS = utilx.anyToString(right),
+                val;
+
+            if (utilx.strictEqual(leftS, rightS)) {
+                val = 0;
+            } else if (utilx.lt(leftS, rightS)) {
+                val = -1;
+            } else {
+                val = 1;
+            }
+
+            return val;
+        }
+
+        /**
+         * merge function for stableSort.
+         * @private
+         * @function
+         * @param {array} left
+         * @param {array} right
+         * @param {Function} comparison
+         * @return {array}
+         */
+        function merge(left, right, comparison) {
+            if (!utilx.arrayIsArray(left) || !utilx.arrayIsArray(right)) {
+                throw new TypeError('internal merge error');
+            }
+
+            throwIfNotAFunction(comparison);
+
+            var result = [];
+
+            while (!utilx.isZero(left.length) && !utilx.isZero(right.length)) {
+                if (utilx.lte(comparison(left[0], right[0]), 0)) {
+                    utilx.arrayPush(result, left.shift());
+                } else {
+                    utilx.arrayPush(result, right.shift());
+                }
+            }
+
+            while (!utilx.isZero(left.length)) {
+                utilx.arrayPush(result, left.shift());
+            }
+
+            while (!utilx.isZero(right.length)) {
+                utilx.arrayPush(result, right.shift());
+            }
+
+            return result;
+        }
+
+        /**
+         * mergeSort function for stableSort.
+         * @private
+         * @function
+         * @param {array} array
+         * @param {Function} comparefn
+         * @return {array}
+         */
+        function mergeSort(array, comparefn) {
+            if (!utilx.arrayIsArray(array)) {
+                throw new TypeError('internal mergeSort error');
+            }
+
+            throwIfNotAFunction(comparefn);
+
+            var length = array.length,
+                middle,
+                val;
+
+            if (utilx.lt(length, 2)) {
+                val = array;
+            } else {
+                middle = Math.ceil(length / 2);
+
+                val = merge(mergeSort(utilx.arraySlice(array, 0, middle), comparefn),
+                             mergeSort(utilx.arraySlice(array, middle), comparefn), comparefn);
+            }
+
+            return val;
+        }
+
+        /**
+         * A stable array sort in pure Javascript.
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {Function} [compareFN]
+         * @return {array}
+         */
+        utilx.arrayStableSort = function (array, comparefn) {
+            if (!utilx.arrayIsArray(array)) {
+                throw new TypeError('argument must be an array');
+            }
+
+            if (utilx.gt(array.length, 1)) {
+                if (utilx.lt(arguments.length, 2) || !utilx.isFunction(comparefn)) {
+                    comparefn = defaultComparison;
+                }
+
+                var sorted = mergeSort(array, comparefn);
+
+                array.length = 0;
+                utilx.arrayForEach(sorted, function (element) {
+                    utilx.arrayPush(array, element);
+                });
+            }
+
+            return array;
+        };
+
+        /**
+         * The utilx.arrayeSort() method sorts the elements of an array in place and returns the array.
+         * The sort is stable. The default sort order is lexicographic (not numeric).
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {Function} compareFN
+         * @return {array}
+         */
+        utilx.arraySort = (function () {
+            // Unused variable for JScript NFE bug
+            // http://kangax.github.io/nfe/
+            var sortFN = baseArray.sort,
+                smallUnstable = utilx.isSortUnstable(5, 2) && utilx.isSortUnstable(10, 2),
+                largeUnstable = utilx.isSortUnstable(11, 3) && utilx.isSortUnstable(100, 3) &&
+                                    utilx.isSortUnstable(1000, 3) && utilx.isSortUnstable(10000, 4),
+                nfeSort;
+
+            if (utilx.isFalse(smallUnstable) && utilx.isFalse(largeUnstable)) {
+                tempSafariNFE = function nfeSort(array, comparefn) {
+                    return sortFN.call(array, comparefn);
+                };
+            } else {
+                tempSafariNFE = function nfeSort(array, comparefn) {
+                    if (!utilx.arrayIsArray(array)) {
+                        throw new TypeError('argument must be an array');
+                    }
+
+                    var val;
+
+                    if (utilx.lte(array.length, 10)) {
+                        if (utilx.isTrue(smallUnstable)) {
+                            val = utilx.arrayStableSort(array, comparefn);
+                        } else {
+                            val = sortFN.call(array, comparefn);
+                        }
+                    } else {
+                        if (utilx.isTrue(largeUnstable)) {
+                            val = utilx.arrayStableSort(array, comparefn);
+                        } else {
+                            val = sortFN.call(array, comparefn);
+                        }
+                    }
+
+                    return val;
+                };
+            }
+
+            nfeSort = null;
 
             return tempSafariNFE;
         }());
@@ -3982,8 +4259,8 @@
                     return false;
                 }
             } else {
-                ka.sort();
-                kb.sort();
+                utilx.arraySort(ka);
+                utilx.arraySort(kb);
                 status = utilx.arraySome(ka, function (aKey, index) {
                     return !utilx.objectIs(aKey, kb[index]);
                 });

@@ -93,6 +93,7 @@
                 expect(e.toString()).to.match(new RegExp('^MyError: test'));
                 if (utilx.isString(e.stack)) {
                     /*global console */
+                    console.log('# An example stack trace');
                     console.log('# ' + utilx.arrayJoin(utilx.stringSplit(e.stack, '\n'), '\n# '));
                 }
 
