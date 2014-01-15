@@ -3129,6 +3129,7 @@
          * @return {object}
          */
         utilx.swapItems = function (object, prop1, prop2) {
+            throwIfIsNotTypeObjectOrIsNotFunction(object);
             prop1 = utilx.anyToString(prop1);
             prop2 = utilx.anyToString(prop2);
 
@@ -3140,7 +3141,7 @@
                 temp1 = objectGetOwnPropertyDescriptor(object, prop1);
                 temp2 = objectGetOwnPropertyDescriptor(object, prop2);
                 num = utilx.toUint32(prop2);
-                if (utilx.isUndefined(temp1)) {
+                if (!utilx.isPlainObject(temp1) || !utilx.objectHasOwnProperty(temp1, 'value')) {
                     if (utilx.isTypeObject(object) && !utilx.isFunction(object) &&
                             hasValidLength(object) && utilx.strictEqual(utilx.anyToString(num), prop2) &&
                             utilx.strictEqual(num, object.length - 1)) {
@@ -3161,7 +3162,7 @@
                 }
 
                 num = utilx.toUint32(prop1);
-                if (utilx.isUndefined(temp2)) {
+                if (!utilx.isPlainObject(temp2) || !utilx.objectHasOwnProperty(temp2, 'value')) {
                     if (utilx.isTypeObject(object) && !utilx.isFunction(object) && hasValidLength(object) &&
                             utilx.strictEqual(utilx.anyToString(num), prop1) &&
                             utilx.strictEqual(num, object.length - 1)) {
@@ -3184,6 +3185,34 @@
             }
 
             return object;
+        };
+
+        /**
+         * Fisher-Yates shuffle for randomly shuffling a set.
+         * @memberOf utilx
+         * @function
+         * @param {array} array
+         * @param {(number|string)} [rounds]
+         * @return {array}
+         */
+        utilx.shuffle = function (array, rounds) {
+            throwIfIsNotTypeObjectOrIsNotFunction(array);
+            var length = clampInteger(array.length, 0, MAX_UINT32),
+                index,
+                round;
+
+            if (utilx.gt(length, 1)) {
+                rounds = clampInteger(rounds, 1, MAX_INTEGER);
+                for (round = 0; utilx.lt(round, rounds); round += 1) {
+                    for (index = 0; utilx.lt(index, length); index += 1) {
+                        utilx.swapItems(array, index, utilx.getRandomInt(0, index));
+                    }
+                }
+
+                array.length = length;
+            }
+
+            return array;
         };
 
         /**

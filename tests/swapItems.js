@@ -9,7 +9,6 @@
 
     describe('swapItems', function () {
         it('should throw a TypeError in each case', function () {
-            /*
             expect(function () {
                 utilx.swapItems();
             }).to.throwException(function (e) {
@@ -45,7 +44,117 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-            */
+        });
+
+        it('should do nothing in each case', function () {
+            expect(utilx.swapItems([1, 2, 3])).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], utilx.privateUndefined)).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], null)).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], utilx.privateUndefined, utilx.privateUndefined)).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], null, null)).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], 1, 1, utilx.privateUndefined)).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], '2', '2')).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], 'foo', 'foo')).to.eql([1, 2, 3]);
+            expect(utilx.swapItems([1, 2, 3], 'foo', 'bar')).to.eql([1, 2, 3]);
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            })).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, utilx.privateUndefined)).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, null)).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, utilx.privateUndefined, utilx.privateUndefined)).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, null, null)).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, 1, 1)).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, '1', '1')).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, 'foo', 'foo')).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
+            expect(utilx.swapItems({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            }, 'foo', 'bar')).to.eql({
+                0: 1,
+                1: 2,
+                2: 3,
+                length: 3
+            });
         });
 
         it('should work with arrays', function () {
