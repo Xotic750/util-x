@@ -70,15 +70,15 @@
             }
 
             Constructor.prototype.constructor = 1;
-            if (utilx.objectPropertyIsEnumerable(Constructor, 'constructor')) {
-                console.log('# Constructor.prototype lists constructor (must be IE<9 !)');
-            }
-
             if (utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')) {
                 console.log('# Constructor.prototype.constructor lists constructor (must be IE<9 !)');
             }
 
-            expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
+
+            if (utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')) {
+                console.log('# new Constructor().prototype.constructor lists constructor (must be IE<9 !)');
+            }
         });
 
         it('should list prototype and constructor', function () {
