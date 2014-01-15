@@ -34,8 +34,12 @@
             expect(utilx.objectPropertyIsEnumerable(obj, 'isPrototypeOf')).to.be.ok();
             console.log('# propertyIsEnumerable: ' + utilx.objectPropertyIsEnumerable(obj, 'propertyIsEnumerable'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'propertyIsEnumerable')).to.be.ok();
-            console.log('# constructor: ' + utilx.objectPropertyIsEnumerable(obj, 'constructor'));
-            expect(utilx.objectPropertyIsEnumerable(obj, 'constructor')).to.be.ok();
+
+            if (!utilx.objectPropertyIsEnumerable(obj, 'constructor')) {
+                console.log('# obj.prototype not enumerable (must be IE<9 !): ' +
+                            utilx.objectPropertyIsEnumerable(obj, 'constructor'));
+            }
+
             expect(utilx.objectPropertyIsEnumerable(obj, 'foo')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'bar')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'fuz')).to.not.be.ok();
@@ -67,10 +71,10 @@
 
             Constructor.prototype.constructor = 1;
             expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
-            expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')).to.not.be.ok();
 
-            if (utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')) {
-                console.log('# Constructor.prototype lists constructor (must be IE<9 !)');
+            if (utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')) {
+                console.log('# new Constructor().prototype lists constructor (must be IE<9 !)');
             }
         });
 

@@ -68,9 +68,12 @@
             }
 
             Constructor.prototype.constructor = 1;
-            console.log('# Constructor.prototype: ' +
-                        utilx.objectHasOwnProperty(Constructor, 'prototype'));
-            expect(utilx.objectHasOwnProperty(Constructor, 'prototype')).to.be.ok();
+
+            if (!utilx.objectHasOwnProperty(Constructor, 'prototype')) {
+                console.log('# Constructor.prototype (must be FF<3.6): ' +
+                            utilx.objectHasOwnProperty(Constructor, 'prototype'));
+            }
+
             console.log('# Constructor.prototype.constructor: ' +
                         utilx.objectHasOwnProperty(Constructor.prototype, 'constructor'));
             expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
