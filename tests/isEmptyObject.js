@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -62,18 +62,10 @@
             expect(utilx.isEmptyObject({})).to.be.ok();
             expect(utilx.isEmptyObject([])).to.be.ok();
             expect(utilx.isEmptyObject(utilx.noop)).to.be.ok();
-            //expect(utilx.isEmptyObject(Date)).to.be.ok();
-            //expect(utilx.isEmptyObject(RegExp)).to.be.ok();
-            //expect(utilx.isEmptyObject(Function)).to.be.ok();
-            //expect(utilx.isEmptyObject(String)).to.be.ok();
-            //expect(utilx.isEmptyObject(Boolean)).to.be.ok();
-            //expect(utilx.isEmptyObject(Object)).to.be.ok();
-            //expect(utilx.isEmptyObject(Number)).to.be.ok();
-            expect(utilx.isEmptyObject(X)).to.be.ok();
-            //expect(utilx.isEmptyObject(Error)).to.be.ok();
-            //expect(utilx.isEmptyObject(TypeError)).to.be.ok();
-            //expect(utilx.isEmptyObject(SyntaxError)).to.be.ok();
-            //expect(utilx.isEmptyObject(RangeError)).to.be.ok();
+
+            if (!utilx.isEmptyObject(X)) {
+                console.log('# Constructor lists (must be Safari4 !): ' + utilx.objectKeys(X));
+            }
         });
 
         it('should not be ok in each case', function () {

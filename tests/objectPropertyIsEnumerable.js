@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -22,12 +22,19 @@
         /*jshint +W001 */
 
         it('defined on object should be ok in each case', function () {
+            console.log('# toString: ' + utilx.objectPropertyIsEnumerable(obj, 'toString'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'toString')).to.be.ok();
+            console.log('# toLocaleString: ' + utilx.objectPropertyIsEnumerable(obj, 'toLocaleString'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'toLocaleString')).to.be.ok();
+            console.log('# valueOf: ' + utilx.objectPropertyIsEnumerable(obj, 'valueOf'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'valueOf')).to.be.ok();
+            console.log('# hasOwnProperty: ' + utilx.objectPropertyIsEnumerable(obj, 'hasOwnProperty'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'hasOwnProperty')).to.be.ok();
+            console.log('# isPrototypeOf: ' + utilx.objectPropertyIsEnumerable(obj, 'isPrototypeOf'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'isPrototypeOf')).to.be.ok();
+            console.log('# propertyIsEnumerable: ' + utilx.objectPropertyIsEnumerable(obj, 'propertyIsEnumerable'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'propertyIsEnumerable')).to.be.ok();
+            console.log('# constructor: ' + utilx.objectPropertyIsEnumerable(obj, 'constructor'));
             expect(utilx.objectPropertyIsEnumerable(obj, 'constructor')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'foo')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'bar')).to.not.be.ok();
@@ -60,8 +67,11 @@
 
             Constructor.prototype.constructor = 1;
             expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
-            expect(utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
+
+            if (utilx.objectPropertyIsEnumerable(Constructor.prototype, 'constructor')) {
+                console.log('# Constructor.prototype lists constructor (must be IE<9 !)');
+            }
         });
 
         it('should list prototype and constructor', function () {

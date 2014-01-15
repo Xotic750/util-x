@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -68,9 +68,17 @@
             }
 
             Constructor.prototype.constructor = 1;
+            console.log('# Constructor.prototype: ' +
+                        utilx.objectHasOwnProperty(Constructor, 'prototype'));
             expect(utilx.objectHasOwnProperty(Constructor, 'prototype')).to.be.ok();
+            console.log('# Constructor.prototype.constructor: ' +
+                        utilx.objectHasOwnProperty(Constructor.prototype, 'constructor'));
             expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
+            console.log('# new Constructor().prototype: ' +
+                        utilx.objectHasOwnProperty(new Constructor(), 'prototype'));
             expect(utilx.objectHasOwnProperty(new Constructor(), 'prototype')).to.be.ok();
+            console.log('# new Constructor().constructor: ' +
+                        utilx.objectHasOwnProperty(new Constructor(), 'constructor'));
             expect(utilx.objectHasOwnProperty(new Constructor(), 'constructor')).to.be.ok();
         });
     });
