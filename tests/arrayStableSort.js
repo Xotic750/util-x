@@ -36,15 +36,6 @@
             return val;
         }
 
-        it('is stable in each case', function () {
-            expect(utilx.isSortUnstable(5, 2, utilx.arrayStableSort)).to.be(false);
-            expect(utilx.isSortUnstable(10, 2, utilx.arrayStableSort)).to.be(false);
-            expect(utilx.isSortUnstable(11, 3, utilx.arrayStableSort)).to.be(false);
-            expect(utilx.isSortUnstable(100, 3, utilx.arrayStableSort)).to.be(false);
-            expect(utilx.isSortUnstable(1000, 3, utilx.arrayStableSort)).to.be(false);
-            expect(utilx.isSortUnstable(10000, 4, utilx.arrayStableSort)).to.be(false);
-        });
-
         it('should not throw an error in each case', function () {
             expect(function () {
                 utilx.arrayStableSort();

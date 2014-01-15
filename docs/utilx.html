@@ -3380,7 +3380,7 @@ Using strict equality (the same method used by the === comparison operator).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3341">line 3341</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3218">line 3218</a>
     </li></ul></dd>
     
     
@@ -4904,7 +4904,7 @@ as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="arraySort"><span class="type-signature">&lt;static> </span>arraySort<span class="signature">(array, compareFN)</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id="arraySort"><span class="type-signature">&lt;static> </span>arraySort<span class="signature">(array, <span class="optional">compareFN</span>)</span><span class="type-signature"> &rarr; {array}</span></h4>
     
     
 </dt>
@@ -4913,7 +4913,7 @@ as to reduce it to a single value.
     
     <div class="description">
         The utilx.arrayeSort() method sorts the elements of an array in place and returns the array.
-The sort is stable. The default sort order is lexicographic (not numeric).
+The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
     </div>
     
 
@@ -4934,6 +4934,8 @@ The sort is stable. The default sort order is lexicographic (not numeric).
 		
 		<th>Type</th>
 		
+		
+		<th>Argument</th>
 		
 		
 		
@@ -4960,6 +4962,14 @@ The sort is stable. The default sort order is lexicographic (not numeric).
             </td>
             
             
+                <td class="attributes">
+                
+                    
+                
+                    
+                
+                </td>
+            
             
             
             
@@ -4982,6 +4992,16 @@ The sort is stable. The default sort order is lexicographic (not numeric).
             
             </td>
             
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+                    
+                
+                    
+                
+                </td>
             
             
             
@@ -5017,7 +5037,7 @@ The sort is stable. The default sort order is lexicographic (not numeric).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3170">line 3170</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3105">line 3105</a>
     </li></ul></dd>
     
     
@@ -5296,7 +5316,8 @@ adding new elements while removing old elements.
     
     
     <div class="description">
-        A stable array sort in pure Javascript.
+        The utilx.arrayStableSort() method sorts the elements of an array in place and returns the array.
+This is a stable sort. The default sort order is lexicographic (not numeric).
     </div>
     
 
@@ -5420,7 +5441,7 @@ adding new elements while removing old elements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3140">line 3140</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3075">line 3075</a>
     </li></ul></dd>
     
     
@@ -6334,7 +6355,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4957">line 4957</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4834">line 4834</a>
     </li></ul></dd>
     
     
@@ -6515,7 +6536,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4241">line 4241</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4118">line 4118</a>
     </li></ul></dd>
     
     
@@ -6650,7 +6671,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3997">line 3997</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3874">line 3874</a>
     </li></ul></dd>
     
     
@@ -6808,7 +6829,7 @@ also default to Error. (Looking at you IE < 9)
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4337">line 4337</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4214">line 4214</a>
     </li></ul></dd>
     
     
@@ -7103,7 +7124,7 @@ special regex characters.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4199">line 4199</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4076">line 4076</a>
     </li></ul></dd>
     
     
@@ -7285,7 +7306,7 @@ the same name in previous arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4166">line 4166</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4043">line 4043</a>
     </li></ul></dd>
     
     
@@ -8393,7 +8414,7 @@ If min is not supplied then 0 is used.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4773">line 4773</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4650">line 4650</a>
     </li></ul></dd>
     
     
@@ -9123,7 +9144,7 @@ If min is not supplied then 0 is used.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4186">line 4186</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4063">line 4063</a>
     </li></ul></dd>
     
     
@@ -9258,7 +9279,7 @@ If min is not supplied then 0 is used.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3521">line 3521</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3398">line 3398</a>
     </li></ul></dd>
     
     
@@ -9547,7 +9568,7 @@ environments..
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3510">line 3510</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3387">line 3387</a>
     </li></ul></dd>
     
     
@@ -9952,7 +9973,7 @@ environments..
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4795">line 4795</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4672">line 4672</a>
     </li></ul></dd>
     
     
@@ -11582,7 +11603,7 @@ Some gotchas, not all browsers are equal and native objects do not necessarily a
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4147">line 4147</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4024">line 4024</a>
     </li></ul></dd>
     
     
@@ -11988,216 +12009,6 @@ Some gotchas, not all browsers are equal and native objects do not necessarily a
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line874">line 874</a>
-    </li></ul></dd>
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-	<dt>
-		Type
-	</dt>
-	<dd>
-		
-<span class="param-type">boolean</span>
-
-
-	</dd>
-</dl>
-
-        
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="isSortUnstable"><span class="type-signature">&lt;static> </span>isSortUnstable<span class="signature">(elementCount, elementLimit, <span class="optional">fn</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        Test if a sort function is unstable for some known conditions, does not guarantee stability.
-If a function is not supplied then Array.prototype.sort will be tested
-    </div>
-    
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		<th>Argument</th>
-		
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>elementCount</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last">The number of array elements to test.</td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>elementLimit</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last"></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>fn</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-            
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-                    
-                
-                    
-                
-                </td>
-            
-            
-            
-            
-            <td class="description last">The sort function to be tested (form: function mySort(array, sortFunction) { ... }).</td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3009">line 3009</a>
     </li></ul></dd>
     
     
@@ -13990,7 +13801,7 @@ If the value is NaN or infinite, return false.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4615">line 4615</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4492">line 4492</a>
     </li></ul></dd>
     
     
@@ -14175,7 +13986,7 @@ or replacing property values in a user-defined manner.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4353">line 4353</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4230">line 4230</a>
     </li></ul></dd>
     
     
@@ -16183,7 +15994,7 @@ If the value is NaN or infinite, return false.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4075">line 4075</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3952">line 3952</a>
     </li></ul></dd>
     
     
@@ -16341,7 +16152,7 @@ If the value is NaN or infinite, return false.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3732">line 3732</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3609">line 3609</a>
     </li></ul></dd>
     
     
@@ -16523,7 +16334,7 @@ and returns the object.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3542">line 3542</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3419">line 3419</a>
     </li></ul></dd>
     
     
@@ -16661,7 +16472,7 @@ In essence the object is made effectively immutable. Returns the object being fr
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3912">line 3912</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3789">line 3789</a>
     </li></ul></dd>
     
     
@@ -17115,7 +16926,7 @@ chain.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4019">line 4019</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3896">line 3896</a>
     </li></ul></dd>
     
     
@@ -17408,7 +17219,7 @@ chain.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3969">line 3969</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3846">line 3846</a>
     </li></ul></dd>
     
     
@@ -17557,7 +17368,7 @@ environments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3422">line 3422</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3299">line 3299</a>
     </li></ul></dd>
     
     
@@ -17962,7 +17773,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line5134">line 5134</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line5011">line 5011</a>
     </li></ul></dd>
     
     
@@ -18132,7 +17943,7 @@ Throws an error if the arguments can not be coerced, i.e. null or undefined.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4228">line 4228</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4105">line 4105</a>
     </li></ul></dd>
     
     
@@ -19571,7 +19382,7 @@ returning true or false as appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3265">line 3265</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line3142">line 3142</a>
     </li></ul></dd>
     
     
@@ -19732,7 +19543,7 @@ returning true or false as appropriate.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4750">line 4750</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4627">line 4627</a>
     </li></ul></dd>
     
     
@@ -21517,7 +21328,7 @@ the range 0 through 2^32-1,inclusive.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4215">line 4215</a>
+        <a href="util-x.js.html">/home/graham/source_projects/util-x/lib/util-x.js</a>, <a href="util-x.js.html#line4092">line 4092</a>
     </li></ul></dd>
     
     
@@ -21582,7 +21393,7 @@ the range 0 through 2^32-1,inclusive.
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Jan 14 2014 20:31:29 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 15 2014 02:59:03 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
