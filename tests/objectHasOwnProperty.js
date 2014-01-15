@@ -70,17 +70,11 @@
             Constructor.prototype.constructor = 1;
 
             if (!utilx.objectHasOwnProperty(Constructor, 'prototype')) {
-                console.log('# Constructor.prototype does not list (must be FF<3.6)');
+                console.log('# Constructor.prototype does not list (must be FF<3.6 or Opera 11.5 !)');
             }
 
-            console.log('# Constructor.prototype.constructor: ' +
-                        utilx.objectHasOwnProperty(Constructor.prototype, 'constructor'));
             expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
-            console.log('# new Constructor().prototype: ' +
-                        utilx.objectHasOwnProperty(new Constructor(), 'prototype'));
             expect(utilx.objectHasOwnProperty(new Constructor(), 'prototype')).to.be.ok();
-            console.log('# new Constructor().constructor: ' +
-                        utilx.objectHasOwnProperty(new Constructor(), 'constructor'));
             expect(utilx.objectHasOwnProperty(new Constructor(), 'constructor')).to.be.ok();
         });
     });
