@@ -75,8 +75,28 @@
                 console.log('# Constructor.prototype.constructor lists constructor (must be IE<9 !)');
             }
 
+            try {
+                utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor');
+            } catch (e) {
+                console.log('# IE<9 throws on utilx.objectPropertyIsEnumerable(new Constructor().prototype, \'constructor\'): ' + e.message);
+            }
+
+            try {
+                utilx.objectPropertyIsEnumerable((new Constructor()).prototype, 'constructor');
+            } catch (e) {
+                console.log('# IE<9 throws on utilx.objectPropertyIsEnumerable((new Constructor()).prototype, \'constructor\'): ' + e.message);
+            }
+
+            /*
             if (utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')) {
                 console.log('# new Constructor().prototype lists constructor (must be IE<9 !)');
+            }
+            */
+
+            try {
+                expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
+            } catch (e) {
+                console.log('# Does IE<9 throw on new Constructor().prototype.constructor: ' + e);
             }
         });
 
