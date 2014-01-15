@@ -100,7 +100,8 @@
 
             Constructor.prototype.constructor = 1;
             if (utilx.objectKeys(Constructor).length) {
-                console.log('# Constructor lists (must be Safari4 !): ' + utilx.objectKeys(Constructor));
+                console.log('# Constructor lists (must be Safari4 !): ' +
+                            utilx.objectKeys(Constructor));
             }
 
             if (utilx.objectKeys(Constructor.prototype).length) {

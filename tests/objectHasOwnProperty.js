@@ -70,8 +70,7 @@
             Constructor.prototype.constructor = 1;
 
             if (!utilx.objectHasOwnProperty(Constructor, 'prototype')) {
-                console.log('# Constructor.prototype (must be FF<3.6): ' +
-                            utilx.objectHasOwnProperty(Constructor, 'prototype'));
+                console.log('# Constructor.prototype does not list (must be FF<3.6)');
             }
 
             console.log('# Constructor.prototype.constructor: ' +
