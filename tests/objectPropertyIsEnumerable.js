@@ -76,19 +76,16 @@
 
             console.log('# Does IE<9 throw');
             try {
-                utilx.objectPropertyIsEnumerable(Constructor, 'prototype');
+                expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
             } catch (e) {
                 console.log('# Does IE<9 throw on Constructor.prototype: ' + e);
             }
 
-            expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
             try {
-                utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'prototype');
+                expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
             } catch (e) {
                 console.log('# Does IE<9 throw on new Constructor().prototype.constructor: ' + e);
             }
-
-            expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
         });
 
         it('should list prototype and constructor', function () {
