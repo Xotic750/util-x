@@ -14,3 +14,8 @@ Master
 
 #[@@MODULE @@VERSION](@@HOMEPAGE)
 ###### @@AUTHORNAME <@@AUTHOREMAIL>
+
+An unobtrusive Javascript library that attempts to give you the best possible chance of writing cross-environment code.
+It does not claim to solve every possible bug in all environments, but it certainly smoothes out some of the more frequently
+occuring ones. If you patch your environment with es5 or es6 shim libraries then they may affect this library, it is best used
+in an environment where native objects have not been directly patched/shimmed by some other library.
