@@ -77,7 +77,8 @@
                 utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor');
                 doTest = true;
             } catch (e) {
-                console.log('# IE<9 throws on Object.propertyIsEnumerable when examining prototype: ' + e.message);
+                console.log('# IE<9 throws on utilx.objectPropertyIsEnumerable when examining prototype.constructor: ' +
+                            e.message);
             }
 
             if (doTest) {

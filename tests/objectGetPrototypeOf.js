@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -85,6 +85,14 @@
             expect(utilx.objectGetPrototypeOf(new Person())).to.be(Person.prototype);
             expect(utilx.objectGetPrototypeOf(new Employee())).to.be(Employee.prototype);
             expect(utilx.objectGetPrototypeOf(new Manager())).to.be(Manager.prototype);
+
+            try {
+                var x = utilx.objectGetPrototypeOf(new Person().prototype).constructor;
+                console.log('# IE<9 was ok utilx.objectGetPrototypeOf when examining prototype.constructor: ' + x);
+            } catch (e) {
+                console.log('# IE<9 throws on utilx.objectGetPrototypeOf when examining prototype.constructor: ' +
+                            e.message);
+            }
         });
     });
 }());
