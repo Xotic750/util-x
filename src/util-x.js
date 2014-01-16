@@ -3751,8 +3751,8 @@
                         utilx.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
                         !utilx.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), 'value') ||
                         utilx.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, utilx.privateUndefined) ||
-                        utilx.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), 'value') ||
-                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, 5), utilx.privateUndefined)) {
+                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, 5), utilx.privateUndefined) ||
+                        utilx.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), 'value')) {
 
                     throw new Error();
                 }

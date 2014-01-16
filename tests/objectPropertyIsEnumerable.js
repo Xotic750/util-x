@@ -65,7 +65,6 @@
             }
 
             Constructor.prototype.constructor = 1;
-            //expect(utilx.objectPropertyIsEnumerable(Constructor, 'prototype')).to.not.be.ok();
             if (utilx.objectPropertyIsEnumerable(Constructor, 'prototype')) {
                 console.log('# Constructor lists prototype (must be Safari 4 !)');
             }
@@ -82,10 +81,7 @@
             }
 
             if (doTest) {
-                //expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
-                if (utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')) {
-                    console.log('# new Constructor().prototype lists constructor (must be Safari 4 !)');
-                }
+                expect(utilx.objectPropertyIsEnumerable(new Constructor().prototype, 'constructor')).to.not.be.ok();
             }
         });
 
