@@ -2177,9 +2177,7 @@
                 var val = false,
                     key;
 
-                if (utilx.hasProperty(object, property) &&
-                        utilx.isUndefined(utilx.objectGetPrototypeOf(object)[property])) {
-
+                if (utilx.hasProperty(object, property)) {
                     for (key in object) {
                         if (utilx.strictEqual(key, property) && utilx.objectHasOwnProperty(object, property)) {
                             val = true;
@@ -2221,7 +2219,12 @@
                                     utilx.hasProperty(object, property) &&
                                     !utilx.objectIs(object[property], utilx.objectGetPrototypeOf(object)[property]));
                         } catch (e) {
-                            val = propertyIsEnumerableCustom(object, property);
+                            /*global console */
+                            console.log('# WE CRAPPED OUT, USING FALLBACK');
+                            val = propertyIsEnumerableCustom(object, property) ||
+                                (utilx.arrayContains(defaultProperties, property) &&
+                                    utilx.hasProperty(object, property) &&
+                                    !utilx.objectIs(object[property], utilx.objectGetPrototypeOf(object)[property]));
                         }
 
                         return val;
