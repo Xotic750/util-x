@@ -28,19 +28,111 @@
     'use strict';
 
     var baseObject = {},
-        baseArray = [],
-        baseString = '',
-        baseNumber = 0,
-        baseBoolean = true,
+        toStringFN = baseObject.toString,
+        hasOwnPropertyFN = baseObject.hasOwnProperty,
+        propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
         CtrObject = baseObject.constructor,
+        baseObjectPrototype = CtrObject.prototype,
         noNewCtrObject = CtrObject,
-        CtrBoolean = baseBoolean.constructor,
-        CtrNumber = baseNumber.constructor,
+        boxedString = noNewCtrObject('a'),
+        isIsFn = CtrObject.is,
+        getPrototypeOfFN = CtrObject.getPrototypeOf,
+        keysFN = CtrObject.keys,
+        freezeFN = CtrObject.freeze,
+        isFrozenFN = CtrObject.isFrozen,
+        isPrototypeOfFN = CtrObject.prototype.isPrototypeOf,
+        objectCreateFN = CtrObject.create,
+        getOwnPropDescFN = CtrObject.getOwnPropertyDescriptor,
+        definePropertyFN = CtrObject.defineProperty,
+        definePropertyCustom,
+        definePropertyCustom1,
+        definePropertyCustom2,
+        freezeObject,
+
+        baseArray = [],
+        isArrayFN = baseArray.isArray,
+        spliceFN = baseArray.splice,
+        forEachFN = baseArray.forEach,
+        someFN = baseArray.some,
+        mapFN = baseArray.map,
+        sliceFN = baseArray.slice,
+        filterFN = baseArray.filter,
+        reduceFN = baseArray.reduce,
+        sortFN = baseArray.sort,
+        indexOfFN = baseArray.indexOf,
+
+        baseString = '',
+        splitFN = baseString.split,
+        startsWithFN = baseString.startsWith,
+        endsWithFN = baseString.endsWith,
+        containsFN = baseString.contains,
+        trimFN = baseString.trim,
         CtrString = baseString.constructor,
+        repeatFN = CtrString.repeat,
+
+        baseNumber = 0,
+        CtrNumber = baseNumber.constructor,
+        isFiniteFN = CtrNumber.isFinite,
+        isNaNFN = CtrNumber.isNaN,
+        toIntegerFN = CtrNumber.toInteger,
+        isIntegerFN = CtrNumber.isInteger,
+
+        baseBoolean = true,
+        CtrBoolean = baseBoolean.constructor,
+
+        signFN = Math.sign,
+
         protoName = '__proto__',
+        defineGetter = '__defineGetter__',
+        defineSetter = '__defineSetter__',
+        lookupGetter = '__lookupGetter__',
+        lookupSetter = '__lookupSetter__',
+        lookupGetterFN = baseObject[lookupGetter],
+        lookupSetterFN = baseObject[lookupSetter],
+        defineGetterFN = baseObject[defineGetter],
+        defineSetterFN = baseObject[defineSetter],
+
+        objectName = 'object',
+        functionName = 'function',
+        calleeString = 'callee',
+        lengthString = 'length',
+        prototypeString = 'prototype',
+        toStringString = 'toString',
+        valueString = 'value',
+        sentinelString = 'sentinel',
+
+        argumentsString = '[object Arguments]',
+        functionString = '[object Function]',
+        objectString = '[object Object]',
+        undefinedString = '[object Undefined]',
+        nullString = '[object Null]',
+        errorString = '[object Error]',
+        regexpString = '[object RegExp]',
+        arrayString = '[object Array]',
+        dateString = '[object Date]',
+        testString = 'test',
+
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
+        rxPlusMinus = new RegExp('^[+\\-]?'),
+        rxNpcgCheck = new RegExp('()??'),
+        rxNotDigits = new RegExp('^\\d+$'),
+        rxTest = new RegExp(testString),
+        rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
+        wsTrimRX,
+
         patchedIEErrorToString = false,
+        hasDontEnumBug = true,
+        hasFuncProtoBug = false,
+        testObject1,
+        testObject2,
         previousIEErrorToString,
+        isArgumentsCheck,
+        compliantExecNpcg,
+        fixOpera10GetPrototypeOf,
+        testProp,
+        testValue,
+        shouldSplitString,
+        supported,
 
         /**
          * For hasOwnProperty bug.
@@ -48,7 +140,7 @@
          * @type {array.<string>}
          */
         defaultProperties = [
-            'toString',
+            toStringString,
             'toLocaleString',
             'valueOf',
             'hasOwnProperty',
@@ -56,6 +148,38 @@
             'propertyIsEnumerable',
             'constructor'
         ],
+
+        whiteSpacesList = [
+            0x0009, // Tab
+            0x000a, // Line Feed
+            0x000b, // Vertical Tab
+            0x000c, // Form Feed
+            0x000d, // Carriage Return
+            0x0020, // Space
+            0x0085, // Next line
+            0x00a0, // No-break space
+            0x1680, // Ogham space mark
+            0x180e, // Mongolian vowel separator
+            0x2000, // En quad
+            0x2001, // Em quad
+            0x2002, // En space
+            0x2003, // Em space
+            0x2004, // Three-per-em space
+            0x2005, // Four-per-em space
+            0x2006, // Six-per-em space
+            0x2007, // Figure space
+            0x2008, // Punctuation space
+            0x2009, // Thin space
+            0x200a, // Hair space
+            0x200b, // Zero width space
+            0x2028, // Line separator
+            0x2029, // Paragraph separator
+            0x202f, // Narrow no-break space
+            0x205f, // Medium mathematical space
+            0x3000, // Ideographic space
+            0xfeff // Byte Order Mark
+        ],
+        whiteSpacesString,
 
         publicUtil,
 
@@ -514,7 +638,7 @@
      * @return {boolean}
      */
     $.isZero = function (inputArg) {
-        return $.strictEqual(inputArg, 0);
+        return $.strictEqual(inputArg, $.POSITIVE_ZERO);
     };
 
     /**
@@ -578,32 +702,20 @@
     /**
      * Returns true if the operand inputArg is typeof Object.
      * @memberOf utilx
+     * @name isTypeOfObject
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.isTypeOfObject = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var testRx = new RegExp('test'),
-            objectString = 'object',
-            isRxObject = $.strictEqual(typeof testRx, objectString),
-            nfeIsTypeOfObject;
-
-        if ($.isTrue(isRxObject)) {
-            tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
-                return $.strictEqual(typeof inputArg, objectString);
-            };
-        } else {
-            tempSafariNFE = function nfeIsTypeOfObject(inputArg) {
-                return $.strictEqual(typeof inputArg, objectString) || $.isRegExp(inputArg);
-            };
-        }
-
-        nfeIsTypeOfObject = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isTrue($.strictEqual(typeof rxTest, objectName))) {
+        $.isTypeOfObject = function (inputArg) {
+            return $.strictEqual(typeof inputArg, objectName);
+        };
+    } else {
+        $.isTypeOfObject = function (inputArg) {
+            return $.strictEqual(typeof inputArg, objectName) || $.isRegExp(inputArg);
+        };
+    }
 
     /**
      * Returns true if the operand inputArg is of type Object but not if null.
@@ -645,23 +757,19 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.isNumeric = (function () {
-        var rxPlusMinus = new RegExp('^[+\\-]?');
+    $.isNumeric = function (inputArg) {
+        var val = false,
+            string;
 
-        return function (inputArg) {
-            var val = false,
-                string;
-
-            if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
-                string = inputArg.toString().replace(rxPlusMinus, '');
-                if (!isNaN(parseFloat(string)) && isFinite(string)) {
-                    val = true;
-                }
+        if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
+            string = inputArg.toString().replace(rxPlusMinus, '');
+            if (!isNaN(parseFloat(string)) && isFinite(string)) {
+                val = true;
             }
+        }
 
-            return val;
-        };
-    }());
+        return val;
+    };
 
     /**
      * The abstract operation throws an error if its argument is a value that cannot be
@@ -738,116 +846,81 @@
     /**
      * Returns true if the operand inputArg is an argumenta object.
      * @memberOf utilx
+     * @name isArguments
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.isArguments = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var toStringFN = baseObject.toString,
-            hasOwnPropertyFN = baseObject.hasOwnProperty,
-            propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
-            argumentsString = '[object Arguments]',
-            functionString = '[object Function]',
-            objectString = '[object Object]',
-            calleeString = 'callee',
-            lengthString = 'length',
-            firstCheck,
-            nfeIsArguments;
+    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
+        $.isArguments = function (inputArg) {
+            return $.strictEqual(toStringFN.call(inputArg), argumentsString);
+        };
+    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
+        isArgumentsCheck = function (inputArg) {
+            return $.isTypeObject(inputArg) &&
+                $.strictEqual(toStringFN.call(inputArg), objectString) &&
+                hasOwnPropertyFN.call(inputArg, calleeString) &&
+                hasOwnPropertyFN.call(inputArg, lengthString) &&
+                $.isNumber(inputArg.length);
+        };
 
-        tempSafariNFE = null;
-        if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
-            tempSafariNFE = function nfeIsArguments(inputArg) {
-                return $.strictEqual(toStringFN.call(inputArg), argumentsString);
+        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
+            $.isArguments = function (inputArg) {
+                return isArgumentsCheck(inputArg) &&
+                    !propertyIsEnumerableFN.call(inputArg, calleeString) &&
+                    !propertyIsEnumerableFN.call(inputArg, lengthString);
             };
-        } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
-            firstCheck = function (inputArg) {
-                return $.isTypeObject(inputArg) &&
-                    $.strictEqual(toStringFN.call(inputArg), objectString) &&
-                    hasOwnPropertyFN.call(inputArg, calleeString) &&
-                    hasOwnPropertyFN.call(inputArg, lengthString) &&
-                    $.isNumber(inputArg.length);
-            };
-
-            if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
-                tempSafariNFE = function nfeIsArguments(inputArg) {
-                    return firstCheck(inputArg) &&
-                        !propertyIsEnumerableFN.call(inputArg, calleeString) &&
-                        !propertyIsEnumerableFN.call(inputArg, lengthString);
-                };
-            } else {
-                tempSafariNFE = firstCheck;
-            }
+        } else {
+            $.isArguments = isArgumentsCheck;
         }
+    }
 
-        if ($.isNull(tempSafariNFE)) {
-            tempSafariNFE = function nfeIsArguments(inputArg) {
-                return $.isTypeObject(inputArg) &&
-                    $.strictEqual(toStringFN.call(inputArg), objectString) &&
-                    $.hasProperty(inputArg, calleeString) &&
-                    $.hasProperty(inputArg, lengthString) &&
-                    $.isNumber(inputArg.length);
-            };
-        }
-
-        nfeIsArguments = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isUndefined($.isArguments)) {
+        $.isArguments = function (inputArg) {
+            return $.isTypeObject(inputArg) &&
+                $.strictEqual(toStringFN.call(inputArg), objectString) &&
+                $.hasProperty(inputArg, calleeString) &&
+                $.hasProperty(inputArg, lengthString) &&
+                $.isNumber(inputArg.length);
+        };
+    }
 
     /**
      * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
      * @memberOf utilx
+     * @name toObjectString
      * @function
      * @param {*} object
      * @return {string}
      */
-    $.toObjectString = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var toStringFN = baseObject.toString,
-            undefinedString = '[object Undefined]',
-            nullString = '[object Null]',
-            argumentsString = '[object Arguments]',
-            nfeToObjectString;
+    try {
+        if ($.strictEqual(toStringFN.call(), undefinedString) &&
+                $.strictEqual(toStringFN.call(null), nullString) &&
+                $.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
 
-        try {
-            tempSafariNFE = null;
-            if ($.strictEqual(toStringFN.call(), undefinedString) &&
-                    $.strictEqual(toStringFN.call(null), nullString) &&
-                    $.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
-
-                tempSafariNFE = function nfeToObjectString(object) {
-                    return toStringFN.call(object);
-                };
-            }
-        } catch (exception) {
-            tempSafariNFE = null;
-        }
-
-        if ($.isNull(tempSafariNFE)) {
-            tempSafariNFE = function nfeToObjectString(object) {
-                var val;
-
-                if ($.isUndefined(object)) {
-                    val = undefinedString;
-                } else if ($.isNull(object)) {
-                    val = nullString;
-                } else if ($.isArguments(object)) {
-                    val = argumentsString;
-                } else {
-                    val = toStringFN.call(object);
-                }
-
-                return val;
+            $.toObjectString = function (object) {
+                return toStringFN.call(object);
             };
         }
+    } catch (ignore) {}
 
-        nfeToObjectString = null;
+    if ($.isUndefined($.toObjectString)) {
+        $.toObjectString = function (object) {
+            var val;
 
-        return tempSafariNFE;
-    }());
+            if ($.isUndefined(object)) {
+                val = undefinedString;
+            } else if ($.isNull(object)) {
+                val = nullString;
+            } else if ($.isArguments(object)) {
+                val = argumentsString;
+            } else {
+                val = toStringFN.call(object);
+            }
+
+            return val;
+        };
+    }
 
     /**
      * Returns true if the operand inputArg is an error.
@@ -857,7 +930,7 @@
      * @return {boolean}
      */
     $.isError = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), '[object Error]') ||
+        return $.strictEqual($.toObjectString(inputArg), errorString) ||
             ($.isTypeObject(inputArg) && $.objectInstanceOf(inputArg, Error));
     };
 
@@ -869,7 +942,7 @@
      * @return {boolean}
      */
     $.isRegExp = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), '[object RegExp]') &&
+        return $.strictEqual($.toObjectString(inputArg), regexpString) &&
             $.isString(inputArg.source) && $.isBoolean(inputArg.global);
     };
 
@@ -881,7 +954,7 @@
      * @return {boolean}
      */
     $.isObject = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), '[object Object]');
+        return $.strictEqual($.toObjectString(inputArg), objectString);
     };
 
     /**
@@ -892,10 +965,10 @@
      * @return {boolean}
      */
     $.isFunction = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), '[object Function]') ||
-            ($.strictEqual(typeof inputArg, 'function') &&
-             $.strictEqual(typeof inputArg.call, 'function') &&
-             $.strictEqual(typeof inputArg.apply, 'function'));
+        return $.strictEqual($.toObjectString(inputArg), functionString) ||
+            ($.strictEqual(typeof inputArg, functionName) &&
+             $.strictEqual(typeof inputArg.call, functionName) &&
+             $.strictEqual(typeof inputArg.apply, functionName));
     };
 
     /**
@@ -945,29 +1018,19 @@
      * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
      * whose class internal property is "Array"; otherwise it returns false.
      * @memberOf utilx
+     * @name arrayIsArray
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
     // named $.arrayIsArray instead of isArray because of SpiderMonkey and Blackberry bug
-    $.arrayIsArray = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var isArrayFN = baseArray.isArray,
-            nfeIsArray;
-
-        if ($.isFunction(isArrayFN)) {
-            tempSafariNFE = isArrayFN;
-        } else {
-            tempSafariNFE = function nfeIsArray(inputArg) {
-                return $.strictEqual($.toObjectString(inputArg), '[object Array]');
-            };
-        }
-
-        nfeIsArray = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isFunction(isArrayFN)) {
+        $.arrayIsArray = isArrayFN;
+    } else {
+        $.arrayIsArray = function (inputArg) {
+            return $.strictEqual($.toObjectString(inputArg), arrayString);
+        };
+    }
 
     /**
      * The arrayJoin() method joins all elements of an array into a string.
@@ -996,48 +1059,38 @@
      * @return {boolean}
      */
     $.isDate = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), '[object Date]');
+        return $.strictEqual($.toObjectString(inputArg), dateString);
     };
 
     /**
      * Determines whether two values are the same value.
      * @memberOf utilx
+     * @name objectIs
      * @function
      * @param {*} x
      * @param {*} y
      * @return {boolean}
      */
     // named $.objectIs instead of $.objectIs because of SpiderMonkey and Blackberry bug
-    $.objectIs = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var isIsFn = CtrObject.is,
-            nfeIs;
+    if ($.isFunction(isIsFn)) {
+        $.objectIs = isIsFn;
+    } else {
+        $.objectIs = function (x, y) {
+            var val;
 
-        if ($.isFunction(isIsFn)) {
-            tempSafariNFE = isIsFn;
-        } else {
-            tempSafariNFE = function nfeIs(x, y) {
-                var val;
-
-                if ($.strictEqual(x, y)) {
-                    if ($.isZero(x)) {
-                        val = $.strictEqual(1 / x, 1 / y);
-                    } else {
-                        val = true;
-                    }
+            if ($.strictEqual(x, y)) {
+                if ($.isZero(x)) {
+                    val = $.strictEqual(1 / x, 1 / y);
                 } else {
-                    val = $.notStrictEqual(x, x) && $.notStrictEqual(y, y);
+                    val = true;
                 }
+            } else {
+                val = $.notStrictEqual(x, x) && $.notStrictEqual(y, y);
+            }
 
-                return val;
-            };
-        }
-
-        nfeIs = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * Returns true if the operands are of the same typeof.
@@ -1138,97 +1191,67 @@
     /**
      * The function determines whether the passed value is NaN. More robust version of the original global isNaN.
      * @memberOf utilx
+     * @name numberIsNaN
      * @function
      * @param {*} number
      * @return {boolean}
      */
     // named $.numberIsNaN instead of isNaN because of SpiderMonkey and Blackberry bug
-    $.numberIsNaN = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var isNaNFN = CtrNumber.isNaN,
-            nfeIsNaN;
-
-        if ($.isFunction(isNaNFN)) {
-            tempSafariNFE = isNaNFN;
-        } else {
-            tempSafariNFE = function nfeIsNaN(number) {
-                return $.objectIs(number, NaN);
-            };
-        }
-
-        nfeIsNaN = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isFunction(isNaNFN)) {
+        $.numberIsNaN = isNaNFN;
+    } else {
+        $.numberIsNaN = function (number) {
+            return $.objectIs(number, NaN);
+        };
+    }
 
     /**
      * The function determines whether the passed value is finite.
      * More robust version of the original global isFinite.
      * @memberOf utilx
+     * @name numberIsFinite
      * @function
      * @param {*} number
      * @return {boolean}
      */
     // named $.numberIsFinite instead of isFinite because of SpiderMonkey and Blackberry bug
-    $.numberIsFinite = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var isFiniteFN = CtrNumber.isFinite,
-            nfeIsFinite;
-
-        if ($.isFunction(isFiniteFN)) {
-            tempSafariNFE = isFiniteFN;
-        } else {
-            tempSafariNFE = function nfeIsFinite(number) {
-                return $.isNumber(number) && isFinite(number);
-            };
-        }
-
-        nfeIsFinite = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isFunction(isFiniteFN)) {
+        $.numberIsFinite = isFiniteFN;
+    } else {
+        $.numberIsFinite = function (number) {
+            return $.isNumber(number) && isFinite(number);
+        };
+    }
 
     /**
      * The function returns the sign of a number, indicating whether the number is positive, negative or zero.
      * This function has 5 kinds of return values, 1, -1, 0, -0, NaN, which represent "positive number",
      * "negative number", "positive zero",  "negative zero" and NaN respectively
      * @memberOf utilx
+     * @name mathSign
      * @function
      * @param {*} value
      * @return {number}
      */
     // named mathSign instead of sign because of SpiderMonkey and Blackberry bug
-    $.mathSign = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var signFN = Math.sign,
-            nfeSign;
+    if ($.isFunction(signFN)) {
+        $.mathSign = signFN;
+    } else {
+        $.mathSign = function nfeSign(value) {
+            var number = $.toNumber(value),
+                val;
 
-        if ($.isFunction(signFN)) {
-            tempSafariNFE = signFN;
-        } else {
-            tempSafariNFE = function nfeSign(value) {
-                var number = $.toNumber(value),
-                    val;
+            if ($.isZero(number) || $.numberIsNaN(number)) {
+                val = number;
+            } else if ($.lt(number, $.POSITIVE_ZERO)) {
+                val = -1;
+            } else {
+                val = 1;
+            }
 
-                if ($.isZero(number) || $.numberIsNaN(number)) {
-                    val = number;
-                } else if ($.lt(number, 0)) {
-                    val = -1;
-                } else {
-                    val = 1;
-                }
-
-                return val;
-            };
-        }
-
-        nfeSign = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * Returns true if the argument is zero or not finite.
@@ -1244,75 +1267,55 @@
     /**
      * The function evaluates the passed value and converts it to an integer.
      * @memberOf utilx
+     * @name numberToInteger
      * @function
      * @param {*} inputArg
      * @return {number}
      */
     // named $.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
-    $.numberToInteger = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var toIntegerFN = CtrNumber.toInteger,
-            nfeToInteger;
+    if ($.isFunction(toIntegerFN)) {
+        $.numberToInteger = toIntegerFN;
+    } else {
+        $.numberToInteger = function (inputArg) {
+            var number = $.toNumber(inputArg),
+                val;
 
-        if ($.isFunction(toIntegerFN)) {
-            tempSafariNFE = toIntegerFN;
-        } else {
-            tempSafariNFE = function nfeToInteger(inputArg) {
-                var number = $.toNumber(inputArg),
-                    val;
+            if ($.numberIsNaN(number)) {
+                val = $.POSITIVE_ZERO;
+            } else if (isZeroOrNotFinite(number)) {
+                val = number;
+            } else {
+                val = $.mathSign(number) * Math.floor(Math.abs(number));
+            }
 
-                if ($.numberIsNaN(number)) {
-                    val = $.POSITIVE_ZERO;
-                } else if (isZeroOrNotFinite(number)) {
-                    val = number;
-                } else {
-                    val = $.mathSign(number) * Math.floor(Math.abs(number));
-                }
-
-                return val;
-            };
-        }
-
-        nfeToInteger = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * The $.numberIsInteger() method determines whether the passed value is an integer.
      * If the target value is an integer, return true, otherwise return false.
      * If the value is NaN or infinite, return false.
      * @memberOf utilx
+     * @name numberIsInteger
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    // named $.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
-    $.numberIsInteger = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var isIntegerFN = CtrNumber.isInteger,
-            nfeIsInteger;
-
-        try {
-            if (isIntegerFN($.UNSAFE_INTEGER) || isIntegerFN(-$.UNSAFE_INTEGER)) {
-                throw new Error('Failed unsafe integer check');
-            }
-
-            tempSafariNFE = isIntegerFN;
-        } catch (e) {
-            tempSafariNFE = function nfeIsInteger(inputArg) {
-                return !$.numberIsNaN(inputArg) && $.numberIsFinite(inputArg) &&
-                    inRange(inputArg, $.MIN_INTEGER, $.MAX_INTEGER) &&
-                    $.strictEqual($.numberToInteger(inputArg), inputArg);
-            };
+    // named $.numberIsInteger instead of toInteger because of SpiderMonkey and Blackberry bug
+    try {
+        if (isIntegerFN($.UNSAFE_INTEGER) || isIntegerFN(-$.UNSAFE_INTEGER)) {
+            throw new Error('Failed unsafe integer check');
         }
 
-        nfeIsInteger = null;
-
-        return tempSafariNFE;
-    }());
+        $.numberIsInteger = isIntegerFN;
+    } catch (e) {
+        $.numberIsInteger = function nfeIsInteger(inputArg) {
+            return !$.numberIsNaN(inputArg) && $.numberIsFinite(inputArg) &&
+                inRange(inputArg, $.MIN_INTEGER, $.MAX_INTEGER) &&
+                $.strictEqual($.numberToInteger(inputArg), inputArg);
+        };
+    }
 
     /**
      * The abstract operation converts its argument to one of 2^32 integer values in
@@ -1403,7 +1406,7 @@
      */
     $.isUint = function (inputArg) {
         return $.numberIsInteger(inputArg) &&
-            inRange(inputArg, 0, $.MAX_INTEGER);
+            inRange(inputArg, $.POSITIVE_ZERO, $.MAX_INTEGER);
     };
 
     /**
@@ -1439,7 +1442,7 @@
      */
     $.isUint32 = function (inputArg) {
         return $.numberIsInteger(inputArg) &&
-            inRange(inputArg, 0, $.MAX_UINT32);
+            inRange(inputArg, $.POSITIVE_ZERO, $.MAX_UINT32);
     };
 
     /**
@@ -1516,7 +1519,7 @@
      */
     $.isUint16 = function (inputArg) {
         return $.numberIsInteger(inputArg) &&
-            inRange(inputArg, 0, $.MAX_UINT16);
+            inRange(inputArg, $.POSITIVE_ZERO, $.MAX_UINT16);
     };
 
     /**
@@ -1593,7 +1596,7 @@
      */
     $.isUint8 = function (inputArg) {
         return $.numberIsInteger(inputArg) &&
-            inRange(inputArg, 0, $.MAX_UINT8);
+            inRange(inputArg, $.POSITIVE_ZERO, $.MAX_UINT8);
     };
 
     /**
@@ -1685,101 +1688,97 @@
      * @param {number} [limit]
      * @return {array.<string>}
      */
+    compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec('')[1]);
     // named $.stringSplit instead of split because of SpiderMonkey and Blackberry bug
-    $.stringSplit = (function () {
-        var splitFN = baseString.split,
-            compliantExecNpcg = $.isUndefined(new RegExp('()??').exec('')[1]);
+    $.stringSplit = function (str, separator, limit) {
+        var string = onlyCoercibleToString(str),
+            output,
+            flags,
+            lastLastIndex,
+            separator2,
+            match,
+            lastIndex,
+            lastLength,
+            val;
 
-        return function (str, separator, limit) {
-            var string = onlyCoercibleToString(str),
-                output,
-                flags,
-                lastLastIndex,
-                separator2,
-                match,
-                lastIndex,
-                lastLength,
-                val;
-
-            if ($.isRegExp(separator)) {
-                flags = 'g';
-                if (separator.ignoreCase) {
-                    flags += 'i';
-                }
-
-                if (separator.multiline) {
-                    flags += 'm';
-                }
-
-                if (separator.extended) {
-                    flags += 'x';
-                }
-
-                if (separator.sticky) {
-                    flags += 'y';
-                }
-
-                separator = new RegExp(separator.source, flags);
-                if ($.isFalse(compliantExecNpcg)) {
-                    separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
-                }
-
-                if ($.isUndefined(limit)) {
-                    limit = $.MAX_UINT32;
-                } else {
-                    limit = clampInteger(limit, 0, $.MAX_UINT32);
-                }
-
-                output = [];
-                flags = 'g';
-                lastLastIndex = 0;
-                match = separator.exec(string);
-                while (match) {
-                    lastIndex = match.index + $.arrayFirst(match).length;
-                    if ($.gt(lastIndex, lastLastIndex)) {
-                        $.arrayPush(output, string.slice(lastLastIndex, match.index));
-                        if ($.isFalse(compliantExecNpcg) && $.gt(match.length, 1)) {
-                            stringSplitReplacer(separator2, match, arguments);
-                        }
-
-                        if ($.gt(match.length, 1) && $.lt(match.index, string.length)) {
-                            output = output.concat(match.slice(1));
-                        }
-
-                        lastLength = $.arrayFirst(match).length;
-                        lastLastIndex = lastIndex;
-                        if ($.gte(output.length, limit)) {
-                            break;
-                        }
-                    }
-
-                    if ($.strictEqual(separator.lastIndex, match.index)) {
-                        separator.lastIndex += 1;
-                    }
-
-                    match = separator.exec(string);
-                }
-
-                if ($.strictEqual(lastLastIndex, string.length)) {
-                    if (lastLength || !separator.test('')) {
-                        $.arrayPush(output, '');
-                    }
-                } else {
-                    $.arrayPush(output, string.slice(lastLastIndex));
-                }
-
-                if ($.gt(output.length, limit)) {
-                    return output.slice(0, limit);
-                }
-
-                val = output;
-            } else {
-                val = splitFN.call(str, separator, limit);
+        if ($.isRegExp(separator)) {
+            flags = 'g';
+            if (separator.ignoreCase) {
+                flags += 'i';
             }
 
-            return val;
-        };
-    }());
+            if (separator.multiline) {
+                flags += 'm';
+            }
+
+            if (separator.extended) {
+                flags += 'x';
+            }
+
+            if (separator.sticky) {
+                flags += 'y';
+            }
+
+            separator = new RegExp(separator.source, flags);
+            if ($.isFalse(compliantExecNpcg)) {
+                separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
+            }
+
+            if ($.isUndefined(limit)) {
+                limit = $.MAX_UINT32;
+            } else {
+                limit = clampInteger(limit, $.POSITIVE_ZERO, $.MAX_UINT32);
+            }
+
+            output = [];
+            flags = 'g';
+            lastLastIndex = $.POSITIVE_ZERO;
+            match = separator.exec(string);
+            while (match) {
+                lastIndex = match.index + $.arrayFirst(match).length;
+                if ($.gt(lastIndex, lastLastIndex)) {
+                    $.arrayPush(output, string.slice(lastLastIndex, match.index));
+                    if ($.isFalse(compliantExecNpcg) && $.gt(match.length, 1)) {
+                        stringSplitReplacer(separator2, match, arguments);
+                    }
+
+                    if ($.gt(match.length, 1) && $.lt(match.index, string.length)) {
+                        output = output.concat(match.slice(1));
+                    }
+
+                    lastLength = $.arrayFirst(match).length;
+                    lastLastIndex = lastIndex;
+                    if ($.gte(output.length, limit)) {
+                        break;
+                    }
+                }
+
+                if ($.strictEqual(separator.lastIndex, match.index)) {
+                    separator.lastIndex += 1;
+                }
+
+                match = separator.exec(string);
+            }
+
+            if ($.strictEqual(lastLastIndex, string.length)) {
+                if (lastLength || !separator.test('')) {
+                    $.arrayPush(output, '');
+                }
+            } else {
+                $.arrayPush(output, string.slice(lastLastIndex));
+            }
+
+            if ($.gt(output.length, limit)) {
+                return output.slice($.POSITIVE_ZERO, limit);
+            }
+
+            val = output;
+        } else {
+            val = splitFN.call(str, separator, limit);
+        }
+
+        return val;
+    };
 
     /**
      * Coerces its argument to a string and returns the first character of that string.
@@ -1791,7 +1790,7 @@
      * @return {string}
      */
     $.firstChar = function (inputArg) {
-        return onlyCoercibleToString(inputArg).charAt(0);
+        return onlyCoercibleToString(inputArg).charAt($.POSITIVE_ZERO);
     };
 
     /**
@@ -1852,7 +1851,7 @@
             val = Infinity;
         } else {
             val = clampInteger($.stringSplit(inputArg,
-                                             $.firstChar(character)).length - 1, 0, Infinity);
+                                             $.firstChar(character)).length - 1, $.POSITIVE_ZERO, Infinity);
         }
 
         return val;
@@ -1866,7 +1865,7 @@
      * @return {boolean}
      */
     function isLtZeroOrPositiveInfinity(inputArg) {
-        return $.lt(inputArg, 0) || $.strictEqual(inputArg, Infinity);
+        return $.lt(inputArg, $.POSITIVE_ZERO) || $.strictEqual(inputArg, Infinity);
     }
 
     /**
@@ -1886,69 +1885,68 @@
             count = $.numberToInteger(size) - string.length;
 
         if (isLtZeroOrPositiveInfinity(count)) {
-            count = 0;
+            count = $.POSITIVE_ZERO;
         }
 
         return $.stringRepeat(singleChar, count) + string;
     };
 
     /**
+     * Repeat the current string several times, return the new string. Used by stringRepeat
+     * @private
+     * @function
+     * @param {string} s
+     * @param {number} times
+     * @return {string}
+     */
+    function stringRepeatRep(s, times) {
+        var half,
+            val;
+
+        if ($.lt(times, 1)) {
+            val = '';
+        } else if ($.mod(times, 2)) {
+            val = stringRepeatRep(s, times - 1) + s;
+        } else {
+            half = stringRepeatRep(s, times / 2);
+            val = half + half;
+        }
+
+        return val;
+    }
+
+    /**
      * Repeat the current string several times, return the new string.
      * @memberOf utilx
+     * @name stringRepeat
      * @function
      * @param {string} string
      * @param {number} times
      * @return {string}
      */
     // named $.stringRepeat instead of repeat because of SpiderMonkey and Blackberry bug
-    $.stringRepeat = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var repeatFN = CtrString.repeat,
-            nfeRepeat;
+    if ($.isFunction(repeatFN)) {
+        $.stringRepeat = function (string, times) {
+            return repeatFN.call(string, times);
+        };
+    } else {
+        $.stringRepeat = function (string, count) {
+            var thisString = onlyCoercibleToString(string),
+                times = $.numberToInteger(count);
 
-        function rep(s, times) {
-            var half,
-                val;
-
-            if ($.lt(times, 1)) {
-                val = '';
-            } else if ($.mod(times, 2)) {
-                val = rep(s, times - 1) + s;
-            } else {
-                half = rep(s, times / 2);
-                val = half + half;
+            if (isLtZeroOrPositiveInfinity(times)) {
+                throw new RangeError();
             }
 
-            return val;
-        }
-
-        if ($.isFunction(repeatFN)) {
-            tempSafariNFE = function nfeRepeat(string, times) {
-                return repeatFN.call(string, times);
-            };
-        } else {
-            tempSafariNFE = function nfeRepeat(string, count) {
-                var thisString = onlyCoercibleToString(string),
-                    times = $.numberToInteger(count);
-
-                if (isLtZeroOrPositiveInfinity(times)) {
-                    throw new RangeError();
-                }
-
-                return rep(thisString, times);
-            };
-        }
-
-        nfeRepeat = null;
-
-        return tempSafariNFE;
-    }());
+            return stringRepeatRep(thisString, times);
+        };
+    }
 
     /**
      * Determines whether a string begins with the characters of another string,
      * returning true or false as appropriate.
      * @memberOf utilx
+     * @name stringStartsWith
      * @function
      * @param {string} string
      * @param {string} searchString
@@ -1956,35 +1954,25 @@
      * @return {boolean}
      */
     // named stringStartsWith instead of startsWith because of SpiderMonkey and Blackberry bug
-    $.stringStartsWith = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var startsWithFN = baseString.startsWith,
-            nfeStartsWith;
+    if ($.isFunction(startsWithFN)) {
+        $.stringStartsWith = function (string, searchString, position) {
+            return startsWithFN.call(string, searchString, position);
+        };
+    } else {
+        $.stringStartsWith = function (string, searchString, position) {
+            var thisStr = onlyCoercibleToString(string),
+                searchStr = $.anyToString(searchString),
+                start = clampInteger(position, $.POSITIVE_ZERO, thisStr.length);
 
-        if ($.isFunction(startsWithFN)) {
-            tempSafariNFE = function nfeStartsWith(string, searchString, position) {
-                return startsWithFN.call(string, searchString, position);
-            };
-        } else {
-            tempSafariNFE = function nfeStartsWith(string, searchString, position) {
-                var thisStr = onlyCoercibleToString(string),
-                    searchStr = $.anyToString(searchString),
-                    start = clampInteger(position, 0, thisStr.length);
-
-                return $.strictEqual(thisStr.slice(start, start + searchStr.length), searchStr);
-            };
-        }
-
-        nfeStartsWith = null;
-
-        return tempSafariNFE;
-    }());
+            return $.strictEqual(thisStr.slice(start, start + searchStr.length), searchStr);
+        };
+    }
 
     /**
      * Determines whether a string ends with the characters of another string,
      * returning true or false as appropriate.
      * @memberOf utilx
+     * @name stringEndsWith
      * @function
      * @param {string} string
      * @param {string} searchString
@@ -1992,46 +1980,36 @@
      * @return {boolean}
      */
     // named stringEndsWith instead of endsWith because of SpiderMonkey and Blackberry bug
-    $.stringEndsWith = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var endsWithFN = baseString.endsWith,
-            nfeEndsWith;
+    if ($.isFunction(endsWithFN)) {
+        $.stringEndsWith = function (string, searchString, position) {
+            return endsWithFN.call(string, searchString, position);
+        };
+    } else {
+        $.stringEndsWith = function (string, searchString, position) {
+            var thisStr = onlyCoercibleToString(string),
+                searchStr = $.anyToString(searchString),
+                thisLen = thisStr.length,
+                end,
+                start;
 
-        if ($.isFunction(endsWithFN)) {
-            tempSafariNFE = function nfeEndsWith(string, searchString, position) {
-                return endsWithFN.call(string, searchString, position);
-            };
-        } else {
-            tempSafariNFE = function nfeEndsWith(string, searchString, position) {
-                var thisStr = onlyCoercibleToString(string),
-                    searchStr = $.anyToString(searchString),
-                    thisLen = thisStr.length,
-                    end,
-                    start;
+            if ($.isUndefined(position)) {
+                position = thisLen;
+            } else {
+                position = $.numberToInteger(position);
+            }
 
-                if ($.isUndefined(position)) {
-                    position = thisLen;
-                } else {
-                    position = $.numberToInteger(position);
-                }
+            end = $.clamp(position, $.POSITIVE_ZERO, thisLen);
+            start = end - searchStr.length;
 
-                end = $.clamp(position, 0, thisLen);
-                start = end - searchStr.length;
-
-                return $.gte(start, 0) && $.strictEqual(thisStr.slice(start, end), searchStr);
-            };
-        }
-
-        nfeEndsWith = null;
-
-        return tempSafariNFE;
-    }());
+            return $.gte(start, $.POSITIVE_ZERO) && $.strictEqual(thisStr.slice(start, end), searchStr);
+        };
+    }
 
     /**
      * Determines whether a string contains the characters of another string, returning true or
      * false as appropriate.
      * @memberOf utilx
+     * @name stringContains
      * @function
      * @param {string} string
      * @param {string} searchString
@@ -2039,104 +2017,75 @@
      * @return {boolean}
      */
     // named $.stringContains instead of contains because of SpiderMonkey and Blackberry bug
-    $.stringContains = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var containsFN = baseString.contains,
-            nfeContains;
+    if ($.isFunction(containsFN)) {
+        $.stringContains = function (string, searchString, position) {
+            return containsFN.call(string, searchString, position);
+        };
+    } else {
+        $.stringContains = function (string, searchString, position) {
+            var thisStr = onlyCoercibleToString(string),
+                searchStr = $.anyToString(searchString),
+                thisLen = thisStr.length;
 
-        if ($.isFunction(containsFN)) {
-            tempSafariNFE = function nfeContains(string, searchString, position) {
-                return containsFN.call(string, searchString, position);
-            };
-        } else {
-            tempSafariNFE = function nfeContains(string, searchString, position) {
-                var thisStr = onlyCoercibleToString(string),
-                    searchStr = $.anyToString(searchString),
-                    thisLen = thisStr.length;
+            if ($.isUndefined(position)) {
+                position = $.POSITIVE_ZERO;
+            } else {
+                position = $.numberToInteger(position);
+            }
 
-                if ($.isUndefined(position)) {
-                    position = 0;
-                } else {
-                    position = $.numberToInteger(position);
-                }
-
-                return $.notStrictEqual(baseString.indexOf.call(thisStr, searchStr,
-                                                                    $.clamp(position, 0, thisLen)), -1);
-            };
-        }
-
-        nfeContains = null;
-
-        return tempSafariNFE;
-    }());
+            return $.notStrictEqual(baseString.indexOf.call(thisStr, searchStr,
+                                                                $.clamp(position, $.POSITIVE_ZERO, thisLen)), -1);
+        };
+    }
 
     /**
      * Return the value of the [[Prototype]] internal property of object.
      * @memberOf utilx
+     * @name objectGetPrototypeOf
      * @function
      * @param {object} object
      * @return {Prototype}
      */
     // named $.objectGetPrototypeOf instead of getPrototypeOf because of SpiderMonkey and Blackberry bug
-    $.objectGetPrototypeOf = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var getPrototypeOfFN = CtrObject.getPrototypeOf,
-            baseObjectPrototype,
-            fixOpera10,
-            nfeGetPrototypeOf;
-
-        if ($.isFunction(getPrototypeOfFN)) {
-            tempSafariNFE = function nfeGetPrototypeOf(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-
-                return getPrototypeOfFN(object);
-            };
-        } else if ($.isNull(CtrObject.prototype[protoName])) {
-            tempSafariNFE = function nfeGetPrototypeOf(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-
-                return object[protoName];
-            };
-        } else {
-            baseObjectPrototype = CtrObject.prototype;
-            if ($.notStrictEqual($.returnArgs().constructor.prototype, baseObjectPrototype)) {
-                fixOpera10 = true;
-            }
-
-            tempSafariNFE = function nfeGetPrototypeOf(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-                if ($.strictEqual(object, baseObjectPrototype)) {
-                    return null;
-                }
-
-                var ctrProto;
-
-                if ($.isFunction(object.constructor)) {
-                    if (fixOpera10 && $.isArguments(object)) {
-                        ctrProto = baseObjectPrototype;
-                    } else {
-                        ctrProto = object.constructor.prototype;
-                    }
-                } else if ($.isObject(object[protoName])) {
-                    ctrProto = object[protoName];
-                } else {
-                    ctrProto = baseObjectPrototype;
-                }
-
-                if ($.strictEqual(object, ctrProto)) {
-                    return baseObjectPrototype;
-                }
-
-                return ctrProto;
-            };
+    if ($.isFunction(getPrototypeOfFN)) {
+        $.objectGetPrototypeOf = function (object) {
+            return getPrototypeOfFN(throwIfIsNotTypeObjectOrIsNotFunction(object));
+        };
+    } else if ($.isNull(CtrObject.prototype[protoName])) {
+        $.objectGetPrototypeOf = function (object) {
+            return throwIfIsNotTypeObjectOrIsNotFunction(object)[protoName];
+        };
+    } else {
+        if ($.notStrictEqual($.returnArgs().constructor.prototype, baseObjectPrototype)) {
+            fixOpera10GetPrototypeOf = true;
         }
 
-        nfeGetPrototypeOf = null;
+        $.objectGetPrototypeOf = function (object) {
+            if ($.strictEqual(throwIfIsNotTypeObjectOrIsNotFunction(object), baseObjectPrototype)) {
+                return null;
+            }
 
-        return tempSafariNFE;
-    }());
+            var ctrProto;
+
+            if ($.isFunction(object.constructor)) {
+                if (fixOpera10GetPrototypeOf && $.isArguments(object)) {
+                    ctrProto = baseObjectPrototype;
+                } else {
+                    ctrProto = object.constructor.prototype;
+                }
+            } else if ($.isObject(object[protoName])) {
+                ctrProto = object[protoName];
+            } else {
+                ctrProto = baseObjectPrototype;
+            }
+
+            if ($.strictEqual(object, ctrProto)) {
+                return baseObjectPrototype;
+            }
+
+            return ctrProto;
+        };
+    }
 
     /**
      * Returns true if the specified searchElement is in the specified array.
@@ -2153,103 +2102,103 @@
 
     /**
      * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
+     * Used by $.objectPropertyIsEnumerable
+     * @private
+     * @function
+     * @param {*} object
+     * @param {string} property
+     * @return {boolean}
+     */
+    function propertyIsEnumerableCustom(object, property) {
+        // KJS in Safari 2 is not ECMAScript compatible and lacks crucial methods
+        // such as propertyIsEnumerable. We therefore use a workaround.
+        var val = false,
+            key;
+
+        if ($.hasProperty(object, property)) {
+            for (key in object) {
+                if ($.strictEqual(key, property) && $.objectHasOwnProperty(object, property)) {
+                    val = true;
+                    break;
+                }
+            }
+        }
+
+        return val;
+    }
+
+    /*
+     * Test for hasDontEnumBug and hasFuncProtoBug.
+     */
+    testObject1 = {
+        toString: null
+    };
+
+    for (testProp in testObject1) {
+        if ($.strictEqual(testProp, toStringString) &&
+                $.isNull(testObject1[testProp])) {
+
+            hasDontEnumBug = false;
+        }
+    }
+
+    testObject1 = function () {
+        return;
+    };
+
+    for (testProp in testObject1) {
+        if ($.strictEqual(testProp, prototypeString)) {
+            hasFuncProtoBug = true;
+        }
+    }
+
+    /**
+     * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
      * @memberOf utilx
+     * @name objectPropertyIsEnumerable
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.objectPropertyIsEnumerable = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
-            hasDontEnumBug = true,
-            hasFuncProtoBug = false,
-            testObject = {
-                toString: null
-            },
-            nfePropertyIsEnumerable;
+    if ($.isFunction(propertyIsEnumerableFN)) {
+        if (hasDontEnumBug) {
+            $.objectPropertyIsEnumerable = function (object, property) {
+                var val;
 
-        function propertyIsEnumerableCustom(object, property) {
-            // KJS in Safari 2 is not ECMAScript compatible and lacks crucial methods
-            // such as propertyIsEnumerable.  We therefore use a workaround.
-            var val = false,
-                key;
-
-            if ($.hasProperty(object, property)) {
-                for (key in object) {
-                    if ($.strictEqual(key, property) && $.objectHasOwnProperty(object, property)) {
-                        val = true;
-                        break;
-                    }
+                if ($.objectInstanceOf(object, CtrObject)) {
+                    val = propertyIsEnumerableFN.call(object, property) ||
+                        ($.arrayContains(defaultProperties, property) &&
+                            $.hasProperty(object, property) &&
+                            !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
+                } else {
+                    val = propertyIsEnumerableCustom(object, property) ||
+                        ($.arrayContains(defaultProperties, property) &&
+                            $.hasProperty(object, property) &&
+                            !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
                 }
-            }
 
-            return val;
-        }
+                return val;
+            };
+        } else if (hasFuncProtoBug) {
+            $.objectPropertyIsEnumerable = function (object, property) {
+                var val;
 
-        // use nfePropertyIsEnumerable to save a var
-        for (nfePropertyIsEnumerable in testObject) {
-            if ($.strictEqual(nfePropertyIsEnumerable, 'toString') &&
-                    $.isNull(testObject[nfePropertyIsEnumerable])) {
+                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
+                    val = false;
+                } else {
+                    val = propertyIsEnumerableFN.call(object, property);
+                }
 
-                hasDontEnumBug = false;
-            }
-        }
-
-        testObject = function () {
-            return;
-        };
-
-        for (nfePropertyIsEnumerable in testObject) {
-            if ($.strictEqual(nfePropertyIsEnumerable, 'prototype')) {
-                hasFuncProtoBug = true;
-            }
-        }
-
-        if ($.isFunction(propertyIsEnumerableFN)) {
-            if (hasDontEnumBug) {
-                tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
-                    var val;
-
-                    if ($.objectInstanceOf(object, CtrObject)) {
-                        val = propertyIsEnumerableFN.call(object, property) ||
-                            ($.arrayContains(defaultProperties, property) &&
-                                $.hasProperty(object, property) &&
-                                !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
-                    } else {
-                        val = propertyIsEnumerableCustom(object, property) ||
-                            ($.arrayContains(defaultProperties, property) &&
-                                $.hasProperty(object, property) &&
-                                !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
-                    }
-
-                    return val;
-                };
-            } else if (hasFuncProtoBug) {
-                tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
-                    var val;
-
-                    if ($.isFunction(object) && $.strictEqual(property, 'prototype')) {
-                        val = false;
-                    } else {
-                        val = propertyIsEnumerableFN.call(object, property);
-                    }
-
-                    return val;
-                };
-            } else {
-                tempSafariNFE = function nfePropertyIsEnumerable(object, property) {
-                    return propertyIsEnumerableFN.call(object, property);
-                };
-            }
+                return val;
+            };
         } else {
-            tempSafariNFE = propertyIsEnumerableCustom;
+            $.objectPropertyIsEnumerable = function (object, property) {
+                return propertyIsEnumerableFN.call(object, property);
+            };
         }
-
-        nfePropertyIsEnumerable = null;
-
-        return tempSafariNFE;
-    }());
+    } else {
+        $.objectPropertyIsEnumerable = propertyIsEnumerableCustom;
+    }
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
@@ -2257,6 +2206,7 @@
      * that object; unlike the $.hasProperty function, this method does not check down the object's prototype
      * chain.
      * @memberOf utilx
+     * @name objectHasOwnProperty
      * @function
      * @param {object} object
      * @param {string} property
@@ -2265,70 +2215,37 @@
     // http://ecma-international.org/ecma-262/5.1/#sec-15.2.4.5
     // Create our own local "hasOwnProperty" function: native -> shim -> sham
     // named $.objectHasOwnProperty instead of hasOwnProperty because of SpiderMonkey and Blackberry bug
-    $.objectHasOwnProperty = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var hasOwnPropertyFN = baseObject.hasOwnProperty, // to combat old IE8- issues, min support IE6
-            hasDontEnumBug = true,
-            hasFuncProtoBug = false,
-            testObject = {
-                toString: null
-            },
-            nfeHasOwnProperty;
+    if ($.isFunction(hasOwnPropertyFN)) {
+        if (hasDontEnumBug) {
+            $.objectHasOwnProperty = function (object, property) {
+                return hasOwnPropertyFN.call(object, property) ||
+                    ($.arrayContains(defaultProperties, property) &&
+                        $.hasProperty(object, property) &&
+                        !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
+            };
+        } else if (hasFuncProtoBug) {
+            $.objectHasOwnProperty = function (object, property) {
+                var val;
 
-        // use nfeHasOwnProperty to save a var
-        for (nfeHasOwnProperty in testObject) {
-            if ($.strictEqual(nfeHasOwnProperty, 'toString') && $.isNull(testObject[nfeHasOwnProperty])) {
-                hasDontEnumBug = false;
-            }
-        }
+                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
+                    val = false;
+                } else {
+                    val = hasOwnPropertyFN.call(object, property);
+                }
 
-        testObject = function () {
-            return;
-        };
-
-        for (nfeHasOwnProperty in testObject) {
-            if ($.strictEqual(nfeHasOwnProperty, 'prototype')) {
-                hasFuncProtoBug = true;
-            }
-        }
-
-        if ($.isFunction(hasOwnPropertyFN)) {
-            if (hasDontEnumBug) {
-                tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return hasOwnPropertyFN.call(object, property) ||
-                        ($.arrayContains(defaultProperties, property) &&
-                            $.hasProperty(object, property) &&
-                            !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
-                };
-            } else if (hasFuncProtoBug) {
-                tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    var val;
-
-                    if ($.isFunction(object) && $.strictEqual(property, 'prototype')) {
-                        val = false;
-                    } else {
-                        val = hasOwnPropertyFN.call(object, property);
-                    }
-
-                    return val;
-                };
-            } else {
-                tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                    return hasOwnPropertyFN.call(object, property);
-                };
-            }
+                return val;
+            };
         } else {
-            tempSafariNFE = function nfeHasOwnProperty(object, property) {
-                return $.hasProperty(object, property) &&
-                    $.isUndefined($.objectGetPrototypeOf(object)[property]);
+            $.objectHasOwnProperty = function (object, property) {
+                return hasOwnPropertyFN.call(object, property);
             };
         }
-
-        nfeHasOwnProperty = null;
-
-        return tempSafariNFE;
-    }());
+    } else {
+        $.objectHasOwnProperty = function (object, property) {
+            return $.hasProperty(object, property) &&
+                $.isUndefined($.objectGetPrototypeOf(object)[property]);
+        };
+    }
 
     /**
      * Returns true if argument is null, not an object or is a function.
@@ -2350,7 +2267,7 @@
      * @return {boolean}
      */
     function hasValidLength(inputArg) {
-        return $.isTypeObject(inputArg) && $.objectHasOwnProperty(inputArg, 'length') &&
+        return $.isTypeObject(inputArg) && $.objectHasOwnProperty(inputArg, lengthString) &&
             $.isNumber(inputArg.length) && $.isUint32(inputArg.length);
     }
 
@@ -2427,7 +2344,7 @@
             throwIfIsNotHasValidLength(inputArg);
         }
 
-        return inputArg[0];
+        return inputArg[$.POSITIVE_ZERO];
     };
 
     /**
@@ -2466,7 +2383,7 @@
 
         if ($.gte(arguments.length, 3)) {
             numIndex = $.numberToInteger(index);
-            if (inRange(numIndex, 0, $.MAX_UINT32 - 1)) {
+            if (inRange(numIndex, $.POSITIVE_ZERO, $.MAX_UINT32 - 1)) {
                 array[numIndex] = value;
                 numIndex += 1;
                 if ($.gt(numIndex, array.length)) {
@@ -2483,38 +2400,31 @@
     /**
      * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
      * @memberOf utilx
+     * @name toObjectFixIndexedAccess
      * @function
      * @param {*} inputArg
      * @return {object}
      */
-    $.toObjectFixIndexedAccess = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var boxedString = noNewCtrObject('a'),
-            splitString = $.notStrictEqual(boxedString[0], 'a') || !$.hasProperty(boxedString, 0),
-            nfeToObjectFixIndexedAccess;
+    shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a') ||
+                            !$.hasProperty(boxedString, $.POSITIVE_ZERO);
 
-        tempSafariNFE = function nfeToObjectFixIndexedAccess(inputArg) {
-            var object;
+    $.toObjectFixIndexedAccess = function (inputArg) {
+        var object;
 
-            if (splitString && $.isString(inputArg)) {
-                object = $.stringSplit(inputArg, '');
-            } else {
-                object = $.argToObject(inputArg);
-            }
+        if (shouldSplitString && $.isString(inputArg)) {
+            object = $.stringSplit(inputArg, '');
+        } else {
+            object = $.argToObject(inputArg);
+        }
 
-            return object;
-        };
-
-        nfeToObjectFixIndexedAccess = null;
-
-        return tempSafariNFE;
-    }());
+        return object;
+    };
 
     /**
      * The $.arraySplice() method changes the content of an array,
      * adding new elements while removing old elements.
      * @memberOf utilx
+     * @name arraySplice
      * @function
      * @param {array} array
      * @param {number} start
@@ -2522,173 +2432,154 @@
      * @param {...*} [var_arg]
      */
     // named $.arraySplice instead of arraySplice because of SpiderMonkey and Blackberry bug
-    $.arraySplice = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var spliceFN = baseArray.splice,
-            nfeSplice;
-
-        if ($.isFunction(spliceFN) && $.strictEqual(spliceFN.call([1, 2], 0).length, 2)) {
-            try {
-                if ($.isZero(spliceFN.call([1, 2]).length)) {
-                    tempSafariNFE = function nfeSplice(array, start, deleteCount) {
-                        /*jshint unused: false */
-                        return spliceFN.apply(array, $.arraySlice(arguments, 1));
-                    };
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                tempSafariNFE = function nfeSplice(array, start, deleteCount) {
+    if ($.isFunction(spliceFN) && $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
+        try {
+            if ($.isZero(spliceFN.call([1, 2]).length)) {
+                $.arraySplice = function (array, start, deleteCount) {
                     /*jshint unused: false */
-                    var val;
-
-                    if ($.lt(arguments.length, 2)) {
-                        val = [];
-                    } else {
-                        val = spliceFN.apply(array, $.arraySlice(arguments, 1));
-                    }
-
-                    return val;
+                    return spliceFN.apply(array, $.arraySlice(arguments, 1));
                 };
+            } else {
+                throw new Error();
             }
-        } else {
-            tempSafariNFE = function nfeSplice(array, start, deleteCount) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    length = clampInteger(object.length, 0, $.MAX_UINT32),
-                    removed = [],
-                    relativeStart = clampInteger(start, -$.MAX_UINT32, $.MAX_UINT32),
-                    actualStart,
-                    actualDeleteCount,
-                    k = 0,
-                    from,
-                    argLength = arguments.length,
-                    item = 3,
-                    itemCount = Math.max(argLength - item, 0),
-                    to,
-                    loopCache;
+        } catch (e) {
+            $.arraySplice = function (array, start, deleteCount) {
+                /*jshint unused: false */
+                var val;
 
-                if ($.lt(argLength, 2)) {
-                    return removed;
-                }
-
-                if ($.lt($.mathSign(relativeStart), 0)) {
-                    actualStart = Math.max(length + relativeStart, 0);
+                if ($.lt(arguments.length, 2)) {
+                    val = [];
                 } else {
-                    actualStart = Math.min(relativeStart, length);
+                    val = spliceFN.apply(array, $.arraySlice(arguments, 1));
                 }
 
-                if ($.lt(argLength, 3)) {
-                    deleteCount = length - actualStart;
-                }
-
-                actualDeleteCount = $.clamp(clampInteger(deleteCount, 0, $.MAX_UINT32), 0, length - actualStart);
-                while (k < actualDeleteCount) {
-                    from = actualStart + k;
-                    if ($.objectHasOwnProperty(object, from)) {
-                        $.arrayPush(removed, object[from]);
-                    }
-
-                    k += 1;
-                }
-
-                if (itemCount < actualDeleteCount) {
-                    k = actualStart;
-                    loopCache = length - actualDeleteCount;
-                    while (k < loopCache) {
-                        from = k + actualDeleteCount;
-                        to = k + itemCount;
-                        if ($.objectHasOwnProperty(object, from)) {
-                            object[to] = object[from];
-                        } else {
-                            delete object[to];
-                        }
-
-                        k += 1;
-                    }
-
-                    k = length;
-                    loopCache = length - actualDeleteCount + itemCount;
-                    while (k > loopCache) {
-                        delete object[k - 1];
-                        k -= 1;
-                    }
-                } else if (itemCount > actualDeleteCount) {
-                    k = length - actualDeleteCount;
-                    while (k > actualStart) {
-                        from = k + actualDeleteCount - 1;
-                        to = k + itemCount - 1;
-                        if ($.objectHasOwnProperty(object, from)) {
-                            object[to] = object[from];
-                        } else {
-                            delete object[to];
-                        }
-
-                        k -= 1;
-                    }
-                }
-
-                k = actualStart;
-                while (item < argLength) {
-                    object[k] = arguments[item];
-                    k += 1;
-                    item += 1;
-                }
-
-                object.length = length - actualDeleteCount + itemCount;
-
-                return removed;
+                return val;
             };
         }
+    } else {
+        $.arraySplice = function (array, start, deleteCount) {
+            var object = $.toObjectFixIndexedAccess(array),
+                length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32),
+                removed = [],
+                relativeStart = clampInteger(start, -$.MAX_UINT32, $.MAX_UINT32),
+                actualStart,
+                actualDeleteCount,
+                k = $.POSITIVE_ZERO,
+                from,
+                argLength = arguments.length,
+                item = 3,
+                itemCount = Math.max(argLength - item, $.POSITIVE_ZERO),
+                to,
+                loopCache;
 
-        nfeSplice = null;
+            if ($.lt(argLength, 2)) {
+                return removed;
+            }
 
-        return tempSafariNFE;
-    }());
+            if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
+                actualStart = Math.max(length + relativeStart, $.POSITIVE_ZERO);
+            } else {
+                actualStart = Math.min(relativeStart, length);
+            }
+
+            if ($.lt(argLength, 3)) {
+                deleteCount = length - actualStart;
+            }
+
+            actualDeleteCount = $.clamp(clampInteger(deleteCount, $.POSITIVE_ZERO, $.MAX_UINT32),
+                                        $.POSITIVE_ZERO, length - actualStart);
+            while (k < actualDeleteCount) {
+                from = actualStart + k;
+                if ($.objectHasOwnProperty(object, from)) {
+                    $.arrayPush(removed, object[from]);
+                }
+
+                k += 1;
+            }
+
+            if (itemCount < actualDeleteCount) {
+                k = actualStart;
+                loopCache = length - actualDeleteCount;
+                while (k < loopCache) {
+                    from = k + actualDeleteCount;
+                    to = k + itemCount;
+                    if ($.objectHasOwnProperty(object, from)) {
+                        object[to] = object[from];
+                    } else {
+                        delete object[to];
+                    }
+
+                    k += 1;
+                }
+
+                k = length;
+                loopCache = length - actualDeleteCount + itemCount;
+                while (k > loopCache) {
+                    delete object[k - 1];
+                    k -= 1;
+                }
+            } else if (itemCount > actualDeleteCount) {
+                k = length - actualDeleteCount;
+                while (k > actualStart) {
+                    from = k + actualDeleteCount - 1;
+                    to = k + itemCount - 1;
+                    if ($.objectHasOwnProperty(object, from)) {
+                        object[to] = object[from];
+                    } else {
+                        delete object[to];
+                    }
+
+                    k -= 1;
+                }
+            }
+
+            k = actualStart;
+            while (item < argLength) {
+                object[k] = arguments[item];
+                k += 1;
+                item += 1;
+            }
+
+            object.length = length - actualDeleteCount + itemCount;
+
+            return removed;
+        };
+    }
 
     /**
      * Executes a provided function once per array element.
      * @memberOf utilx
+     * @name arrayForEach
      * @function
      * @param {array} array
      * @param {function} fn
      * @param {object} [thisArg]
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
-    $.arrayForEach = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var forEachFN = baseArray.forEach,
-            nfeForEach;
+    if ($.isFunction(forEachFN)) {
+        $.arrayForEach = function (array, fn, thisArg) {
+            return forEachFN.call(array, fn, thisArg);
+        };
+    } else {
+        $.arrayForEach = function (array, fn, thisArg) {
+            var object = $.toObjectFixIndexedAccess(array),
+                length,
+                index;
 
-        if ($.isFunction(forEachFN)) {
-            tempSafariNFE = function nfeForEach(array, fn, thisArg) {
-                return forEachFN.call(array, fn, thisArg);
-            };
-        } else {
-            tempSafariNFE = function nfeForEach(array, fn, thisArg) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    length,
-                    index;
-
-                throwIfNotAFunction(fn);
-                length = clampInteger(object.length, 0, $.MAX_UINT32);
-                for (index = 0; $.lt(index, length); index += 1) {
-                    if ($.hasProperty(object, index)) {
-                        fn.call(thisArg, object[index], index, object);
-                    }
+            throwIfNotAFunction(fn);
+            length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                if ($.hasProperty(object, index)) {
+                    fn.call(thisArg, object[index], index, object);
                 }
-            };
-        }
-
-        nfeForEach = null;
-
-        return tempSafariNFE;
-    }());
+            }
+        };
+    }
 
     /**
      * Tests whether some element in the array passes the test implemented by the provided function.
      * @memberOf utilx
+     * @name arraySome
      * @function
      * @param {array} array
      * @param {function} fn
@@ -2696,45 +2587,35 @@
      * @return {boolean}
      */
     // named $.arraySome instead of some because of SpiderMonkey and Blackberry bug
-    $.arraySome = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var someFN = baseArray.some,
-            nfeSome;
+    if ($.isFunction(someFN)) {
+        $.arraySome = function (array, fn, thisArg) {
+            return someFN.call(array, fn, thisArg);
+        };
+    } else {
+        $.arraySome = function (array, fn, thisArg) {
+            var object = $.toObjectFixIndexedAccess(array),
+                length,
+                index,
+                val;
 
-        if ($.isFunction(someFN)) {
-            tempSafariNFE = function nfeSome(array, fn, thisArg) {
-                return someFN.call(array, fn, thisArg);
-            };
-        } else {
-            tempSafariNFE = function nfeSome(array, fn, thisArg) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    length,
-                    index,
-                    val;
-
-                throwIfNotAFunction(fn);
-                length = clampInteger(object.length, 0, $.MAX_UINT32);
-                val = false;
-                for (index = 0; $.lt(index, length); index += 1) {
-                    if ($.hasProperty(object, index) && fn.call(thisArg, object[index], index, object)) {
-                        val = true;
-                        break;
-                    }
+            throwIfNotAFunction(fn);
+            length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
+            val = false;
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                if ($.hasProperty(object, index) && fn.call(thisArg, object[index], index, object)) {
+                    val = true;
+                    break;
                 }
+            }
 
-                return val;
-            };
-        }
-
-        nfeSome = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * Creates a new array with the results of calling a provided function on every element in this array.
      * @memberOf utilx
+     * @name arrayMap
      * @function
      * @param {array} array
      * @param {function} fn
@@ -2742,127 +2623,113 @@
      * @return {array}
      */
     // named $.arrayMap instead of map because of SpiderMonkey and Blackberry bug
-    $.arrayMap = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var mapFN = baseArray.map,
-            nfeMap;
+    if ($.isFunction(mapFN)) {
+        $.arrayMap = function (array, fn, thisArg) {
+            return mapFN.call(array, fn, thisArg);
+        };
+    } else {
+        $.arrayMap = function (array, fn, thisArg) {
+            var object = $.toObjectFixIndexedAccess(array),
+                length,
+                index,
+                arr;
 
-        if ($.isFunction(mapFN)) {
-            tempSafariNFE = function nfeMap(array, fn, thisArg) {
-                return mapFN.call(array, fn, thisArg);
-            };
-        } else {
-            tempSafariNFE = function nfeMap(array, fn, thisArg) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    length,
-                    index,
-                    arr;
+            throwIfNotAFunction(fn);
+            length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
+            arr = [];
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
+            }
 
-                throwIfNotAFunction(fn);
-                length = clampInteger(object.length, 0, $.MAX_UINT32);
-                arr = [];
-                for (index = 0; $.lt(index, length); index += 1) {
-                    $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
-                }
+            return arr;
+        };
+    }
 
-                return arr;
-            };
-        }
-
-        nfeMap = null;
-
-        return tempSafariNFE;
-    }());
+    /**
+     * Returns some args for testing purposes.
+     * @private
+     * @function
+     * @return {arguments}
+     */
+    function someArgs() {
+        return $.returnArgs($.privateUndefined, null, 1, 'a', 2, 'b', null, $.privateUndefined);
+    }
 
     /**
      * Creates a new array from arguments, starting at start and ending at end.
      * @memberOf utilx
+     * @name arraySlice
      * @function
      * @param {array} array
      * @param {number|string} [start]
      * @param {number|string} [end]
      * @return {array}
      */
-    $.arraySlice = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var sliceFN = baseArray.slice,
-            nfeSlice;
+    try {
+        if ($.notStrictEqual(sliceFN.call(someArgs()).toString(), ',,1,a,2,b,,') ||
+                $.notStrictEqual(sliceFN.call(someArgs(),
+                                $.privateUndefined, $.privateUndefined).toString(), ',,1,a,2,b,,') ||
+                $.notStrictEqual(sliceFN.call(someArgs(), -1).length, 1) ||
+                $.notStrictEqual(sliceFN.call(someArgs(), $.POSITIVE_ZERO).toString(), ',,1,a,2,b,,') ||
+                $.notStrictEqual(sliceFN.call(someArgs(), 3).toString(), 'a,2,b,,') ||
+                !$.isZero(sliceFN.call(someArgs(), -1, 4).length) ||
+                $.notStrictEqual(sliceFN.call(someArgs(), $.POSITIVE_ZERO, 4).toString(), ',,1,a') ||
+                $.notStrictEqual(sliceFN.call(someArgs(), 3, 6).toString(), 'a,2,b')) {
 
-        function someArgs() {
-            return $.returnArgs($.privateUndefined, null, 1, 'a', 2, 'b', null, $.privateUndefined);
-        }
-
-        try {
-            if (!$.strictEqual(sliceFN.call(someArgs()).toString(), ',,1,a,2,b,,') ||
-                    !$.strictEqual(sliceFN.call(someArgs(),
-                                    $.privateUndefined, $.privateUndefined).toString(), ',,1,a,2,b,,') ||
-                    !$.strictEqual(sliceFN.call(someArgs(), -1).length, 1) ||
-                    !$.strictEqual(sliceFN.call(someArgs(), 0).toString(), ',,1,a,2,b,,') ||
-                    !$.strictEqual(sliceFN.call(someArgs(), 3).toString(), 'a,2,b,,') ||
-                    !$.strictEqual(sliceFN.call(someArgs(), -1, 4).length, 0) ||
-                    !$.strictEqual(sliceFN.call(someArgs(), 0, 4).toString(), ',,1,a') ||
-                    !$.strictEqual(sliceFN.call(someArgs(), 3, 6).toString(), 'a,2,b')) {
-
-                sliceFN = $.privateUndefined;
-            }
-        } catch (e) {
             sliceFN = $.privateUndefined;
         }
+    } catch (e) {
+        sliceFN = $.privateUndefined;
+    }
 
-        if ($.isFunction(sliceFN)) {
-            tempSafariNFE = function nfeSlice(array, start, end) {
-                return sliceFN.call(array, start, end);
-            };
-        } else {
-            tempSafariNFE = function nfeSlice(array, start, end) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    relativeStart = $.numberToInteger(start),
-                    length = clampInteger(object.length, 0, $.MAX_UINT32),
-                    val = [],
-                    next = 0,
-                    relativeEnd,
-                    final,
-                    k;
+    if ($.isFunction(sliceFN)) {
+        $.arraySlice = function (array, start, end) {
+            return sliceFN.call(array, start, end);
+        };
+    } else {
+        $.arraySlice = function (array, start, end) {
+            var object = $.toObjectFixIndexedAccess(array),
+                relativeStart = $.numberToInteger(start),
+                length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32),
+                val = [],
+                next = $.POSITIVE_ZERO,
+                relativeEnd,
+                final,
+                k;
 
-                if ($.lt($.mathSign(relativeStart), 0)) {
-                    k = Math.max(length + relativeStart, 0);
-                } else {
-                    k = Math.min(relativeStart, length);
-                }
+            if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
+                k = Math.max(length + relativeStart, $.POSITIVE_ZERO);
+            } else {
+                k = Math.min(relativeStart, length);
+            }
 
-                if ($.isUndefined(end)) {
-                    relativeEnd = length;
-                } else {
-                    relativeEnd = $.numberToInteger(end);
-                }
+            if ($.isUndefined(end)) {
+                relativeEnd = length;
+            } else {
+                relativeEnd = $.numberToInteger(end);
+            }
 
-                if ($.lt($.mathSign(relativeEnd), 0)) {
-                    final = Math.max(length + relativeEnd, 0);
-                } else {
-                    final = Math.min(relativeEnd, length);
-                }
+            if ($.lt($.mathSign(relativeEnd), $.POSITIVE_ZERO)) {
+                final = Math.max(length + relativeEnd, $.POSITIVE_ZERO);
+            } else {
+                final = Math.min(relativeEnd, length);
+            }
 
-                val.length = Math.max(final - k, 0);
-                while ($.lt(k, final)) {
-                    $.arrayAssign(val, next, object[k]);
-                    next += 1;
-                    k += 1;
-                }
+            val.length = Math.max(final - k, $.POSITIVE_ZERO);
+            while ($.lt(k, final)) {
+                $.arrayAssign(val, next, object[k]);
+                next += 1;
+                k += 1;
+            }
 
-                return val;
-            };
-        }
-
-        nfeSlice = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * Creates a new array with all elements that pass the test implemented by the provided function.
      * @memberOf utilx
+     * @name arrayFilter
      * @function
      * @param {array} array
      * @param {function} fn
@@ -2870,49 +2737,39 @@
      * @return {array}
      */
     // named $.arrayFilter instead of filter because of SpiderMonkey and Blackberry bug
-    $.arrayFilter = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var filterFN = baseArray.filter,
-            nfeFilter;
+    if ($.isFunction(filterFN)) {
+        $.arrayFilter = function (array, fn, thisArg) {
+            return filterFN.call(array, fn, thisArg);
+        };
+    } else {
+        $.arrayFilter = function (array, fn, thisArg) {
+            var object = $.toObjectFixIndexedAccess(array),
+                next = $.POSITIVE_ZERO,
+                length,
+                arr,
+                index,
+                element;
 
-        if ($.isFunction(filterFN)) {
-            tempSafariNFE = function nfeFilter(array, fn, thisArg) {
-                return filterFN.call(array, fn, thisArg);
-            };
-        } else {
-            tempSafariNFE = function nfeFilter(array, fn, thisArg) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    next = 0,
-                    length,
-                    arr,
-                    index,
-                    element;
-
-                throwIfNotAFunction(fn);
-                length = clampInteger(object.length, 0, $.MAX_UINT32);
-                arr = [];
-                for (index = 0; $.lt(index, length); index += 1) {
-                    element = object[index];
-                    if (fn.call(thisArg, element, index, object)) {
-                        $.arrayAssign(arr, next, element);
-                        next += 1;
-                    }
+            throwIfNotAFunction(fn);
+            length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
+            arr = [];
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                element = object[index];
+                if (fn.call(thisArg, element, index, object)) {
+                    $.arrayAssign(arr, next, element);
+                    next += 1;
                 }
+            }
 
-                return arr;
-            };
-        }
-
-        nfeFilter = null;
-
-        return tempSafariNFE;
-    }());
+            return arr;
+        };
+    }
 
     /**
      * Apply a function against an accumulator and each value of the array (from left-to-right)
      * as to reduce it to a single value.
      * @memberOf utilx
+     * @name arrayReduce
      * @function
      * @param {array} array
      * @param {function} fn
@@ -2920,52 +2777,41 @@
      * @return {*}
      */
     // named $.arrayReduce instead of reduce because of SpiderMonkey and Blackberry bug
-    $.arrayReduce = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var reduceFN = baseArray.reduce,
-            nfeReduce;
+    if ($.isFunction(reduceFN)) {
+        $.arrayReduce = function (array, fn, initialValue) {
+            return reduceFN.call(array, fn, initialValue);
+        };
+    } else {
+        $.arrayReduce = function (array, fn, initialValue) {
+            var object = $.toObjectFixIndexedAccess(array),
+                isValueSet = false,
+                value,
+                length,
+                index;
 
-        if ($.isFunction(reduceFN)) {
-            tempSafariNFE = function nfeReduce(array, fn, initialValue) {
-                return reduceFN.call(array, fn, initialValue);
-            };
-        } else {
-            tempSafariNFE = function nfeReduce(array, fn, initialValue) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    isValueSet = false,
-                    value,
-                    length,
-                    index;
+            throwIfNotAFunction(fn);
+            if ($.gt(arguments.length, 2)) {
+                value = initialValue;
+                isValueSet = true;
+            }
 
-                throwIfNotAFunction(fn);
-                if ($.gt(arguments.length, 2)) {
-                    value = initialValue;
-                    isValueSet = true;
-                }
-
-                length = clampInteger(object.length, 0, $.MAX_UINT32);
-                for (index = 0; $.lt(index, length); index += 1) {
-                    if ($.objectHasOwnProperty(object, index)) {
-                        value = fn(value, object[index], index, object);
-                        if ($.isFalse(isValueSet)) {
-                            isValueSet = true;
-                        }
+            length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                if ($.objectHasOwnProperty(object, index)) {
+                    value = fn(value, object[index], index, object);
+                    if ($.isFalse(isValueSet)) {
+                        isValueSet = true;
                     }
                 }
+            }
 
-                if ($.isFalse(isValueSet)) {
-                    throw new TypeError('Reduce of empty array with no initial value');
-                }
+            if ($.isFalse(isValueSet)) {
+                throw new TypeError('Reduce of empty array with no initial value');
+            }
 
-                return value;
-            };
-        }
-
-        nfeReduce = null;
-
-        return tempSafariNFE;
-    }());
+            return value;
+        };
+    }
 
     /**
      * Returns a random integer between the supplied min and max arguments.
@@ -2980,20 +2826,20 @@
     $.getRandomInt = function (min, max) {
         if ($.strictEqual(arguments.length, 1)) {
             max = min;
-            min = 0;
+            min = $.POSITIVE_ZERO;
         }
 
         min = $.numberToInteger(min);
         max = $.numberToInteger(max);
         if ($.objectIs(min, max)) {
             max = 1;
-            min = 0;
+            min = $.POSITIVE_ZERO;
         }
 
         var mult,
             val;
 
-        if ($.lt(min, 0) && $.gt(max, 0) && $.gt(max - min + 1, $.MAX_INTEGER)) {
+        if ($.lt(min, $.POSITIVE_ZERO) && $.gt(max, $.POSITIVE_ZERO) && $.gt(max - min + 1, $.MAX_INTEGER)) {
             mult = Math.floor(Math.random() * 2);
             if ($.isZero(mult)) {
                 mult = -1;
@@ -3044,7 +2890,7 @@
         var result = [];
 
         while (!$.isZero(left.length) && !$.isZero(right.length)) {
-            if ($.lte(comparison(left[0], right[0]), 0)) {
+            if ($.lte(comparison(left[$.POSITIVE_ZERO], right[$.POSITIVE_ZERO]), $.POSITIVE_ZERO)) {
                 $.arrayPush(result, left.shift());
             } else {
                 $.arrayPush(result, right.shift());
@@ -3071,7 +2917,7 @@
      * @return {array}
      */
     function mergeSort(array, comparefn) {
-        var length = clampInteger(array.length, 0, $.MAX_UINT32),
+        var length = clampInteger(array.length, $.POSITIVE_ZERO, $.MAX_UINT32),
             middle,
             val;
 
@@ -3079,7 +2925,7 @@
             val = $.arraySlice(array);
         } else {
             middle = Math.ceil(length / 2);
-            val = merge(mergeSort($.arraySlice(array, 0, middle), comparefn),
+            val = merge(mergeSort($.arraySlice(array, $.POSITIVE_ZERO, middle), comparefn),
                          mergeSort($.arraySlice(array, middle), comparefn), comparefn);
         }
 
@@ -3105,10 +2951,10 @@
         }
 
         throwIfNotAFunction(comparefn);
-        length = clampInteger(object.length, 0, $.MAX_UINT32);
+        length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
         if ($.gt(length, 1)) {
             object = mergeSort(object, comparefn);
-            for (index = 0; $.lt(index, length); index += 1) {
+            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 array[index] = object[index];
             }
         }
@@ -3125,22 +2971,16 @@
      * @param {Function} [compareFN]
      * @return {array}
      */
-    $.arraySort = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var sortFN = baseArray.sort;
+    $.arraySort = function (array, comparefn) {
+        $.checkObjectCoercible(array);
+        if ($.isUndefined(comparefn)) {
+            comparefn = defaultComparison;
+        }
 
-        return function (array, comparefn) {
-            $.checkObjectCoercible(array);
-            if ($.isUndefined(comparefn)) {
-                comparefn = defaultComparison;
-            }
+        throwIfNotAFunction(comparefn);
 
-            throwIfNotAFunction(comparefn);
-
-            return sortFN.call(array, comparefn);
-        };
-    }());
+        return sortFN.call(array, comparefn);
+    };
 
     /**
      * Swap places of 2 item values on an object's properties.
@@ -3164,7 +3004,7 @@
             temp1 = $.objectGetOwnPropertyDescriptor(object, prop1);
             temp2 = $.objectGetOwnPropertyDescriptor(object, prop2);
             num = $.toUint32(prop2);
-            if (!$.isPlainObject(temp1) || !$.objectHasOwnProperty(temp1, 'value')) {
+            if (!$.isPlainObject(temp1) || !$.objectHasOwnProperty(temp1, valueString)) {
                 if ($.isTypeObject(object) && !$.isFunction(object) &&
                         hasValidLength(object) && $.strictEqual($.anyToString(num), prop2) &&
                         $.strictEqual(num, object.length - 1)) {
@@ -3185,7 +3025,7 @@
             }
 
             num = $.toUint32(prop1);
-            if (!$.isPlainObject(temp2) || !$.objectHasOwnProperty(temp2, 'value')) {
+            if (!$.isPlainObject(temp2) || !$.objectHasOwnProperty(temp2, valueString)) {
                 if ($.isTypeObject(object) && !$.isFunction(object) && hasValidLength(object) &&
                         $.strictEqual($.anyToString(num), prop1) &&
                         $.strictEqual(num, object.length - 1)) {
@@ -3219,16 +3059,15 @@
      * @return {array}
      */
     $.shuffle = function (array, rounds) {
-        throwIfIsNotTypeObjectOrIsNotFunction(array);
-        var length = clampInteger(array.length, 0, $.MAX_UINT32),
+        var length = clampInteger(throwIfIsNotTypeObjectOrIsNotFunction(array).length, $.POSITIVE_ZERO, $.MAX_UINT32),
             index,
             round;
 
         if ($.gt(length, 1)) {
             rounds = clampInteger(rounds, 1, $.MAX_INTEGER);
-            for (round = 0; $.lt(round, rounds); round += 1) {
-                for (index = 0; $.lt(index, length); index += 1) {
-                    $.swapItems(array, index, $.getRandomInt(0, index));
+            for (round = $.POSITIVE_ZERO; $.lt(round, rounds); round += 1) {
+                for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
+                    $.swapItems(array, index, $.getRandomInt($.POSITIVE_ZERO, index));
                 }
             }
 
@@ -3239,92 +3078,51 @@
     };
 
     /**
+     * Builds the test string used to determine if native trim is ES5.
+     * @private
+     * @function
+     * @param {string} previous
+     * @param {string} element
+     * @return {string}
+     */
+    function buildTestString(previous, element) {
+        return previous + String.fromCharCode(element);
+    }
+
+    /**
      * Removes whitespace from both ends of the string.
      * @memberOf utilx
+     * @name stringTrim
      * @function
      * @param {string} inputArg
      * @return {string}
      */
     // named $.stringTrim instead of trim because of SpiderMonkey and Blackberry bug
-    $.stringTrim = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe/
-        var trimFN = baseString.trim,
-            whiteSpacesList = [
-                0x0009, // Tab
-                0x000a, // Line Feed
-                0x000b, // Vertical Tab
-                0x000c, // Form Feed
-                0x000d, // Carriage Return
-                0x0020, // Space
-                0x0085, // Next line
-                0x00a0, // No-break space
-                0x1680, // Ogham space mark
-                0x180e, // Mongolian vowel separator
-                0x2000, // En quad
-                0x2001, // Em quad
-                0x2002, // En space
-                0x2003, // Em space
-                0x2004, // Three-per-em space
-                0x2005, // Four-per-em space
-                0x2006, // Six-per-em space
-                0x2007, // Figure space
-                0x2008, // Punctuation space
-                0x2009, // Thin space
-                0x200a, // Hair space
-                0x200b, // Zero width space
-                0x2028, // Line separator
-                0x2029, // Paragraph separator
-                0x202f, // Narrow no-break space
-                0x205f, // Medium mathematical space
-                0x3000, // Ideographic space
-                0xfeff // Byte Order Mark
-            ],
-            whiteSpacesString,
-            wsTrimRX,
-            nfeTrim;
+    try {
+        if ($.isFunction(trimFN) &&
+                $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, '')).length)) {
 
-        /**
-         * Builds the test string used to determine if native trim is ES5.
-         * @private
-         * @function
-         * @param {string} previous
-         * @param {string} element
-         * @return {string}
-         */
-        function buildTestString(previous, element) {
-            return previous + String.fromCharCode(element);
-        }
-
-        try {
-            if ($.isFunction(trimFN) &&
-                    $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, '')).length)) {
-
-                tempSafariNFE = function nfeTrim(inputArg) {
-                    return trimFN.call(inputArg);
-                };
-            } else {
-                throw new Error();
-            }
-        } catch (e) {
-            whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
-                return previous + '\\u' + $.padLeadingChar(element.toString(16), '0', 4);
-            }, '');
-
-            wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
-            tempSafariNFE = function nfeTrim(inputArg) {
-                return onlyCoercibleToString(inputArg).replace(wsTrimRX, '');
+            $.stringTrim = function (inputArg) {
+                return trimFN.call(inputArg);
             };
+        } else {
+            throw new Error();
         }
+    } catch (e) {
+        whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
+            return previous + '\\u' + $.padLeadingChar(element.toString(16), '0', 4);
+        }, '');
 
-        nfeTrim = null;
-
-        return tempSafariNFE;
-    }());
+        wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
+        $.stringTrim = function (inputArg) {
+            return onlyCoercibleToString(inputArg).replace(wsTrimRX, '');
+        };
+    }
 
     /**
      * Returns the first index at which a given element can be found in the array, or -1 if it is not present.
      * @memberOf utilx
+     * @name arrayIndexOf
      * @function
      * @param {array} array
      * @param {object} searchElement
@@ -3334,64 +3132,77 @@
     // http://ecma-international.org/ecma-262/5.1/#sec-15.4.4.14
     // Create our own local "indexOf" function: native -> polyfill
     // named $.arrayIndexOf instead of indexOf because of SpiderMonkey and Blackberry bug
-    $.arrayIndexOf = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var indexOfFN = baseArray.indexOf,
-            nfeIndexOf;
+    if ($.isFunction(indexOfFN) && $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], 1, 2), 1)) {
+        $.arrayIndexOf = function (array, searchElement, fromIndex) {
+            return indexOfFN.call(array, searchElement, fromIndex);
+        };
+    } else {
+        $.arrayIndexOf = function (array, searchElement, fromIndex) {
+            var object = $.toObjectFixIndexedAccess(array),
+                length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32),
+                index,
+                start,
+                val;
 
-        if ($.isFunction(indexOfFN) && $.strictEqual(indexOfFN.call([0, 1], 1, 2), 1)) {
-            tempSafariNFE = function nfeIndexOf(array, searchElement, fromIndex) {
-                return indexOfFN.call(array, searchElement, fromIndex);
-            };
-        } else {
-            tempSafariNFE = function nfeIndexOf(array, searchElement, fromIndex) {
-                var object = $.toObjectFixIndexedAccess(array),
-                    length = clampInteger(object.length, 0, $.MAX_UINT32),
-                    index,
-                    start,
-                    val;
+            if ($.isZero(length)) {
+                val = -1;
+            } else {
+                if ($.gt(arguments.length, 2)) {
+                    fromIndex = $.numberToInteger(fromIndex);
+                } else {
+                    fromIndex = $.POSITIVE_ZERO;
+                }
 
-                if ($.isZero(length)) {
+                if ($.gte(fromIndex, length)) {
                     val = -1;
                 } else {
-                    if ($.gt(arguments.length, 2)) {
-                        fromIndex = $.numberToInteger(fromIndex);
+                    if ($.gte(fromIndex, $.POSITIVE_ZERO)) {
+                        start = fromIndex;
                     } else {
-                        fromIndex = 0;
+                        start = length - Math.abs(fromIndex);
                     }
 
-                    if ($.gte(fromIndex, length)) {
-                        val = -1;
-                    } else {
-                        if ($.gte(fromIndex, 0)) {
-                            start = fromIndex;
-                        } else {
-                            start = length - Math.abs(fromIndex);
-                        }
+                    if ($.lt(start, $.POSITIVE_ZERO)) {
+                        start = $.POSITIVE_ZERO;
+                    }
 
-                        if ($.lt(start, 0)) {
-                            start = 0;
-                        }
-
-                        for (index = start, val = -1; $.lt(index, length); index += 1) {
-                            if ($.hasProperty(object, index) && $.strictEqual(searchElement,
-                                                                                      object[index])) {
-                                val = index;
-                                break;
-                            }
+                    for (index = start, val = -1; $.lt(index, length); index += 1) {
+                        if ($.hasProperty(object, index) && $.strictEqual(searchElement,
+                                                                                  object[index])) {
+                            val = index;
+                            break;
                         }
                     }
                 }
+            }
 
-                return val;
-            };
+            return val;
+        };
+    }
+
+    /*
+     * Test for Object.keys support
+     */
+
+    /*jshint -W001 */
+    testObject1 = {
+        'toString': null,
+        'toLocaleString': null,
+        'valueOf': null,
+        'hasOwnProperty': null,
+        'isPrototypeOf': null,
+        'propertyIsEnumerable': null,
+        'constructor': null
+    };
+    /*jshint +W001 */
+
+    if ($.isFunction(keysFN)) {
+        try {
+            supported = $.strictEqual(keysFN(testObject1).length, 7);
+        } catch (e) {
+            supported = false;
         }
-
-        nfeIndexOf = null;
-
-        return tempSafariNFE;
-    }());
+    }
 
     /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
@@ -3410,78 +3221,38 @@
      * There are most probably other native objects that do not agree: Object and Array should be fine in all
      * environments.
      * @memberOf utilx
+     * @name objectKeys
      * @function
      * @param {object} object
      * @return {array}
      */
     // named $.objectKeys instead of keys because of SpiderMonkey and Blackberry bug
-    $.objectKeys = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var keysFN = CtrObject.keys,
-            hasDontEnumBug = true,
-            supported,
-            testObject,
-            nfeKeys;
+    if ($.isTrue(supported)) {
+        $.objectKeys = keysFN;
+    } else {
+        $.objectKeys = function (object) {
+            throwIfIsNotTypeObjectOrIsNotFunction(object);
 
-        /*jshint -W001 */
-        testObject = {
-            'toString': null,
-            'toLocaleString': null,
-            'valueOf': null,
-            'hasOwnProperty': null,
-            'isPrototypeOf': null,
-            'propertyIsEnumerable': null,
-            'constructor': null
-        };
-        /*jshint +W001 */
+            var props = [],
+                prop;
 
-        if ($.isFunction(keysFN)) {
-            try {
-                supported = $.strictEqual(keysFN(testObject).length, 7);
-            } catch (e) {
-                supported = false;
-            }
-        }
-
-        if ($.isTrue(supported)) {
-            tempSafariNFE = keysFN;
-        } else {
-            // reuse nfeKeys to save a var
-            for (nfeKeys in testObject) {
-                if ($.strictEqual(nfeKeys, 'toString') && $.isNull(testObject[nfeKeys])) {
-                    hasDontEnumBug = false;
+            for (prop in object) {
+                if ($.objectHasOwnProperty(object, prop)) {
+                    $.arrayPush(props, prop);
                 }
             }
 
-            tempSafariNFE = function nfeKeys(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-
-                var props = [],
-                    prop;
-
-                for (prop in object) {
-                    if ($.objectHasOwnProperty(object, prop)) {
-                        $.arrayPush(props, prop);
+            if ($.isTrue(hasDontEnumBug)) {
+                $.arrayForEach(defaultProperties, function (property) {
+                    if ($.objectHasOwnProperty(object, property)) {
+                        $.arrayPush(props, property);
                     }
-                }
+                });
+            }
 
-                if ($.isTrue(hasDontEnumBug)) {
-                    $.arrayForEach(defaultProperties, function (property) {
-                        if ($.objectHasOwnProperty(object, property)) {
-                            $.arrayPush(props, property);
-                        }
-                    });
-                }
-
-                return props;
-            };
-        }
-
-        nfeKeys = null;
-
-        return tempSafariNFE;
-    }());
+            return props;
+        };
+    }
 
     /**
      * Check to see if an object is empty (contains no enumerable properties).
@@ -3514,18 +3285,15 @@
      * @param {*} string
      * @return {boolean}
      */
-    $.isDigits = (function () {
-        var rxNotDigits = new RegExp('^\\d+$');
-
-        return function (string) {
-            return $.isStringNotEmpty(string) && rxNotDigits.test(string);
-        };
-    }());
+    $.isDigits = function (string) {
+        return $.isStringNotEmpty(string) && rxNotDigits.test(string);
+    };
 
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
      * and returns the object.
      * @memberOf utilx
+     * @name objectDefineProperty
      * @function
      * @param {object} object
      * @param {string} property
@@ -3535,190 +3303,161 @@
     // http://ecma-international.org/ecma-262/5.1/#sec-15.2.3.6
     // Create our own local "defineProperty" function: native -> sham
     // named $.objectDefineProperty instead of defineProperty because of SpiderMonkey and Blackberry bug
-    $.objectDefineProperty = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var nativeFN = CtrObject.defineProperty,
-            defineGetter,
-            defineSetter,
-            defineGetterFN,
-            defineSetterFN,
-            testObject,
-            previousFN1,
-            previousFN2,
-            definePropertyFN,
-            nfeDefineProperty,
-            nfeDefineProperty1,
-            nfeDefineProperty2;
+    try {
+        testObject1 = definePropertyFN({}, sentinelString, {
+            value: null
+        });
 
-        if ($.isFunction(nativeFN)) {
-            try {
-                testObject = nativeFN({}, 'sentinel', {
-                    value: null
-                });
+        if (!$.isNull(testObject1[sentinelString])) {
+            throw new Error('Fails sentinel check');
+        }
 
-                if (!$.isNull(testObject.sentinel)) {
-                    throw new Error('Fails sentinel check');
+        // Test string integer
+        try {
+            testValue = definePropertyFN([], '1.', {
+                value: null
+            });
+
+            if (!$.isNull(testValue[1])) {
+                throw new Error('Fails integer check');
+            }
+
+            definePropertyCustom = definePropertyFN;
+        } catch (e) {
+            definePropertyCustom = function (object, property, descriptor) {
+                if (isArrayOrArguments(object) &&
+                        $.isString(property) && !$.isEmptyString(property) &&
+                        !$.isDigits(property) &&
+                        $.numberIsInteger($.toNumber(property))) {
+
+                    property = $.toNumber(property).toString();
                 }
 
-                // Test string integer
-                try {
-                    tempSafariNFE = nativeFN([], '1.', {
-                        value: null
-                    });
+                return definePropertyFN(object, property, descriptor);
+            };
+        }
 
-                    if (!$.isNull(tempSafariNFE[1])) {
-                        throw new Error('Fails integer check');
+        // Test assign to array
+        try {
+            testObject1 = definePropertyCustom([], '0', {
+                value: null
+            });
+
+            if (!$.isNull(testObject1[$.POSITIVE_ZERO])) {
+                throw new Error('Fails array check');
+            }
+        } catch (e) {
+            definePropertyCustom1 = definePropertyCustom;
+            definePropertyCustom = function (object, property, descriptor) {
+                if (isArrayOrArguments(object) &&
+                        (($.isNumber(property) && $.numberIsInteger(property)) ||
+                         $.isDigits(property) ||
+                         ($.isStringNotEmpty(property) &&
+                            $.numberIsInteger($.toNumber(property))))) {
+
+                    if ($.objectHasOwnProperty(descriptor, valueString) ||
+                            !$.objectHasOwnProperty(object, property)) {
+
+                        $.arrayAssign(object, property, descriptor.value);
                     }
-
-                    definePropertyFN = nativeFN;
-                } catch (e) {
-                    definePropertyFN = function nfeDefineProperty(object, property, descriptor) {
-                        if (isArrayOrArguments(object) &&
-                                $.isString(property) && !$.isEmptyString(property) &&
-                                !$.isDigits(property) &&
-                                $.numberIsInteger($.toNumber(property))) {
-
-                            property = $.toNumber(property).toString();
-                        }
-
-                        return nativeFN(object, property, descriptor);
-                    };
                 }
 
-                // Test assign to array
-                try {
-                    tempSafariNFE = definePropertyFN([], '0', {
-                        value: null
-                    });
+                return definePropertyCustom1(object, property, descriptor);
+            };
+        }
 
-                    if (!$.isNull(tempSafariNFE[0])) {
-                        throw new Error('Fails array check');
-                    }
-                } catch (e) {
-                    previousFN1 = definePropertyFN;
-                    definePropertyFN = function nfeDefineProperty1(object, property, descriptor) {
+        // Test overwrite array property when no value defined
+        try {
+            testObject1 = definePropertyCustom([10], '0', {});
+            if ($.notStrictEqual(testObject1[$.POSITIVE_ZERO], 10)) {
+                throw new Error('Fails overwrite check');
+            }
+        } catch (e) {
+            definePropertyCustom2 = definePropertyCustom;
+            definePropertyCustom = function (object, property, descriptor) {
+                if (!$.objectHasOwnProperty(descriptor, valueString)) {
+                    descriptor.value = object[property];
+                }
+
+                return definePropertyCustom2(object, property, descriptor);
+            };
+        }
+    } catch (ignore) {}
+
+    if ($.isFunction(definePropertyCustom)) {
+        $.objectDefineProperty = definePropertyCustom;
+    } else {
+        $.objectDefineProperty = function (object, property, descriptor) {
+            throwIfIsNotTypeObjectOrIsNotFunction(object);
+            if (!isTypeObjectOrIsFunction(descriptor)) {
+                throw new TypeError('Property description must be an object: ' + $.anyToString(descriptor));
+            }
+
+            if ($.objectHasOwnProperty(descriptor, valueString) &&
+                    ($.objectHasOwnProperty(descriptor, 'get') ||
+                        $.objectHasOwnProperty(descriptor, 'set'))) {
+
+                throw new TypeError('Invalid property. A property cannot have accessors and a value');
+            }
+
+            var prototype;
+
+            if (!$.objectHasOwnProperty(descriptor, 'get') &&
+                    !$.objectHasOwnProperty(descriptor, 'set')) {
+
+                if ($.objectHasOwnProperty(descriptor, valueString) ||
+                        !$.objectHasOwnProperty(object, property)) {
+
+                    if ($.isNull($.objectGetPrototypeOf(baseObject)[protoName])) {
+                        prototype = object[protoName];
+                        object[protoName] = $.objectGetPrototypeOf(baseObject);
                         if (isArrayOrArguments(object) &&
                                 (($.isNumber(property) && $.numberIsInteger(property)) ||
                                  $.isDigits(property) ||
                                  ($.isStringNotEmpty(property) &&
                                     $.numberIsInteger($.toNumber(property))))) {
 
-                            if ($.objectHasOwnProperty(descriptor, 'value') ||
-                                    !$.objectHasOwnProperty(object, property)) {
-
-                                $.arrayAssign(object, property, descriptor.value);
-                            }
-                        }
-
-                        return previousFN1(object, property, descriptor);
-                    };
-                }
-
-                // Test overwrite array property when no value defined
-                try {
-                    tempSafariNFE = definePropertyFN([10], '0', {});
-                    if ($.notStrictEqual(tempSafariNFE[0], 10)) {
-                        throw new Error('Fails overwrite check');
-                    }
-                } catch (e) {
-                    previousFN2 = definePropertyFN;
-                    definePropertyFN = function nfeDefineProperty2(object, property, descriptor) {
-                        if (!$.objectHasOwnProperty(descriptor, 'value')) {
-                            descriptor.value = object[property];
-                        }
-
-                        return previousFN2(object, property, descriptor);
-                    };
-                }
-            } catch (ignore) {}
-        }
-
-        if ($.isFunction(definePropertyFN)) {
-            tempSafariNFE = definePropertyFN;
-        } else {
-            defineGetter = '__defineGetter__';
-            defineSetter = '__defineSetter__';
-            defineGetterFN = baseObject[defineGetter];
-            defineSetterFN = baseObject[defineSetter];
-            tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-                if (!isTypeObjectOrIsFunction(descriptor)) {
-                    throw new TypeError('Property description must be an object: ' + $.anyToString(descriptor));
-                }
-
-                if ($.objectHasOwnProperty(descriptor, 'value') &&
-                        ($.objectHasOwnProperty(descriptor, 'get') ||
-                            $.objectHasOwnProperty(descriptor, 'set'))) {
-
-                    throw new TypeError('Invalid property. A property cannot have accessors and a value');
-                }
-
-                var prototype;
-
-                if (!$.objectHasOwnProperty(descriptor, 'get') &&
-                        !$.objectHasOwnProperty(descriptor, 'set')) {
-
-                    if ($.objectHasOwnProperty(descriptor, 'value') ||
-                            !$.objectHasOwnProperty(object, property)) {
-
-                        if ($.isNull($.objectGetPrototypeOf(baseObject)[protoName])) {
-                            prototype = object[protoName];
-                            object[protoName] = $.objectGetPrototypeOf(baseObject);
-                            if (isArrayOrArguments(object) &&
-                                    (($.isNumber(property) && $.numberIsInteger(property)) ||
-                                     $.isDigits(property) ||
-                                     ($.isStringNotEmpty(property) &&
-                                        $.numberIsInteger($.toNumber(property))))) {
-
-                                $.arrayAssign(object, property, descriptor.value);
-                            } else {
-                                delete object[property];
-                                object[property] = descriptor.value;
-                            }
-
-                            if ($.isUndefined(prototype)) {
-                                delete object[protoName];
-                            } else {
-                                object[protoName] = prototype;
-                            }
+                            $.arrayAssign(object, property, descriptor.value);
                         } else {
-                            if (isArrayOrArguments(object) &&
-                                    (($.isNumber(property) && $.numberIsInteger(property)) ||
-                                     $.isDigits(property) ||
-                                     ($.isStringNotEmpty(property) &&
-                                        $.numberIsInteger($.toNumber(property))))) {
+                            delete object[property];
+                            object[property] = descriptor.value;
+                        }
 
-                                $.arrayAssign(object, property, descriptor.value);
-                            } else {
-                                object[property] = descriptor.value;
-                            }
+                        if ($.isUndefined(prototype)) {
+                            delete object[protoName];
+                        } else {
+                            object[protoName] = prototype;
+                        }
+                    } else {
+                        if (isArrayOrArguments(object) &&
+                                (($.isNumber(property) && $.numberIsInteger(property)) ||
+                                 $.isDigits(property) ||
+                                 ($.isStringNotEmpty(property) &&
+                                    $.numberIsInteger($.toNumber(property))))) {
+
+                            $.arrayAssign(object, property, descriptor.value);
+                        } else {
+                            object[property] = descriptor.value;
                         }
                     }
-                } else {
-                    if (!$.isFunction(defineGetterFN) || !$.isFunction(defineSetterFN)) {
-                        throw new TypeError('getters & setters can not be defined on this javascript engine');
-                    }
-
-                    if ($.isFunction(descriptor.get)) {
-                        defineGetterFN.call(object, property, descriptor.get);
-                    }
-
-                    if ($.isFunction(descriptor.set)) {
-                        defineSetterFN.call(object, property, descriptor.set);
-                    }
+                }
+            } else {
+                if (!$.isFunction(defineGetterFN) || !$.isFunction(defineSetterFN)) {
+                    throw new TypeError('getters & setters can not be defined on this javascript engine');
                 }
 
-                return object;
-            };
-        }
+                if ($.isFunction(descriptor.get)) {
+                    defineGetterFN.call(object, property, descriptor.get);
+                }
 
-        nfeDefineProperty = null;
-        nfeDefineProperty1 = null;
-        nfeDefineProperty2 = null;
+                if ($.isFunction(descriptor.set)) {
+                    defineSetterFN.call(object, property, descriptor.set);
+                }
+            }
 
-        return tempSafariNFE;
-    }());
+            return object;
+        };
+    }
 
     /**
      * Defines new or modifies existing properties directly on an object, returning the object.
@@ -3749,6 +3488,7 @@
      * not present by dint of being along an object's prototype chain) of a given object.
      * On environments that do not support it natively, this is just a sham to allow code to work.
      * @memberOf utilx
+     * @name objectGetOwnPropertyDescriptor
      * @function
      * @param {object} object
      * @param {string} property
@@ -3757,155 +3497,133 @@
     // Create our own local "getOwnPropertyDescriptor" function: native -> sham
     // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
     // and Blackberry bug
-    $.objectGetOwnPropertyDescriptor = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var getOwnPropDescFN = CtrObject.getOwnPropertyDescriptor,
-            lookupGetter,
-            lookupSetter,
-            lookupGetterFN,
-            lookupSetterFN,
-            testObject1,
-            testObject2,
-            nfeGetOwnPropertyDescriptor;
+    try {
+        testObject1 = {
+            sentinel: null
+        };
 
-        try {
-            testObject1 = {
-                sentinel: null
-            };
+        testObject2 = [10, 20, 30];
+        testObject2[4] = $.privateUndefined;
+        if (!$.isNull(getOwnPropDescFN(testObject1, sentinelString).value) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 3).value, 30) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
+                !$.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), valueString) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, $.privateUndefined) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 5), $.privateUndefined) ||
+                $.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), valueString)) {
 
-            testObject2 = [10, 20, 30];
-            testObject2[4] = $.privateUndefined;
-            if (!$.isNull(getOwnPropDescFN(testObject1, 'sentinel').value) ||
-                    $.notStrictEqual(getOwnPropDescFN(testObject2, 3).value, 30) ||
-                    $.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
-                    !$.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), 'value') ||
-                    $.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, $.privateUndefined) ||
-                    $.notStrictEqual(getOwnPropDescFN(testObject2, 5), $.privateUndefined) ||
-                    $.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), 'value')) {
+            throw new Error();
+        }
 
-                throw new Error();
-            }
+        if ($.isFalse(getOwnPropDescFN(function (a) {
+                return a;
+            }, lengthString).writable)) {
 
-            if ($.isFalse(getOwnPropDescFN(function (a) {
-                    return a;
-                }, 'length').writable)) {
+            $.objectGetOwnPropertyDescriptor = getOwnPropDescFN;
+        } else {
+            $.objectGetOwnPropertyDescriptor = function (object, property) {
+                var descriptor = getOwnPropDescFN(object, property);
 
-                tempSafariNFE = getOwnPropDescFN;
-            } else {
-                tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
-                    var descriptor = getOwnPropDescFN(object, property);
+                if ($.isFunction(object) && $.strictEqual(property, lengthString) &&
+                        $.isTrue(descriptor.writable)) {
 
-                    if ($.isFunction(object) && $.strictEqual(property, 'length') &&
-                            $.isTrue(descriptor.writable)) {
-
-                        descriptor.writable = false;
-                    }
-
-                    return descriptor;
-                };
-            }
-        } catch (e) {
-            lookupGetter = '__lookupGetter__';
-            lookupSetter = '__lookupSetter__';
-            lookupGetterFN = baseObject[lookupGetter];
-            lookupSetterFN = baseObject[lookupSetter];
-            tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
-                var descriptor,
-                    prototype,
-                    getter,
-                    setter;
-
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-                if ($.objectHasOwnProperty(object, property)) {
-                    descriptor = {};
-                    descriptor.configurable = true;
-                    try {
-                        descriptor.enumerable = $.objectPropertyIsEnumerable(object, property);
-                    } catch (e) {
-                        descriptor.enumerable = true;
-                    }
-
-                    if ($.isFunction(lookupGetterFN) && $.isFunction(lookupSetterFN)) {
-                        prototype = object[protoName];
-                        object[protoName] = $.objectGetPrototypeOf(baseObject);
-                        getter = lookupGetterFN.call(object, property);
-                        setter = lookupSetterFN.call(object, property);
-                        if ($.isUndefined(prototype)) {
-                            delete object[protoName];
-                        } else {
-                            object[protoName] = prototype;
-                        }
-
-                        if ($.isFunction(getter) || $.isFunction(setter)) {
-                            if ($.isFunction(getter)) {
-                                descriptor.get = getter;
-                            }
-
-                            if ($.isFunction(setter)) {
-                                descriptor.set = setter;
-                            }
-                        }
-                    }
-
-                    descriptor.value = object[property];
-                    if ($.strictEqual(property, 'length')) {
-                        if ($.isFunction(object)) {
-                            descriptor.writable = false;
-                            descriptor.configurable = false;
-                        } else if (isArrayOrArguments(object)) {
-                            descriptor.writable = true;
-                            descriptor.configurable = false;
-                        }
-                    } else if ($.strictEqual(property, 'prototype')) {
-                        switch (object) {
-                        case Object:
-                            /* falls through */
-                        case Array:
-                            /* falls through */
-                        case Function:
-                            /* falls through */
-                        case Boolean:
-                            /* falls through */
-                        case String:
-                            /* falls through */
-                        case Date:
-                            /* falls through */
-                        case RegExp:
-                            /* falls through */
-                        case Error:
-                            /* falls through */
-                        case TypeError:
-                            /* falls through */
-                        case SyntaxError:
-                            /* falls through */
-                        case RangeError:
-                            /* falls through */
-                        case EvalError:
-                            /* falls through */
-                        case ReferenceError:
-                            /* falls through */
-                        case URIError:
-                            descriptor.writable = false;
-                            descriptor.configurable = false;
-                            break;
-                        default:
-                            descriptor.writable = true;
-                            descriptor.configurable = false;
-                        }
-                    } else {
-                        descriptor.writable = true;
-                    }
+                    descriptor.writable = false;
                 }
 
                 return descriptor;
             };
         }
+    } catch (e) {
+        $.objectGetOwnPropertyDescriptor = function (object, property) {
+            var descriptor,
+                prototype,
+                getter,
+                setter;
 
-        nfeGetOwnPropertyDescriptor = null;
+            if ($.objectHasOwnProperty(throwIfIsNotTypeObjectOrIsNotFunction(object), property)) {
+                descriptor = {};
+                descriptor.configurable = true;
+                try {
+                    descriptor.enumerable = $.objectPropertyIsEnumerable(object, property);
+                } catch (e) {
+                    descriptor.enumerable = true;
+                }
 
-        return tempSafariNFE;
-    }());
+                if ($.isFunction(lookupGetterFN) && $.isFunction(lookupSetterFN)) {
+                    prototype = object[protoName];
+                    object[protoName] = $.objectGetPrototypeOf(baseObject);
+                    getter = lookupGetterFN.call(object, property);
+                    setter = lookupSetterFN.call(object, property);
+                    if ($.isUndefined(prototype)) {
+                        delete object[protoName];
+                    } else {
+                        object[protoName] = prototype;
+                    }
+
+                    if ($.isFunction(getter) || $.isFunction(setter)) {
+                        if ($.isFunction(getter)) {
+                            descriptor.get = getter;
+                        }
+
+                        if ($.isFunction(setter)) {
+                            descriptor.set = setter;
+                        }
+                    }
+                }
+
+                descriptor.value = object[property];
+                if ($.strictEqual(property, lengthString)) {
+                    if ($.isFunction(object)) {
+                        descriptor.writable = false;
+                        descriptor.configurable = false;
+                    } else if (isArrayOrArguments(object)) {
+                        descriptor.writable = true;
+                        descriptor.configurable = false;
+                    }
+                } else if ($.strictEqual(property, prototypeString)) {
+                    switch (object) {
+                    case Object:
+                        /* falls through */
+                    case Array:
+                        /* falls through */
+                    case Function:
+                        /* falls through */
+                    case Boolean:
+                        /* falls through */
+                    case String:
+                        /* falls through */
+                    case Date:
+                        /* falls through */
+                    case RegExp:
+                        /* falls through */
+                    case Error:
+                        /* falls through */
+                    case TypeError:
+                        /* falls through */
+                    case SyntaxError:
+                        /* falls through */
+                    case RangeError:
+                        /* falls through */
+                    case EvalError:
+                        /* falls through */
+                    case ReferenceError:
+                        /* falls through */
+                    case URIError:
+                        descriptor.writable = false;
+                        descriptor.configurable = false;
+                        break;
+                    default:
+                        descriptor.writable = true;
+                        descriptor.configurable = false;
+                    }
+                } else {
+                    descriptor.writable = true;
+                }
+            }
+
+            return descriptor;
+        };
+    }
 
     /**
      * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties
@@ -3913,89 +3631,62 @@
      * writability, from being changed.
      * In essence the object is made effectively immutable. Returns the object being frozen.
      * @memberOf utilx
+     * @name objectFreeze
      * @function
      * @param {object} object
      * @return {object}
      */
     // Create our own local "freeze" function: native -> sham
     // named $.objectFreeze instead of freeze because of SpiderMonkey and Blackberry bug
-    $.objectFreeze = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var freezeFN = CtrObject.freeze,
-            nfeFreeze;
-
-        if ($.isFunction(freezeFN)) {
-            tempSafariNFE = freezeFN;
-        } else {
-            tempSafariNFE = function nfeFreeze(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-
-                return object;
-            };
-        }
-
-        nfeFreeze = null;
-
-        return tempSafariNFE;
-    }());
+    if ($.isFunction(freezeFN)) {
+        $.objectFreeze = freezeFN;
+    } else {
+        $.objectFreeze = function (object) {
+            return throwIfIsNotTypeObjectOrIsNotFunction(object);
+        };
+    }
 
     // detect a Rhino bug and patch it
     try {
-        $.objectFreeze($.noop);
+        testObject1 = {
+            noop: $.noop
+        };
+
+        $.objectFreeze(testObject1.noop);
     } catch (exception) {
-        $.objectFreeze = (function (freezeObject) {
-            // Unused variable for JScript NFE bug
-            // http://kangax.github.io/nfe
-            var nfeFreezeR;
+        freezeObject = $.objectFreeze;
+        $.objectFreeze = function (object) {
+            var val;
 
-            tempSafariNFE = function nfeFreezeR(object) {
-                var val;
+            if ($.isFunction(object)) {
+                val = object;
+            } else {
+                val = freezeObject(object);
+            }
 
-                if ($.isFunction(object)) {
-                    val = object;
-                } else {
-                    val = freezeObject(object);
-                }
-
-                return val;
-            };
-
-            nfeFreezeR = null;
-
-            return tempSafariNFE;
-        }($.objectFreeze));
+            return val;
+        };
     }
 
     /**
      * Determine if an object is frozen.
      * @memberOf utilx
+     * @name objectIsFrozen
      * @function
      * @param {object} object
      * @return {boolean}
      */
     // Create our own local "isFrozen" function: native -> sham
     // named $.objectIsFrozen instead of isFrozen because of SpiderMonkey and Blackberry bug
-    $.objectIsFrozen = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var isFrozenFN = CtrObject.isFrozen,
-            nfeIsFrozen;
+    if ($.isFunction(isFrozenFN)) {
+        $.objectIsFrozen = isFrozenFN;
+    } else {
+        $.objectIsFrozen = function (object) {
+            throwIfIsNotTypeObjectOrIsNotFunction(object);
 
-        if ($.isFunction(isFrozenFN)) {
-            tempSafariNFE = isFrozenFN;
-        } else {
-            tempSafariNFE = function nfeIsFrozen(object) {
-                throwIfIsNotTypeObjectOrIsNotFunction(object);
-
-                return false;
-            };
-        }
-
-        nfeIsFrozen = null;
-
-        return tempSafariNFE;
-    }());
+            return false;
+        };
+    }
 
     /**
      * To make object fully immutable, freeze each object in object.
@@ -4020,53 +3711,43 @@
     /**
      * The function tests whether an object has in its prototype chain the prototype property of a constructor.
      * @memberOf utilx
+     * @name objectInstanceOf
      * @function
      * @param {object} object
      * @param {function} ctr
      * @return {boolean}
      */
     // named $.objectInstanceOf instead of instanceOf because of SpiderMonkey and Blackberry bug
-    $.objectInstanceOf = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var isPrototypeOfFN = CtrObject.prototype.isPrototypeOf,
-            nfeInstanceOf;
+    if ($.isFunction(isPrototypeOfFN)) {
+        $.objectInstanceOf = function (object, ctr) {
+            throwIfNotAFunction(ctr);
 
-        if ($.isFunction(isPrototypeOfFN)) {
-            tempSafariNFE = function nfeInstanceOf(object, ctr) {
-                throwIfNotAFunction(ctr);
+            return isTypeObjectOrIsFunction(object) &&
+                (object instanceof ctr || isPrototypeOfFN.call(ctr.prototype, object));
+        };
+    } else if ($.isFunction($.objectGetPrototypeOf)) {
+        $.objectInstanceOf = function (object, ctr) {
+            throwIfNotAFunction(ctr);
 
-                return isTypeObjectOrIsFunction(object) &&
-                    (object instanceof ctr || isPrototypeOfFN.call(ctr.prototype, object));
-            };
-        } else if ($.isFunction($.objectGetPrototypeOf)) {
-            tempSafariNFE = function nfeInstanceOf(object, ctr) {
-                throwIfNotAFunction(ctr);
+            var val = false;
 
-                var val = false;
-
-                if (isTypeObjectOrIsFunction(object)) {
-                    val = object instanceof ctr;
-                    if ($.isFalse(val)) {
-                        while ($.toBoolean(object)) {
-                            if ($.strictEqual(object, ctr.prototype)) {
-                                val = true;
-                                break;
-                            }
-
-                            object = $.objectGetPrototypeOf(object);
+            if (isTypeObjectOrIsFunction(object)) {
+                val = object instanceof ctr;
+                if ($.isFalse(val)) {
+                    while ($.toBoolean(object)) {
+                        if ($.strictEqual(object, ctr.prototype)) {
+                            val = true;
+                            break;
                         }
+
+                        object = $.objectGetPrototypeOf(object);
                     }
                 }
+            }
 
-                return val;
-            };
-        }
-
-        nfeInstanceOf = null;
-
-        return tempSafariNFE;
-    }());
+            return val;
+        };
+    }
 
     /**
      * The constructor used by $.objectCreate if shimmed.
@@ -4081,74 +3762,54 @@
     /**
      * The $.objectCreate method creates a new object with the specified prototype object and properties.
      * @memberOf utilx
+     * @name objectCreate
      * @function
      * @param {object} prototype
      * @return {object}
      */
     // named $.objectCreate instead of create because of SpiderMonkey and Blackberry bug
-    $.objectCreate = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var createdOk,
-            objectCreateFN,
-            nfeObjectCreate,
-            testObject;
+    try {
+        testObject1 = objectCreateFN(ObjectCreateFunc.prototype, {
+            constructor: {
+                value: ObjectCreateFunc,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            },
 
-        try {
-            objectCreateFN = CtrObject.create;
-            testObject = objectCreateFN(ObjectCreateFunc.prototype, {
-                constructor: {
-                    value: ObjectCreateFunc,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                },
+            foo: {
+                value: testString,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
+        });
 
-                foo: {
-                    value: 'test',
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                }
+        if ($.notStrictEqual(testObject1.foo, testString)) {
+            throw new Error();
+        }
+
+        $.objectCreate = objectCreateFN;
+    } catch (e) {
+        $.objectCreate = function (prototype, propertiesObject) {
+            var newObject;
+
+            ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
+            newObject = new ObjectCreateFunc();
+            $.objectDefineProperty(newObject, protoName, {
+                value: prototype,
+                enumerable: false,
+                writable: true,
+                configurable: true
             });
 
-            if ($.strictEqual(testObject.foo, 'test')) {
-                tempSafariNFE = objectCreateFN;
-                createdOk = true;
-            } else {
-                createdOk = false;
+            if ($.isPlainObject(propertiesObject)) {
+                $.objectDefineProperties(newObject, propertiesObject);
             }
-        } catch (e) {
-            createdOk = false;
-        }
 
-        if ($.isFalse(createdOk)) {
-            tempSafariNFE = function nfeObjectCreate(prototype, propertiesObject) {
-                throwIfIsNotTypeObjectOrIsNotFunction(prototype);
-
-                var newObject;
-
-                ObjectCreateFunc.prototype = prototype;
-                newObject = new ObjectCreateFunc();
-                $.objectDefineProperty(newObject, protoName, {
-                    value: prototype,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                });
-
-                if ($.isPlainObject(propertiesObject)) {
-                    $.objectDefineProperties(newObject, propertiesObject);
-                }
-
-                return newObject;
-            };
-        }
-
-        nfeObjectCreate = null;
-
-        return tempSafariNFE;
-    }());
+            return newObject;
+        };
+    }
 
     /**
      * Check to see if an object is a plain object (created using "{}" or "new Object").
@@ -4158,14 +3819,10 @@
      * @param {object} object
      * @return {boolean}
      */
-    $.isPlainObject = (function () {
-        var baseObjectPrototype = $.objectGetPrototypeOf(baseObject);
-
-        return function (object) {
-            return $.isTypeObject(object) && $.isObject(object) &&
-                $.strictEqual($.objectGetPrototypeOf(object), baseObjectPrototype);
-        };
-    }());
+    $.isPlainObject = function (object) {
+        return $.isTypeObject(object) && $.isObject(object) &&
+            $.strictEqual($.objectGetPrototypeOf(object), baseObjectPrototype);
+    };
 
     /**
      * "shallow" extend the properties from the source objects over to the target object,
@@ -4210,13 +3867,9 @@
      * @param {string} string
      * @return {string}
      */
-    $.escapeRegex = (function () {
-        var rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g');
-
-        return function (string) {
-            return string.replace(rxEscapeThese, '\\$&');
-        };
-    }());
+    $.escapeRegex = function (string) {
+        return string.replace(rxEscapeThese, '\\$&');
+    };
 
     /**
      * Wraps a string within the string character.
@@ -4318,8 +3971,8 @@
                 return false;
             }
         } else {
-            ka.sort();
-            kb.sort();
+            $.arrayStableSort(ka);
+            $.arrayStableSort(kb);
             status = $.arraySome(ka, function (aKey, index) {
                 return !$.objectIs(aKey, kb[index]);
             });
@@ -4367,8 +4020,7 @@
     $.jsonStringify = (function () {
         // Unused variable for JScript NFE bug
         // http://kangax.github.io/nfe
-        var supported = false,
-            stringifiedValue,
+        var stringifiedValue,
             escapableStr,
             escapable,
             gap,
@@ -4394,7 +4046,7 @@
                     supported =
                         // Firefox 3.1b1 and b2 serialize string, number, and boolean
                         // primitives as object literals.
-                        $.strictEqual(JSON.stringify(0), '0') &&
+                        $.strictEqual(JSON.stringify($.POSITIVE_ZERO), '0') &&
                         // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
                         // literals.
                         $.strictEqual(JSON.stringify(new CtrNumber()), '0') &&
@@ -4476,7 +4128,7 @@
             quote = function (string) {
                 var result = '"';
 
-                escapable.lastIndex = 0;
+                escapable.lastIndex = $.POSITIVE_ZERO;
                 if (escapable.test(string)) {
                     result += string.replace(escapable, function (a) {
                         var c = meta[a],
@@ -4485,7 +4137,7 @@
                         if ($.isString(c)) {
                             r = c;
                         } else {
-                            r = '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                            r = '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
                         }
 
                         return r;
@@ -4534,7 +4186,7 @@
                     partial = [];
                     if ($.arrayIsArray(value)) {
                         length = value.length;
-                        for (index = 0; index < length; index += 1) {
+                        for (index = $.POSITIVE_ZERO; index < length; index += 1) {
                             $.arrayAssign(partial, index, str(index, value) || 'null');
                         }
 
@@ -4629,8 +4281,7 @@
     $.jsonParse = (function () {
         // Unused variable for JScript NFE bug
         // http://kangax.github.io/nfe
-        var supported = false,
-            parsedValue,
+        var parsedValue,
             throwsSyntaxError,
             rx1,
             rx2,
@@ -4652,7 +4303,7 @@
                         // Simple parsing test.
                         parsedValue = JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
                         supported = $.strictEqual(parsedValue.A.length, 5);
-                        supported = supported && $.strictEqual(parsedValue.A[0], 1);
+                        supported = supported && $.strictEqual(parsedValue.A[$.POSITIVE_ZERO], 1);
                         if (supported) {
                             try {
                                 // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
@@ -4723,10 +4374,10 @@
                 }
 
                 text = $.anyToString(text);
-                cx.lastIndex = 0;
+                cx.lastIndex = $.POSITIVE_ZERO;
                 if (cx.test(text)) {
                     text = text.replace(cx, function (a) {
-                        return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                        return '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
                     });
                 }
 
@@ -4767,9 +4418,9 @@
         }
 
         n = $.toNumber(n);
-        if (!$.numberIsNaN(n) && $.gte(n, 0)) {
+        if (!$.numberIsNaN(n) && $.gte(n, $.POSITIVE_ZERO)) {
             if ($.gt(s.length, n)) {
-                s = s.slice(0, n);
+                s = s.slice($.POSITIVE_ZERO, n);
             }
         }
 
@@ -4872,7 +4523,7 @@
             throw new Error(message);
         } catch (e) {
             if ($.strictEqual(e.message, message) &&
-                    $.strictEqual(e.toString(), '[object Error]')) {
+                    $.strictEqual(e.toString(), errorString)) {
 
                 previousIEErrorToString = Error.prototype.toString;
                 $.objectDefineProperties(Error.prototype, {
@@ -5054,7 +4705,7 @@
 
         try {
             CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
-            isOkToUseOtherErrors = $.objectInstanceOf(new CustomSyntaxError('test'), SyntaxError);
+            isOkToUseOtherErrors = $.objectInstanceOf(new CustomSyntaxError(testString), SyntaxError);
         } catch (e) {
             // IE < 9
             isOkToUseOtherErrors = false;
