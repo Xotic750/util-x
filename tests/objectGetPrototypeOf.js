@@ -86,9 +86,15 @@
             expect(utilx.objectGetPrototypeOf(new Employee())).to.be(Employee.prototype);
             expect(utilx.objectGetPrototypeOf(new Manager())).to.be(Manager.prototype);
 
+            function Constructor() {
+                this.prototype = new Manager();
+                this.constructor = Employee;
+            }
+
+            Constructor.prototype.constructor = Person;
             try {
-                var x = utilx.objectGetPrototypeOf(new Person().prototype).constructor;
-                console.log('# IE<9 was ok utilx.objectGetPrototypeOf when examining prototype.constructor: ' + x);
+                expect(utilx.objectGetPrototypeOf(new Constructor().prototype).constructor).to.be(Manager);
+                console.log('# IE<9 was ok utilx.objectGetPrototypeOf when examining prototype.constructor');
             } catch (e) {
                 console.log('# IE<9 throws on utilx.objectGetPrototypeOf when examining prototype.constructor: ' +
                             e.message);
