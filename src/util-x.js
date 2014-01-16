@@ -3515,8 +3515,8 @@
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
             var nativeFN = CtrObject.defineProperty,
-                defineGetter = '__defineGetter__',
-                defineSetter = '__defineSetter__',
+                defineGetter,
+                defineSetter,
                 defineGetterFN,
                 defineSetterFN,
                 testObject,
@@ -3613,6 +3613,8 @@
             if (utilx.isFunction(definePropertyFN)) {
                 tempSafariNFE = definePropertyFN;
             } else {
+                defineGetter = '__defineGetter__';
+                defineSetter = '__defineSetter__';
                 defineGetterFN = baseObject[defineGetter];
                 defineSetterFN = baseObject[defineSetter];
                 tempSafariNFE = function nfeDefineProperty(object, property, descriptor) {
@@ -3651,7 +3653,11 @@
                                     object[property] = descriptor.value;
                                 }
 
-                                object[protoName] = prototype;
+                                if (utilx.isUndefined(prototype)) {
+                                    delete object[protoName];
+                                } else {
+                                    object[protoName] = prototype;
+                                }
                             } else {
                                 if (isArrayOrArguments(object) &&
                                         ((utilx.isNumber(property) && utilx.numberIsInteger(property)) ||
@@ -3801,6 +3807,12 @@
                             object[protoName] = utilx.objectGetPrototypeOf(baseObject);
                             getter = lookupGetterFN.call(object, property);
                             setter = lookupSetterFN.call(object, property);
+                            if (utilx.isUndefined(prototype)) {
+                                delete object[protoName];
+                            } else {
+                                object[protoName] = prototype;
+                            }
+
                             object[protoName] = prototype;
                             if (utilx.isFunction(getter) || utilx.isFunction(setter)) {
                                 if (utilx.isFunction(getter)) {
