@@ -3813,7 +3813,6 @@
                                 object[protoName] = prototype;
                             }
 
-                            object[protoName] = prototype;
                             if (utilx.isFunction(getter) || utilx.isFunction(setter)) {
                                 if (utilx.isFunction(getter)) {
                                     descriptor.get = getter;

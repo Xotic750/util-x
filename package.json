@@ -101,9 +101,8 @@
         "harness": "mocha",
         "files": "tests/*.js",
         "browsers": [
-            "chrome/4..5",
-            "opera/10",
-            "safari/4"
+            "chrome/4",
+            "opera/10"
         ]
     }
 }
