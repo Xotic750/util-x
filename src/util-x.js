@@ -23,6 +23,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* jshint bitwise: true, camelcase: true, curly: true, eqeqeq: true, forin: true, freeze: true, funcscope: true,
+   globalstrict: true, immed: true, maxlen: 120, newcap:true, noarg: true, noempty: true, nomen: true, nonew: true,
+   notypeof: true, onevar: true, plusplus: true, regexp: true, trailing: true, undef: true, white: true */
+
 (function (globalThis) {
     /* jshint -W034 */
     'use strict';
