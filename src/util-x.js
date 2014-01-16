@@ -90,8 +90,7 @@
          * @namespace utilx
          */
 
-        var utilx = {},
-            objectGetOwnPropertyDescriptor;
+        var utilx = {};
 
         /**
          * 128
@@ -3138,8 +3137,8 @@
                 num;
 
             if (utilx.notStrictEqual(prop1, prop2)) {
-                temp1 = objectGetOwnPropertyDescriptor(object, prop1);
-                temp2 = objectGetOwnPropertyDescriptor(object, prop2);
+                temp1 = utilx.objectGetOwnPropertyDescriptor(object, prop1);
+                temp2 = utilx.objectGetOwnPropertyDescriptor(object, prop2);
                 num = utilx.toUint32(prop2);
                 if (!utilx.isPlainObject(temp1) || !utilx.objectHasOwnProperty(temp1, 'value')) {
                     if (utilx.isTypeObject(object) && !utilx.isFunction(object) &&
@@ -3718,7 +3717,8 @@
         /**
          * Returns a property descriptor for an own property (that is, one directly present on an object,
          * not present by dint of being along an object's prototype chain) of a given object.
-         * @private
+         * On environments that do not support it natively, this is just a sham to allow code to work.
+         * @memberOf utilx
          * @function
          * @param {object} object
          * @param {string} property
@@ -3727,44 +3727,44 @@
         // Create our own local "getOwnPropertyDescriptor" function: native -> sham
         // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
         // and Blackberry bug
-        objectGetOwnPropertyDescriptor = (function () {
+        utilx.objectGetOwnPropertyDescriptor = (function () {
             // Unused variable for JScript NFE bug
             // http://kangax.github.io/nfe
-            var getOwnPropertyDescriptorFN = CtrObject.getOwnPropertyDescriptor,
-                lookupGetter = '__lookupGetter__',
-                lookupSetter = '__lookupSetter__',
+            var getOwnPropDescFN = CtrObject.getOwnPropertyDescriptor,
+                lookupGetter,
+                lookupSetter,
                 lookupGetterFN,
                 lookupSetterFN,
-                testObject,
+                testObject1,
+                testObject2,
                 nfeGetOwnPropertyDescriptor;
 
-            if (utilx.isFunction(getOwnPropertyDescriptorFN)) {
-                try {
-                    testObject = {
-                        sentinel: null
-                    };
+            try {
+                testObject1 = {
+                    sentinel: null
+                };
 
-                    if (!utilx.isNull(getOwnPropertyDescriptorFN(testObject, 'sentinel').value)) {
-                        getOwnPropertyDescriptorFN = null;
-                    }
-                } catch (exception) {
-                    getOwnPropertyDescriptorFN = null;
+                testObject2 = [10, 20, 30];
+                testObject2[4] = utilx.privateUndefined;
+                if (!utilx.isNull(getOwnPropDescFN(testObject1, 'sentinel').value) ||
+                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, 3).value, 30) ||
+                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
+                        !utilx.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), 'value') ||
+                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, utilx.privateUndefined) ||
+                        utilx.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), 'value') ||
+                        utilx.notStrictEqual(getOwnPropDescFN(testObject2, 5), utilx.privateUndefined)) {
+
+                    throw new Error();
                 }
-            }
 
-            if (utilx.isFunction(getOwnPropertyDescriptorFN)) {
-                try {
-                    if (utilx.isTrue(getOwnPropertyDescriptorFN(function (a) {
-                            return a;
-                        }, 'length').writable)) {
+                if (utilx.isFalse(getOwnPropDescFN(function (a) {
+                        return a;
+                    }, 'length').writable)) {
 
-                        throw new Error();
-                    }
-
-                    tempSafariNFE = getOwnPropertyDescriptorFN;
-                } catch (e) {
+                    tempSafariNFE = getOwnPropDescFN;
+                } else {
                     tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
-                        var descriptor = getOwnPropertyDescriptorFN(object, property);
+                        var descriptor = getOwnPropDescFN(object, property);
 
                         if (utilx.isFunction(object) && utilx.strictEqual(property, 'length') &&
                                 utilx.isTrue(descriptor.writable)) {
@@ -3775,7 +3775,9 @@
                         return descriptor;
                     };
                 }
-            } else {
+            } catch (e) {
+                lookupGetter = '__lookupGetter__';
+                lookupSetter = '__lookupSetter__';
                 lookupGetterFN = baseObject[lookupGetter];
                 lookupSetterFN = baseObject[lookupSetter];
                 tempSafariNFE = function nfeGetOwnPropertyDescriptor(object, property) {
@@ -4141,7 +4143,7 @@
             utilx.arrayForEach(utilx.arraySlice(arguments, 1), function (source) {
                 if (isTypeObjectOrIsFunction(source)) {
                     utilx.arrayForEach(utilx.objectKeys(source), function (key) {
-                        utilx.objectDefineProperty(target, key, objectGetOwnPropertyDescriptor(source, key));
+                        utilx.objectDefineProperty(target, key, utilx.objectGetOwnPropertyDescriptor(source, key));
                     });
                 }
             });
