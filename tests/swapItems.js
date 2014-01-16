@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -165,36 +165,48 @@
                 arr5 = [1, 2];
 
             arr5.foo = 3;
-            utilx.arrayAssign(arr4, 1, 2);
-            utilx.arrayAssign(arr4, 2, 3);
-            utilx.arrayAssign(arr4, 3, 1);
-            expect(utilx.swapItems(arr1, 0, 2)).to.eql(arr3);
-            expect(arr1.length).to.be(3);
-            arr1 = [1, 2, 3];
-            expect(utilx.swapItems(arr1, 0, 3)).to.eql(arr4);
-            expect(arr1.length).to.be(4);
-            expect(utilx.swapItems(arr4, 0, 3)).to.eql(arr2);
-            expect(arr4.length).to.be(3);
-            arr1 = [1, 2, 3];
-            arr2 = [1, 2, 3];
-            arr3 = [3, 2, 1];
-            arr4 = [];
-            utilx.arrayAssign(arr4, 1, 2);
-            utilx.arrayAssign(arr4, 2, 3);
-            utilx.arrayAssign(arr4, 3, 1);
-            expect(utilx.swapItems(arr1, '0', '2')).to.eql(arr3);
-            expect(arr1.length).to.be(3);
-            arr1 = [1, 2, 3];
-            expect(utilx.swapItems(arr1, '0', '3')).to.eql(arr4);
-            expect(arr1.length).to.be(4);
-            expect(utilx.swapItems(arr4, '0', '3')).to.eql(arr2);
-            expect(arr4.length).to.be(3);
-            expect(utilx.swapItems(arr2, 2, 'foo')).to.eql(arr5);
-            expect(arr2.length).to.be(2);
-            expect(arr2.foo).to.be(3);
-            arr1 = [1, 2, 3];
-            expect(utilx.swapItems(arr2, 2, 'foo')).to.eql(arr1);
-            expect(arr2.length).to.be(3);
+
+            try {
+
+                utilx.arrayAssign(arr4, 1, 2);
+                utilx.arrayAssign(arr4, 2, 3);
+                utilx.arrayAssign(arr4, 3, 1);
+                expect(utilx.swapItems(arr1, 0, 2)).to.eql(arr3);
+                expect(arr1.length).to.be(3);
+                arr1 = [1, 2, 3];
+                expect(utilx.swapItems(arr1, 0, 3)).to.eql(arr4);
+                expect(arr1.length).to.be(4);
+                expect(utilx.swapItems(arr4, 0, 3)).to.eql(arr2);
+                expect(arr4.length).to.be(3);
+                arr1 = [1, 2, 3];
+                arr2 = [1, 2, 3];
+                arr3 = [3, 2, 1];
+                arr4 = [];
+                utilx.arrayAssign(arr4, 1, 2);
+                utilx.arrayAssign(arr4, 2, 3);
+                utilx.arrayAssign(arr4, 3, 1);
+                expect(utilx.swapItems(arr1, '0', '2')).to.eql(arr3);
+                expect(arr1.length).to.be(3);
+                arr1 = [1, 2, 3];
+                expect(utilx.swapItems(arr1, '0', '3')).to.eql(arr4);
+                expect(arr1.length).to.be(4);
+                expect(utilx.swapItems(arr4, '0', '3')).to.eql(arr2);
+                expect(arr4.length).to.be(3);
+                expect(utilx.swapItems(arr2, 2, 'foo')).to.eql(arr5);
+                expect(arr2.length).to.be(2);
+                expect(arr2.foo).to.be(3);
+                arr1 = [1, 2, 3];
+                expect(utilx.swapItems(arr2, 2, 'foo')).to.eql(arr1);
+                expect(arr2.length).to.be(3);
+
+            } catch (e) {
+                console.log('# NAME: ' + e.name);
+                console.log('# MESSAGE: ' + e.message);
+                console.log('# EXPECTED: ' + e.expected);
+                console.log('# OPERATOR: ' + e.operator);
+                console.log('# ACTUAL: ' + e.actual);
+                console.log('# STACK: ' + e.stack);
+            }
         });
 
         it('should work with objects with length', function () {
@@ -229,65 +241,77 @@
                 };
 
             obj5.foo = 3;
-            expect(utilx.swapItems(obj1, 0, 2)).to.eql(obj3);
-            expect(obj1.length).to.be(3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3,
-                length: 3
-            };
-            expect(utilx.swapItems(obj1, 0, 3)).to.eql(obj4);
-            expect(obj1.length).to.be(4);
-            expect(utilx.swapItems(obj4, 0, 3)).to.eql(obj2);
-            expect(obj4.length).to.be(3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3,
-                length: 3
-            };
-            obj2 = {
-                0: 1,
-                1: 2,
-                2: 3,
-                length: 3
-            };
-            obj3 = {
-                0: 3,
-                1: 2,
-                2: 1,
-                length: 3
-            };
-            obj4 = {
-                1: 2,
-                2: 3,
-                3: 1,
-                length: 4
-            };
-            expect(utilx.swapItems(obj1, '0', '2')).to.eql(obj3);
-            expect(obj1.length).to.be(3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3,
-                length: 3
-            };
-            expect(utilx.swapItems(obj1, '0', '3')).to.eql(obj4);
-            expect(obj1.length).to.be(4);
-            expect(utilx.swapItems(obj4, '0', '3')).to.eql(obj2);
-            expect(obj4.length).to.be(3);
-            expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj5);
-            expect(obj2.length).to.be(2);
-            expect(obj2.foo).to.be(3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3,
-                length: 3
-            };
-            expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj1);
-            expect(obj2.length).to.be(3);
+
+            try {
+
+                expect(utilx.swapItems(obj1, 0, 2)).to.eql(obj3);
+                expect(obj1.length).to.be(3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+                expect(utilx.swapItems(obj1, 0, 3)).to.eql(obj4);
+                expect(obj1.length).to.be(4);
+                expect(utilx.swapItems(obj4, 0, 3)).to.eql(obj2);
+                expect(obj4.length).to.be(3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+                obj2 = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+                obj3 = {
+                    0: 3,
+                    1: 2,
+                    2: 1,
+                    length: 3
+                };
+                obj4 = {
+                    1: 2,
+                    2: 3,
+                    3: 1,
+                    length: 4
+                };
+                expect(utilx.swapItems(obj1, '0', '2')).to.eql(obj3);
+                expect(obj1.length).to.be(3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+                expect(utilx.swapItems(obj1, '0', '3')).to.eql(obj4);
+                expect(obj1.length).to.be(4);
+                expect(utilx.swapItems(obj4, '0', '3')).to.eql(obj2);
+                expect(obj4.length).to.be(3);
+                expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj5);
+                expect(obj2.length).to.be(2);
+                expect(obj2.foo).to.be(3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+                expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj1);
+                expect(obj2.length).to.be(3);
+
+            } catch (e) {
+                console.log('# NAME: ' + e.name);
+                console.log('# MESSAGE: ' + e.message);
+                console.log('# EXPECTED: ' + e.expected);
+                console.log('# OPERATOR: ' + e.operator);
+                console.log('# ACTUAL: ' + e.actual);
+                console.log('# STACK: ' + e.stack);
+            }
         });
 
         it('should work with objects without length', function () {
@@ -317,50 +341,62 @@
                 };
 
             obj5.foo = 3;
-            expect(utilx.swapItems(obj1, 0, 2)).to.eql(obj3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3
-            };
-            expect(utilx.swapItems(obj1, 0, 3)).to.eql(obj4);
-            expect(utilx.swapItems(obj4, 0, 3)).to.eql(obj2);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3
-            };
-            obj2 = {
-                0: 1,
-                1: 2,
-                2: 3
-            };
-            obj3 = {
-                0: 3,
-                1: 2,
-                2: 1
-            };
-            obj4 = {
-                1: 2,
-                2: 3,
-                3: 1
-            };
-            expect(utilx.swapItems(obj1, '0', '2')).to.eql(obj3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3
-            };
-            expect(utilx.swapItems(obj1, '0', '3')).to.eql(obj4);
-            expect(utilx.swapItems(obj4, '0', '3')).to.eql(obj2);
-            expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj5);
-            expect(obj2.foo).to.be(3);
-            obj1 = {
-                0: 1,
-                1: 2,
-                2: 3
-            };
-            expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj1);
+
+            try {
+
+                expect(utilx.swapItems(obj1, 0, 2)).to.eql(obj3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3
+                };
+                expect(utilx.swapItems(obj1, 0, 3)).to.eql(obj4);
+                expect(utilx.swapItems(obj4, 0, 3)).to.eql(obj2);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3
+                };
+                obj2 = {
+                    0: 1,
+                    1: 2,
+                    2: 3
+                };
+                obj3 = {
+                    0: 3,
+                    1: 2,
+                    2: 1
+                };
+                obj4 = {
+                    1: 2,
+                    2: 3,
+                    3: 1
+                };
+                expect(utilx.swapItems(obj1, '0', '2')).to.eql(obj3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3
+                };
+                expect(utilx.swapItems(obj1, '0', '3')).to.eql(obj4);
+                expect(utilx.swapItems(obj4, '0', '3')).to.eql(obj2);
+                expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj5);
+                expect(obj2.foo).to.be(3);
+                obj1 = {
+                    0: 1,
+                    1: 2,
+                    2: 3
+                };
+                expect(utilx.swapItems(obj2, 2, 'foo')).to.eql(obj1);
+
+            } catch (e) {
+                console.log('# NAME: ' + e.name);
+                console.log('# MESSAGE: ' + e.message);
+                console.log('# EXPECTED: ' + e.expected);
+                console.log('# OPERATOR: ' + e.operator);
+                console.log('# ACTUAL: ' + e.actual);
+                console.log('# STACK: ' + e.stack);
+            }
         });
     });
 }());
