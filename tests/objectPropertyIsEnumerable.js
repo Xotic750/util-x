@@ -61,10 +61,10 @@
             var doTest = false;
 
             function Constructor() {
-                this.constructor = this.prototype = 1;
+                this.constructor = this.prototype = utilx.noop;
             }
 
-            Constructor.prototype.constructor = 1;
+            Constructor.prototype.constructor = utilx.noop;
             if (utilx.objectPropertyIsEnumerable(Constructor, 'prototype')) {
                 console.log('# Constructor lists prototype (must be Safari 4 !)');
             }

@@ -92,13 +92,7 @@
             }
 
             Constructor.prototype.constructor = Person;
-            try {
-                expect(utilx.objectGetPrototypeOf(new Constructor().prototype).constructor).to.be(Manager);
-                console.log('# IE<9 was ok utilx.objectGetPrototypeOf when examining prototype.constructor');
-            } catch (e) {
-                console.log('# IE<9 throws on utilx.objectGetPrototypeOf when examining prototype.constructor: ' +
-                            e.message);
-            }
+            expect(utilx.objectGetPrototypeOf(new Constructor().prototype).constructor).to.be(Manager);
         });
     });
 }());
