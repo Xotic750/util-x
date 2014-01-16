@@ -11,8 +11,8 @@
         it('should not throw an error in each case', function () {
             var message = 'We want a normalised toString!';
 
-            expect(!utilx.normaliseErrorIEToString.off()).to.be.ok();
-            expect(!utilx.normaliseErrorIEToString.state()).to.be.ok();
+            expect(!utilx.normaliseErrorIEToStringOff()).to.be.ok();
+            expect(!utilx.normaliseErrorIEToStringState()).to.be.ok();
 
             try {
                 throw new Error(message);
@@ -20,8 +20,8 @@
                 if (utilx.strictEqual(e.message, message) &&
                         utilx.strictEqual(e.toString(), '[object Error]')) {
 
-                    expect(utilx.normaliseErrorIEToString.on()).to.be.ok();
-                    expect(utilx.normaliseErrorIEToString.state()).to.be.ok();
+                    expect(utilx.normaliseErrorIEToStringOn()).to.be.ok();
+                    expect(utilx.normaliseErrorIEToStringState()).to.be.ok();
                 }
             }
 
@@ -32,8 +32,8 @@
                 expect(e.toString()).to.match(new RegExp('^Error: ' + message));
             });
 
-            expect(!utilx.normaliseErrorIEToString.off()).to.be.ok();
-            expect(!utilx.normaliseErrorIEToString.state()).to.be.ok();
+            expect(!utilx.normaliseErrorIEToStringOff()).to.be.ok();
+            expect(!utilx.normaliseErrorIEToStringState()).to.be.ok();
         });
     });
 }());

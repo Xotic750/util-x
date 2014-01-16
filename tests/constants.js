@@ -9,6 +9,10 @@
 
     describe('constants', function () {
         it('should not throw an error in each case', function () {
+            expect(utilx.POSITIVE_ZERO).to.be(0);
+            expect(utilx.NEGATIVE_ZERO).to.be(0);
+            expect(1 / utilx.POSITIVE_ZERO).to.be(Infinity);
+            expect(1 / utilx.NEGATIVE_ZERO).to.be(-Infinity);
             expect(utilx.WORD8).to.be(128);
             expect(utilx.UWORD8).to.be(256);
             expect(utilx.WORD16).to.be(32768);
@@ -26,6 +30,7 @@
             expect(utilx.MIN_INT8).to.be(-128);
             expect(utilx.MAX_INTEGER).to.be(9007199254740991);
             expect(utilx.MIN_INTEGER).to.be(-9007199254740991);
+            expect(utilx.UNSAFE_INTEGER).to.be(9007199254740992);
             expect(utilx.POSITIVE_INFINITY).to.be(Infinity);
             expect(utilx.NEGATIVE_INFINITY).to.be(-Infinity);
             expect(utilx.MAX_VALUE).to.be(1.7976931348623157e+308);
