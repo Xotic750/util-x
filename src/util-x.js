@@ -23,7 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-(function (globalThis) {
+(function (globalThis, Math, JSON, module, define) {
     /* jshint -W034 */
     'use strict';
 
@@ -60,6 +60,7 @@
         reduceFN = baseArray.reduce,
         sortFN = baseArray.sort,
         indexOfFN = baseArray.indexOf,
+        CtrArray = baseArray.constructor,
 
         baseString = '',
         splitFN = baseString.split,
@@ -80,7 +81,16 @@
         baseBoolean = true,
         CtrBoolean = baseBoolean.constructor,
 
-        signFN = Math.sign,
+        globalIsNaN = isNaN,
+        globalIsFinite = isFinite,
+        globalMathSign = Math.sign,
+        globalMathMin = Math.min,
+        globalMathMax = Math.max,
+        globalMathFloor = Math.floor,
+        globalMathMCeil = Math.ceil,
+        globalMathMAbs = Math.abs,
+        globalJsonParse,
+        globalJsonStringify,
 
         protoName = '__proto__',
         defineGetter = '__defineGetter__',
@@ -98,8 +108,17 @@
         lengthString = 'length',
         prototypeString = 'prototype',
         toStringString = 'toString',
+        constructorString = 'constructor',
         valueString = 'value',
         sentinelString = 'sentinel',
+        testString = 'test',
+        stackString = 'stack',
+        messageString = 'message',
+        newLine = '\n',
+        factoryString = 'factory',
+        setString = 'set',
+        getString = 'get',
+        emptyString = '',
 
         argumentsString = '[object Arguments]',
         functionString = '[object Function]',
@@ -110,7 +129,6 @@
         regexpString = '[object RegExp]',
         arrayString = '[object Array]',
         dateString = '[object Date]',
-        testString = 'test',
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
@@ -120,11 +138,23 @@
         rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
         wsTrimRX,
 
+        constantProperties = {
+            enumerable: false,
+            writable: false,
+            configurable: false
+        },
+        notEnumerableProperties = {
+            enumerable: false,
+            writable: true,
+            configurable: true
+        },
+
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
         testObject1,
         testObject2,
+        TestConstructor,
         previousIEErrorToString,
         isArgumentsCheck,
         compliantExecNpcg,
@@ -133,6 +163,7 @@
         testValue,
         shouldSplitString,
         supported,
+        isOkToUseOtherErrors,
 
         /**
          * For hasOwnProperty bug.
@@ -146,7 +177,7 @@
             'hasOwnProperty',
             'isPrototypeOf',
             'propertyIsEnumerable',
-            'constructor'
+            constructorString
         ],
 
         whiteSpacesList = [
@@ -539,7 +570,7 @@
      * @return {number}
      */
     $.clamp = function (number, min, max) {
-        return Math.min(Math.max(number, min), max);
+        return globalMathMin(globalMathMax(number, min), max);
     };
 
     /**
@@ -736,7 +767,7 @@
      * @return {boolean}
      */
     $.isEmptyString = function (inputArg) {
-        return $.strictEqual(inputArg, '');
+        return $.strictEqual(inputArg, emptyString);
     };
 
     /**
@@ -747,7 +778,7 @@
      * @return {boolean}
      */
     $.isStringNotEmpty = function (inputArg) {
-        return $.isString(inputArg) && !$.isEmptyString(inputArg, '');
+        return $.isString(inputArg) && !$.isEmptyString(inputArg, emptyString);
     };
 
     /**
@@ -762,8 +793,8 @@
             string;
 
         if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
-            string = inputArg.toString().replace(rxPlusMinus, '');
-            if (!isNaN(parseFloat(string)) && isFinite(string)) {
+            string = $.anyToString(inputArg).replace(rxPlusMinus, emptyString);
+            if (!globalIsNaN(parseFloat(string)) && globalIsFinite(string)) {
                 val = true;
             }
         }
@@ -1219,7 +1250,7 @@
         $.numberIsFinite = isFiniteFN;
     } else {
         $.numberIsFinite = function (number) {
-            return $.isNumber(number) && isFinite(number);
+            return $.isNumber(number) && globalIsFinite(number);
         };
     }
 
@@ -1234,8 +1265,8 @@
      * @return {number}
      */
     // named mathSign instead of sign because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(signFN)) {
-        $.mathSign = signFN;
+    if ($.isFunction(globalMathSign)) {
+        $.mathSign = globalMathSign;
     } else {
         $.mathSign = function nfeSign(value) {
             var number = $.toNumber(value),
@@ -1285,7 +1316,7 @@
             } else if (isZeroOrNotFinite(number)) {
                 val = number;
             } else {
-                val = $.mathSign(number) * Math.floor(Math.abs(number));
+                val = $.mathSign(number) * globalMathFloor(globalMathMAbs(number));
             }
 
             return val;
@@ -1332,7 +1363,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * Math.floor(Math.abs(number)), $.UWORD32);
+            val = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD32);
             if ($.gt(val, $.MAX_INT32)) {
                 val -= $.UWORD32;
             } else if ($.lt(val, $.MIN_INT32)) {
@@ -1370,7 +1401,7 @@
      * @return {number}
      */
     $.modulo = function (dividend, divisor) {
-        return dividend - divisor * Math.floor(dividend / divisor);
+        return dividend - divisor * globalMathFloor(dividend / divisor);
     };
 
     /**
@@ -1460,7 +1491,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * Math.floor(Math.abs(number)), $.UWORD16);
+            val = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD16);
             if ($.gt(val, $.MAX_INT16)) {
                 val -= $.UWORD16;
             } else if ($.lt(val, $.MIN_INT16)) {
@@ -1537,7 +1568,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val  = $.mod($.mathSign(number) * Math.floor(Math.abs(number)), $.UWORD8);
+            val  = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD8);
             if ($.gt(val, $.MAX_INT8)) {
                 val -= $.UWORD8;
             } else if ($.lt(val, $.MIN_INT8)) {
@@ -1688,7 +1719,7 @@
      * @param {number} [limit]
      * @return {array.<string>}
      */
-    compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec('')[1]);
+    compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
     // named $.stringSplit instead of split because of SpiderMonkey and Blackberry bug
     $.stringSplit = function (str, separator, limit) {
         var string = onlyCoercibleToString(str),
@@ -1761,8 +1792,8 @@
             }
 
             if ($.strictEqual(lastLastIndex, string.length)) {
-                if (lastLength || !separator.test('')) {
-                    $.arrayPush(output, '');
+                if (lastLength || !separator.test(emptyString)) {
+                    $.arrayPush(output, emptyString);
                 }
             } else {
                 $.arrayPush(output, string.slice(lastLastIndex));
@@ -1904,7 +1935,7 @@
             val;
 
         if ($.lt(times, 1)) {
-            val = '';
+            val = emptyString;
         } else if ($.mod(times, 2)) {
             val = stringRepeatRep(s, times - 1) + s;
         } else {
@@ -2412,7 +2443,7 @@
         var object;
 
         if (shouldSplitString && $.isString(inputArg)) {
-            object = $.stringSplit(inputArg, '');
+            object = $.stringSplit(inputArg, emptyString);
         } else {
             object = $.argToObject(inputArg);
         }
@@ -2428,23 +2459,21 @@
      * @function
      * @param {array} array
      * @param {number} start
-     * @param {number} deleteCount
-     * @param {...*} [var_arg]
+     * @param {number} [deleteCount]
+     * @param {...*} [element]
      */
     // named $.arraySplice instead of arraySplice because of SpiderMonkey and Blackberry bug
     if ($.isFunction(spliceFN) && $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
         try {
             if ($.isZero(spliceFN.call([1, 2]).length)) {
-                $.arraySplice = function (array, start, deleteCount) {
-                    /*jshint unused: false */
+                $.arraySplice = function (array) {
                     return spliceFN.apply(array, $.arraySlice(arguments, 1));
                 };
             } else {
                 throw new Error();
             }
         } catch (e) {
-            $.arraySplice = function (array, start, deleteCount) {
-                /*jshint unused: false */
+            $.arraySplice = function (array) {
                 var val;
 
                 if ($.lt(arguments.length, 2)) {
@@ -2468,7 +2497,7 @@
                 from,
                 argLength = arguments.length,
                 item = 3,
-                itemCount = Math.max(argLength - item, $.POSITIVE_ZERO),
+                itemCount = globalMathMax(argLength - item, $.POSITIVE_ZERO),
                 to,
                 loopCache;
 
@@ -2477,9 +2506,9 @@
             }
 
             if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
-                actualStart = Math.max(length + relativeStart, $.POSITIVE_ZERO);
+                actualStart = globalMathMax(length + relativeStart, $.POSITIVE_ZERO);
             } else {
-                actualStart = Math.min(relativeStart, length);
+                actualStart = globalMathMin(relativeStart, length);
             }
 
             if ($.lt(argLength, 3)) {
@@ -2698,9 +2727,9 @@
                 k;
 
             if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
-                k = Math.max(length + relativeStart, $.POSITIVE_ZERO);
+                k = globalMathMax(length + relativeStart, $.POSITIVE_ZERO);
             } else {
-                k = Math.min(relativeStart, length);
+                k = globalMathMin(relativeStart, length);
             }
 
             if ($.isUndefined(end)) {
@@ -2710,12 +2739,12 @@
             }
 
             if ($.lt($.mathSign(relativeEnd), $.POSITIVE_ZERO)) {
-                final = Math.max(length + relativeEnd, $.POSITIVE_ZERO);
+                final = globalMathMax(length + relativeEnd, $.POSITIVE_ZERO);
             } else {
-                final = Math.min(relativeEnd, length);
+                final = globalMathMin(relativeEnd, length);
             }
 
-            val.length = Math.max(final - k, $.POSITIVE_ZERO);
+            val.length = globalMathMax(final - k, $.POSITIVE_ZERO);
             while ($.lt(k, final)) {
                 $.arrayAssign(val, next, object[k]);
                 next += 1;
@@ -2840,14 +2869,14 @@
             val;
 
         if ($.lt(min, $.POSITIVE_ZERO) && $.gt(max, $.POSITIVE_ZERO) && $.gt(max - min + 1, $.MAX_INTEGER)) {
-            mult = Math.floor(Math.random() * 2);
+            mult = globalMathFloor(Math.random() * 2);
             if ($.isZero(mult)) {
                 mult = -1;
             }
 
-            val = Math.floor(Math.random() * $.UNSAFE_INTEGER) * mult;
+            val = globalMathFloor(Math.random() * $.UNSAFE_INTEGER) * mult;
         } else {
-            val = Math.floor(Math.random() * (max - min + 1) + min);
+            val = globalMathFloor(Math.random() * (max - min + 1) + min);
         }
 
         return val;
@@ -2924,7 +2953,7 @@
         if ($.lt(length, 2)) {
             val = $.arraySlice(array);
         } else {
-            middle = Math.ceil(length / 2);
+            middle = globalMathMCeil(length / 2);
             val = merge(mergeSort($.arraySlice(array, $.POSITIVE_ZERO, middle), comparefn),
                          mergeSort($.arraySlice(array, middle), comparefn), comparefn);
         }
@@ -3100,7 +3129,7 @@
     // named $.stringTrim instead of trim because of SpiderMonkey and Blackberry bug
     try {
         if ($.isFunction(trimFN) &&
-                $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, '')).length)) {
+                $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, emptyString)).length)) {
 
             $.stringTrim = function (inputArg) {
                 return trimFN.call(inputArg);
@@ -3111,11 +3140,11 @@
     } catch (e) {
         whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
             return previous + '\\u' + $.padLeadingChar(element.toString(16), '0', 4);
-        }, '');
+        }, emptyString);
 
         wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
         $.stringTrim = function (inputArg) {
-            return onlyCoercibleToString(inputArg).replace(wsTrimRX, '');
+            return onlyCoercibleToString(inputArg).replace(wsTrimRX, emptyString);
         };
     }
 
@@ -3159,7 +3188,7 @@
                     if ($.gte(fromIndex, $.POSITIVE_ZERO)) {
                         start = fromIndex;
                     } else {
-                        start = length - Math.abs(fromIndex);
+                        start = length - globalMathMAbs(fromIndex);
                     }
 
                     if ($.lt(start, $.POSITIVE_ZERO)) {
@@ -3178,30 +3207,6 @@
 
             return val;
         };
-    }
-
-    /*
-     * Test for Object.keys support
-     */
-
-    /*jshint -W001 */
-    testObject1 = {
-        'toString': null,
-        'toLocaleString': null,
-        'valueOf': null,
-        'hasOwnProperty': null,
-        'isPrototypeOf': null,
-        'propertyIsEnumerable': null,
-        'constructor': null
-    };
-    /*jshint +W001 */
-
-    if ($.isFunction(keysFN)) {
-        try {
-            supported = $.strictEqual(keysFN(testObject1).length, 7);
-        } catch (e) {
-            supported = false;
-        }
     }
 
     /**
@@ -3227,9 +3232,18 @@
      * @return {array}
      */
     // named $.objectKeys instead of keys because of SpiderMonkey and Blackberry bug
-    if ($.isTrue(supported)) {
-        $.objectKeys = keysFN;
-    } else {
+    testObject1 = {};
+    $.arrayForEach(defaultProperties, function (element) {
+        testObject1[element] = null;
+    });
+
+    try {
+        if ($.strictEqual(keysFN(testObject1).length, 7)) {
+            $.objectKeys = keysFN;
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
         $.objectKeys = function (object) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
 
@@ -3394,16 +3408,16 @@
             }
 
             if ($.objectHasOwnProperty(descriptor, valueString) &&
-                    ($.objectHasOwnProperty(descriptor, 'get') ||
-                        $.objectHasOwnProperty(descriptor, 'set'))) {
+                    ($.objectHasOwnProperty(descriptor, getString) ||
+                        $.objectHasOwnProperty(descriptor, setString))) {
 
                 throw new TypeError('Invalid property. A property cannot have accessors and a value');
             }
 
             var prototype;
 
-            if (!$.objectHasOwnProperty(descriptor, 'get') &&
-                    !$.objectHasOwnProperty(descriptor, 'set')) {
+            if (!$.objectHasOwnProperty(descriptor, getString) &&
+                    !$.objectHasOwnProperty(descriptor, setString)) {
 
                 if ($.objectHasOwnProperty(descriptor, valueString) ||
                         !$.objectHasOwnProperty(object, property)) {
@@ -3582,15 +3596,17 @@
                     }
                 } else if ($.strictEqual(property, prototypeString)) {
                     switch (object) {
-                    case Object:
+                    case CtrObject:
                         /* falls through */
-                    case Array:
+                    case CtrArray:
                         /* falls through */
                     case Function:
                         /* falls through */
-                    case Boolean:
+                    case CtrBoolean:
                         /* falls through */
-                    case String:
+                    case CtrString:
+                        /* falls through */
+                    case CtrNumber:
                         /* falls through */
                     case Date:
                         /* falls through */
@@ -3770,19 +3786,13 @@
     // named $.objectCreate instead of create because of SpiderMonkey and Blackberry bug
     try {
         testObject1 = objectCreateFN(ObjectCreateFunc.prototype, {
-            constructor: {
-                value: ObjectCreateFunc,
-                enumerable: false,
-                writable: true,
-                configurable: true
-            },
+            constructor: $.extend({
+                value: ObjectCreateFunc
+            }, notEnumerableProperties),
 
-            foo: {
-                value: testString,
-                enumerable: false,
-                writable: true,
-                configurable: true
-            }
+            foo: $.extend({
+                value: testString
+            }, notEnumerableProperties)
         });
 
         if ($.notStrictEqual(testObject1.foo, testString)) {
@@ -3796,12 +3806,9 @@
 
             ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
             newObject = new ObjectCreateFunc();
-            $.objectDefineProperty(newObject, protoName, {
-                value: prototype,
-                enumerable: false,
-                writable: true,
-                configurable: true
-            });
+            $.objectDefineProperty(newObject, protoName, $.extend({
+                value: prototype
+            }, notEnumerableProperties));
 
             if ($.isPlainObject(propertiesObject)) {
                 $.objectDefineProperties(newObject, propertiesObject);
@@ -4007,6 +4014,16 @@
         });
     };
 
+    if ($.isTypeObject(JSON)) {
+        if ($.isFunction(JSON.parse)) {
+            globalJsonParse = JSON.parse;
+        }
+
+        if ($.isFunction(JSON.parse)) {
+            globalJsonStringify = JSON.stringify;
+        }
+    }
+
     /**
      * Return a JSON string corresponding to the specified value, optionally including only certain properties
      * or replacing property values in a user-defined manner.
@@ -4031,81 +4048,79 @@
             str,
             nfeJSONStringify;
 
-        if (typeof JSON === 'object' && !$.isNull(JSON)) {
-            if ($.isFunction(JSON.stringify)) {
-                // A test function object with a custom `toJSON` method.
-                (function () {
-                    stringifiedValue = function () {
-                        return 1;
-                    };
-                }());
+        if ($.isFunction(globalJsonStringify)) {
+            // A test function object with a custom `toJSON` method.
+            (function () {
+                stringifiedValue = function () {
+                    return 1;
+                };
+            }());
 
-                stringifiedValue.toJSON = stringifiedValue;
+            stringifiedValue.toJSON = stringifiedValue;
 
-                try {
-                    supported =
-                        // Firefox 3.1b1 and b2 serialize string, number, and boolean
-                        // primitives as object literals.
-                        $.strictEqual(JSON.stringify($.POSITIVE_ZERO), '0') &&
-                        // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
-                        // literals.
-                        $.strictEqual(JSON.stringify(new CtrNumber()), '0') &&
-                        $.strictEqual(JSON.stringify(new CtrString()), '""') &&
-                        // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
-                        // does not define a canonical JSON representation (this applies to
-                        // objects with `toJSON` properties as well, *unless* they are nested
-                        // within an object or array).
-                        $.strictEqual(JSON.stringify(isNaN), $.privateUndefined) &&
-                        // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
-                        // 3.1b3 pass this test.
-                        $.strictEqual(JSON.stringify($.privateUndefined), $.privateUndefined) &&
-                        // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-                        // respectively, if the stringifiedValue is omitted entirely.
-                        $.strictEqual(JSON.stringify(), $.privateUndefined) &&
-                        // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
-                        // string, array, object, Boolean, or `null` literal. This applies to
-                        // objects with custom `toJSON` methods as well, unless they are nested
-                        // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
-                        // methods entirely.
-                        $.strictEqual(JSON.stringify(stringifiedValue), '1') &&
-                        $.strictEqual(JSON.stringify([stringifiedValue]), '[1]') &&
-                        // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
-                        // `"[null]"`.
-                        $.strictEqual(JSON.stringify([$.privateUndefined]), '[null]') &&
-                        // YUI 3.0.0b1 fails to serialize `null` literals.
-                        $.strictEqual(JSON.stringify(null), 'null') &&
-                        // FF 3.1b1, 2 halts serialization if an array contains a function:
-                        // `[1, true, isNaN, 1]` serializes as "[1,true,],". These versions
-                        // of Firefox also allow trailing commas in JSON objects and arrays.
-                        // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
-                        // define custom `toJSON` methods.
-                        $.strictEqual(JSON.stringify([$.privateUndefined, isNaN, null]),
-                                          '[null,null,null]') &&
-                        // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
-                        // where character escape codes are expected (e.g., `\b` => `\u0008`).
-                        // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
-                        // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
-                        $.strictEqual(JSON.stringify({
-                            'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
-                        }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &&
-                        // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                        //$.strictEqual(JSON.stringify(null, stringifiedValue), '"1"') &&
-                        $.strictEqual(JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
-                        // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
-                        // serialize extended years.
-                        $.strictEqual(JSON.stringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &&
-                        // The milliseconds are optional in ES 5, but required in 5.1.
-                        $.strictEqual(JSON.stringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &&
-                        // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
-                        // four-digit years instead of six-digit years. Credits: @Yaffle.
-                        $.strictEqual(JSON.stringify(new Date(-621987552e5)),
-                                          '"-000001-01-01T00:00:00.000Z"') &&
-                        // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
-                        // values less than 1000. Credits: @Yaffle.
-                        $.strictEqual(JSON.stringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
-                } catch (e) {
-                    supported = false;
-                }
+            try {
+                supported =
+                    // Firefox 3.1b1 and b2 serialize string, number, and boolean
+                    // primitives as object literals.
+                    $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), '0') &&
+                    // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
+                    // literals.
+                    $.strictEqual(globalJsonStringify(new CtrNumber()), '0') &&
+                    $.strictEqual(globalJsonStringify(new CtrString()), '""') &&
+                    // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
+                    // does not define a canonical JSON representation (this applies to
+                    // objects with `toJSON` properties as well, *unless* they are nested
+                    // within an object or array).
+                    $.strictEqual(globalJsonStringify($.noop), $.privateUndefined) &&
+                    // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
+                    // 3.1b3 pass this test.
+                    $.strictEqual(globalJsonStringify($.privateUndefined), $.privateUndefined) &&
+                    // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
+                    // respectively, if the stringifiedValue is omitted entirely.
+                    $.strictEqual(globalJsonStringify(), $.privateUndefined) &&
+                    // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
+                    // string, array, object, Boolean, or `null` literal. This applies to
+                    // objects with custom `toJSON` methods as well, unless they are nested
+                    // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
+                    // methods entirely.
+                    $.strictEqual(globalJsonStringify(stringifiedValue), '1') &&
+                    $.strictEqual(globalJsonStringify([stringifiedValue]), '[1]') &&
+                    // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
+                    // `"[null]"`.
+                    $.strictEqual(globalJsonStringify([$.privateUndefined]), '[null]') &&
+                    // YUI 3.0.0b1 fails to serialize `null` literals.
+                    $.strictEqual(globalJsonStringify(null), 'null') &&
+                    // FF 3.1b1, 2 halts serialization if an array contains a function:
+                    // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
+                    // of Firefox also allow trailing commas in JSON objects and arrays.
+                    // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
+                    // define custom `toJSON` methods.
+                    $.strictEqual(globalJsonStringify([$.privateUndefined, $.noop, null]),
+                                      '[null,null,null]') &&
+                    // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
+                    // where character escape codes are expected (e.g., `\b` => `\u0008`).
+                    // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
+                    // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
+                    $.strictEqual(globalJsonStringify({
+                        'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
+                    }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &&
+                    // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
+                    //$.strictEqual(globalJsonStringify(null, stringifiedValue), '"1"') &&
+                    $.strictEqual(globalJsonStringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
+                    // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
+                    // serialize extended years.
+                    $.strictEqual(globalJsonStringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &&
+                    // The milliseconds are optional in ES 5, but required in 5.1.
+                    $.strictEqual(globalJsonStringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &&
+                    // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
+                    // four-digit years instead of six-digit years. Credits: @Yaffle.
+                    $.strictEqual(globalJsonStringify(new Date(-621987552e5)),
+                                      '"-000001-01-01T00:00:00.000Z"') &&
+                    // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
+                    // values less than 1000. Credits: @Yaffle.
+                    $.strictEqual(globalJsonStringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
+            } catch (e) {
+                supported = false;
             }
         }
 
@@ -4193,7 +4208,8 @@
                         if ($.isZero(partial.length)) {
                             member = '[]';
                         } else if ($.isStringNotEmpty(gap)) {
-                            member = '[\n' + gap + $.arrayJoin(partial, ',\n' + gap) + '\n' + mind + ']';
+                            member = '[' + newLine + gap + $.arrayJoin(partial, ',' + newLine + gap) +
+                                                    newLine + mind + ']';
                         } else {
                             member = '[' + $.arrayJoin(partial) + ']';
                         }
@@ -4229,7 +4245,8 @@
                     if ($.isZero(partial.length)) {
                         member = '{}';
                     } else if ($.isStringNotEmpty(gap)) {
-                        member = '{\n' + gap + $.arrayJoin(partial, ',\n' + gap) + '\n' + mind + '}';
+                        member = '{' + newLine + gap + $.arrayJoin(partial, ',' + newLine + gap) +
+                                                    newLine + mind + '}';
                     } else {
                         member = '{' + $.arrayJoin(partial) + '}';
                     }
@@ -4243,13 +4260,13 @@
             };
 
             tempSafariNFE = function nfeJSONStringify(value, replacer, space) {
-                gap = '';
+                gap = emptyString;
                 if ($.isNumber(space)) {
                     indent = $.stringRepeat(' ', space);
                 } else if ($.isString(space)) {
                     indent = space;
                 } else {
-                    indent = '';
+                    indent = emptyString;
                 }
 
                 rep = replacer;
@@ -4260,7 +4277,7 @@
                 }
 
                 return str('', {
-                    '': value
+                    emptyString: value
                 });
             };
         }
@@ -4293,55 +4310,53 @@
 
         // Determines whether the (possibly native) `JSON.stringify` and `parse`
         // implementations are spec-compliant. Based on work by Ken Snyder.
-        if (typeof JSON === 'object' && !$.isNull(JSON)) {
-            if ($.isFunction(JSON.parse)) {
-                try {
-                    // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
-                    // Conforming implementations should also coerce the initial argument to
-                    // a string prior to parsing.
-                    if ($.isZero(JSON.parse('0')) && $.isFalse(JSON.parse(false))) {
-                        // Simple parsing test.
-                        parsedValue = JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                        supported = $.strictEqual(parsedValue.A.length, 5);
-                        supported = supported && $.strictEqual(parsedValue.A[$.POSITIVE_ZERO], 1);
+        if ($.isFunction(globalJsonParse)) {
+            try {
+                // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
+                // Conforming implementations should also coerce the initial argument to
+                // a string prior to parsing.
+                if ($.isZero(globalJsonParse('0')) && $.isFalse(globalJsonParse(false))) {
+                    // Simple parsing test.
+                    parsedValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
+                    supported = $.strictEqual(parsedValue.A.length, 5);
+                    supported = supported && $.strictEqual(parsedValue.A[$.POSITIVE_ZERO], 1);
+                    if (supported) {
+                        try {
+                            // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
+                            supported = $.isString(globalJsonParse('"\t"'));
+                        } catch (ignore) {}
+
                         if (supported) {
                             try {
-                                // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
-                                supported = $.isString(JSON.parse('"\t"'));
+                                // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
+                                // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
+                                // allow certain octal literals.
+                                supported = $.notStrictEqual(globalJsonParse('01'), 1);
                             } catch (ignore) {}
-
-                            if (supported) {
-                                try {
-                                    // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
-                                    // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
-                                    // allow certain octal literals.
-                                    supported = $.notStrictEqual(JSON.parse('01'), 1);
-                                } catch (ignore) {}
-                            }
                         }
                     }
-                } catch (e) {
-                    supported = false;
                 }
+            } catch (e) {
+                supported = false;
             }
         }
 
         if ($.isTrue(supported)) {
             try {
-                JSON.parse();
+                globalJsonParse();
             } catch (e) {
                 throwsSyntaxError = $.objectInstanceOf(e, SyntaxError);
             }
 
             if (throwsSyntaxError) {
-                tempSafariNFE = JSON.parse;
+                tempSafariNFE = globalJsonParse;
             } else {
                 tempSafariNFE = function nfeJSONParse(text, reviver) {
                     if ($.isUndefined(text)) {
-                        throw new SyntaxError('JSON.parse');
+                        throw new SyntaxError('globalJsonParse');
                     }
 
-                    return JSON.parse(text, reviver);
+                    return globalJsonParse(text, reviver);
                 };
             }
         } else {
@@ -4381,7 +4396,7 @@
                     });
                 }
 
-                if (rx1.test(text.replace(rx2, '@').replace(rx3, ']').replace(rx4, ''))) {
+                if (rx1.test(text.replace(rx2, '@').replace(rx3, ']').replace(rx4, emptyString))) {
                     /*jslint evil: true */
                     j = eval('(' + text + ')');
                     /*jslint evil: false */
@@ -4389,7 +4404,7 @@
                     if ($.isFunction(reviver)) {
                         return walk({
                             '': j
-                        }, '');
+                        }, emptyString);
                     }
 
                     return j;
@@ -4442,12 +4457,9 @@
         ctor.super_ = superCtor;
         /*jslint nomen: false */
         ctor.prototype = $.objectCreate(superCtor.prototype);
-        $.objectDefineProperty(ctor.prototype, 'constructor', {
-            value: ctor,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
+        $.objectDefineProperty(ctor.prototype, constructorString, $.extend({
+            value: ctor
+        }, notEnumerableProperties));
     };
 
     /**
@@ -4527,14 +4539,11 @@
 
                 previousIEErrorToString = Error.prototype.toString;
                 $.objectDefineProperties(Error.prototype, {
-                    toString: {
+                    toString: $.extend({
                         value: function () {
                             return this.name + ': ' + this.message;
-                        },
-                        enumerable: false,
-                        writable: true,
-                        configurable: true
-                    }
+                        }
+                    }, notEnumerableProperties)
                 });
 
                 patchedIEErrorToString = true;
@@ -4554,12 +4563,9 @@
     $.normaliseErrorIEToStringOff = function () {
         if ($.isTrue(patchedIEErrorToString)) {
             $.objectDefineProperties(Error.prototype, {
-                toString: {
-                    value: previousIEErrorToString,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                }
+                toString: $.extend({
+                    value: previousIEErrorToString
+                }, notEnumerableProperties)
             });
 
             patchedIEErrorToString = false;
@@ -4580,6 +4586,108 @@
     };
 
     /**
+     * Creates a custom Error constructor.
+     * @private
+     * @function
+     * @param {string} name
+     * @param {constructor} ErrorConstructor Does not work with IE < 9, only Error can be used
+     * @param {number|string} [maxMessageLength] Range 64 to Infinity (128 default)
+     * @return {constructor}
+     */
+    function makeCustomError(name, ErrorConstructor, maxMessageLength) {
+        if (!$.isString(name) || $.isEmptyString(name)) {
+            throw new TypeError('"name" was not a valid string');
+        }
+
+        if (!$.isErrorTypeConstructor(ErrorConstructor)) {
+            throw new TypeError('"ErrorConstructor" was not an Error type');
+        }
+
+        maxMessageLength = $.toNumber(maxMessageLength);
+        if ($.numberIsNaN(maxMessageLength) || $.lt(maxMessageLength, 64)) {
+            maxMessageLength = 128;
+        }
+
+        function CustomError(message, stackStartFunction) {
+            var err;
+
+            if (!$.isString(message)) {
+                message = $.stringTruncate($.jsonStringify(message, $.customErrorReplacer),
+                                               maxMessageLength);
+            }
+
+            $.objectDefineProperty(this, messageString, $.extend({
+                value: message
+            }, notEnumerableProperties));
+
+            if (!$.isFunction(stackStartFunction)) {
+                stackStartFunction = CustomError;
+            }
+
+            this.stackStartFunction = stackStartFunction;
+            if ($.isFunction(ErrorConstructor.captureStackTrace)) {
+                ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+            } else {
+                err = ErrorConstructor.call(this);
+                if ($.isString(err.stack)) {
+                    $.objectDefineProperty(this, stackString, $.extend({
+                        value: err.stack
+                    }, notEnumerableProperties));
+                } else if ($.isString(err.stacktrace)) {
+                    $.objectDefineProperty(this, stackString, $.extend({
+                        value: err.stacktrace
+                    }, notEnumerableProperties));
+                }
+            }
+        }
+
+        $.inherits(CustomError, ErrorConstructor);
+
+        $.objectDefineProperties(CustomError.prototype, {
+            name: $.extend({
+                value: name
+            }, notEnumerableProperties),
+
+            toString: $.extend({
+                value: function () {
+                    var arr = $.stringSplit(this.message, rxSplitNewLine),
+                        str = this.name + ': ';
+
+                    if ($.gt(arr.length, 1)) {
+                        arr = $.arrayFilter(arr, function (element) {
+                            var val;
+
+                            if (!$.stringContains(element,
+                                                     'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
+
+                                val = element;
+                            }
+
+                            return val;
+                        });
+
+                        str += $.arrayJoin(arr, newLine);
+                    } else {
+                        str += this.message;
+                    }
+
+                    return str;
+                }
+            }, notEnumerableProperties)
+        });
+
+        return CustomError;
+    }
+
+    try {
+        TestConstructor = makeCustomError('CustomSyntaxError', SyntaxError);
+        isOkToUseOtherErrors = $.objectInstanceOf(new TestConstructor(testString), SyntaxError);
+    } catch (e) {
+        // IE < 9
+        isOkToUseOtherErrors = false;
+    }
+
+    /**
      * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
      * If a valid native Error type constructor is provided but not supporte by the browesr the it will
      * also default to Error. (Looking at you IE < 9)
@@ -4590,149 +4698,27 @@
      * @param {number|string} [maxMessageLength] Range 64 to Infinity (128 default)
      * @return {constructor}
      */
-    $.customError = (function () {
-        var isOkToUseOtherErrors,
-            CustomSyntaxError;
-
-        /**
-         * Creates a custom Error constructor.
-         * @private
-         * @function
-         * @param {string} name
-         * @param {constructor} ErrorConstructor Does not work with IE < 9, only Error can be used
-         * @param {number|string} [maxMessageLength] Range 64 to Infinity (128 default)
-         * @return {constructor}
-         */
-        function makeCustomError(name, ErrorConstructor, maxMessageLength) {
-            if (!$.isString(name) || $.isEmptyString(name)) {
-                throw new TypeError('"name" was not a valid string');
-            }
-
-            if (!$.isErrorTypeConstructor(ErrorConstructor)) {
-                throw new TypeError('"ErrorConstructor" was not an Error type');
-            }
-
-            maxMessageLength = $.toNumber(maxMessageLength);
-            if ($.numberIsNaN(maxMessageLength) || $.lt(maxMessageLength, 64)) {
-                maxMessageLength = 128;
-            }
-
-            function CustomError(message, stackStartFunction) {
-                var err;
-
-                if (!$.isString(message)) {
-                    message = $.stringTruncate($.jsonStringify(message, $.customErrorReplacer),
-                                                   maxMessageLength);
-                }
-
-                $.objectDefineProperty(this, 'message', {
-                    value: message,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                });
-
-                if (!$.isFunction(stackStartFunction)) {
-                    stackStartFunction = CustomError;
-                }
-
-                this.stackStartFunction = stackStartFunction;
-                if ($.isFunction(ErrorConstructor.captureStackTrace)) {
-                    ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
-                } else {
-                    err = ErrorConstructor.call(this);
-                    if ($.isString(err.stack)) {
-                        $.objectDefineProperty(this, 'stack', {
-                            value: err.stack,
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        });
-                    } else if ($.isString(err.stacktrace)) {
-                        $.objectDefineProperty(this, 'stack', {
-                            value: err.stacktrace,
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        });
-                    }
-                }
-            }
-
-            $.inherits(CustomError, ErrorConstructor);
-
-            $.objectDefineProperties(CustomError.prototype, {
-                name: {
-                    value: name,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                },
-
-                toString: {
-                    value: function () {
-                        var arr = $.stringSplit(this.message, rxSplitNewLine),
-                            str = this.name + ': ';
-
-                        if ($.gt(arr.length, 1)) {
-                            arr = $.arrayFilter(arr, function (element) {
-                                var val;
-
-                                if (!$.stringContains(element,
-                                                         'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-
-                                    val = element;
-                                }
-
-                                return val;
-                            });
-
-                            str += $.arrayJoin(arr, '\n');
-                        } else {
-                            str += this.message;
-                        }
-
-                        return str;
-                    },
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                }
-            });
-
-            return CustomError;
+    $.customError = function (name, ErrorConstructor, maxMessageLength) {
+        if (!$.isString(name)) {
+            throw new TypeError('"name" was not a string');
         }
 
-        try {
-            CustomSyntaxError = makeCustomError('CustomSyntaxError', SyntaxError);
-            isOkToUseOtherErrors = $.objectInstanceOf(new CustomSyntaxError(testString), SyntaxError);
-        } catch (e) {
-            // IE < 9
-            isOkToUseOtherErrors = false;
+        if ($.isEmptyString(name)) {
+            throw new SyntaxError('"name" was an empty string');
         }
 
-        return function (name, ErrorConstructor, maxMessageLength) {
-            if (!$.isString(name)) {
-                throw new TypeError('"name" was not a string');
-            }
+        if ($.isUndefined(maxMessageLength) &&
+                ($.isNumber(ErrorConstructor) || $.isString(ErrorConstructor))) {
+            maxMessageLength = ErrorConstructor;
+            ErrorConstructor = Error;
+        }
 
-            if ($.isEmptyString(name)) {
-                throw new SyntaxError('"name" was an empty string');
-            }
+        if (!isOkToUseOtherErrors || !$.isErrorTypeConstructor(ErrorConstructor)) {
+            ErrorConstructor = Error;
+        }
 
-            if ($.isUndefined(maxMessageLength) &&
-                    ($.isNumber(ErrorConstructor) || $.isString(ErrorConstructor))) {
-                maxMessageLength = ErrorConstructor;
-                ErrorConstructor = Error;
-            }
-
-            if (!isOkToUseOtherErrors || !$.isErrorTypeConstructor(ErrorConstructor)) {
-                ErrorConstructor = Error;
-            }
-
-            return makeCustomError(name, ErrorConstructor, maxMessageLength);
-        };
-    }());
+        return makeCustomError(name, ErrorConstructor, maxMessageLength);
+    };
 
     tempSafariNFE = null;
 
@@ -4741,176 +4727,64 @@
 
         // set the properties of utilx to not enumerable
         $.arrayForEach($.objectKeys(utilx), function (key) {
-            $.objectDefineProperty(utilx, key, {
-                enumerable: false,
-                writable: true,
-                configurable: true
-            });
+            $.objectDefineProperty(utilx, key, notEnumerableProperties);
         });
 
         // set the properties of the constants
         $.objectDefineProperties(utilx, {
-            privateUndefined: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            privateUndefined: constantProperties,
 
-            POSITIVE_ZERO: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            POSITIVE_ZERO: constantProperties,
 
-            NEGATIVE_ZERO: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            NEGATIVE_ZERO: constantProperties,
 
-            UNSAFE_INTEGER: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            UNSAFE_INTEGER: constantProperties,
 
-            WORD8: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            WORD8: constantProperties,
 
-            UWORD8: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            UWORD8: constantProperties,
 
-            WORD16: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            WORD16: constantProperties,
 
-            UWORD16: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            UWORD16: constantProperties,
 
-            WORD32: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            WORD32: constantProperties,
 
-            UWORD32: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            UWORD32: constantProperties,
 
-            MAX_UINT32: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_UINT32: constantProperties,
 
-            MAX_INT32: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_INT32: constantProperties,
 
-            MIN_INT32: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MIN_INT32: constantProperties,
 
-            MAX_UINT16: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_UINT16: constantProperties,
 
-            MAX_INT16: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_INT16: constantProperties,
 
-            MIN_INT16: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MIN_INT16: constantProperties,
 
-            MAX_UINT8: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_UINT8: constantProperties,
 
-            MAX_INT8: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_INT8: constantProperties,
 
-            MIN_INT8: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MIN_INT8: constantProperties,
 
-            MAX_INTEGER: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_INTEGER: constantProperties,
 
-            MIN_INTEGER: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MIN_INTEGER: constantProperties,
 
-            POSITIVE_INFINITY: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            POSITIVE_INFINITY: constantProperties,
 
-            NEGATIVE_INFINITY: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            NEGATIVE_INFINITY: constantProperties,
 
-            MAX_VALUE: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MAX_VALUE: constantProperties,
 
-            MIN_VALUE: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            MIN_VALUE: constantProperties,
 
-            NAN: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            },
+            NAN: constantProperties,
 
-            EPSILON: {
-                enumerable: false,
-                writable: false,
-                configurable: false
-            }
+            EPSILON: constantProperties
         });
 
         return utilx;
@@ -4922,87 +4796,34 @@
      *
      */
 
-    if (typeof globalThis !== 'object' || null === globalThis) {
+    if (!$.isTypeObject(globalThis)) {
         throw new TypeError('Invalid global context');
     }
 
-    /*global module, define */
-    if (typeof module === 'object' && null !== module &&
-            typeof module.exports === 'object' && null !== module.exports) {
+    publicUtil = $.objectDefineProperty(factory(), factoryString, $.extend({
+        value: function () {
+            return $.objectDefineProperty(factory(), factoryString, $.extend({
+                value: publicUtil[factoryString]
+            }, notEnumerableProperties));
+        }
+    }, notEnumerableProperties));
 
-        publicUtil = factory();
-        publicUtil.objectDefineProperty(publicUtil, 'factory', {
-            value: function () {
-                var pu = factory();
-
-                publicUtil.objectDefineProperty(pu, 'factory', {
-                    value: publicUtil.factory,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                });
-
-                return pu;
-            },
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
-
-        publicUtil.objectDefineProperty(module, 'exports', {
-            value: publicUtil,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
-    } else if (typeof define === 'function' && typeof define.amd === 'object' && null !== define.amd) {
+    if ($.isTypeObject(module) && $.isTypeObject(module.exports)) {
+        $.objectDefineProperty(module, 'exports', $.extend({
+            value: publicUtil
+        }, notEnumerableProperties));
+    } else if ($.isFunction(define) && $.isTypeObject(define.amd)) {
         define(function () {
-            publicUtil = factory();
-            publicUtil.objectDefineProperty(publicUtil, 'factory', {
-                value: function () {
-                    var pu = factory();
-
-                    publicUtil.objectDefineProperty(pu, 'factory', {
-                        value: publicUtil.factory,
-                        enumerable: false,
-                        writable: true,
-                        configurable: true
-                    });
-
-                    return pu;
-                },
-                enumerable: false,
-                writable: true,
-                configurable: true
-            });
-
             return publicUtil;
         });
     } else {
-        publicUtil = factory();
-        publicUtil.objectDefineProperty(publicUtil, 'factory', {
-            value: function () {
-                var pu = factory();
-
-                publicUtil.objectDefineProperty(pu, 'factory', {
-                    value: publicUtil.factory,
-                    enumerable: false,
-                    writable: true,
-                    configurable: true
-                });
-
-                return pu;
-            },
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
-
-        publicUtil.objectDefineProperty(globalThis, 'utilx', {
-            value: publicUtil,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
+        $.objectDefineProperty(globalThis, 'utilx', $.extend({
+            value: publicUtil
+        }, notEnumerableProperties));
     }
-}(this));
+
+    /*global module, define */
+}(this, Math,
+    typeof JSON === 'object' && JSON,
+    typeof module === 'object' && module,
+    typeof define === 'function' && define));
