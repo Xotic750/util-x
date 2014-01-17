@@ -140,6 +140,7 @@
         sentinelString = 'sentinel',
         testString = 'test',
         stackString = 'stack',
+        stacktraceString = 'stacktrace',
         messageString = 'message',
         newLine = '\n',
         factoryString = 'factory',
@@ -189,8 +190,30 @@
         testProp,
         testValue,
         shouldSplitString,
-        supported,
         isOkToUseOtherErrors,
+
+        // JSON compliance result
+        isSupportedResult,
+
+        // JSON stringify variables
+        stringifiedValue,
+        escapableRxString,
+        rxEscapable,
+        stringifyGap,
+        stringifyIndent,
+        stringifyMeta,
+        stringifyReplacer,
+        stringifyQuote,
+        stringifyToString,
+
+        // JSON parse variables
+        threwSynatxError,
+        rxParseProtect1,
+        rxParseProtect2,
+        rxParseProtect3,
+        rxParseProtect4,
+        parseRxCharacterString,
+        rxParseCharacterTest,
 
         /**
          * For hasOwnProperty bug.
@@ -240,10 +263,6 @@
         whiteSpacesString,
 
         publicUtil,
-
-        // Safari 2.x NFE bug fix
-        // http://kangax.github.io/nfe/
-        tempSafariNFE,
 
         /**
          * @namespace utilx
@@ -1741,15 +1760,15 @@
      * Splits a String object into an array of strings by separating the string into substrings.
      * @memberOf utilx
      * @function
-     * @param {string} str
+     * @param {string} stringifyToString
      * @param {string} [separator]
      * @param {number} [limit]
      * @return {array.&lt;string>}
      */
     compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
     // named $.stringSplit instead of split because of SpiderMonkey and Blackberry bug
-    $.stringSplit = function (str, separator, limit) {
-        var string = onlyCoercibleToString(str),
+    $.stringSplit = function (stringifyToString, separator, limit) {
+        var string = onlyCoercibleToString(stringifyToString),
             output,
             flags,
             lastLastIndex,
@@ -1832,7 +1851,7 @@
 
             val = output;
         } else {
-            val = splitFN.call(str, separator, limit);
+            val = splitFN.call(stringifyToString, separator, limit);
         }
 
         return val;
@@ -3399,7 +3418,7 @@
                     if ($.objectHasOwnProperty(descriptor, valueString) ||
                             !$.objectHasOwnProperty(object, property)) {
 
-                        $.arrayAssign(object, property, descriptor.value);
+                        $.arrayAssign(object, property, descriptor[valueString]);
                     }
                 }
 
@@ -3417,7 +3436,7 @@
             definePropertyCustom2 = definePropertyCustom;
             definePropertyCustom = function (object, property, descriptor) {
                 if (!$.objectHasOwnProperty(descriptor, valueString)) {
-                    descriptor.value = object[property];
+                    descriptor[valueString] = object[property];
                 }
 
                 return definePropertyCustom2(object, property, descriptor);
@@ -3458,10 +3477,10 @@
                                  ($.isStringNotEmpty(property) &amp;&amp;
                                     $.numberIsInteger($.toNumber(property))))) {
 
-                            $.arrayAssign(object, property, descriptor.value);
+                            $.arrayAssign(object, property, descriptor[valueString]);
                         } else {
                             delete object[property];
-                            object[property] = descriptor.value;
+                            object[property] = descriptor[valueString];
                         }
 
                         if ($.isUndefined(prototype)) {
@@ -3476,9 +3495,9 @@
                                  ($.isStringNotEmpty(property) &amp;&amp;
                                     $.numberIsInteger($.toNumber(property))))) {
 
-                            $.arrayAssign(object, property, descriptor.value);
+                            $.arrayAssign(object, property, descriptor[valueString]);
                         } else {
-                            object[property] = descriptor.value;
+                            object[property] = descriptor[valueString];
                         }
                     }
                 }
@@ -3487,12 +3506,12 @@
                     throw new TypeError('getters &amp; setters can not be defined on this javascript engine');
                 }
 
-                if ($.isFunction(descriptor.get)) {
-                    defineGetterFN.call(object, property, descriptor.get);
+                if ($.isFunction(descriptor[getString])) {
+                    defineGetterFN.call(object, property, descriptor[getString]);
                 }
 
-                if ($.isFunction(descriptor.set)) {
-                    defineSetterFN.call(object, property, descriptor.set);
+                if ($.isFunction(descriptor[setString])) {
+                    defineSetterFN.call(object, property, descriptor[setString]);
                 }
             }
 
@@ -3603,16 +3622,16 @@
 
                     if ($.isFunction(getter) || $.isFunction(setter)) {
                         if ($.isFunction(getter)) {
-                            descriptor.get = getter;
+                            descriptor[getString] = getter;
                         }
 
                         if ($.isFunction(setter)) {
-                            descriptor.set = setter;
+                            descriptor[setString] = setter;
                         }
                     }
                 }
 
-                descriptor.value = object[property];
+                descriptor[valueString] = object[property];
                 if ($.strictEqual(property, lengthString)) {
                     if ($.isFunction(object)) {
                         descriptor.writable = false;
@@ -4041,411 +4060,6 @@
         });
     };
 
-    if ($.isTypeObject(JSON)) {
-        if ($.isFunction(JSON.parse)) {
-            globalJsonParse = JSON.parse;
-        }
-
-        if ($.isFunction(JSON.parse)) {
-            globalJsonStringify = JSON.stringify;
-        }
-    }
-
-    /**
-     * Return a JSON string corresponding to the specified value, optionally including only certain properties
-     * or replacing property values in a user-defined manner.
-     * @memberOf utilx
-     * @function
-     * @param {*} value
-     * @param {function|array} replacer
-     * @param {number} space
-     * @return {string}
-     */
-    $.jsonStringify = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var stringifiedValue,
-            escapableStr,
-            escapable,
-            gap,
-            indent,
-            meta,
-            rep,
-            quote,
-            str,
-            nfeJSONStringify;
-
-        if ($.isFunction(globalJsonStringify)) {
-            // A test function object with a custom `toJSON` method.
-            (function () {
-                stringifiedValue = function () {
-                    return 1;
-                };
-            }());
-
-            stringifiedValue.toJSON = stringifiedValue;
-
-            try {
-                supported =
-                    // Firefox 3.1b1 and b2 serialize string, number, and boolean
-                    // primitives as object literals.
-                    $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), '0') &amp;&amp;
-                    // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
-                    // literals.
-                    $.strictEqual(globalJsonStringify(new CtrNumber()), '0') &amp;&amp;
-                    $.strictEqual(globalJsonStringify(new CtrString()), '""') &amp;&amp;
-                    // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
-                    // does not define a canonical JSON representation (this applies to
-                    // objects with `toJSON` properties as well, *unless* they are nested
-                    // within an object or array).
-                    $.strictEqual(globalJsonStringify($.noop), $.privateUndefined) &amp;&amp;
-                    // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
-                    // 3.1b3 pass this test.
-                    $.strictEqual(globalJsonStringify($.privateUndefined), $.privateUndefined) &amp;&amp;
-                    // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-                    // respectively, if the stringifiedValue is omitted entirely.
-                    $.strictEqual(globalJsonStringify(), $.privateUndefined) &amp;&amp;
-                    // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
-                    // string, array, object, Boolean, or `null` literal. This applies to
-                    // objects with custom `toJSON` methods as well, unless they are nested
-                    // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
-                    // methods entirely.
-                    $.strictEqual(globalJsonStringify(stringifiedValue), '1') &amp;&amp;
-                    $.strictEqual(globalJsonStringify([stringifiedValue]), '[1]') &amp;&amp;
-                    // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
-                    // `"[null]"`.
-                    $.strictEqual(globalJsonStringify([$.privateUndefined]), '[null]') &amp;&amp;
-                    // YUI 3.0.0b1 fails to serialize `null` literals.
-                    $.strictEqual(globalJsonStringify(null), 'null') &amp;&amp;
-                    // FF 3.1b1, 2 halts serialization if an array contains a function:
-                    // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
-                    // of Firefox also allow trailing commas in JSON objects and arrays.
-                    // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
-                    // define custom `toJSON` methods.
-                    $.strictEqual(globalJsonStringify([$.privateUndefined, $.noop, null]),
-                                      '[null,null,null]') &amp;&amp;
-                    // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
-                    // where character escape codes are expected (e.g., `\b` => `\u0008`).
-                    // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
-                    // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
-                    $.strictEqual(globalJsonStringify({
-                        'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
-                    }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &amp;&amp;
-                    // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                    //$.strictEqual(globalJsonStringify(null, stringifiedValue), '"1"') &amp;&amp;
-                    $.strictEqual(globalJsonStringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
-                    // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
-                    // serialize extended years.
-                    $.strictEqual(globalJsonStringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
-                    // The milliseconds are optional in ES 5, but required in 5.1.
-                    $.strictEqual(globalJsonStringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
-                    // Firefox &lt;= 11.0 incorrectly serializes years prior to 0 as negative
-                    // four-digit years instead of six-digit years. Credits: @Yaffle.
-                    $.strictEqual(globalJsonStringify(new Date(-621987552e5)),
-                                      '"-000001-01-01T00:00:00.000Z"') &amp;&amp;
-                    // Safari &lt;= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
-                    // values less than 1000. Credits: @Yaffle.
-                    $.strictEqual(globalJsonStringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
-            } catch (e) {
-                supported = false;
-            }
-        }
-
-        if ($.isTrue(supported)) {
-            tempSafariNFE = JSON.stringify;
-        } else {
-            escapableStr = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
-            escapableStr += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-            escapable = new RegExp(escapableStr, 'g');
-            meta = {
-                '\b': '\\b',
-                '\t': '\\t',
-                '\n': '\\n',
-                '\f': '\\f',
-                '\r': '\\r',
-                '"': '\\"',
-                '\\': '\\\\'
-            };
-
-            quote = function (string) {
-                var result = '"';
-
-                escapable.lastIndex = $.POSITIVE_ZERO;
-                if (escapable.test(string)) {
-                    result += string.replace(escapable, function (a) {
-                        var c = meta[a],
-                            r;
-
-                        if ($.isString(c)) {
-                            r = c;
-                        } else {
-                            r = '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
-                        }
-
-                        return r;
-                    });
-                } else {
-                    result += string;
-                }
-
-                return result + '"';
-            };
-
-            str = function (key, holder) {
-                var index,
-                    member,
-                    length,
-                    mind = gap,
-                    partial,
-                    value = holder[key];
-
-                if (isTypeObjectOrIsFunction(value) &amp;&amp; $.isFunction(value.toJSON)) {
-                    value = value.toJSON(key);
-                }
-
-                if ($.isFunction(rep)) {
-                    value = rep.call(holder, key, value);
-                }
-
-                switch (typeof value) {
-                case 'string':
-                    return quote(value);
-                case 'number':
-                    if ($.numberIsFinite(value)) {
-                        return $.anyToString(value);
-                    }
-
-                    return 'null';
-                case 'boolean':
-                case 'null':
-                    return $.anyToString(value);
-                case 'object':
-                    if ($.isNull(value)) {
-                        return $.anyToString(value);
-                    }
-
-                    gap += indent;
-                    partial = [];
-                    if ($.arrayIsArray(value)) {
-                        length = value.length;
-                        for (index = $.POSITIVE_ZERO; index &lt; length; index += 1) {
-                            $.arrayAssign(partial, index, str(index, value) || 'null');
-                        }
-
-                        if ($.isZero(partial.length)) {
-                            member = '[]';
-                        } else if ($.isStringNotEmpty(gap)) {
-                            member = '[' + newLine + gap + $.arrayJoin(partial, ',' + newLine + gap) +
-                                                    newLine + mind + ']';
-                        } else {
-                            member = '[' + $.arrayJoin(partial) + ']';
-                        }
-
-                        gap = mind;
-
-                        return member;
-                    }
-
-                    if ($.arrayIsArray(rep)) {
-                        $.arrayForEach(rep, function (element) {
-                            var v;
-
-                            if ($.isString(element)) {
-                                v = str(element, value);
-                                if (!$.isUndefined(v)) {
-                                    $.arrayPush(partial, quote(element) +
-                                                    ($.isStringNotEmpty(gap)  ? ': ' : ':') + v);
-                                }
-                            }
-                        });
-                    } else {
-                        $.arrayForEach($.objectKeys(value), function (k) {
-                            var v = str(k, value);
-
-                            if (!$.isUndefined(v)) {
-                                $.arrayPush(partial, quote(k) +
-                                                ($.isStringNotEmpty(gap) ? ': ' : ':') + v);
-                            }
-                        });
-                    }
-
-                    if ($.isZero(partial.length)) {
-                        member = '{}';
-                    } else if ($.isStringNotEmpty(gap)) {
-                        member = '{' + newLine + gap + $.arrayJoin(partial, ',' + newLine + gap) +
-                                                    newLine + mind + '}';
-                    } else {
-                        member = '{' + $.arrayJoin(partial) + '}';
-                    }
-
-                    gap = mind;
-
-                    return member;
-                }
-
-                return $.privateUndefined;
-            };
-
-            tempSafariNFE = function nfeJSONStringify(value, replacer, space) {
-                gap = emptyString;
-                if ($.isNumber(space)) {
-                    indent = $.stringRepeat(' ', space);
-                } else if ($.isString(space)) {
-                    indent = space;
-                } else {
-                    indent = emptyString;
-                }
-
-                rep = replacer;
-                if (!$.isUndefinedOrNull(replacer) &amp;&amp; !$.isFunction(replacer) &amp;&amp;
-                        !$.arrayIsArray(replacer)) {
-
-                    throw new Error('JSON.stringify');
-                }
-
-                return str('', {
-                    emptyString: value
-                });
-            };
-        }
-
-        nfeJSONStringify = null;
-
-        return tempSafariNFE;
-    }());
-
-    /**
-     * Parse a string as JSON, optionally transform the produced value and its properties, and return the value.
-     * @memberOf utilx
-     * @function
-     * @param {string} text
-     * @param {function|array} reviver
-     * @return {object}
-     */
-    $.jsonParse = (function () {
-        // Unused variable for JScript NFE bug
-        // http://kangax.github.io/nfe
-        var parsedValue,
-            throwsSyntaxError,
-            rx1,
-            rx2,
-            rx3,
-            rx4,
-            cxStr,
-            cx,
-            nfeJSONParse;
-
-        // Determines whether the (possibly native) `JSON.stringify` and `parse`
-        // implementations are spec-compliant. Based on work by Ken Snyder.
-        if ($.isFunction(globalJsonParse)) {
-            try {
-                // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
-                // Conforming implementations should also coerce the initial argument to
-                // a string prior to parsing.
-                if ($.isZero(globalJsonParse('0')) &amp;&amp; $.isFalse(globalJsonParse(false))) {
-                    // Simple parsing test.
-                    parsedValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                    supported = $.strictEqual(parsedValue.A.length, 5);
-                    supported = supported &amp;&amp; $.strictEqual(parsedValue.A[$.POSITIVE_ZERO], 1);
-                    if (supported) {
-                        try {
-                            // Safari &lt;= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
-                            supported = $.isString(globalJsonParse('"\t"'));
-                        } catch (ignore) {}
-
-                        if (supported) {
-                            try {
-                                // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
-                                // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
-                                // allow certain octal literals.
-                                supported = $.notStrictEqual(globalJsonParse('01'), 1);
-                            } catch (ignore) {}
-                        }
-                    }
-                }
-            } catch (e) {
-                supported = false;
-            }
-        }
-
-        if ($.isTrue(supported)) {
-            try {
-                globalJsonParse();
-            } catch (e) {
-                throwsSyntaxError = $.objectInstanceOf(e, SyntaxError);
-            }
-
-            if (throwsSyntaxError) {
-                tempSafariNFE = globalJsonParse;
-            } else {
-                tempSafariNFE = function nfeJSONParse(text, reviver) {
-                    if ($.isUndefined(text)) {
-                        throw new SyntaxError('globalJsonParse');
-                    }
-
-                    return globalJsonParse(text, reviver);
-                };
-            }
-        } else {
-            rx1 = new RegExp('^[\\],:{}\\s]*$');
-            rx2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
-            rx3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
-            rx4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
-            cxStr = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
-            cxStr += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-            cx = new RegExp(cxStr, 'g');
-            tempSafariNFE = function nfeJSONParse(text, reviver) {
-                var j;
-
-                function walk(holder, key) {
-                    var value = holder[key];
-
-                    if ($.isTypeObject(value)) {
-                        $.arrayForEach($.objectKeys(value), function (k) {
-                            var v = walk(value, k);
-
-                            if (!$.isUndefined(v)) {
-                                value[k] = v;
-                            } else {
-                                delete value[k];
-                            }
-                        });
-                    }
-
-                    return reviver.call(holder, key, value);
-                }
-
-                text = $.anyToString(text);
-                cx.lastIndex = $.POSITIVE_ZERO;
-                if (cx.test(text)) {
-                    text = text.replace(cx, function (a) {
-                        return '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
-                    });
-                }
-
-                if (rx1.test(text.replace(rx2, '@').replace(rx3, ']').replace(rx4, emptyString))) {
-                    /*jslint evil: true */
-                    j = eval('(' + text + ')');
-                    /*jslint evil: false */
-
-                    if ($.isFunction(reviver)) {
-                        return walk({
-                            '': j
-                        }, emptyString);
-                    }
-
-                    return j;
-                }
-
-                throw new SyntaxError('JSON.parse');
-            };
-        }
-
-        nfeJSONParse = null;
-
-        return tempSafariNFE;
-    }());
-
     /**
      * Truncates a long string to the length specified by n; used by AssertionError.toString
      * @memberOf utilx
@@ -4656,13 +4270,13 @@
                 ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
             } else {
                 err = ErrorConstructor.call(this);
-                if ($.isString(err.stack)) {
+                if ($.isString(err[stackString])) {
                     $.objectDefineProperty(this, stackString, $.extend({
-                        value: err.stack
+                        value: err[stackString]
                     }, notEnumerableProperties));
-                } else if ($.isString(err.stacktrace)) {
+                } else if ($.isString(err[stacktraceString])) {
                     $.objectDefineProperty(this, stackString, $.extend({
-                        value: err.stacktrace
+                        value: err[stacktraceString]
                     }, notEnumerableProperties));
                 }
             }
@@ -4678,7 +4292,7 @@
             toString: $.extend({
                 value: function () {
                     var arr = $.stringSplit(this.message, rxSplitNewLine),
-                        str = this.name + ': ';
+                        messageToString = this.name + ': ';
 
                     if ($.gt(arr.length, 1)) {
                         arr = $.arrayFilter(arr, function (element) {
@@ -4693,12 +4307,12 @@
                             return val;
                         });
 
-                        str += $.arrayJoin(arr, newLine);
+                        messageToString += $.arrayJoin(arr, newLine);
                     } else {
-                        str += this.message;
+                        messageToString += this.message;
                     }
 
-                    return str;
+                    return messageToString;
                 }
             }, notEnumerableProperties)
         });
@@ -4747,7 +4361,378 @@
         return makeCustomError(name, ErrorConstructor, maxMessageLength);
     };
 
-    tempSafariNFE = null;
+    if ($.isTypeObject(JSON)) {
+        if ($.isFunction(JSON.parse)) {
+            globalJsonParse = JSON.parse;
+        }
+
+        if ($.isFunction(JSON.parse)) {
+            globalJsonStringify = JSON.stringify;
+        }
+    }
+
+    /**
+     * Return a JSON string corresponding to the specified value, optionally including only certain properties
+     * or replacing property values in a user-defined manner.
+     * @memberOf utilx
+     * @name jsonStringify
+     * @function
+     * @param {*} value
+     * @param {function|array} replacer
+     * @param {number} space
+     * @return {string}
+     */
+    if ($.isFunction(globalJsonStringify)) {
+        // A test function object with a custom `toJSON` method.
+        (function () {
+            stringifiedValue = function () {
+                return 1;
+            };
+        }());
+
+        stringifiedValue.toJSON = stringifiedValue;
+
+        try {
+            isSupportedResult =
+                // Firefox 3.1b1 and b2 serialize string, number, and boolean
+                // primitives as object literals.
+                $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), '0') &amp;&amp;
+                // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
+                // literals.
+                $.strictEqual(globalJsonStringify(new CtrNumber()), '0') &amp;&amp;
+                $.strictEqual(globalJsonStringify(new CtrString()), '""') &amp;&amp;
+                // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
+                // does not define a canonical JSON representation (this applies to
+                // objects with `toJSON` properties as well, *unless* they are nested
+                // within an object or array).
+                $.strictEqual(globalJsonStringify($.noop), $.privateUndefined) &amp;&amp;
+                // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
+                // 3.1b3 pass this test.
+                $.strictEqual(globalJsonStringify($.privateUndefined), $.privateUndefined) &amp;&amp;
+                // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
+                // respectively, if the stringifiedValue is omitted entirely.
+                $.strictEqual(globalJsonStringify(), $.privateUndefined) &amp;&amp;
+                // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
+                // string, array, object, Boolean, or `null` literal. This applies to
+                // objects with custom `toJSON` methods as well, unless they are nested
+                // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
+                // methods entirely.
+                $.strictEqual(globalJsonStringify(stringifiedValue), '1') &amp;&amp;
+                $.strictEqual(globalJsonStringify([stringifiedValue]), '[1]') &amp;&amp;
+                // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
+                // `"[null]"`.
+                $.strictEqual(globalJsonStringify([$.privateUndefined]), '[null]') &amp;&amp;
+                // YUI 3.0.0b1 fails to serialize `null` literals.
+                $.strictEqual(globalJsonStringify(null), 'null') &amp;&amp;
+                // FF 3.1b1, 2 halts serialization if an array contains a function:
+                // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
+                // of Firefox also allow trailing commas in JSON objects and arrays.
+                // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
+                // define custom `toJSON` methods.
+                $.strictEqual(globalJsonStringify([$.privateUndefined, $.noop, null]),
+                                  '[null,null,null]') &amp;&amp;
+                // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
+                // where character escape codes are expected (e.g., `\b` => `\u0008`).
+                // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
+                // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
+                $.strictEqual(globalJsonStringify({
+                    'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
+                }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &amp;&amp;
+                // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
+                //$.strictEqual(globalJsonStringify(null, stringifiedValue), '"1"') &amp;&amp;
+                $.strictEqual(globalJsonStringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
+                // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
+                // serialize extended years.
+                $.strictEqual(globalJsonStringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
+                // The milliseconds are optional in ES 5, but required in 5.1.
+                $.strictEqual(globalJsonStringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
+                // Firefox &lt;= 11.0 incorrectly serializes years prior to 0 as negative
+                // four-digit years instead of six-digit years. Credits: @Yaffle.
+                $.strictEqual(globalJsonStringify(new Date(-621987552e5)),
+                                  '"-000001-01-01T00:00:00.000Z"') &amp;&amp;
+                // Safari &lt;= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
+                // values less than 1000. Credits: @Yaffle.
+                $.strictEqual(globalJsonStringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
+        } catch (e) {
+            isSupportedResult = false;
+        }
+    }
+
+    if ($.isTrue(isSupportedResult)) {
+        $.jsonStringify = globalJsonStringify;
+    } else {
+        escapableRxString = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
+        escapableRxString += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        rxEscapable = new RegExp(escapableRxString, 'g');
+        stringifyMeta = {
+            '\b': '\\b',
+            '\t': '\\t',
+            '\n': '\\n',
+            '\f': '\\f',
+            '\r': '\\r',
+            '"': '\\"',
+            '\\': '\\\\'
+        };
+
+        stringifyQuote = function (string) {
+            var result = '"';
+
+            rxEscapable.lastIndex = $.POSITIVE_ZERO;
+            if (rxEscapable.test(string)) {
+                result += string.replace(rxEscapable, function (a) {
+                    var c = stringifyMeta[a],
+                        r;
+
+                    if ($.isString(c)) {
+                        r = c;
+                    } else {
+                        r = '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
+                    }
+
+                    return r;
+                });
+            } else {
+                result += string;
+            }
+
+            return result + '"';
+        };
+
+        stringifyToString = function (key, holder) {
+            var index,
+                member,
+                length,
+                mind = stringifyGap,
+                partial,
+                value = holder[key];
+
+            if (isTypeObjectOrIsFunction(value) &amp;&amp; $.isFunction(value.toJSON)) {
+                value = value.toJSON(key);
+            }
+
+            if ($.isFunction(stringifyReplacer)) {
+                value = stringifyReplacer.call(holder, key, value);
+            }
+
+            switch (typeof value) {
+            case 'string':
+                return stringifyQuote(value);
+            case 'number':
+                if ($.numberIsFinite(value)) {
+                    return $.anyToString(value);
+                }
+
+                return 'null';
+            case 'boolean':
+            case 'null':
+                return $.anyToString(value);
+            case 'object':
+                if ($.isNull(value)) {
+                    return $.anyToString(value);
+                }
+
+                stringifyGap += stringifyIndent;
+                partial = [];
+                if ($.arrayIsArray(value)) {
+                    length = value.length;
+                    for (index = $.POSITIVE_ZERO; index &lt; length; index += 1) {
+                        $.arrayAssign(partial, index, stringifyToString(index, value) || 'null');
+                    }
+
+                    if ($.isZero(partial.length)) {
+                        member = '[]';
+                    } else if ($.isStringNotEmpty(stringifyGap)) {
+                        member = '[' + newLine + stringifyGap + $.arrayJoin(partial, ',' + newLine + stringifyGap) +
+                                                newLine + mind + ']';
+                    } else {
+                        member = '[' + $.arrayJoin(partial) + ']';
+                    }
+
+                    stringifyGap = mind;
+
+                    return member;
+                }
+
+                if ($.arrayIsArray(stringifyReplacer)) {
+                    $.arrayForEach(stringifyReplacer, function (element) {
+                        var v;
+
+                        if ($.isString(element)) {
+                            v = stringifyToString(element, value);
+                            if (!$.isUndefined(v)) {
+                                $.arrayPush(partial, stringifyQuote(element) +
+                                                ($.isStringNotEmpty(stringifyGap)  ? ': ' : ':') + v);
+                            }
+                        }
+                    });
+                } else {
+                    $.arrayForEach($.objectKeys(value), function (k) {
+                        var v = stringifyToString(k, value);
+
+                        if (!$.isUndefined(v)) {
+                            $.arrayPush(partial, stringifyQuote(k) +
+                                            ($.isStringNotEmpty(stringifyGap) ? ': ' : ':') + v);
+                        }
+                    });
+                }
+
+                if ($.isZero(partial.length)) {
+                    member = '{}';
+                } else if ($.isStringNotEmpty(stringifyGap)) {
+                    member = '{' + newLine + stringifyGap + $.arrayJoin(partial, ',' + newLine + stringifyGap) +
+                                                newLine + mind + '}';
+                } else {
+                    member = '{' + $.arrayJoin(partial) + '}';
+                }
+
+                stringifyGap = mind;
+
+                return member;
+            }
+
+            return $.privateUndefined;
+        };
+
+        $.jsonStringify = function (value, replacer, space) {
+            stringifyGap = emptyString;
+            if ($.isNumber(space)) {
+                stringifyIndent = $.stringRepeat(' ', space);
+            } else if ($.isString(space)) {
+                stringifyIndent = space;
+            } else {
+                stringifyIndent = emptyString;
+            }
+
+            stringifyReplacer = replacer;
+            if (!$.isUndefinedOrNull(replacer) &amp;&amp; !$.isFunction(replacer) &amp;&amp;
+                    !$.arrayIsArray(replacer)) {
+
+                throw new Error('JSON.stringify');
+            }
+
+            return stringifyToString(emptyString, {
+                '': value
+            });
+        };
+    }
+
+    /**
+     * Parse a string as JSON, optionally transform the produced value and its properties, and return the value.
+     * @memberOf utilx
+     * @name jsonParse
+     * @function
+     * @param {string} text
+     * @param {function|array} reviver
+     * @return {object}
+     */
+    // Determines whether the (possibly native) `JSON.stringify` and `parse`
+    // implementations are spec-compliant. Based on work by Ken Snyder.
+    if ($.isFunction(globalJsonParse)) {
+        try {
+            // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
+            // Conforming implementations should also coerce the initial argument to
+            // a string prior to parsing.
+            if ($.isZero(globalJsonParse('0')) &amp;&amp; $.isFalse(globalJsonParse(false))) {
+                // Simple parsing test.
+                testValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
+                isSupportedResult = $.strictEqual(testValue.A.length, 5);
+                isSupportedResult = isSupportedResult &amp;&amp; $.strictEqual(testValue.A[$.POSITIVE_ZERO], 1);
+                if (isSupportedResult) {
+                    try {
+                        // Safari &lt;= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
+                        isSupportedResult = $.isString(globalJsonParse('"\t"'));
+                    } catch (ignore) {}
+
+                    if (isSupportedResult) {
+                        try {
+                            // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
+                            // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
+                            // allow certain octal literals.
+                            isSupportedResult = $.notStrictEqual(globalJsonParse('01'), 1);
+                        } catch (ignore) {}
+                    }
+                }
+            }
+        } catch (e) {
+            isSupportedResult = false;
+        }
+    }
+
+    if ($.isTrue(isSupportedResult)) {
+        try {
+            globalJsonParse();
+        } catch (e) {
+            threwSynatxError = $.objectInstanceOf(e, SyntaxError);
+        }
+
+        if (threwSynatxError) {
+            $.jsonParse = globalJsonParse;
+        } else {
+            $.jsonParse = function (text, reviver) {
+                if ($.isUndefined(text)) {
+                    throw new SyntaxError('globalJsonParse');
+                }
+
+                return globalJsonParse(text, reviver);
+            };
+        }
+    } else {
+        rxParseProtect1 = new RegExp('^[\\],:{}\\s]*$');
+        rxParseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
+        rxParseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
+        rxParseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
+        parseRxCharacterString = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
+        parseRxCharacterString += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        rxParseCharacterTest = new RegExp(parseRxCharacterString, 'g');
+        $.jsonParse = function (text, reviver) {
+            var j;
+
+            function walk(holder, key) {
+                var value = holder[key];
+
+                if ($.isTypeObject(value)) {
+                    $.arrayForEach($.objectKeys(value), function (k) {
+                        var v = walk(value, k);
+
+                        if (!$.isUndefined(v)) {
+                            value[k] = v;
+                        } else {
+                            delete value[k];
+                        }
+                    });
+                }
+
+                return reviver.call(holder, key, value);
+            }
+
+            text = $.anyToString(text);
+            rxParseCharacterTest.lastIndex = $.POSITIVE_ZERO;
+            if (rxParseCharacterTest.test(text)) {
+                text = text.replace(rxParseCharacterTest, function (a) {
+                    return '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
+                });
+            }
+
+            if (rxParseProtect1.test(text.replace(rxParseProtect2, '@')
+                                     .replace(rxParseProtect3, ']')
+                                     .replace(rxParseProtect4, emptyString))) {
+
+                /*jslint evil: true */
+                j = eval('(' + text + ')');
+                /*jslint evil: false */
+
+                if ($.isFunction(reviver)) {
+                    return walk({
+                        '': j
+                    }, emptyString);
+                }
+
+                return j;
+            }
+
+            throw new SyntaxError('JSON.parse');
+        };
+    }
 
     function factory() {
         var utilx = $.extend({}, $);
@@ -4870,7 +4855,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Jan 17 2014 08:13:27 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Fri Jan 17 2014 09:20:02 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
