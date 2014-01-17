@@ -3785,6 +3785,43 @@
     }
 
     /**
+     * Check to see if an object is a plain object (created using "{}" or "new Object").
+     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
+     * @memberOf utilx
+     * @function
+     * @param {object} object
+     * @return {boolean}
+     */
+    $.isPlainObject = function (object) {
+        return $.isTypeObject(object) && $.isObject(object) &&
+            $.strictEqual($.objectGetPrototypeOf(object), baseObjectPrototype);
+    };
+
+    /**
+     * "shallow" extend the properties from the source objects over to the target object,
+     * and return the target object. It's in-order, so the last source will override properties of
+     * the same name in previous arguments.
+     * @memberOf utilx
+     * @function
+     * @param {object} target
+     * @param {...object} [source]
+     * @return {object}
+     */
+    $.extend = function (target) {
+        throwIfIsNotTypeObjectOrIsNotFunction(target);
+        $.arrayForEach($.arraySlice(arguments, 1), function (source) {
+            if (isTypeObjectOrIsFunction(source)) {
+                $.arrayForEach($.objectKeys(source), function (key) {
+                    $.objectDefineProperty(target, key, $.objectGetOwnPropertyDescriptor(source, key));
+                });
+            }
+        });
+
+        return target;
+    };
+
+
+    /**
      * The constructor used by $.objectCreate if shimmed.
      * @private
      * @constructor
@@ -3836,42 +3873,6 @@
             return newObject;
         };
     }
-
-    /**
-     * Check to see if an object is a plain object (created using "{}" or "new Object").
-     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
-     * @memberOf utilx
-     * @function
-     * @param {object} object
-     * @return {boolean}
-     */
-    $.isPlainObject = function (object) {
-        return $.isTypeObject(object) && $.isObject(object) &&
-            $.strictEqual($.objectGetPrototypeOf(object), baseObjectPrototype);
-    };
-
-    /**
-     * "shallow" extend the properties from the source objects over to the target object,
-     * and return the target object. It's in-order, so the last source will override properties of
-     * the same name in previous arguments.
-     * @memberOf utilx
-     * @function
-     * @param {object} target
-     * @param {...object} [source]
-     * @return {object}
-     */
-    $.extend = function (target) {
-        throwIfIsNotTypeObjectOrIsNotFunction(target);
-        $.arrayForEach($.arraySlice(arguments, 1), function (source) {
-            if (isTypeObjectOrIsFunction(source)) {
-                $.arrayForEach($.objectKeys(source), function (key) {
-                    $.objectDefineProperty(target, key, $.objectGetOwnPropertyDescriptor(source, key));
-                });
-            }
-        });
-
-        return target;
-    };
 
     /**
      * Returns true if the operand inputArg is a Date object and is valid.
