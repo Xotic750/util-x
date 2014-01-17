@@ -87,8 +87,9 @@
         globalMathMin = Math.min,
         globalMathMax = Math.max,
         globalMathFloor = Math.floor,
-        globalMathMCeil = Math.ceil,
-        globalMathMAbs = Math.abs,
+        globalMathCeil = Math.ceil,
+        globalMathAbs = Math.abs,
+        globalMathRandom = Math.random,
         globalJsonParse,
         globalJsonStringify,
 
@@ -1335,7 +1336,7 @@
             } else if (isZeroOrNotFinite(number)) {
                 val = number;
             } else {
-                val = $.mathSign(number) * globalMathFloor(globalMathMAbs(number));
+                val = $.mathSign(number) * globalMathFloor(globalMathAbs(number));
             }
 
             return val;
@@ -1382,7 +1383,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD32);
+            val = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD32);
             if ($.gt(val, $.MAX_INT32)) {
                 val -= $.UWORD32;
             } else if ($.lt(val, $.MIN_INT32)) {
@@ -1510,7 +1511,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD16);
+            val = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD16);
             if ($.gt(val, $.MAX_INT16)) {
                 val -= $.UWORD16;
             } else if ($.lt(val, $.MIN_INT16)) {
@@ -1587,7 +1588,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val  = $.mod($.mathSign(number) * globalMathFloor(globalMathMAbs(number)), $.UWORD8);
+            val  = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD8);
             if ($.gt(val, $.MAX_INT8)) {
                 val -= $.UWORD8;
             } else if ($.lt(val, $.MIN_INT8)) {
@@ -2888,14 +2889,14 @@
             val;
 
         if ($.lt(min, $.POSITIVE_ZERO) && $.gt(max, $.POSITIVE_ZERO) && $.gt(max - min + 1, $.MAX_INTEGER)) {
-            mult = globalMathFloor(Math.random() * 2);
+            mult = globalMathFloor(globalMathRandom() * 2);
             if ($.isZero(mult)) {
                 mult = -1;
             }
 
-            val = globalMathFloor(Math.random() * $.UNSAFE_INTEGER) * mult;
+            val = globalMathFloor(globalMathRandom() * $.UNSAFE_INTEGER) * mult;
         } else {
-            val = globalMathFloor(Math.random() * (max - min + 1) + min);
+            val = globalMathFloor(globalMathRandom() * (max - min + 1) + min);
         }
 
         return val;
@@ -2972,7 +2973,7 @@
         if ($.lt(length, 2)) {
             val = $.arraySlice(array);
         } else {
-            middle = globalMathMCeil(length / 2);
+            middle = globalMathCeil(length / 2);
             val = merge(mergeSort($.arraySlice(array, $.POSITIVE_ZERO, middle), comparefn),
                          mergeSort($.arraySlice(array, middle), comparefn), comparefn);
         }
@@ -3207,7 +3208,7 @@
                     if ($.gte(fromIndex, $.POSITIVE_ZERO)) {
                         start = fromIndex;
                     } else {
-                        start = length - globalMathMAbs(fromIndex);
+                        start = length - globalMathAbs(fromIndex);
                     }
 
                     if ($.lt(start, $.POSITIVE_ZERO)) {
@@ -4711,6 +4712,7 @@
     function factory() {
         var utilx = $.extend({}, $);
 
+        /*
         // set the properties of utilx to not enumerable
         $.arrayForEach($.objectKeys(utilx), function (key) {
             $.objectDefineProperty(utilx, key, notEnumerableProperties);
@@ -4772,6 +4774,7 @@
 
             EPSILON: constantProperties
         });
+        */
 
         return utilx;
     }
