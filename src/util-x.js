@@ -3305,7 +3305,7 @@
 
                 if (definePropertyPatch3 && !isB) {
                     console.log('# PATCH3:' + object + ' : ' + property + ' : ' + object[property]);
-                    descriptor[valueString] = object[property];
+                    //descriptor[valueString] = object[property];
                 }
 
                 return definePropertyFN(object, property, descriptor);
