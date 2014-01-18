@@ -3323,10 +3323,24 @@
         };
 
         $.arrayForEach($.objectKeys(testObject1), function (key) {
-            if (!$.objectDefineProperty(testObject1, key, notEnumerableProperties)) {
-                throw new Error();
-            }
+            $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
+
+        if ($.notStrictEqual(testObject1.abc, 0)) {
+            throw new Error();
+        }
+
+        if ($.notStrictEqual(testObject1.def, '')) {
+            throw new Error();
+        }
+
+        if ($.notStrictEqual(testObject1.ghi, true)) {
+            throw new Error();
+        }
+
+        if ($.notStrictEqual(testObject1.jkl, $.noop)) {
+            throw new Error();
+        }
     } catch (e) {
         $.objectDefineProperty = function (object, property, descriptor) {
             console.log('# SHIM');
