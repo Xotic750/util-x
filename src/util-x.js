@@ -44,9 +44,9 @@
         objectCreateFN = CtrObject.create,
         getOwnPropDescFN = CtrObject.getOwnPropertyDescriptor,
         definePropertyFN = CtrObject.defineProperty,
-        definePropertyCustom,
-        definePropertyCustom1,
-        definePropertyCustom2,
+        definePropertyPatch1,
+        definePropertyPatch2,
+        definePropertyPatch3,
         freezeObject,
 
         baseArray = [],
@@ -3261,26 +3261,13 @@
             if (!$.isNull(testValue[1])) {
                 throw new Error('Fails integer check');
             }
-
-            definePropertyCustom = definePropertyFN;
         } catch (e) {
-            definePropertyCustom = function (object, property, descriptor) {
-                console.log('# PATCH1');
-                if (isArrayOrArguments(object) &&
-                        $.isString(property) && !$.isEmptyString(property) &&
-                        !$.isDigits(property) &&
-                        $.numberIsInteger($.toNumber(property))) {
-
-                    property = $.toNumber(property).toString();
-                }
-
-                return definePropertyFN(object, property, descriptor);
-            };
+            definePropertyPatch1 = true;
         }
 
         // Test assign to array
         try {
-            testObject1 = definePropertyCustom([], '0', {
+            testObject1 = definePropertyFN([], '0', {
                 value: null
             });
 
@@ -3288,57 +3275,54 @@
                 throw new Error('Fails array check');
             }
         } catch (e) {
-            definePropertyCustom1 = definePropertyCustom;
-            definePropertyCustom = function (object, property, descriptor) {
-                console.log('# PATCH2');
-                if (isArrayOrArguments(object) &&
-                        (($.isNumber(property) && $.numberIsInteger(property)) ||
-                         $.isDigits(property) ||
-                         ($.isStringNotEmpty(property) &&
-                            $.numberIsInteger($.toNumber(property))))) {
-
-                    if ($.objectHasOwnProperty(descriptor, valueString) ||
-                            !$.objectHasOwnProperty(object, property)) {
-
-                        $.arrayAssign(object, property, descriptor[valueString]);
-                    }
-                }
-
-                return definePropertyCustom1(object, property, descriptor);
-            };
+            definePropertyPatch2 = true;
         }
 
         // Test overwrite array property when no value defined
         try {
-            testObject1 = definePropertyCustom([10], '0', {});
+            testObject1 = definePropertyFN([10], '0', {});
             if ($.notStrictEqual(testObject1[$.POSITIVE_ZERO], 10)) {
                 throw new Error('Fails overwrite check');
             }
         } catch (e) {
-            definePropertyCustom2 = definePropertyCustom;
-            definePropertyCustom = function (object, property, descriptor) {
-                console.log('# PATCH3');
-                if (!$.objectHasOwnProperty(descriptor, valueString)) {
+            definePropertyPatch3 = true;
+        }
+
+        if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
+            $.objectDefineProperty = function (object, property, descriptor) {
+                var isA = (definePropertyPatch1 || definePropertyPatch2) && isArrayOrArguments(object) &&
+                            $.isNumeric(property) && $.isUint32($.toNumber(property)),
+                    isB = (definePropertyPatch1 || definePropertyPatch2) &&
+                            $.objectHasOwnProperty(descriptor, valueString);
+
+                if (definePropertyPatch1 && isA) {
+                    console.log('# PATCH1');
+                    property = $.toNumber(property).toString();
+                }
+
+                if (definePropertyPatch2 && isA && (isB || !$.objectHasOwnProperty(object, property))) {
+                    console.log('# PATCH2');
+                    $.arrayAssign(object, property, descriptor[valueString]);
+                }
+
+                if (definePropertyPatch3 && !isB) {
+                    console.log('# PATCH3');
                     descriptor[valueString] = object[property];
                 }
 
-                return definePropertyCustom2(object, property, descriptor);
+                return definePropertyFN(object, property, descriptor);
             };
+        } else {
+            $.objectDefineProperty = definePropertyFN;
         }
-    } catch (ignore) {}
-
-    if ($.isFunction(definePropertyCustom)) {
-        $.objectDefineProperty = definePropertyCustom;
-    } else {
+    } catch (e) {
         $.objectDefineProperty = function (object, property, descriptor) {
-            console.log('# SHIM');
             throwIfIsNotTypeObjectOrIsNotFunction(object);
             if (!isTypeObjectOrIsFunction(descriptor)) {
                 throw new TypeError('Property description must be an object: ' + $.anyToString(descriptor));
             }
 
-            if ($.objectHasOwnProperty(descriptor, valueString) &&
-                    ($.objectHasOwnProperty(descriptor, getString) ||
+            if ($.objectHasOwnProperty(descriptor, valueString) && ($.objectHasOwnProperty(descriptor, getString) ||
                         $.objectHasOwnProperty(descriptor, setString))) {
 
                 throw new TypeError('Invalid property. A property cannot have accessors and a value');
@@ -3346,22 +3330,12 @@
 
             var prototype;
 
-            if (!$.objectHasOwnProperty(descriptor, getString) &&
-                    !$.objectHasOwnProperty(descriptor, setString)) {
-
-                if ($.objectHasOwnProperty(descriptor, valueString) ||
-                        !$.objectHasOwnProperty(object, property)) {
-
+            if (!$.objectHasOwnProperty(descriptor, getString) && !$.objectHasOwnProperty(descriptor, setString)) {
+                if ($.objectHasOwnProperty(descriptor, valueString) || !$.objectHasOwnProperty(object, property)) {
                     if ($.isNull($.objectGetPrototypeOf(baseObject)[protoName])) {
-                        console.log('# __PROTO__');
                         prototype = object[protoName];
                         object[protoName] = $.objectGetPrototypeOf(baseObject);
-                        if (isArrayOrArguments(object) &&
-                                (($.isNumber(property) && $.numberIsInteger(property)) ||
-                                 $.isDigits(property) ||
-                                 ($.isStringNotEmpty(property) &&
-                                    $.numberIsInteger($.toNumber(property))))) {
-
+                        if (isArrayOrArguments(object) && $.isNumeric(property) && $.isUint32($.toNumber(property))) {
                             $.arrayAssign(object, property, descriptor[valueString]);
                         } else {
                             delete object[property];
@@ -3374,13 +3348,7 @@
                             object[protoName] = prototype;
                         }
                     } else {
-                        console.log('# BASIC');
-                        if (isArrayOrArguments(object) &&
-                                (($.isNumber(property) && $.numberIsInteger(property)) ||
-                                 $.isDigits(property) ||
-                                 ($.isStringNotEmpty(property) &&
-                                    $.numberIsInteger($.toNumber(property))))) {
-
+                        if (isArrayOrArguments(object) && $.isNumeric(property) && $.isUint32($.toNumber(property))) {
                             $.arrayAssign(object, property, descriptor[valueString]);
                         } else {
                             object[property] = descriptor[valueString];
@@ -3388,7 +3356,6 @@
                     }
                 }
             } else {
-                console.log('# GET/SET');
                 if (!$.isFunction(defineGetterFN) || !$.isFunction(defineSetterFN)) {
                     throw new TypeError('getters & setters can not be defined on this javascript engine');
                 }
@@ -4720,7 +4687,6 @@
     function factory() {
         var utilx = $.extend({}, $);
 
-        /*
         // set the properties of utilx to not enumerable
         $.arrayForEach($.objectKeys(utilx), function (key) {
             $.objectDefineProperty(utilx, key, notEnumerableProperties);
@@ -4782,7 +4748,6 @@
 
             EPSILON: constantProperties
         });
-        */
 
         return utilx;
     }
