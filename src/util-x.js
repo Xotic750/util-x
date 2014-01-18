@@ -3256,7 +3256,6 @@
     // http://ecma-international.org/ecma-262/5.1/#sec-15.2.3.6
     // Create our own local "defineProperty" function: native -> sham
     // named $.objectDefineProperty instead of defineProperty because of SpiderMonkey and Blackberry bug
-    /*global console */
     try {
         testObject1 = definePropertyFN({}, sentinelString, {
             value: null
@@ -3357,7 +3356,6 @@
         }
     } catch (e) {
         $.objectDefineProperty = function (object, property, descriptor) {
-            console.log('# SHIM');
             throwIfIsNotTypeObjectOrIsNotFunction(object);
             if (!isTypeObjectOrIsFunction(descriptor)) {
                 throw new TypeError('Property description must be an object: ' + $.anyToString(descriptor));
