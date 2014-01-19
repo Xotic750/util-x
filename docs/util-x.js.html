@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.84
+ * @version 0.0.85
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -1776,102 +1776,134 @@
      * Splits a String object into an array of strings by separating the string into substrings.
      * @memberOf utilx
      * @function
-     * @param {string} stringifyToString
+     * @param {string} stringArg
      * @param {string} [separator]
      * @param {number} [limit]
      * @return {array.&lt;string>}
      */
-    compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
     // named $.stringSplit instead of split because of SpiderMonkey and Blackberry bug
-    $.stringSplit = function (stringifyToString, separator, limit) {
-        var string = onlyCoercibleToString(stringifyToString),
-            output,
-            flags,
-            lastLastIndex,
-            separator2,
-            match,
-            lastIndex,
-            lastLength,
-            val;
+    if (
+        'ab'.split(new RegExp('(?:ab)*')).length !== 2 ||
+        '.'.split(new RegExp('(.?)(.?)')).length !== 4 ||
+        'tesst'.split(new RegExp('(s)*'))[1] === 't' ||
+        ''.split(new RegExp('.?')).length ||
+        '.'.split(new RegExp('()()')).length > 1
+    ) {
+        compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
+        $.stringSplit = function (stringArg, separator, limit) {
+            var string = onlyCoercibleToString(stringArg),
+                output,
+                flags,
+                lastLastIndex,
+                separator2,
+                match,
+                lastIndex,
+                lastLength,
+                val;
 
-        if ($.isRegExp(separator)) {
-            flags = 'g';
-            if (separator.ignoreCase) {
-                flags += 'i';
-            }
-
-            if (separator.multiline) {
-                flags += 'm';
-            }
-
-            if (separator.extended) {
-                flags += 'x';
-            }
-
-            if (separator.sticky) {
-                flags += 'y';
-            }
-
-            separator = new RegExp(separator.source, flags);
-            if ($.isFalse(compliantExecNpcg)) {
-                separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
-            }
-
-            if ($.isUndefined(limit)) {
-                limit = $.MAX_UINT32;
-            } else {
-                limit = clampInteger(limit, $.POSITIVE_ZERO, $.MAX_UINT32);
-            }
-
-            output = [];
-            flags = 'g';
-            lastLastIndex = $.POSITIVE_ZERO;
-            match = separator.exec(string);
-            while (match) {
-                lastIndex = match.index + $.arrayFirst(match).length;
-                if ($.gt(lastIndex, lastLastIndex)) {
-                    $.arrayPush(output, string.slice(lastLastIndex, match.index));
-                    if ($.isFalse(compliantExecNpcg) &amp;&amp; $.gt(match.length, 1)) {
-                        stringSplitReplacer(separator2, match, arguments);
-                    }
-
-                    if ($.gt(match.length, 1) &amp;&amp; $.lt(match.index, string.length)) {
-                        output = output.concat(match.slice(1));
-                    }
-
-                    lastLength = $.arrayFirst(match).length;
-                    lastLastIndex = lastIndex;
-                    if ($.gte(output.length, limit)) {
-                        break;
-                    }
+            if ($.isRegExp(separator)) {
+                flags = 'g';
+                if (separator.ignoreCase) {
+                    flags += 'i';
                 }
 
-                if ($.strictEqual(separator.lastIndex, match.index)) {
-                    separator.lastIndex += 1;
+                if (separator.multiline) {
+                    flags += 'm';
                 }
 
+                if (separator.extended) {
+                    flags += 'x';
+                }
+
+                if (separator.sticky) {
+                    flags += 'y';
+                }
+
+                separator = new RegExp(separator.source, flags);
+                if ($.isFalse(compliantExecNpcg)) {
+                    separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
+                }
+
+                if ($.isUndefined(limit)) {
+                    limit = $.MAX_UINT32;
+                } else {
+                    limit = clampInteger(limit, $.POSITIVE_ZERO, $.MAX_UINT32);
+                }
+
+                output = [];
+                flags = 'g';
+                lastLastIndex = $.POSITIVE_ZERO;
                 match = separator.exec(string);
-            }
+                while (match) {
+                    lastIndex = match.index + $.arrayFirst(match).length;
+                    if ($.gt(lastIndex, lastLastIndex)) {
+                        $.arrayPush(output, string.slice(lastLastIndex, match.index));
+                        if ($.isFalse(compliantExecNpcg) &amp;&amp; $.gt(match.length, 1)) {
+                            stringSplitReplacer(separator2, match, arguments);
+                        }
 
-            if ($.strictEqual(lastLastIndex, string.length)) {
-                if (lastLength || !separator.test(emptyString)) {
-                    $.arrayPush(output, emptyString);
+                        if ($.gt(match.length, 1) &amp;&amp; $.lt(match.index, string.length)) {
+                            output = output.concat(match.slice(1));
+                        }
+
+                        lastLength = $.arrayFirst(match).length;
+                        lastLastIndex = lastIndex;
+                        if ($.gte(output.length, limit)) {
+                            break;
+                        }
+                    }
+
+                    if ($.strictEqual(separator.lastIndex, match.index)) {
+                        separator.lastIndex += 1;
+                    }
+
+                    match = separator.exec(string);
                 }
+
+                if ($.strictEqual(lastLastIndex, string.length)) {
+                    if (lastLength || !separator.test(emptyString)) {
+                        $.arrayPush(output, emptyString);
+                    }
+                } else {
+                    $.arrayPush(output, string.slice(lastLastIndex));
+                }
+
+                if ($.gt(output.length, limit)) {
+                    return output.slice($.POSITIVE_ZERO, limit);
+                }
+
+                val = output;
             } else {
-                $.arrayPush(output, string.slice(lastLastIndex));
+                val = splitFN.apply(stringArg, $.arraySlice(arguments, 1));
             }
 
-            if ($.gt(output.length, limit)) {
-                return output.slice($.POSITIVE_ZERO, limit);
+            return val;
+        };
+    // [bugfix, chrome]
+    // If separator is undefined, then the result array contains just one String,
+    // which is the this value (converted to a String). If limit is not undefined,
+    // then the output array is truncated so that it contains no more than limit
+    // elements.
+    // "0".split(undefined, 0) -> []
+    } else if (!$.isZero(splitFN.call('0', $.privateUndefined, 0).length)) {
+        $.stringSplit = function (stringArg, separator, limit) {
+            var val;
+
+            if ($.isUndefined(separator) &amp;&amp; $.isZero(limit)) {
+                val = [];
+            } else {
+                val = splitFN.apply(stringArg, $.arraySlice(arguments, 1));
             }
 
-            val = output;
-        } else {
-            val = splitFN.call(stringifyToString, separator, limit);
-        }
-
-        return val;
-    };
+            return val;
+        };
+    } else {
+        /* jshint -W098 */
+        $.stringSplit = function (stringArg, separator, limit) {
+            return splitFN.apply(stringArg, $.arraySlice(arguments, 1));
+        };
+        /* jshint +W098 */
+    }
 
     /**
      * Coerces its argument to a string and returns the first character of that string.
@@ -4934,7 +4966,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Sun Jan 19 2014 09:05:12 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Sun Jan 19 2014 11:28:58 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
