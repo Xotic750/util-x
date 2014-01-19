@@ -132,7 +132,7 @@
         it('should set first argument to 0 if first argument is set but undefined', function () {
             test = utilx.arraySlice(a, 0);
 
-            var test2 = test.slice(0);
+            var test2 = utilx.arraySlice(test, 0);
 
             expect(utilx.arraySplice(test, utilx.privateUndefined, 2)).to.eql(test2.splice(0, 2));
             expect(test).to.eql(test2);

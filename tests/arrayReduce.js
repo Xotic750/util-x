@@ -1,6 +1,6 @@
-/*global require, describe, it */
+/*global require, describe, it, beforeEach */
 
-(function (privateUndefined) {
+(function () {
     'use strict';
 
     var required = require('../scripts/'),
@@ -8,75 +8,106 @@
         expect = required.expect;
 
     describe('arrayReduce', function () {
-        var lastIndex = Math.pow(2, 32) - 1,
-            reduceArray = [0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, privateUndefined, null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity],
-            testIndex;
+        var testSubject;
 
-        reduceArray[24] = NaN;
-        reduceArray[25] = 'end';
-        it('should not throw an error in each case', function () {
-            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-                expect(array).to.be(reduceArray);
-                expect(typeof index).to.be('number');
-                expect(index >= 0).to.be(true);
-                expect(index <= lastIndex).to.be(true);
-                if (typeof element === 'number' && isNaN(element)) {
-                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
-                } else {
-                    expect(element).to.be(reduceArray[index]);
+        beforeEach(function () {
+            testSubject = [1, 2, 3];
+        });
+
+        it('should pass the right parameters', function () {
+            var array = ['1'];
+
+            utilx.arrayReduce(array, function (prev, item, index, list) {
+                expect(prev).to.be('');
+                expect(item).to.be('1');
+                expect(index).to.be(0);
+                expect(list).to.be(array);
+            }, '');
+        });
+
+        it('should start with the right initialValue', function () {
+            var array = ['1'];
+
+            utilx.arrayReduce(array, function (prev, item, index, list) {
+                expect(prev).to.be(10);
+                expect(item).to.be('1');
+                expect(index).to.be(0);
+                expect(list).to.be(array);
+            }, 10);
+        });
+
+
+        it('should not affect elements added to the array after it has begun', function () {
+            var arr = [1, 2, 3],
+                i = 0;
+
+            utilx.arrayReduce(arr, function (a, b) {
+                i += 1;
+                if (utilx.lte(i, 4)) {
+                    utilx.arrayPush(arr, a + 3);
                 }
 
-                testIndex = index;
-                if (element === privateUndefined || null === element) {
-                    return previous;
+                return b;
+            });
+
+            expect(arr).to.eql([1, 2, 3, 4, 5]);
+            expect(i).to.be(2);
+        });
+
+        it('should work as expected for empty arrays', function () {
+            expect(function () {
+                utilx.arrayReduce([], function () {
+                    throw new Error('function should not be called!');
+                });
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw correctly if no callback is given', function () {
+            expect(function () {
+                utilx.arrayReduce([]);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should return the expected result', function () {
+            expect(utilx.arrayReduce(testSubject, function (a, b) {
+                return (a || '').toString() + (b || '').toString();
+            })).to.eql(utilx.arrayJoin(testSubject, ''));
+        });
+
+        it('should not directly affect the passed array', function () {
+            var copy = utilx.arraySlice(testSubject);
+
+            utilx.arrayReduce(testSubject, function (a, b) {
+                return a + b;
+            });
+
+            expect(testSubject).to.eql(copy);
+        });
+
+        it('should skip non-set values', function () {
+            delete testSubject[1];
+            var visited = {};
+
+            utilx.arrayReduce(testSubject, function (a, b) {
+                if (a) {
+                    visited[a] = true;
                 }
 
-                return previous + ',' + element;
-            })).to.be('undefined,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
-
-            expect(testIndex).to.be(reduceArray.length - 1);
-
-            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-                expect(array).to.be(reduceArray);
-                expect(typeof index).to.be('number');
-                expect(index >= 0).to.be(true);
-                expect(index <= lastIndex).to.be(true);
-                if (typeof element === 'number' && isNaN(element)) {
-                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
-                } else {
-                    expect(element).to.be(reduceArray[index]);
+                if (b) {
+                    visited[b] = true;
                 }
 
-                testIndex = index;
-                if (element === privateUndefined || null === element) {
-                    return previous;
-                }
+                return 0;
+            });
 
-                return previous + ',' + element;
-            }, null)).to.be('null,' + reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
-
-            expect(testIndex).to.be(reduceArray.length - 1);
-
-            expect(utilx.arrayReduce(reduceArray, function (previous, element, index, array) {
-                expect(array).to.be(reduceArray);
-                expect(typeof index).to.be('number');
-                expect(index >= 0).to.be(true);
-                expect(index <= lastIndex).to.be(true);
-                if (typeof element === 'number' && isNaN(element)) {
-                    expect(typeof reduceArray[index] === 'number' && isNaN(reduceArray[index])).to.be(true);
-                } else {
-                    expect(element).to.be(reduceArray[index]);
-                }
-
-                testIndex = index;
-                if (element === privateUndefined || null === element) {
-                    return previous;
-                }
-
-                return previous + ',' + element;
-            }, '').slice(1)).to.be(reduceArray.toString().replace(new RegExp(',+', 'g'), ','));
-
-            expect(testIndex).to.be(reduceArray.length - 1);
+            expect(visited).to.eql({
+                '1': true,
+                '3': true
+            });
         });
     });
 }());
