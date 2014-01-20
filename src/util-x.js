@@ -82,6 +82,13 @@
         baseBoolean = true,
         CtrBoolean = baseBoolean.constructor,
 
+        baseFunction = function () {
+            return;
+        },
+        tostringFnFN = baseFunction.toString,
+        CtrFunction = baseFunction.constructor,
+        noNewCtrFunction = CtrFunction,
+
         globalIsNaN = isNaN,
         globalIsFinite = isFinite,
         globalMathSign = Math.sign,
@@ -140,6 +147,7 @@
         rxNotDigits = new RegExp('^\\d+$'),
         rxTest = new RegExp(testString),
         rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
+        rxBeginsFunction = new RegExp('^\\s*\\bfunction\\b'),
         wsTrimRX,
 
         constantProperties = {
@@ -1019,6 +1027,62 @@
     };
 
     /**
+     * Returns true if the operand inputArg is a native Function in IE.
+     * @private
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    function isIENativeFunction(inputArg) {
+        // $.toBoolean(inputArg)
+        // we want return true or false
+
+        // $.isUndefined(inputArg.toString)
+        // native functions do not
+        // contain a toString callback
+        // as is for every user defined
+        // function or object, even if deleted
+        // so next step is a "safe" destructuration
+        // assumption
+
+        // rxBeginsFunction.test(inputArg)
+        // we are looking for a function
+        // and IE shows them with function
+        // as first word. Eventually
+        // there could be a space
+        // (never happened, it does not hurt anyway)
+
+        return $.toBoolean(inputArg) && $.isUndefined(inputArg.toString) && rxBeginsFunction.test(inputArg);
+    }
+
+    /**
+     * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
+     * @private
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    function isNativeFunction(inputArg) {
+        var val = false,
+            ownToString = inputArg.toString;
+
+        try {
+            // no execution
+            // just an error if it is native
+            // every browser manifest native
+            // functions with some weird char
+            // that cannot be evaluated [native]
+            /*jslint evil: true */
+            noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
+            /*jslint evil: false */
+        } catch (e) {
+            val = true;
+        }
+
+        return val;
+    }
+
+    /**
      * Returns true if the operand inputArg is a Function.
      * @memberOf utilx
      * @function
@@ -1030,6 +1094,76 @@
             ($.strictEqual(typeof inputArg, functionName) &&
              $.strictEqual(typeof inputArg.call, functionName) &&
              $.strictEqual(typeof inputArg.apply, functionName));
+    };
+
+    /**
+     * Returns true if the operand inputArg is a Function.
+     * @memberOf utilx
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    $.isFunction2 = (function () {
+        var isFunc,
+            isFunction;
+
+        function test(f) {
+            // it should be a function in any case
+            // before we try to pass it to
+            // Function.prototype.toString
+            return isFunc(f, false) && isNativeFunction(f);
+        }
+
+        try {
+            // native function cannot be passed
+            // to native Function.prototype.toString
+            // as scope to evaluate ... only IE, sure
+            tostringFnFN.call(globalThis.alert);
+            tostringFnFN.call(globalIsNaN);
+            tostringFnFN.call(globalIsFinite);
+            tostringFnFN.call(globalMathMin);
+            // this function is for every other browser
+            isFunc = function (f, n) {
+                var val;
+
+                if ($.isFalse(n)) {
+                    val = $.strictEqual($.toObjectString(f), functionString);
+                } else {
+                    val = test(f);
+                }
+
+                return val;
+            };
+        } catch (e) {
+            isFunc = function (f, n) {
+                var val;
+
+                if ($.isFalse(n)) {
+                    val = $.strictEqual($.toObjectString(f), functionString);
+                } else {
+                    val = isIENativeFunction(f) || test(f);
+                }
+
+                return val;
+            };
+        }
+
+        isFunction = function (f) {
+            return isFunc(f, false) || isFunc(f, true);
+        };
+
+        return isFunction;
+    }());
+
+    /**
+     * Returns true if the operand inputArg is a native Function.
+     * @memberOf utilx
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    $.isNativeFunction = function (inputArg) {
+        return $.isFunction2(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
     };
 
     /**
