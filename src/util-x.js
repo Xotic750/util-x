@@ -167,6 +167,7 @@
         testValue,
         shouldSplitString,
         isOkToUseOtherErrors,
+        stringSplitReplacer,
 
         // JSON compliance result
         isSupportedResult,
@@ -1676,13 +1677,17 @@
      * @return {number}
      */
     // named $.arrayPush instead of push because of SpiderMonkey and Blackberry bug
-    $.arrayPush = function (array) {
-        $.arrayForEach($.arraySlice(arguments, 1), function (argument) {
-            baseArray.push.call(array, argument);
-        });
+    if ($.strictEqual(baseArray.push.call([], 0), 1)) {
+        $.arrayPush = function (array) {
+            return baseArray.push.apply(array, $.arraySlice(arguments, 1));
+        };
+    } else {
+        $.arrayPush = function (array) {
+            baseArray.push.apply(array, $.arraySlice(arguments, 1));
 
-        return array.length;
-    };
+            return array.length;
+        };
+    }
 
     /**
      * The arrayUnshift() method adds one or more elements to the beginning of an array and
@@ -1694,32 +1699,16 @@
      * @return {number}
      */
     // named $.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
-    $.arrayUnshift = function (array) {
-        $.arrayForEach($.arraySlice(arguments, 1).reverse(), function (argument) {
-            baseArray.unshift.call(array, argument);
-        });
+    if ($.strictEqual(baseArray.unshift.call([], 0), 1)) {
+        $.arrayUnshift = function (array) {
+            return baseArray.unshift.apply(array, $.arraySlice(arguments, 1));
+        };
+    } else {
+        $.arrayUnshift = function (array) {
+            baseArray.unshift.apply(array, $.arraySlice(arguments, 1));
 
-        return array.length;
-    };
-
-    /**
-     * @private
-     * @function
-     * @param {regexp} separator
-     * @param {array} match
-     * @param {arguments} args
-     */
-    function stringSplitReplacer(separator, match, args) {
-        var length = args.length - 2,
-            index;
-
-        $.arrayFirst(match).replace(separator, function () {
-            for (index = 1; $.lt(index, length); index += 1) {
-                if ($.isUndefined(arguments[index])) {
-                    $.arrayAssign(match, index, $.privateUndefined);
-                }
-            }
-        });
+            return array.length;
+        };
     }
 
     /**
@@ -1749,6 +1738,7 @@
     /**
      * Splits a String object into an array of strings by separating the string into substrings.
      * @memberOf utilx
+     * @name stringSplit
      * @function
      * @param {string} stringArg
      * @param {string} [separator]
@@ -1762,10 +1752,33 @@
             !$.isZero(splitFN.call(emptyString, new RegExp('.?')).length) ||
             $.gt(splitFN.call(dotString, new RegExp('()()')).length, 1)) {
 
+        /**
+         * @private
+         * @function
+         * @param {regexp} separator
+         * @param {array} match
+         * @param {arguments} args
+         */
+        stringSplitReplacer = function (separator, match, args) {
+            var length = args.length - 2,
+                index;
+
+            $.arrayFirst(match).replace(separator, function () {
+                for (index = 1; $.lt(index, length); index += 1) {
+                    if ($.isUndefined(arguments[index])) {
+                        $.arrayAssign(match, index, $.privateUndefined);
+                    }
+                }
+            });
+        };
+
+        /**
+         * @private
+         * @type {boolean}
+         */
         compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
         $.stringSplit = function (stringArg, separator, limit) {
             var string = onlyCoercibleToString(stringArg),
-                output,
                 flags,
                 lastLastIndex,
                 separator2,
@@ -1806,25 +1819,24 @@
                     limit = $.toUint32(limit);
                 }
 
-                output = [];
-                flags = 'g';
+                val = [];
                 lastLastIndex = $.POSITIVE_ZERO;
                 match = separator.exec(string);
                 while (match) {
                     lastIndex = match.index + $.arrayFirst(match).length;
                     if ($.gt(lastIndex, lastLastIndex)) {
-                        $.arrayPush(output, string.slice(lastLastIndex, match.index));
+                        $.arrayPush(val, string.slice(lastLastIndex, match.index));
                         if ($.isFalse(compliantExecNpcg) && $.gt(match.length, 1)) {
                             stringSplitReplacer(separator2, match, arguments);
                         }
 
                         if ($.gt(match.length, 1) && $.lt(match.index, string.length)) {
-                            output = output.concat(match.slice(1));
+                            val = val.concat(match.slice(1));
                         }
 
                         lastLength = $.arrayFirst(match).length;
                         lastLastIndex = lastIndex;
-                        if ($.gte(output.length, limit)) {
+                        if ($.gte(val.length, limit)) {
                             break;
                         }
                     }
@@ -1838,24 +1850,21 @@
 
                 if ($.strictEqual(lastLastIndex, string.length)) {
                     if (lastLength || !separator.test(emptyString)) {
-                        $.arrayPush(output, emptyString);
+                        $.arrayPush(val, emptyString);
                     }
                 } else {
-                    $.arrayPush(output, string.slice(lastLastIndex));
+                    $.arrayPush(val, string.slice(lastLastIndex));
                 }
 
-                if ($.gt(output.length, limit)) {
-                    return output.slice($.POSITIVE_ZERO, limit);
+                if ($.gt(val.length, limit)) {
+                    val = val.slice($.POSITIVE_ZERO, limit);
                 }
-
-                val = output;
             } else {
                 val = splitFN.apply(string, $.arraySlice(arguments, 1));
             }
 
             return val;
         };
-
     } else {
         $.stringSplit = function (stringArg, separator, limit) {
             var val;
@@ -2646,9 +2655,21 @@
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
     if ($.isFunction(forEachFN)) {
-        $.arrayForEach = function (array, fn, thisArg) {
-            return forEachFN.call(array, fn, thisArg);
-        };
+        forEachFN.call('foo', function (item, index, list) {
+            /*jslint unparam: true */
+            /*jshint unused: true */
+            testObject1 = list;
+        });
+
+        if ($.isTypeObject(testObject1)) {
+            $.arrayForEach = function (array, fn, thisArg) {
+                return forEachFN.call(array, fn, thisArg);
+            };
+        } else {
+            $.arrayForEach = function (array, fn, thisArg) {
+                return forEachFN.call($.toObjectFixIndexedAccess(array), fn, thisArg);
+            };
+        }
     } else {
         $.arrayForEach = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
@@ -2677,9 +2698,21 @@
      */
     // named $.arraySome instead of some because of SpiderMonkey and Blackberry bug
     if ($.isFunction(someFN)) {
-        $.arraySome = function (array, fn, thisArg) {
-            return someFN.call(array, fn, thisArg);
-        };
+        someFN.call('foo', function (item, index, list) {
+            /*jslint unparam: true */
+            /*jshint unused: true */
+            testObject1 = list;
+        });
+
+        if ($.isTypeObject(testObject1)) {
+            $.arraySome = function (array, fn, thisArg) {
+                return someFN.call(array, fn, thisArg);
+            };
+        } else {
+            $.arraySome = function (array, fn, thisArg) {
+                return someFN.call($.toObjectFixIndexedAccess(array), fn, thisArg);
+            };
+        }
     } else {
         $.arraySome = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
