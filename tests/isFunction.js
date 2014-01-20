@@ -1,4 +1,4 @@
-/*global require, describe, it, alert, setInterval */
+/*global require, describe, it, window */
 
 (function (globalThis) {
     'use strict';
@@ -35,13 +35,13 @@
             expect(utilx.isFunction(Object)).to.be.ok();
             expect(utilx.isFunction(isNaN)).to.be.ok();
             expect(utilx.isFunction(isFinite)).to.be.ok();
-            if (!utilx.isUndefined(globalThis.alert)) {
-                expect(utilx.isFunction(globalThis.alert)).to.be.ok();
+            if (typeof window === 'object' && window.alert) {
+                expect(utilx.isFunction(window.alert)).to.be.ok();
             }
 
-            if (!utilx.isUndefined(globalThis.setInterval)) {
-                expect(utilx.isFunction(globalThis.setInterval)).to.be.ok();
+            if (typeof window === 'object' && window.setInterval) {
+                expect(utilx.isFunction(window.setInterval)).to.be.ok();
             }
         });
     });
-}(this));
+}());

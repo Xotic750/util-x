@@ -1,6 +1,6 @@
-/*global require, describe, it, alert, setInterval */
+/*global require, describe, it, window */
 
-(function (globalThis) {
+(function () {
     'use strict';
 
     var required = require('../scripts/'),
@@ -70,16 +70,16 @@
             expect(utilx.isNativeFunction(isFinite)).to.be.ok();
         });
 
-        if (!utilx.isUndefined(globalThis.alert)) {
+        if (typeof window === 'object' && window.alert) {
             it('alert should be ok', function () {
-                expect(utilx.isNativeFunction(globalThis.alert)).to.be.ok();
+                expect(utilx.isNativeFunction(window.alert)).to.be.ok();
             });
         }
 
-        if (!utilx.isUndefined(globalThis.setInterval)) {
+        if (typeof window === 'object' && window.setInterval) {
             it('setInterval constructor should be ok', function () {
-                expect(utilx.isNativeFunction(globalThis.setInterval)).to.be.ok();
+                expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
     });
-}(this));
+}());
