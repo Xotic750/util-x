@@ -1028,7 +1028,7 @@
     };
 
     /**
-     * Returns true if the operand inputArg is a native Function in IE.
+     * Returns true if the operand inputArg is a native Function in IE. Used by isFunction.
      * @private
      * @function
      * @param {*} inputArg
@@ -1058,6 +1058,7 @@
 
     /**
      * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
+     * Used by isFunction.
      * @private
      * @function
      * @param {*} inputArg
@@ -1090,11 +1091,25 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    function isFunctionTest(fn) {
+    function isFunctionBasic(inputArg) {
+        return $.strictEqual($.toObjectString(inputArg), functionString) ||
+            ($.strictEqual(typeof inputArg, functionName) &&
+             $.strictEqual(typeof inputArg.call, functionName) &&
+             $.strictEqual(typeof inputArg.apply, functionName));
+    }
+
+    /**
+     * Returns true if the operand inputArg is a Function. Used by isFunction.
+     * @private
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    function isFunctionExtended(inputArg) {
         // it should be a function in any case
         // before we try to pass it to
         // Function.prototype.toString
-        return isFunctionInternal(fn, false) && isNativeFunction(fn);
+        return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
     }
 
     try {
@@ -1106,25 +1121,25 @@
         tostringFnFN.call(globalIsFinite);
         tostringFnFN.call(globalMathMin);
         // this function is for every other browser
-        isFunctionInternal = function (fn, n) {
+        isFunctionInternal = function (inputArg, n) {
             var val;
 
             if ($.isFalse(n)) {
-                val = $.strictEqual($.toObjectString(fn), functionString);
+                val = isFunctionBasic(inputArg);
             } else {
-                val = isFunctionTest(fn);
+                val = isFunctionExtended(inputArg);
             }
 
             return val;
         };
     } catch (e) {
-        isFunctionInternal = function (fn, n) {
+        isFunctionInternal = function (inputArg, n) {
             var val;
 
             if ($.isFalse(n)) {
-                val = $.strictEqual($.toObjectString(fn), functionString);
+                val = isFunctionBasic(inputArg);
             } else {
-                val = isIENativeFunction(fn) || isFunctionTest(fn);
+                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
             }
 
             return val;
@@ -1138,18 +1153,9 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.isFunction = function (fn) {
-        return isFunctionInternal(fn, false) || isFunctionInternal(fn, true);
-    };
-
-    /*
     $.isFunction = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), functionString) ||
-            ($.strictEqual(typeof inputArg, functionName) &&
-             $.strictEqual(typeof inputArg.call, functionName) &&
-             $.strictEqual(typeof inputArg.apply, functionName));
+        return isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true);
     };
-    */
 
     /**
      * Returns true if the operand inputArg is a native Function.
