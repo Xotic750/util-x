@@ -8,7 +8,7 @@
         expect = required.expect;
 
     describe('isNativeFunction', function () {
-        it('should not throw an error in each case', function () {
+        it('non functions should be not ok in each case', function () {
             expect(utilx.isNativeFunction()).to.not.be.ok();
             expect(utilx.isNativeFunction(utilx.privateUndefined)).to.not.be.ok();
             expect(utilx.isNativeFunction(null)).to.not.be.ok();
@@ -18,28 +18,68 @@
             expect(utilx.isNativeFunction(new Error('x'))).to.not.be.ok();
             expect(utilx.isNativeFunction(new Date())).to.not.be.ok();
             expect(utilx.isNativeFunction(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.isNativeFunction(utilx.noop)).to.not.be.ok();
             expect(utilx.isNativeFunction([])).to.not.be.ok();
             expect(utilx.isNativeFunction({})).to.not.be.ok();
             expect(utilx.isNativeFunction(utilx.returnArgs())).to.not.be.ok();
         });
 
-        it('native functions should not throw an error in each case', function () {
-            expect(utilx.isNativeFunction(Error)).to.be.ok();
-            expect(utilx.isNativeFunction(Date)).to.be.ok();
-            expect(utilx.isNativeFunction(RegExp)).to.be.ok();
-            expect(utilx.isNativeFunction(Function)).to.be.ok();
-            expect(utilx.isNativeFunction(Boolean)).to.be.ok();
-            expect(utilx.isNativeFunction(Number)).to.be.ok();
-            expect(utilx.isNativeFunction(String)).to.be.ok();
-            expect(utilx.isNativeFunction(Object)).to.be.ok();
-            if (!utilx.isUndefined(globalThis.alert)) {
-                expect(utilx.isNativeFunction(globalThis.alert)).to.be.ok();
-            }
-
-            if (!utilx.isUndefined(globalThis.setInterval)) {
-                expect(utilx.isNativeFunction(globalThis.setInterval)).to.be.ok();
-            }
+        it('user functions should be not ok in each case', function () {
+            expect(utilx.isNativeFunction(utilx.noop)).to.not.be.ok();
+            expect(utilx.isNativeFunction(describe)).to.not.be.ok();
+            expect(utilx.isNativeFunction(expect)).to.not.be.ok();
+            expect(utilx.isNativeFunction(it)).to.not.be.ok();
         });
+
+        it('Error constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Error)).to.be.ok();
+        });
+
+        it('Date constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Date)).to.be.ok();
+        });
+
+        it('RegExp constructor should be ok', function () {
+            expect(utilx.isNativeFunction(RegExp)).to.be.ok();
+        });
+
+        it('Function constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Function)).to.be.ok();
+        });
+
+        it('Boolean constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Boolean)).to.be.ok();
+        });
+
+        it('Number constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Number)).to.be.ok();
+        });
+
+        it('String constructor should be ok', function () {
+            expect(utilx.isNativeFunction(String)).to.be.ok();
+        });
+
+        it('Object constructor should be ok', function () {
+            expect(utilx.isNativeFunction(Object)).to.be.ok();
+        });
+
+        it('isNaN should be ok', function () {
+            expect(utilx.isNativeFunction(isNaN)).to.be.ok();
+        });
+
+        it('isFinite should be ok', function () {
+            expect(utilx.isNativeFunction(isFinite)).to.be.ok();
+        });
+
+        if (!utilx.isUndefined(globalThis.alert)) {
+            it('alert should be ok', function () {
+                expect(utilx.isNativeFunction(globalThis.alert)).to.be.ok();
+            });
+        }
+
+        if (!utilx.isUndefined(globalThis.setInterval)) {
+            it('setInterval constructor should be ok', function () {
+                expect(utilx.isNativeFunction(globalThis.setInterval)).to.be.ok();
+            });
+        }
     });
 }(this));

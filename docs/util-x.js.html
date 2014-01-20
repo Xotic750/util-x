@@ -1253,7 +1253,7 @@
      * @return {boolean}
      */
     // named $.arrayIsArray instead of isArray because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isArrayFN)) {
+    if ($.isNativeFunction(isArrayFN)) {
         $.arrayIsArray = isArrayFN;
     } else {
         $.arrayIsArray = function (inputArg) {
@@ -1301,7 +1301,7 @@
      * @return {boolean}
      */
     // named $.objectIs instead of $.objectIs because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isIsFn)) {
+    if ($.isNativeFunction(isIsFn)) {
         $.objectIs = isIsFn;
     } else {
         $.objectIs = function (x, y) {
@@ -1426,7 +1426,7 @@
      * @return {boolean}
      */
     // named $.numberIsNaN instead of isNaN because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isNaNFN)) {
+    if ($.isNativeFunction(isNaNFN)) {
         $.numberIsNaN = isNaNFN;
     } else {
         $.numberIsNaN = function (number) {
@@ -1444,7 +1444,7 @@
      * @return {boolean}
      */
     // named $.numberIsFinite instead of isFinite because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isFiniteFN)) {
+    if ($.isNativeFunction(isFiniteFN)) {
         $.numberIsFinite = isFiniteFN;
     } else {
         $.numberIsFinite = function (number) {
@@ -1463,7 +1463,7 @@
      * @return {number}
      */
     // named mathSign instead of sign because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(globalMathSign)) {
+    if ($.isNativeFunction(globalMathSign)) {
         $.mathSign = globalMathSign;
     } else {
         $.mathSign = function nfeSign(value) {
@@ -1502,7 +1502,7 @@
      * @return {number}
      */
     // named $.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(toIntegerFN)) {
+    if ($.isNativeFunction(toIntegerFN)) {
         $.numberToInteger = toIntegerFN;
     } else {
         $.numberToInteger = function (inputArg) {
@@ -2186,7 +2186,7 @@
      * @return {string}
      */
     // named $.stringRepeat instead of repeat because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(repeatFN)) {
+    if ($.isNativeFunction(repeatFN)) {
         $.stringRepeat = function (string, times) {
             return repeatFN.call(string, times);
         };
@@ -2215,7 +2215,7 @@
      * @return {boolean}
      */
     // named stringStartsWith instead of startsWith because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(startsWithFN)) {
+    if ($.isNativeFunction(startsWithFN)) {
         $.stringStartsWith = function (string, searchString, position) {
             return startsWithFN.call(string, searchString, position);
         };
@@ -2241,7 +2241,7 @@
      * @return {boolean}
      */
     // named stringEndsWith instead of endsWith because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(endsWithFN)) {
+    if ($.isNativeFunction(endsWithFN)) {
         $.stringEndsWith = function (string, searchString, position) {
             return endsWithFN.call(string, searchString, position);
         };
@@ -2278,7 +2278,7 @@
      * @return {boolean}
      */
     // named $.stringContains instead of contains because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(containsFN)) {
+    if ($.isNativeFunction(containsFN)) {
         $.stringContains = function (string, searchString, position) {
             return containsFN.call(string, searchString, position);
         };
@@ -2308,7 +2308,7 @@
      * @return {Prototype}
      */
     // named $.objectGetPrototypeOf instead of getPrototypeOf because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(getPrototypeOfFN)) {
+    if ($.isNativeFunction(getPrototypeOfFN)) {
         $.objectGetPrototypeOf = function (object) {
             return getPrototypeOfFN(throwIfIsNotTypeObjectOrIsNotFunction(object));
         };
@@ -2421,7 +2421,7 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.isFunction(propertyIsEnumerableFN)) {
+    if ($.isNativeFunction(propertyIsEnumerableFN)) {
         if (hasDontEnumBug) {
             $.objectPropertyIsEnumerable = function (object, property) {
                 var val;
@@ -2476,7 +2476,7 @@
     // http://ecma-international.org/ecma-262/5.1/#sec-15.2.4.5
     // Create our own local "hasOwnProperty" function: native -> shim -> sham
     // named $.objectHasOwnProperty instead of hasOwnProperty because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(hasOwnPropertyFN)) {
+    if ($.isNativeFunction(hasOwnPropertyFN)) {
         if (hasDontEnumBug) {
             $.objectHasOwnProperty = function (object, property) {
                 return hasOwnPropertyFN.call(object, property) ||
@@ -2693,7 +2693,7 @@
      * @param {...*} [element]
      */
     // named $.arraySplice instead of arraySplice because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(spliceFN) &amp;&amp; $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
+    if ($.isNativeFunction(spliceFN) &amp;&amp; $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
         try {
             if ($.isZero(spliceFN.call([1, 2]).length)) {
                 $.arraySplice = function (array) {
@@ -2815,7 +2815,7 @@
      * @param {object} [thisArg]
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(forEachFN)) {
+    if ($.isNativeFunction(forEachFN)) {
         forEachFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
@@ -2858,7 +2858,7 @@
      * @return {boolean}
      */
     // named $.arraySome instead of some because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(someFN)) {
+    if ($.isNativeFunction(someFN)) {
         someFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
@@ -2906,7 +2906,7 @@
      * @return {array}
      */
     // named $.arrayMap instead of map because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(mapFN)) {
+    if ($.isNativeFunction(mapFN)) {
         $.arrayMap = function (array, fn, thisArg) {
             return mapFN.call(array, fn, thisArg);
         };
@@ -2967,7 +2967,7 @@
         sliceFN = $.privateUndefined;
     }
 
-    if ($.isFunction(sliceFN)) {
+    if ($.isNativeFunction(sliceFN)) {
         $.arraySlice = function (array, start, end) {
             return sliceFN.call(array, start, end);
         };
@@ -3025,7 +3025,7 @@
      * @return {array}
      */
     // named $.arrayFilter instead of filter because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(filterFN)) {
+    if ($.isNativeFunction(filterFN)) {
         $.arrayFilter = function (array, fn, thisArg) {
             return filterFN.call(array, fn, thisArg);
         };
@@ -3068,7 +3068,7 @@
      * @return {*}
      */
     // named $.arrayReduce instead of reduce because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(reduceFN)) {
+    if ($.isNativeFunction(reduceFN)) {
         /*jshint -W098 */
         $.arrayReduce = function (array, fn, initialValue) {
             return reduceFN.apply(array, $.arraySlice(arguments, 1));
@@ -3309,7 +3309,7 @@
      */
     // named $.stringTrim instead of trim because of SpiderMonkey and Blackberry bug
     try {
-        if ($.isFunction(trimFN) &amp;&amp;
+        if ($.isNativeFunction(trimFN) &amp;&amp;
                 $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, emptyString)).length)) {
 
             $.stringTrim = function (inputArg) {
@@ -3342,7 +3342,7 @@
     // http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.14
     // Create our own local "indexOf" function: native -> polyfill
     // named $.arrayIndexOf instead of indexOf because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], 1, 2), -1)) {
+    if ($.isNativeFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], 1, 2), -1)) {
         $.arrayIndexOf = function (array, searchElement, fromIndex) {
             return indexOfFN.call(array, searchElement, fromIndex);
         };
@@ -3395,7 +3395,7 @@
     // http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.15
     // Create our own local "lastIndexOf" function: native -> polyfill
     // named $.arrayLastIndexOf instead of indexOf because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], $.POSITIVE_ZERO, -3), -1)) {
+    if ($.isNativeFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], $.POSITIVE_ZERO, -3), -1)) {
         $.arrayLastIndexOf = function (array, searchElement, fromIndex) {
             return lastIndexOfFN.call(array, searchElement, fromIndex);
         };
@@ -3678,15 +3678,15 @@
                     }
                 }
             } else {
-                if (!$.isFunction(defineGetterFN) || !$.isFunction(defineSetterFN)) {
+                if (!$.isNativeFunction(defineGetterFN) || !$.isNativeFunction(defineSetterFN)) {
                     throw new TypeError('getters &amp; setters can not be defined on this javascript engine');
                 }
 
-                if ($.isFunction(descriptor[getString])) {
+                if ($.isNativeFunction(descriptor[getString])) {
                     defineGetterFN.call(object, property, descriptor[getString]);
                 }
 
-                if ($.isFunction(descriptor[setString])) {
+                if ($.isNativeFunction(descriptor[setString])) {
                     defineSetterFN.call(object, property, descriptor[setString]);
                 }
             }
@@ -3796,12 +3796,12 @@
                         object[protoName] = prototype;
                     }
 
-                    if ($.isFunction(getter) || $.isFunction(setter)) {
-                        if ($.isFunction(getter)) {
+                    if ($.isNativeFunction(getter) || $.isNativeFunction(setter)) {
+                        if ($.isNativeFunction(getter)) {
                             descriptor[getString] = getter;
                         }
 
-                        if ($.isFunction(setter)) {
+                        if ($.isNativeFunction(setter)) {
                             descriptor[setString] = setter;
                         }
                     }
@@ -3876,7 +3876,7 @@
      */
     // Create our own local "freeze" function: native -> sham
     // named $.objectFreeze instead of freeze because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(freezeFN)) {
+    if ($.isNativeFunction(freezeFN)) {
         $.objectFreeze = freezeFN;
     } else {
         $.objectFreeze = function (object) {
@@ -3916,7 +3916,7 @@
      */
     // Create our own local "isFrozen" function: native -> sham
     // named $.objectIsFrozen instead of isFrozen because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isFrozenFN)) {
+    if ($.isNativeFunction(isFrozenFN)) {
         $.objectIsFrozen = isFrozenFN;
     } else {
         $.objectIsFrozen = function (object) {
@@ -3956,7 +3956,7 @@
      * @return {boolean}
      */
     // named $.objectInstanceOf instead of instanceOf because of SpiderMonkey and Blackberry bug
-    if ($.isFunction(isPrototypeOfFN)) {
+    if ($.isNativeFunction(isPrototypeOfFN)) {
         $.objectInstanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
@@ -4633,11 +4633,11 @@
     };
 
     if ($.isTypeObject(JSON)) {
-        if ($.isFunction(JSON.parse)) {
+        if ($.isNativeFunction(JSON.parse)) {
             globalJsonParse = JSON.parse;
         }
 
-        if ($.isFunction(JSON.parse)) {
+        if ($.isNativeFunction(JSON.parse)) {
             globalJsonStringify = JSON.stringify;
         }
     }
@@ -4653,7 +4653,7 @@
      * @param {number} space
      * @return {string}
      */
-    if ($.isFunction(globalJsonStringify)) {
+    if ($.isNativeFunction(globalJsonStringify)) {
         // A test function object with a custom `toJSON` method.
         (function () {
             stringifiedValue = function () {
@@ -4898,7 +4898,7 @@
      */
     // Determines whether the (possibly native) `JSON.stringify` and `parse`
     // implementations are spec-compliant. Based on work by Ken Snyder.
-    if ($.isFunction(globalJsonParse)) {
+    if ($.isNativeFunction(globalJsonParse)) {
         try {
             // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
             // Conforming implementations should also coerce the initial argument to
@@ -5126,7 +5126,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 20 2014 12:17:35 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Mon Jan 20 2014 13:05:26 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

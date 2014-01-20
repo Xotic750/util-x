@@ -33,6 +33,8 @@
             expect(utilx.isFunction(Number)).to.be.ok();
             expect(utilx.isFunction(String)).to.be.ok();
             expect(utilx.isFunction(Object)).to.be.ok();
+            expect(utilx.isFunction(isNaN)).to.be.ok();
+            expect(utilx.isFunction(isFinite)).to.be.ok();
             if (!utilx.isUndefined(globalThis.alert)) {
                 expect(utilx.isFunction(globalThis.alert)).to.be.ok();
             }
