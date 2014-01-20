@@ -77,7 +77,7 @@
         }
 
         if (typeof window === 'object' && window.setInterval) {
-            it('setInterval constructor should be ok', function () {
+            it('setInterval should be ok', function () {
                 expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
