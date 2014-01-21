@@ -1027,8 +1027,8 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.toBoolean(globalIsNaN) && $.isUndefined(globalIsNaN.toString) &&
-            rxBeginsFunction.test(globalIsNaN.toString())) {
+    if ($.toBoolean(globalThis.alert) && $.isUndefined(globalThis.alert.toString) &&
+                rxBeginsFunction.test(globalThis.alert)) {
 
         isIENativeFunction = function (inputArg) {
             // $.toBoolean(inputArg)
@@ -1049,8 +1049,7 @@
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return $.toBoolean(inputArg) && $.isUndefined(inputArg.toString) &&
-                        rxBeginsFunction.test(inputArg.toString());
+            return $.toBoolean(inputArg) && $.isUndefined(inputArg.toString) && rxBeginsFunction.test(inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -1146,10 +1145,10 @@
         // native function cannot be passed
         // to native Function.prototype.toString
         // as scope to evaluate ... only IE, sure
-        tostringFnFN.call(globalThis.alert);
-        tostringFnFN.call(globalIsNaN);
-        tostringFnFN.call(globalIsFinite);
-        tostringFnFN.call(globalMathMin);
+        if ($.toBoolean(globalThis.alert)) {
+            tostringFnFN.call(globalThis.alert);
+        }
+
         // this function is for every other browser
         isFunctionInternal = function (inputArg, n) {
             var val;
@@ -5005,7 +5004,7 @@
                                      .replace(rxParseProtect4, emptyString))) {
 
                 /*jslint evil: true */
-                j = eval('(' + text + ')');
+                j = noNewCtrFunction('return (' + text + ');');
                 /*jslint evil: false */
 
                 if ($.isFunction(reviver)) {

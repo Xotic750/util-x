@@ -82,5 +82,19 @@
                 expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
+
+        it('only user functions should be ok in each case', function () {
+            expect(utilx.isFunction(utilx.noop) && !utilx.isNativeFunction(utilx.noop)).to.be.ok();
+            expect(utilx.isFunction(describe) && !utilx.isNativeFunction(describe)).to.be.ok();
+            expect(utilx.isFunction(expect) && !utilx.isNativeFunction(expect)).to.be.ok();
+            expect(utilx.isFunction(it) && !utilx.isNativeFunction(it)).to.be.ok();
+        });
+
+        it('only user functions should not be ok in each case', function () {
+            expect(utilx.isFunction(Error) && !utilx.isNativeFunction(Error)).to.not.be.ok();
+            expect(utilx.isFunction(Date) && !utilx.isNativeFunction(Date)).to.not.be.ok();
+            expect(utilx.isFunction(RegExp) && !utilx.isNativeFunction(RegExp)).to.not.be.ok();
+            expect(utilx.isFunction(Function) && !utilx.isNativeFunction(Function)).to.not.be.ok();
+        });
     });
 }());
