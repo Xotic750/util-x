@@ -1,4 +1,4 @@
-/*global require, describe, it, window, console */
+/*global require, describe, it, window */
 
 (function () {
     'use strict';
@@ -31,89 +31,54 @@
         });
 
         it('Error constructor should be ok', function () {
-            console.log('# Error:' + Error.toString());
             expect(utilx.isNativeFunction(Error)).to.be.ok();
         });
 
         it('Date constructor should be ok', function () {
-            console.log('# Date:' + Date.toString());
             expect(utilx.isNativeFunction(Date)).to.be.ok();
         });
 
         it('RegExp constructor should be ok', function () {
-            console.log('# RegExp:' + RegExp.toString());
             expect(utilx.isNativeFunction(RegExp)).to.be.ok();
         });
 
         it('Function constructor should be ok', function () {
-            console.log('# Function:' + Function.toString);
-            console.log('# Function:' + Function.toString());
-            console.log('# Function:' + Function.prototype.toString);
-            console.log('# Function:' + Function.prototype.toString());
-            console.log('# Function:' + Function.prototype.toString.call(Function));
-            console.log('# Function:' + Function.toString.call(Function));
-            try {
-                /*jslint evil: true */
-                /*jshint -W064 */
-                Function('return (' + Function.toString.call(Function) + ');');
-                /*jslint evil: false */
-                console.log('# Function: did not throw 1');
-            } catch (e) {
-                console.log('# Function: did throw 1');
-            }
-
-            try {
-                /*jslint evil: true */
-                eval('(' + Function.toString.call(Function) + ');');
-                /*jslint evil: false */
-                console.log('# Function: did not throw 2');
-            } catch (e) {
-                console.log('# Function: did throw 2');
-            }
 
             expect(utilx.isNativeFunction(Function)).to.be.ok();
         });
 
         it('Boolean constructor should be ok', function () {
-            console.log('# Boolean:' + Boolean.toString());
             expect(utilx.isNativeFunction(Boolean)).to.be.ok();
         });
 
         it('Number constructor should be ok', function () {
-            console.log('# Number:' + Number.toString());
             expect(utilx.isNativeFunction(Number)).to.be.ok();
         });
 
         it('String constructor should be ok', function () {
-            console.log('# String:' + String.toString());
             expect(utilx.isNativeFunction(String)).to.be.ok();
         });
 
         it('Object constructor should be ok', function () {
-            console.log('# Object:' + Object.toString());
             expect(utilx.isNativeFunction(Object)).to.be.ok();
         });
 
         it('isNaN should be ok', function () {
-            console.log('# isNaN:' + isNaN.toString());
             expect(utilx.isNativeFunction(isNaN)).to.be.ok();
         });
 
         it('isFinite should be ok', function () {
-            console.log('# isFinite:' + Error.toString());
             expect(utilx.isNativeFunction(isFinite)).to.be.ok();
         });
 
         if (typeof window === 'object' && window.alert) {
             it('alert should be ok', function () {
-                console.log('# window.alert:' + window.alert.toString());
                 expect(utilx.isNativeFunction(window.alert)).to.be.ok();
             });
         }
 
         if (typeof window === 'object' && window.setInterval) {
             it('setInterval should be ok', function () {
-                console.log('# window.setInterval:' + window.setInterval.toString());
                 expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
