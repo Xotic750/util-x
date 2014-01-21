@@ -36,42 +36,46 @@
         });
 
         it('Date constructor should be ok', function () {
-            console.log('# Date:' + Error.toString());
+            console.log('# Date:' + Date.toString());
             expect(utilx.isNativeFunction(Date)).to.be.ok();
         });
 
         it('RegExp constructor should be ok', function () {
-            console.log('# RegExp:' + Error.toString());
+            console.log('# RegExp:' + RegExp.toString());
             expect(utilx.isNativeFunction(RegExp)).to.be.ok();
         });
 
         it('Function constructor should be ok', function () {
-            console.log('# Function:' + Error.toString());
+            console.log('# Function:' + Function.toString);
+            console.log('# Function:' + Function.toString());
+            console.log('# Function:' + Function.prototype.toString);
+            console.log('# Function:' + Function.prototype.toString());
+            console.log('# Function:' + Function.prototype.toString.call(Function));
             expect(utilx.isNativeFunction(Function)).to.be.ok();
         });
 
-        console.log('# Boolean:' + Error.toString());
         it('Boolean constructor should be ok', function () {
+            console.log('# Boolean:' + Boolean.toString());
             expect(utilx.isNativeFunction(Boolean)).to.be.ok();
         });
 
         it('Number constructor should be ok', function () {
-            console.log('# Number:' + Error.toString());
+            console.log('# Number:' + Number.toString());
             expect(utilx.isNativeFunction(Number)).to.be.ok();
         });
 
         it('String constructor should be ok', function () {
-            console.log('# String:' + Error.toString());
+            console.log('# String:' + String.toString());
             expect(utilx.isNativeFunction(String)).to.be.ok();
         });
 
         it('Object constructor should be ok', function () {
-            console.log('# Object:' + Error.toString());
+            console.log('# Object:' + Object.toString());
             expect(utilx.isNativeFunction(Object)).to.be.ok();
         });
 
         it('isNaN should be ok', function () {
-            console.log('# isNaN:' + Error.toString());
+            console.log('# isNaN:' + isNaN.toString());
             expect(utilx.isNativeFunction(isNaN)).to.be.ok();
         });
 
@@ -82,14 +86,14 @@
 
         if (typeof window === 'object' && window.alert) {
             it('alert should be ok', function () {
-                console.log('# window.alert:' + Error.toString());
+                console.log('# window.alert:' + window.alert.toString());
                 expect(utilx.isNativeFunction(window.alert)).to.be.ok();
             });
         }
 
         if (typeof window === 'object' && window.setInterval) {
             it('setInterval should be ok', function () {
-                console.log('# window.setInterval:' + Error.toString());
+                console.log('# window.setInterval:' + window.setInterval.toString());
                 expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
