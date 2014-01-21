@@ -1030,6 +1030,8 @@
     if ($.toBoolean(globalThis.alert) && $.isUndefined(globalThis.alert.toString) &&
                 rxBeginsFunction.test(globalThis.alert)) {
 
+        /*global console */
+        console.log('# Is IE and so impliment isIENativeFunction');
         isIENativeFunction = function (inputArg) {
             // $.toBoolean(inputArg)
             // we want return true or false
@@ -1068,7 +1070,7 @@
      */
     try {
         /*jslint evil: true */
-        noNewCtrFunction('return (' + tostringFnFN.call(CtrFunction) + ');');
+        eval('(' + tostringFnFN.call(CtrFunction) + ')');
         /*jslint evil: false */
         rxOperaNative = new RegExp('^function \\S*\\(\\) \\{ \\[native code\\] \\}$');
         isNativeFunction = function (inputArg) {
@@ -1082,7 +1084,7 @@
                 // functions with some weird char
                 // that cannot be evaluated [native]
                 /*jslint evil: true */
-                noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
+                eval('(' + ownToString.call(inputArg) + ')');
                 /*jslint evil: false */
                 val = rxOperaNative.test(ownToString());
             } catch (e) {
@@ -1103,7 +1105,7 @@
                 // functions with some weird char
                 // that cannot be evaluated [native]
                 /*jslint evil: true */
-                noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
+                eval('(' + ownToString.call(inputArg) + ')');
                 /*jslint evil: false */
             } catch (e) {
                 val = true;
@@ -5004,7 +5006,7 @@
                                      .replace(rxParseProtect4, emptyString))) {
 
                 /*jslint evil: true */
-                j = noNewCtrFunction('return (' + text + ');');
+                j = eval('(' + text + ')');
                 /*jslint evil: false */
 
                 if ($.isFunction(reviver)) {

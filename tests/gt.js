@@ -7,7 +7,7 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    describe('basics', function () {
+    describe('gt', function () {
         it('should not throw an error in each case', function () {
             expect(utilx.gt(1, 0)).to.be.ok();
             expect(utilx.gt(1, 1)).to.not.be.ok();
