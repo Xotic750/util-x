@@ -136,14 +136,14 @@
         });
 
         it('should remove only the values for which the callback returns false', function () {
-            expect(utilx.deepEqual(utilx.arrayFilter(testSubject, callback), filteredArray)).to.be.ok();
+            expect(utilx.arrayFilter(testSubject, callback)).to.eql(filteredArray);
         });
 
         it('should leave the original array untouched', function () {
             var copy = utilx.arraySlice(testSubject);
 
             utilx.arrayFilter(testSubject, callback);
-            expect(utilx.deepEqual(testSubject, copy)).to.be.ok();
+            expect(testSubject).to.eql(copy);
         });
 
         /*

@@ -90,7 +90,7 @@
             expect(utilx.isFunction(it) && !utilx.isNativeFunction(it)).to.be.ok();
         });
 
-        it('only user functions should not be ok in each case', function () {
+        it('only native functions should not be ok in each case', function () {
             expect(utilx.isFunction(Error) && !utilx.isNativeFunction(Error)).to.not.be.ok();
             expect(utilx.isFunction(Date) && !utilx.isNativeFunction(Date)).to.not.be.ok();
             expect(utilx.isFunction(RegExp) && !utilx.isNativeFunction(RegExp)).to.not.be.ok();
