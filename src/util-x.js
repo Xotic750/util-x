@@ -148,6 +148,7 @@
         rxTest = new RegExp(testString),
         rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
         rxBeginsFunction = new RegExp('^\\s*\\bfunction\\b'),
+        rxOperaNative,
         wsTrimRX,
 
         constantProperties = {
@@ -177,6 +178,7 @@
         isOkToUseOtherErrors,
         stringSplitReplacer,
         isFunctionInternal,
+        isNativeFunction,
 
         // JSON compliance result
         isSupportedResult,
@@ -1060,28 +1062,56 @@
      * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
      * Used by isFunction.
      * @private
+     * @name isNativeFunction
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    function isNativeFunction(inputArg) {
-        var val = false,
-            ownToString = inputArg.toString;
+    try {
+        /*jslint evil: true */
+        noNewCtrFunction('return (' + tostringFnFN.call(CtrFunction) + ');');
+        /*jslint evil: false */
+        rxOperaNative = new RegExp('^function \\S*\\(\\) \\{ \\[native code\\] \\}$');
+        isNativeFunction = function (inputArg) {
+            var val = false,
+                ownToString = inputArg.toString;
 
-        try {
-            // no execution
-            // just an error if it is native
-            // every browser manifest native
-            // functions with some weird char
-            // that cannot be evaluated [native]
-            /*jslint evil: true */
-            noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
-            /*jslint evil: false */
-        } catch (e) {
-            val = true;
-        }
+            try {
+                // no execution
+                // just an error if it is native
+                // every browser manifest native
+                // functions with some weird char
+                // that cannot be evaluated [native]
+                /*jslint evil: true */
+                noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
+                /*jslint evil: false */
+                val = rxOperaNative.test(ownToString());
+            } catch (e) {
+                val = true;
+            }
 
-        return val;
+            return val;
+        };
+    } catch (e) {
+        isNativeFunction = function (inputArg) {
+            var val = false,
+                ownToString = inputArg.toString;
+
+            try {
+                // no execution
+                // just an error if it is native
+                // every browser manifest native
+                // functions with some weird char
+                // that cannot be evaluated [native]
+                /*jslint evil: true */
+                noNewCtrFunction('return (' + ownToString.call(inputArg) + ');');
+                /*jslint evil: false */
+            } catch (e) {
+                val = true;
+            }
+
+            return val;
+        };
     }
 
     /**
