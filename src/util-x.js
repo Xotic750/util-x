@@ -1027,11 +1027,9 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.toBoolean(window) && $.toBoolean(window.alert) && $.isUndefined(window.alert.toString) &&
+    if ($.isTypeObject(window) && $.toBoolean(window.alert) && $.isUndefined(window.alert.toString) &&
                 rxBeginsFunction.test(window.alert)) {
 
-        /*global console */
-        console.log('# Is IE and so impliment isIENativeFunction');
         isIENativeFunction = function (inputArg) {
             // $.toBoolean(inputArg)
             // we want return true or false
@@ -1147,7 +1145,7 @@
         // native function cannot be passed
         // to native Function.prototype.toString
         // as scope to evaluate ... only IE, sure
-        if ($.toBoolean(window) && $.toBoolean(window.alert)) {
+        if ($.isTypeObject(window) && $.toBoolean(window.alert)) {
             tostringFnFN.call(window.alert);
         }
 
