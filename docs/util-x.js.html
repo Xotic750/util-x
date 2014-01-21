@@ -2883,13 +2883,14 @@
         } else {
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
-                return forEachFN.apply($.toObjectFixIndexedAccess(array), $.arraySlice(arguments, 1));
+                return forEachFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arrayForEach = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
+                actualObject = $.argToObject(array),
                 length,
                 index;
 
@@ -2897,7 +2898,7 @@
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
-                    fn.call(thisArg, object[index], index, object);
+                    fn.call(thisArg, object[index], index, actualObject);
                 }
             }
         };
@@ -2930,13 +2931,14 @@
         } else {
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
-                return someFN.apply($.toObjectFixIndexedAccess(array), $.arraySlice(arguments, 1));
+                return someFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arraySome = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
+                actualObject = $.argToObject(array),
                 length,
                 index,
                 val;
@@ -2945,7 +2947,7 @@
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             val = false;
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
-                if ($.hasProperty(object, index) &amp;&amp; fn.call(thisArg, object[index], index, object)) {
+                if ($.hasProperty(object, index) &amp;&amp; fn.call(thisArg, object[index], index, actualObject)) {
                     val = true;
                     break;
                 }
@@ -2982,13 +2984,14 @@
         } else {
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
-                return mapFN.apply($.toObjectFixIndexedAccess(array), $.arraySlice(arguments, 1));
+                return mapFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arrayMap = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
+                actualObject = $.argToObject(array),
                 length,
                 index,
                 arr;
@@ -2998,7 +3001,7 @@
             arr.length = length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
-                    $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
+                    $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, actualObject));
                 }
             }
 
@@ -3124,13 +3127,14 @@
         } else {
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
-                return filterFN.apply($.toObjectFixIndexedAccess(array), $.arraySlice(arguments, 1));
+                return filterFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arrayFilter = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
+                actualObject = $.argToObject(array),
                 next,
                 length,
                 arr,
@@ -3144,7 +3148,7 @@
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
                     element = object[index];
-                    if (fn.call(thisArg, element, index, object)) {
+                    if (fn.call(thisArg, element, index, actualObject)) {
                         $.arrayAssign(arr, next, element);
                         next += 1;
                     }
@@ -3183,13 +3187,14 @@
         } else {
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
-                return reduceFN.apply($.toObjectFixIndexedAccess(array), $.arraySlice(arguments, 1));
+                return reduceFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arrayReduce = function (array, fn, initialValue) {
             var object = $.toObjectFixIndexedAccess(array),
+                actualObject = $.argToObject(array),
                 accumulator,
                 length,
                 kPresent,
@@ -3221,7 +3226,7 @@
 
             while ($.lt(index, length)) {
                 if ($.isTrue($.hasProperty(object, index))) {
-                    accumulator = fn.call($.privateUndefined, accumulator, object[index], index, object);
+                    accumulator = fn.call($.privateUndefined, accumulator, object[index], index, actualObject);
                 }
 
                 index += 1;
@@ -5249,7 +5254,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Tue Jan 21 2014 23:05:26 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 00:41:00 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
