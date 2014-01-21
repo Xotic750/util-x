@@ -51,6 +51,26 @@
             console.log('# Function:' + Function.prototype.toString);
             console.log('# Function:' + Function.prototype.toString());
             console.log('# Function:' + Function.prototype.toString.call(Function));
+            console.log('# Function:' + Function.toString.call(Function));
+            try {
+                /*jslint evil: true */
+                /*jshint -W064 */
+                Function('return (' + Function.toString.call(Function) + ');');
+                /*jslint evil: false */
+                console.log('# Function: did not throw 1');
+            } catch (e) {
+                console.log('# Function: did throw 1');
+            }
+
+            try {
+                /*jslint evil: true */
+                eval('(' + Function.toString.call(Function) + ');');
+                /*jslint evil: false */
+                console.log('# Function: did not throw 2');
+            } catch (e) {
+                console.log('# Function: did throw 2');
+            }
+
             expect(utilx.isNativeFunction(Function)).to.be.ok();
         });
 
