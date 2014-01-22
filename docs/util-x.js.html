@@ -2729,12 +2729,15 @@
     console.log('# shouldSplitString: ' + !$.hasProperty(boxedString, $.POSITIVE_ZERO));
 
     $.toObjectFixIndexedAccess = function (inputArg) {
-        var object;
+        var object,
+            index,
+            length;
 
+        object = $.argToObject(inputArg);
         if (shouldSplitString &amp;&amp; $.isString(inputArg)) {
-            object = $.stringSplit(inputArg, emptyString);
-        } else {
-            object = $.argToObject(inputArg);
+            for (index = 0, length = inputArg.length; $.lt(index, length); index += 1) {
+                object[index] = inputArg.charAt(index);
+            }
         }
 
         return object;
@@ -2874,7 +2877,7 @@
      * @param {object} [thisArg]
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
-    if (false &amp;&amp; $.isNativeFunction(forEachFN)) {
+    if ($.isNativeFunction(forEachFN)) {
         forEachFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
@@ -2884,29 +2887,30 @@
         if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
+                console.log('# RAW');
                 return forEachFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
+                console.log('# PATCHED');
                 return forEachFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         }
     } else {
         $.arrayForEach = function (array, fn, thisArg) {
+            console.log('# SHIM');
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject,
                 length,
                 index;
 
             throwIfNotAFunction(fn);
-            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
-                    fn.call(thisArg, object[index], index, actualObject);
+                    fn.call(thisArg, object[index], index, object);
                 }
             }
         };
@@ -2946,17 +2950,15 @@
     } else {
         $.arraySome = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject,
                 length,
                 index,
                 val;
 
             throwIfNotAFunction(fn);
-            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             val = false;
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
-                if ($.hasProperty(object, index) &amp;&amp; fn.call(thisArg, object[index], index, actualObject)) {
+                if ($.hasProperty(object, index) &amp;&amp; fn.call(thisArg, object[index], index, object)) {
                     val = true;
                     break;
                 }
@@ -3000,18 +3002,16 @@
     } else {
         $.arrayMap = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject,
                 length,
                 index,
                 arr;
 
             throwIfNotAFunction(fn);
-            actualObject = $.argToObject(array);
             arr = [];
             arr.length = length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
-                    $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, actualObject));
+                    $.arrayAssign(arr, index, fn.call(thisArg, object[index], index, object));
                 }
             }
 
@@ -3144,7 +3144,6 @@
     } else {
         $.arrayFilter = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject,
                 next,
                 length,
                 arr,
@@ -3152,14 +3151,13 @@
                 element;
 
             throwIfNotAFunction(fn);
-            actualObject = $.argToObject(array);
             arr = [];
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             next = $.POSITIVE_ZERO;
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
                     element = object[index];
-                    if (fn.call(thisArg, element, index, actualObject)) {
+                    if (fn.call(thisArg, element, index, object)) {
                         $.arrayAssign(arr, next, element);
                         next += 1;
                     }
@@ -3205,14 +3203,12 @@
     } else {
         $.arrayReduce = function (array, fn, initialValue) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject,
                 accumulator,
                 length,
                 kPresent,
                 index;
 
             throwIfNotAFunction(fn);
-            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             if ($.isZero(length) &amp;&amp; $.strictEqual(arguments.length, 2)) {
                 throw new TypeError('reduce of empty array with no initial value');
@@ -3238,7 +3234,7 @@
 
             while ($.lt(index, length)) {
                 if ($.isTrue($.hasProperty(object, index))) {
-                    accumulator = fn.call($.privateUndefined, accumulator, object[index], index, actualObject);
+                    accumulator = fn.call($.privateUndefined, accumulator, object[index], index, object);
                 }
 
                 index += 1;
@@ -5266,7 +5262,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 09:40:25 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 10:21:25 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
