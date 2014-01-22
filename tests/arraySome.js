@@ -32,12 +32,12 @@
         }
 
         beforeEach(function () {
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0];
+            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0];
             delete testSubject[1];
             numberOfRuns = 0;
             expected = {
                 0: 2,
-                2: undefined,
+                2: utilx.privateUndefined,
                 3: true
             };
         });

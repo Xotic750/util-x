@@ -68,7 +68,7 @@
                 false,
                 true,
                 null,
-                undefined,
+                utilx.privateUndefined,
                 '',
                 utilx.noop,
                 {

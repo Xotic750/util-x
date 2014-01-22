@@ -142,7 +142,7 @@
         it('(\'test\', /(?:)/, undefined) results in [\'t\', \'e\', \'s\', \'t\']', function () {
             var txt = 'test';
 
-            expect(utilx.stringSplit(txt, /(?:)/, undefined)).to.eql(['t', 'e', 's', 't']);
+            expect(utilx.stringSplit(txt, /(?:)/, utilx.privateUndefined)).to.eql(['t', 'e', 's', 't']);
         });
 
         it('(\'test\', /(?:)/, null) results in []', function () {
@@ -295,7 +295,7 @@
             var txt = '.',
                 rx = new RegExp('(.)?(.)?');
 
-            expect(utilx.stringSplit(txt, rx)).to.eql(['', '.', undefined, '']);
+            expect(utilx.stringSplit(txt, rx)).to.eql(['', '.', utilx.privateUndefined, '']);
         });
 
         msg = '(\'A<B>bold</B>and<CODE>coded</CODE>\', /<(\\/)?([^<>]+)>/) results in [\'A\', undefined, ' +
@@ -311,7 +311,7 @@
         it('(\'test\', /(s)*/) results in [\'t\', undefined, \'e\', \'s\', \'t\']', function () {
             var txt = 'tesst';
 
-            expect(utilx.stringSplit(txt, /(s)*/)).to.eql(['t', undefined, 'e', 's', 't']);
+            expect(utilx.stringSplit(txt, /(s)*/)).to.eql(['t', utilx.privateUndefined, 'e', 's', 't']);
         });
 
         msg = '(\'test\', /(s)*?/) results in [\'t\', undefined, \'e\',' +
@@ -320,7 +320,17 @@
             var txt = 'tesst';
 
             expect(utilx.stringSplit(txt, /(s)*?/))
-                .to.eql(['t', undefined, 'e', undefined, 's', undefined, 's', undefined, 't']);
+                .to.eql([
+                    't',
+                    utilx.privateUndefined,
+                    'e',
+                    utilx.privateUndefined,
+                    's',
+                    utilx.privateUndefined,
+                    's',
+                    utilx.privateUndefined,
+                    't'
+                ]);
         });
 
         it('(\'test\', /(s*)/) results in [\'t\', \'\', \'e\', \'ss\', \'t\']', function () {

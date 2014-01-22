@@ -17,7 +17,7 @@
                 'propertyIsEnumerable',
                 'constructor'
             ],
-            arr2 = [2, 3, undefined, true, 'hej', null, 2, false, 0];
+            arr2 = [2, 3, utilx.privateUndefined, true, 'hej', null, 2, false, 0];
 
         delete arr2[1];
 
@@ -45,11 +45,11 @@
         });
 
         it('should find undefined as well', function () {
-            expect(utilx.arrayIndexOf(arr2, undefined)).to.not.be(-1);
+            expect(utilx.arrayIndexOf(arr2, utilx.privateUndefined)).to.not.be(-1);
         });
 
         it('should skip unset indexes', function () {
-            expect(utilx.arrayIndexOf(arr2, undefined)).to.be(2);
+            expect(utilx.arrayIndexOf(arr2, utilx.privateUndefined)).to.be(2);
         });
 
         it('should use a strict test', function () {

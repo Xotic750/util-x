@@ -24,7 +24,7 @@
         beforeEach(function () {
             var i = -1;
 
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0];
+            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0];
             delete testSubject[1];
             callback = function () {
                 i += 1;
