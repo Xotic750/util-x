@@ -95,6 +95,14 @@
             expect(utilx.isFunction(Date) && !utilx.isNativeFunction(Date)).to.not.be.ok();
             expect(utilx.isFunction(RegExp) && !utilx.isNativeFunction(RegExp)).to.not.be.ok();
             expect(utilx.isFunction(Function) && !utilx.isNativeFunction(Function)).to.not.be.ok();
+            if (typeof window === 'object' && window.alert) {
+                expect(utilx.isFunction(window.alert) && !utilx.isNativeFunction(window.alert)).to.not.be.ok();
+            }
+
+            if (typeof window === 'object' && window.setInterval) {
+                expect(utilx.isFunction(window.setInterval) &&
+                        !utilx.isNativeFunction(window.setInterval)).to.not.be.ok();
+            }
         });
     });
 }());

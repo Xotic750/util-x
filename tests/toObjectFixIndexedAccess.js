@@ -37,5 +37,16 @@
             expect(typeof utilx.toObjectFixIndexedAccess(new Date())).to.be('object');
             expect(utilx.toObjectFixIndexedAccess(new RegExp('c')).toString()).to.be('/c/');
         });
+
+        it('should be a boxed object', function () {
+            var str = utilx.toObjectFixIndexedAccess('foo');
+
+            expect(typeof str).to.be('object');
+            expect(utilx.toObjectString(str)).to.be('[object String]');
+            expect(str.toString()).to.be('foo');
+            expect(str[0]).to.be('f');
+            expect(str[1]).to.be('o');
+            expect(str[2]).to.be('o');
+        });
     });
 }());

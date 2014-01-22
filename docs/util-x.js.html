@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.86
+ * @version 0.0.87
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -2441,11 +2441,7 @@
         }
     }
 
-    testObject1 = function () {
-        return;
-    };
-
-    for (testProp in testObject1) {
+    for (testProp in $.noop) {
         if ($.strictEqual(testProp, prototypeString)) {
             hasFuncProtoBug = true;
         }
@@ -2462,18 +2458,19 @@
     if ($.isNativeFunction(propertyIsEnumerableFN)) {
         if (hasDontEnumBug) {
             $.objectPropertyIsEnumerable = function (object, property) {
-                var val;
+                var skipProto = hasFuncProtoBug &amp;&amp; $.isFunction(object),
+                    val;
 
                 if ($.objectInstanceOf(object, CtrObject)) {
-                    val = propertyIsEnumerableFN.call(object, property) ||
-                        ($.arrayContains(defaultProperties, property) &amp;&amp;
-                            $.hasProperty(object, property) &amp;&amp;
-                            !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
+                    val = !(skipProto &amp;&amp; $.strictEqual(property, prototypeString)) &amp;&amp;
+                            (propertyIsEnumerableFN.call(object, property) ||
+                             ($.arrayContains(defaultProperties, property) &amp;&amp; $.hasProperty(object, property) &amp;&amp;
+                              !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
                 } else {
-                    val = propertyIsEnumerableCustom(object, property) ||
-                        ($.arrayContains(defaultProperties, property) &amp;&amp;
-                            $.hasProperty(object, property) &amp;&amp;
-                            !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
+                    val = !(skipProto &amp;&amp; $.strictEqual(property, prototypeString)) &amp;&amp;
+                            (propertyIsEnumerableCustom(object, property) ||
+                             ($.arrayContains(defaultProperties, property) &amp;&amp; $.hasProperty(object, property) &amp;&amp;
+                              !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
                 }
 
                 return val;
@@ -2541,8 +2538,7 @@
         }
     } else {
         $.objectHasOwnProperty = function (object, property) {
-            return $.hasProperty(object, property) &amp;&amp;
-                $.isUndefined($.objectGetPrototypeOf(object)[property]);
+            return $.hasProperty(object, property) &amp;&amp; $.isUndefined($.objectGetPrototypeOf(object)[property]);
         };
     }
 
@@ -2709,11 +2705,10 @@
                             !$.hasProperty(boxedString, $.POSITIVE_ZERO);
 
     $.toObjectFixIndexedAccess = function (inputArg) {
-        var object,
+        var object = $.argToObject(inputArg),
             index,
             length;
 
-        object = $.argToObject(inputArg);
         if (shouldSplitString &amp;&amp; $.isString(inputArg)) {
             for (index = 0, length = inputArg.length; $.lt(index, length); index += 1) {
                 object[index] = inputArg.charAt(index);
@@ -3026,11 +3021,12 @@
         }
 
         $.arraySlice = function (array, start, end) {
-            var args;
+            var length = arguments.length,
+                args;
 
-            if ($.gte(arguments.length, 3)) {
+            if ($.gte(length, 3)) {
                 args = [start, end];
-            } else if ($.strictEqual(arguments.length, 2)) {
+            } else if ($.strictEqual(length, 2)) {
                 args = [start];
             } else {
                 args = [];
@@ -3571,18 +3567,25 @@
         $.objectKeys = function (object) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
 
-            var props = [],
-                prop;
+            var skipProto = hasFuncProtoBug &amp;&amp; $.isFunction(object),
+                props = [],
+                prop,
+                ctor,
+                skipConstructor;
 
             for (prop in object) {
-                if ($.objectHasOwnProperty(object, prop)) {
+                if (!(skipProto &amp;&amp; $.strictEqual(prop, prototypeString)) &amp;&amp; $.objectHasOwnProperty(object, prop)) {
                     $.arrayPush(props, prop);
                 }
             }
 
             if ($.isTrue(hasDontEnumBug)) {
+                ctor = object.constructor;
+                skipConstructor = ctor &amp;&amp; $.strictEqual($.objectGetPrototypeOf(ctor), object);
                 $.arrayForEach(defaultProperties, function (property) {
-                    if ($.objectHasOwnProperty(object, property)) {
+                    if (!(skipConstructor &amp;&amp; $.strictEqual(property, constructorString)) &amp;&amp;
+                            $.objectHasOwnProperty(object, property)) {
+
                         $.arrayPush(props, property);
                     }
                 });
@@ -5229,7 +5232,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 14:33:14 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 22:08:40 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
