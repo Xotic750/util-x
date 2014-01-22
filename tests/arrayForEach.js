@@ -184,6 +184,8 @@
 
             expect(typeof actual).to.be('object');
             expect(utilx.toObjectString(actual)).to.be('[object String]');
+            expect(actual.toString()).to.be('foo');
+            expect(actual[0]).to.be('f');
         });
     });
 }());

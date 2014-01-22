@@ -128,5 +128,20 @@
 
             expect(i).to.be(3);
         });
+
+        it('should have a boxed object as list argument of callback', function () {
+            var actual;
+
+            utilx.arrayMap('foo', function (item, index, list) {
+                /*jslint unparam: true */
+                /*jshint unused: true */
+                actual = list;
+            });
+
+            expect(typeof actual).to.be('object');
+            expect(utilx.toObjectString(actual)).to.be('[object String]');
+            expect(actual.toString()).to.be('foo');
+            expect(actual[0]).to.be('f');
+        });
     });
 }());

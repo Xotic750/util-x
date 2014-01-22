@@ -2850,31 +2850,26 @@
      * @param {object} [thisArg]
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(forEachFN)) {
+    try {
         forEachFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1) && $.strictEqual($.toObjectString(testObject1), stringString)) {
+        if ($.isNativeFunction(forEachFN) && $.isTypeObject(testObject1) &&
+                $.strictEqual($.toObjectString(testObject1), stringString)) {
+
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
-                console.log('# RAW');
                 return forEachFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
-            /*jshint -W098 */
-            $.arrayForEach = function (array, fn, thisArg) {
-                console.log('# PATCHED');
-                return forEachFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
-            };
-            /*jshint +W098 */
+            throw new Error();
         }
-    } else {
+    } catch (e) {
         $.arrayForEach = function (array, fn, thisArg) {
-            console.log('# SHIM');
             var object = $.toObjectFixIndexedAccess(array),
                 length,
                 index;
@@ -2900,27 +2895,25 @@
      * @return {boolean}
      */
     // named $.arraySome instead of some because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(someFN)) {
+    try {
         someFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1) && $.strictEqual($.toObjectString(testObject1), stringString)) {
+        if ($.isNativeFunction(someFN) && $.isTypeObject(testObject1) &&
+                $.strictEqual($.toObjectString(testObject1), stringString)) {
+
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
                 return someFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
-            /*jshint -W098 */
-            $.arraySome = function (array, fn, thisArg) {
-                return someFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
-            };
-            /*jshint +W098 */
+            throw new Error();
         }
-    } else {
+    } catch (e) {
         $.arraySome = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
                 length,
@@ -2952,27 +2945,25 @@
      * @return {array}
      */
     // named $.arrayMap instead of map because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(mapFN)) {
+    try {
         mapFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1) && $.strictEqual($.toObjectString(testObject1), stringString)) {
+        if ($.isNativeFunction(mapFN) && $.isTypeObject(testObject1) &&
+                $.strictEqual($.toObjectString(testObject1), stringString)) {
+
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
                 return mapFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
-            /*jshint -W098 */
-            $.arrayMap = function (array, fn, thisArg) {
-                return mapFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
-            };
-            /*jshint +W098 */
+            throw new Error();
         }
-    } else {
+    } catch (e) {
         $.arrayMap = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
                 length,
@@ -3094,27 +3085,25 @@
      * @return {array}
      */
     // named $.arrayFilter instead of filter because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(filterFN)) {
+    try {
         filterFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1) && $.strictEqual($.toObjectString(testObject1), stringString)) {
+        if ($.isNativeFunction(filterFN) && $.isTypeObject(testObject1) &&
+                $.strictEqual($.toObjectString(testObject1), stringString)) {
+
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
                 return filterFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
-            /*jshint -W098 */
-            $.arrayFilter = function (array, fn, thisArg) {
-                return filterFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
-            };
-            /*jshint +W098 */
+            throw new Error();
         }
-    } else {
+    } catch (e) {
         $.arrayFilter = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
                 next,
@@ -3153,27 +3142,25 @@
      * @return {*}
      */
     // named $.arrayReduce instead of reduce because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(reduceFN)) {
+    try {
         reduceFN.call('foo', function (previous, item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1) && $.strictEqual($.toObjectString(testObject1), stringString)) {
+        if ($.isNativeFunction(reduceFN) && $.isTypeObject(testObject1) &&
+                $.strictEqual($.toObjectString(testObject1), stringString)) {
+
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
                 return reduceFN.apply(array, $.arraySlice(arguments, 1));
             };
             /*jshint +W098 */
         } else {
-            /*jshint -W098 */
-            $.arrayReduce = function (array, fn, initialValue) {
-                return reduceFN.apply($.argToObject(array), $.arraySlice(arguments, 1));
-            };
-            /*jshint +W098 */
+            throw new Error();
         }
-    } else {
+    } catch (e) {
         $.arrayReduce = function (array, fn, initialValue) {
             var object = $.toObjectFixIndexedAccess(array),
                 accumulator,

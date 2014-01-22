@@ -146,6 +146,21 @@
             expect(testSubject).to.eql(copy);
         });
 
+        it('should have a boxed object as list argument of callback', function () {
+            var actual;
+
+            utilx.arrayFilter('foo', function (item, index, list) {
+                /*jslint unparam: true */
+                /*jshint unused: true */
+                actual = list;
+            });
+
+            expect(typeof actual).to.be('object');
+            expect(utilx.toObjectString(actual)).to.be('[object String]');
+            expect(actual.toString()).to.be('foo');
+            expect(actual[0]).to.be('f');
+        });
+
         /*
         it('should not be affected by same-index mutation', function () {
             var results = [1, 2, 3];
