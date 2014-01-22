@@ -154,10 +154,10 @@
             var actual = [];
 
             utilx.arrayForEach(str, function (item, index) {
-                actual[index] = item;
+                utilx.arrayAssign(actual, index, item);
             });
 
-            expect(actual).to.eql(str.split(''));
+            expect(actual).to.eql(utilx.stringSplit(str, ''));
         });
 
         it('should iterate all in a string using a context', function () {
@@ -167,10 +167,10 @@
                 };
 
             utilx.arrayForEach(str, function (item, index) {
-                this.a[index] = item;
+                utilx.arrayAssign(this.a, index, item);
             }, o);
 
-            expect(actual).to.eql(str.split(''));
+            expect(actual).to.eql(utilx.stringSplit(str, ''));
         });
 
         it('should have a boxed object as list argument of callback', function () {
