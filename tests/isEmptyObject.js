@@ -62,10 +62,11 @@
             expect(utilx.isEmptyObject({})).to.be.ok();
             expect(utilx.isEmptyObject([])).to.be.ok();
             expect(utilx.isEmptyObject(utilx.noop)).to.be.ok();
-
             if (!utilx.isEmptyObject(X)) {
                 console.log('# Constructor lists (must be Safari4 !): ' + utilx.objectKeys(X));
             }
+
+            expect(utilx.isEmptyObject(X)).to.be.ok();
         });
 
         it('should not be ok in each case', function () {

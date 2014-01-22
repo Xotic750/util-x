@@ -104,10 +104,13 @@
                             utilx.objectKeys(Constructor));
             }
 
+            expect(utilx.objectKeys(Constructor).length).to.be(0);
             if (utilx.objectKeys(Constructor.prototype).length) {
                 console.log('# Constructor.prototype lists (must be IE<9 !): ' +
                             utilx.objectKeys(Constructor.prototype));
             }
+
+            expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
         });
 
         it('should list prototype and constructor', function () {

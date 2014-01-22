@@ -68,11 +68,11 @@
             }
 
             Constructor.prototype.constructor = 1;
-
             if (!utilx.objectHasOwnProperty(Constructor, 'prototype')) {
                 console.log('# Constructor.prototype does not list (must be FF<3.6 or Opera 11.5 !)');
             }
 
+            expect(utilx.objectHasOwnProperty(Constructor, 'prototype')).to.be.ok();
             expect(utilx.objectHasOwnProperty(Constructor.prototype, 'constructor')).to.be.ok();
             expect(utilx.objectHasOwnProperty(new Constructor(), 'prototype')).to.be.ok();
             expect(utilx.objectHasOwnProperty(new Constructor(), 'constructor')).to.be.ok();
