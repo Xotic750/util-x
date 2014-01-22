@@ -61,7 +61,6 @@
         CtrObject = baseObject.constructor,
         baseObjectPrototype = CtrObject.prototype,
         noNewCtrObject = CtrObject,
-        boxedString = noNewCtrObject('a'),
         isIsFn = CtrObject.is,
         getPrototypeOfFN = CtrObject.getPrototypeOf,
         keysFN = CtrObject.keys,
@@ -167,6 +166,7 @@
         regexpString = '[object RegExp]',
         arrayString = '[object Array]',
         dateString = '[object Date]',
+        stringString = '[object String]',
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
@@ -207,6 +207,7 @@
         isFunctionInternal,
         isIENativeFunction,
         isNativeFunction,
+        boxedString,
 
         // JSON compliance result
         isSupportedResult,
@@ -2718,8 +2719,14 @@
      * @param {*} inputArg
      * @return {object}
      */
+    boxedString = $.argToObject('a');
+    /*global console */
+    console.log('# boxedString: ' + typeof boxedString);
+    console.log('# boxedString: ' + $.toObjectString(boxedString));
     shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a') ||
                             !$.hasProperty(boxedString, $.POSITIVE_ZERO);
+    console.log('# shouldSplitString: ' + $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a'));
+    console.log('# shouldSplitString: ' + !$.hasProperty(boxedString, $.POSITIVE_ZERO));
 
     $.toObjectFixIndexedAccess = function (inputArg) {
         var object;
@@ -2867,14 +2874,14 @@
      * @param {object} [thisArg]
      */
     // named $.arrayForEach instead of forEach because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(forEachFN)) {
+    if (false &amp;&amp; $.isNativeFunction(forEachFN)) {
         forEachFN.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: true */
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1)) {
+        if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
                 return forEachFN.apply(array, $.arraySlice(arguments, 1));
@@ -2890,11 +2897,12 @@
     } else {
         $.arrayForEach = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject = $.argToObject(array),
+                actualObject,
                 length,
                 index;
 
             throwIfNotAFunction(fn);
+            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
                 if ($.hasProperty(object, index)) {
@@ -2922,7 +2930,7 @@
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1)) {
+        if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
                 return someFN.apply(array, $.arraySlice(arguments, 1));
@@ -2938,12 +2946,13 @@
     } else {
         $.arraySome = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject = $.argToObject(array),
+                actualObject,
                 length,
                 index,
                 val;
 
             throwIfNotAFunction(fn);
+            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             val = false;
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
@@ -2975,7 +2984,7 @@
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1)) {
+        if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
                 return mapFN.apply(array, $.arraySlice(arguments, 1));
@@ -2991,12 +3000,13 @@
     } else {
         $.arrayMap = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject = $.argToObject(array),
+                actualObject,
                 length,
                 index,
                 arr;
 
             throwIfNotAFunction(fn);
+            actualObject = $.argToObject(array);
             arr = [];
             arr.length = length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
@@ -3118,7 +3128,7 @@
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1)) {
+        if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
                 return filterFN.apply(array, $.arraySlice(arguments, 1));
@@ -3134,7 +3144,7 @@
     } else {
         $.arrayFilter = function (array, fn, thisArg) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject = $.argToObject(array),
+                actualObject,
                 next,
                 length,
                 arr,
@@ -3142,6 +3152,7 @@
                 element;
 
             throwIfNotAFunction(fn);
+            actualObject = $.argToObject(array);
             arr = [];
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             next = $.POSITIVE_ZERO;
@@ -3178,7 +3189,7 @@
             testObject1 = list;
         });
 
-        if ($.isTypeObject(testObject1)) {
+        if ($.isTypeObject(testObject1) &amp;&amp; $.strictEqual($.toObjectString(testObject1), stringString)) {
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
                 return reduceFN.apply(array, $.arraySlice(arguments, 1));
@@ -3194,13 +3205,14 @@
     } else {
         $.arrayReduce = function (array, fn, initialValue) {
             var object = $.toObjectFixIndexedAccess(array),
-                actualObject = $.argToObject(array),
+                actualObject,
                 accumulator,
                 length,
                 kPresent,
                 index;
 
             throwIfNotAFunction(fn);
+            actualObject = $.argToObject(array);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             if ($.isZero(length) &amp;&amp; $.strictEqual(arguments.length, 2)) {
                 throw new TypeError('reduce of empty array with no initial value');
@@ -5254,7 +5266,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 01:44:40 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Wed Jan 22 2014 09:40:25 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
