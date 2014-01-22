@@ -33,6 +33,7 @@
                 console.log('# obj.prototype not enumerable (must be IE<9 !)');
             }
 
+            expect(utilx.objectPropertyIsEnumerable(obj, 'constructor')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'foo')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'bar')).to.not.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'fuz')).to.not.be.ok();

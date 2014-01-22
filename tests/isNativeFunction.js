@@ -1,4 +1,4 @@
-/*global require, describe, it, window, console */
+/*global require, describe, it, window */
 
 (function () {
     'use strict';
@@ -73,14 +73,12 @@
 
         if (typeof window === 'object' && window.alert) {
             it('alert should be ok', function () {
-                console.log('# alert: ' + window.alert);
                 expect(utilx.isNativeFunction(window.alert)).to.be.ok();
             });
         }
 
         if (typeof window === 'object' && window.setInterval) {
             it('setInterval should be ok', function () {
-                console.log('# setInterval: ' + window.setInterval);
                 expect(utilx.isNativeFunction(window.setInterval)).to.be.ok();
             });
         }
