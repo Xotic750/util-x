@@ -109,6 +109,9 @@
                 actual[index] = obj;
             });
 
+            /*global console */
+            console.log('# actual: ' + utilx.objectKeys(actual));
+            console.log('# expected: ' + utilx.objectKeys(expected));
             expect(actual).to.eql(expected);
         });
 

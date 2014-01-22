@@ -1073,24 +1073,9 @@
         /*jslint evil: false */
         rxOperaNative = new RegExp('^function \\S*\\(\\) \\{ \\[native code\\] \\}$');
         isNativeFunction = function (inputArg) {
-            var val = false,
-                ownToString = inputArg.toString;
-
-            try {
-                // no execution
-                // just an error if it is native
-                // every browser manifest native
-                // functions with some weird char
-                // that cannot be evaluated [native]
-                /*jslint evil: true */
-                eval('(' + ownToString.call(inputArg) + ')');
-                /*jslint evil: false */
-                val = rxOperaNative.test(ownToString());
-            } catch (e) {
-                val = true;
-            }
-
-            return val;
+            /*global console */
+            console.log('# Opera 10 isNativeFunction');
+            return rxOperaNative.test(inputArg.toString());
         };
     } catch (e) {
         isNativeFunction = function (inputArg) {
@@ -2693,13 +2678,8 @@
      * @return {object}
      */
     boxedString = $.argToObject('a');
-    /*global console */
-    console.log('# boxedString: ' + typeof boxedString);
-    console.log('# boxedString: ' + $.toObjectString(boxedString));
     shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a') ||
                             !$.hasProperty(boxedString, $.POSITIVE_ZERO);
-    console.log('# shouldSplitString: ' + $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a'));
-    console.log('# shouldSplitString: ' + !$.hasProperty(boxedString, $.POSITIVE_ZERO));
 
     $.toObjectFixIndexedAccess = function (inputArg) {
         var object,
