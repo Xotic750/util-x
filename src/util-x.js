@@ -2493,11 +2493,13 @@
                         !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
             };
         } else if (hasFuncProtoBug) {
+            /*global console */
+            console.log('# Opera 11.5 should be here');
             $.objectHasOwnProperty = function (object, property) {
                 var val;
 
                 if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
-                    val = false;
+                    val = true;
                 } else {
                     val = hasOwnPropertyFN.call(object, property);
                 }
