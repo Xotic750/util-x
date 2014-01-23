@@ -2414,6 +2414,11 @@
         }
     }
 
+    testObject1 = function () {
+        return;
+    };
+
+    testObject1.prototype.constructor = testObject1;
     for (testProp in $.noop) {
         if ($.strictEqual(testProp, prototypeString)) {
             hasFuncProtoBug = true;
