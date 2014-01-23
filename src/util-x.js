@@ -3540,12 +3540,16 @@
         $.objectKeys = function (object) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
 
+            /*global console */
+            console.log('# hasFuncProtoBug: ' + hasFuncProtoBug);
+            console.log('# isFunction: ' + $.isFunction(object));
             var skipProto = hasFuncProtoBug && $.isFunction(object),
                 props = [],
                 prop,
                 ctor,
                 skipConstructor;
 
+            console.log('# skipProto: ' + skipProto);
             for (prop in object) {
                 if (!(skipProto && $.strictEqual(prop, prototypeString)) && $.objectHasOwnProperty(object, prop)) {
                     $.arrayPush(props, prop);
