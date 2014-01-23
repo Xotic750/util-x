@@ -100,7 +100,7 @@
         "harness": "mocha",
         "files": "tests/*.js",
         "browsers": [
-            "firefox/3.0..3.6",
+            "firefox/3.0..3.6"
         ]
     }
 }
