@@ -47,26 +47,6 @@
             delete testSubject[1];
         });
 
-        it('Array object should not be broken', function () {
-            expect(testSubject.length).to.be(8);
-            expect(utilx.objectHasOwnProperty(testSubject, 0)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 1)).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 2)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 3)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 4)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 5)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 6)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 7)).to.be.ok();
-            expect(testSubject[0]).to.be(2);
-            expect(testSubject[1]).to.be(utilx.privateUndefined);
-            expect(testSubject[2]).to.be(utilx.privateUndefined);
-            expect(testSubject[3]).to.be(true);
-            expect(testSubject[4]).to.be('hej');
-            expect(testSubject[5]).to.be(null);
-            expect(testSubject[6]).to.be(false);
-            expect(testSubject[7]).to.be(0);
-        });
-
         it('should not throw an error in each case', function () {
             expect(utilx.arrayForEach(forEachArray, function (element, index, array) {
                 expect(array).to.be(forEachArray);
