@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: /home/graham/source_projects/util-x/lib/util-x.js</title>
+    <title>JSDoc: Source: util-x.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: /home/graham/source_projects/util-x/lib/util-x.js</h1>
+    <h1 class="page-title">Source: util-x.js</h1>
     
     
 
@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.88
+ * @version 0.0.89
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -60,7 +60,7 @@
         propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
         CtrObject = baseObject.constructor,
         baseObjectPrototype = CtrObject.prototype,
-        noNewCtrObject = CtrObject,
+        //noNewCtrObject = CtrObject,
         isIsFn = CtrObject.is,
         getPrototypeOfFN = CtrObject.getPrototypeOf,
         keysFN = CtrObject.keys,
@@ -710,14 +710,25 @@
     };
 
     /**
-     * Converts any truthy or falsy expression into a boolean true or false.
+     * Returns true if the operand inputArg is a truthy.
      * @memberOf utilx
      * @function
      * @param {*} inputArg
      * @return {boolean}
      */
-    $.toBoolean = function (inputArg) {
+    $.isTruthy = function (inputArg) {
         return !!inputArg;
+    };
+
+    /**
+     * Returns true if the operand inputArg is a falsy.
+     * @memberOf utilx
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    $.isFalsy = function (inputArg) {
+        return !inputArg;
     };
 
     /**
@@ -1055,11 +1066,11 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.isTypeObject(window) &amp;&amp; $.toBoolean(window.alert) &amp;&amp; $.isUndefined(window.alert.toString) &amp;&amp;
+    if ($.isTypeObject(window) &amp;&amp; $.isTruthy(window.alert) &amp;&amp; $.isUndefined(window.alert.toString) &amp;&amp;
                 rxBeginsFunction.test(window.alert)) {
 
         isIENativeFunction = function (inputArg) {
-            // $.toBoolean(inputArg)
+            // $.isTruthy(inputArg)
             // we want return true or false
 
             // $.isUndefined(inputArg.toString)
@@ -1077,7 +1088,7 @@
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return $.toBoolean(inputArg) &amp;&amp; $.isUndefined(inputArg.toString) &amp;&amp; rxBeginsFunction.test(inputArg);
+            return $.isTruthy(inputArg) &amp;&amp; $.isUndefined(inputArg.toString) &amp;&amp; rxBeginsFunction.test(inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -1158,7 +1169,7 @@
         // native function cannot be passed
         // to native Function.prototype.toString
         // as scope to evaluate ... only IE, sure
-        if ($.isTypeObject(window) &amp;&amp; $.toBoolean(window.alert)) {
+        if ($.isTypeObject(window) &amp;&amp; $.isTruthy(window.alert)) {
             tostringFnFN.call(window.alert);
         }
 
@@ -3572,23 +3583,25 @@
         $.objectKeys = function (object) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
 
-            var skipProto = hasFuncProtoBug &amp;&amp; $.isFunction(object),
+            var skipProto = $.isTrue(hasFuncProtoBug) &amp;&amp; $.isFunction(object),
                 props = [],
                 prop,
                 ctor,
                 skipConstructor;
 
             for (prop in object) {
-                if (!(skipProto &amp;&amp; $.strictEqual(prop, prototypeString)) &amp;&amp; $.objectHasOwnProperty(object, prop)) {
+                if (!($.isTrue(skipProto) &amp;&amp; $.strictEqual(prop, prototypeString)) &amp;&amp;
+                        $.objectHasOwnProperty(object, prop)) {
+
                     $.arrayPush(props, prop);
                 }
             }
 
             if ($.isTrue(hasDontEnumBug)) {
                 ctor = object.constructor;
-                skipConstructor = ctor &amp;&amp; $.strictEqual($.objectGetPrototypeOf(ctor), object);
+                skipConstructor = $.isFunction(ctor) &amp;&amp; $.strictEqual(ctor.prototype, object);
                 $.arrayForEach(defaultProperties, function (property) {
-                    if (!(skipConstructor &amp;&amp; $.strictEqual(property, constructorString)) &amp;&amp;
+                    if (!($.isTrue(skipConstructor) &amp;&amp; $.strictEqual(property, constructorString)) &amp;&amp;
                             $.objectHasOwnProperty(object, property)) {
 
                         $.arrayPush(props, property);
@@ -3694,22 +3707,23 @@
             definePropertyPatch3 = true;
         }
 
-        if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
+        if ($.isTrue(definePropertyPatch1) || $.isTrue(definePropertyPatch2) || $.isTrue(definePropertyPatch3)) {
             $.objectDefineProperty = function (object, property, descriptor) {
-                var isA = (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) &amp;&amp;
-                            isArrayOrArguments(object) &amp;&amp; $.isNumeric(property) &amp;&amp; $.isUint32($.toNumber(property)),
-                    isB = (definePropertyPatch1 || definePropertyPatch2) &amp;&amp;
+                var isA = isArrayOrArguments(object) &amp;&amp; $.isNumeric(property) &amp;&amp; $.isUint32($.toNumber(property)),
+                    isB = ($.isTrue(definePropertyPatch1) || $.isTrue(definePropertyPatch2)) &amp;&amp;
                             $.objectHasOwnProperty(descriptor, valueString);
 
-                if (definePropertyPatch1 &amp;&amp; isA) {
+                if ($.isTrue(definePropertyPatch1) &amp;&amp; $.isTrue(isA)) {
                     property = $.toNumber(property);
                 }
 
-                if (definePropertyPatch2 &amp;&amp; isA &amp;&amp; (isB || !$.objectHasOwnProperty(object, property))) {
+                if ($.isTrue(definePropertyPatch2) &amp;&amp; $.isTrue(isA) &amp;&amp;
+                        ($.isTrue(isB) || !$.objectHasOwnProperty(object, property))) {
+
                     $.arrayAssign(object, property, descriptor[valueString]);
                 }
 
-                if (definePropertyPatch3 &amp;&amp; isA &amp;&amp; !isB) {
+                if ($.isTrue(definePropertyPatch3) &amp;&amp; $.isTrue(isA) &amp;&amp; $.isFalse(isB)) {
                     descriptor[valueString] = object[property];
                 }
 
@@ -4073,7 +4087,7 @@
             return isTypeObjectOrIsFunction(object) &amp;&amp;
                 (object instanceof ctr || isPrototypeOfFN.call(ctr.prototype, object));
         };
-    } else if ($.isFunction($.objectGetPrototypeOf)) {
+    } else {
         $.objectInstanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
@@ -4082,7 +4096,7 @@
             if (isTypeObjectOrIsFunction(object)) {
                 val = object instanceof ctr;
                 if ($.isFalse(val)) {
-                    while ($.toBoolean(object)) {
+                    while ($.isTruthy(object)) {
                         if ($.strictEqual(object, ctr.prototype)) {
                             val = true;
                             break;
@@ -4747,7 +4761,7 @@
             globalJsonParse = JSON.parse;
         }
 
-        if ($.isNativeFunction(JSON.parse)) {
+        if ($.isNativeFunction(JSON.stringify)) {
             globalJsonStringify = JSON.stringify;
         }
     }
@@ -5016,15 +5030,16 @@
             if ($.isZero(globalJsonParse('0')) &amp;&amp; $.isFalse(globalJsonParse(false))) {
                 // Simple parsing test.
                 testValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                isSupportedResult = $.strictEqual(testValue.A.length, 5);
-                isSupportedResult = isSupportedResult &amp;&amp; $.strictEqual(testValue.A[$.POSITIVE_ZERO], 1);
-                if (isSupportedResult) {
+                isSupportedResult = $.strictEqual(testValue.A.length, 5) &amp;&amp;
+                                        $.strictEqual(testValue.A[$.POSITIVE_ZERO], 1);
+
+                if ($.isTrue(isSupportedResult)) {
                     try {
                         // Safari &lt;= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
                         isSupportedResult = $.isString(globalJsonParse('"\t"'));
                     } catch (ignore) {}
 
-                    if (isSupportedResult) {
+                    if ($.isTrue(isSupportedResult)) {
                         try {
                             // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
                             // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
@@ -5046,7 +5061,7 @@
             threwSynatxError = $.objectInstanceOf(e, SyntaxError);
         }
 
-        if (threwSynatxError) {
+        if ($.isTrue(threwSynatxError)) {
             $.jsonParse = globalJsonParse;
         } else {
             $.jsonParse = function (text, reviver) {
@@ -5237,7 +5252,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha3</a> on Thu Jan 23 2014 20:17:31 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Jan 28 2014 15:03:32 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
