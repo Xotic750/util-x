@@ -68,6 +68,8 @@
         endsWithFN = baseString.endsWith,
         containsFN = baseString.contains,
         trimFN = baseString.trim,
+        matchFN = baseString.match,
+        replaceFN = baseString.replace,
         CtrString = baseString.constructor,
         repeatFN = CtrString.repeat,
 
@@ -87,6 +89,11 @@
         tostringFnFN = baseFunction.toString,
         CtrFunction = baseFunction.constructor,
         //noNewCtrFunction = CtrFunction,
+
+        baseRegExp = new RegExp('base'),
+        execFN = baseRegExp.exec,
+        testFN = baseRegExp.test,
+        correctExecNpcg,
 
         globalIsNaN = isNaN,
         globalIsFinite = isFinite,
@@ -143,7 +150,7 @@
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
-        rxNpcgCheck = new RegExp('()??'),
+        //rxNpcgCheck = new RegExp('()??'),
         rxNotDigits = new RegExp('^\\d+$'),
         rxTest = new RegExp(testString),
         rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
@@ -170,13 +177,13 @@
         TestConstructor,
         previousIEErrorToString,
         isArgumentsCheck,
-        compliantExecNpcg,
+        //compliantExecNpcg,
         fixOpera10GetPrototypeOf,
         testProp,
         testValue,
         shouldSplitString,
         isOkToUseOtherErrors,
-        stringSplitReplacer,
+        //stringSplitReplacer,
         isFunctionInternal,
         isIENativeFunction,
         isNativeFunction,
@@ -1909,6 +1916,191 @@
     }
 
     /**
+     * Removes any duplicate characters from the provided string.
+     * @private
+     * @param {String} str String to remove duplicate characters from.
+     * @returns {String} String with any duplicate characters removed.
+     */
+    function clipDuplicates(str) {
+        return replaceFN.call(str, /([\s\S])(?=[\s\S]*\1)/g, emptyString);
+    }
+
+    /**
+     * Throws a TypeError if the argument is not a RegExp.
+     * @private
+     * @param {RegExp} inputArg
+     * @returns {RegExp}
+     */
+    function throwIfIsNotRegExp(inputArg) {
+        if (!$.isRegExp(inputArg)) {
+            throw new TypeError('Type RegExp expected');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Copies a regex object. Allows adding and removing native flags while copying the regex.
+     * @private
+     * @param {RegExp} regex Regex to copy.
+     * @param {Object} [options] Allows specifying native flags to add or remove while copying the regex.
+     * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
+     */
+    function copyRegExp(regExpArg, options) {
+        throwIfIsNotRegExp(regExpArg);
+
+        if (!$.isPlainObject(options)) {
+            options = {};
+        }
+
+        // Get native flags in use
+        var flags = execFN.call(/\/([a-z]*)$/i, $.anyToString(regExpArg))[1];
+
+        if (options.add) {
+            flags = clipDuplicates(flags + options.add);
+        }
+
+        if (options.remove) {
+            // Would need to escape `options.remove` if this was public
+            flags = replaceFN.call(flags, new RegExp('[' + options.remove + ']+', 'g'), emptyString);
+        }
+
+        return new RegExp(regExpArg.source, flags);
+    }
+
+    // Check for correct `exec` handling of nonparticipating capturing groups
+    correctExecNpcg = $.isUndefined(execFN.call(/()??/, emptyString)[1]);
+
+    /**
+     * Fixes browser bugs in the native `RegExp.prototype.exec`.
+     * @memberOf utilx
+     * @param {RegExp} regExpArg
+     * @param {String} stringArg String to search.
+     * @returns {Array} Match array with named backreference properties, or `null`.
+     */
+    $.regExpExec = function (regExpArg, stringArg) {
+        throwIfIsNotRegExp(regExpArg);
+
+        var str = onlyCoercibleToString(stringArg),
+            origLastIndex = regExpArg.lastIndex,
+            match = execFN.apply(regExpArg, $.arraySlice(arguments, 1)),
+            r2;
+
+        if ($.arrayIsArray(match)) {
+            // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
+            // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
+            // older IEs. IE 9 in standards mode follows the spec
+            if ($.isFalse(correctExecNpcg) && $.gt(match.length, 1) && $.arrayContains(match, emptyString)) {
+                r2 = copyRegExp(regExpArg, {remove: 'g'});
+                // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
+                // matching due to characters outside the match
+                replaceFN.call($.anyToString(str).slice(match.index), r2, function () {
+                    var len = arguments.length - 2,
+                        index;
+
+                    // Skip index 0 and the last 2
+                    for (index = 1; $.lt(index, len); index += 1) {
+                        if ($.isUndefined(arguments[index])) {
+                            $.arrayAssign(match, index, $.privateUndefined);
+                        }
+                    }
+                });
+            }
+
+            // Fix browsers that increment `lastIndex` after zero-length matches
+            if ($.isTruthy(regExpArg.global) && !$.isZero(match[0].length) && $.gt(regExpArg.lastIndex, match.index)) {
+                regExpArg.lastIndex = match.index;
+            }
+        }
+
+        if ($.isFalsy(regExpArg.global)) {
+            // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
+            regExpArg.lastIndex = origLastIndex;
+        }
+
+        return match;
+    };
+
+    /**
+     * Executes a regex search in a specified string. Returns a match array or `null`.
+     * Optional `pos` argument specifies the search start position.
+     * The `lastIndex` property of the provided regex is not
+     * used, but is updated for compatibility. Also fixes browser bugs compared to the native
+     * `RegExp.prototype.exec` and can be used reliably cross-browser.
+     * @private
+     * @param {String} stringArg String to search.
+     * @param {RegExp} regExpArg Regex to search with.
+     * @param {Number} [pos=0] Zero-based index at which to start the search.
+     * @returns {Array} Match array or `null`.
+     */
+    function regExpForEachExec(stringArg, regExpArg, pos) {
+        throwIfIsNotRegExp(regExpArg);
+
+        var str = onlyCoercibleToString(stringArg),
+            r2 = copyRegExp(regExpArg, {
+                add: 'g',
+                remove: 'y'
+            }),
+            match;
+
+        r2.lastIndex = pos = clampInteger(pos, 0, $.MAX_INTEGER);
+        match = $.regExpExec(r2, str);
+        if ($.isTruthy(regExpArg.global)) {
+            if ($.arrayIsArray(match)) {
+                regExpArg.lastIndex = r2.lastIndex;
+            } else {
+                regExpArg.lastIndex = 0;
+            }
+        }
+
+        return match;
+    }
+
+    /**
+     * Executes a provided function once per regex match.
+     * @private
+     * @param {String} str String to search.
+     * @param {RegExp} regex Regex to search with.
+     * @param {Function} callback Function to execute for each match. Invoked with four arguments:
+     *   <li>The match array, with named backreference properties.
+     *   <li>The zero-based match index.
+     *   <li>The string being traversed.
+     *   <li>The regex object being used to traverse the string.
+     * @param {*} [context] Object to use as `this` when executing `callback`.
+     * @returns {*} Provided `context` object.
+     * @example
+     *
+     * // Extracts every other digit from a string
+     * regExpForEach('1a2345', /\d/, function(match, i) {
+     *   if (i % 2) this.push(+match[0]);
+     * }, []);
+     * // -> [2, 4]
+     */
+    function regExpForEach(stringArg, regExpArg, callback, context) {
+        throwIfIsNotRegExp(regExpArg);
+
+        var str = onlyCoercibleToString(stringArg),
+            pos = 0,
+            index = -1,
+            match = regExpForEachExec(str, regExpArg, pos);
+
+        while ($.arrayIsArray(match)) {
+            // Because `regex` is provided to `callback`, the function can use the deprecated/
+            // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
+            // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
+            // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
+            // globalized versions of regexes, mutating the regex will not have any effect on the
+            // iteration or matched strings, which is a nice side effect that brings extra safety
+            callback.call(context, match, index, str, regExpArg);
+            pos = match.index + clampInteger(match[0].length, 1, $.UWORD32);
+            match = regExpForEachExec(str, regExpArg, pos);
+            index += 1;
+        }
+
+        return context;
+    }
+
+    /**
      * Splits a String object into an array of strings by separating the string into substrings.
      * @memberOf utilx
      * @name stringSplit
@@ -1925,121 +2117,70 @@
             !$.isZero(splitFN.call(emptyString, new RegExp('.?')).length) ||
             $.gt(splitFN.call(dotString, new RegExp('()()')).length, 1)) {
 
-        /**
-         * @private
-         * @function
-         * @param {regexp} separator
-         * @param {array} match
-         * @param {arguments} args
-         */
-        stringSplitReplacer = function (separator, match, args) {
-            var length = args.length - 2,
-                index;
-
-            $.arrayFirst(match).replace(separator, function () {
-                for (index = 1; $.lt(index, length); index += 1) {
-                    if ($.isUndefined(arguments[index])) {
-                        $.arrayAssign(match, index, $.privateUndefined);
-                    }
-                }
-            });
-        };
-
-        /**
-         * @private
-         * @type {boolean}
-         */
-        compliantExecNpcg = $.isUndefined(rxNpcgCheck.exec(emptyString)[1]);
+        /*global console */
         $.stringSplit = function (stringArg, separator, limit) {
-            var string = onlyCoercibleToString(stringArg),
-                flags,
+            console.log('# stringSplit shim');
+            var str = onlyCoercibleToString(stringArg),
+                output,
+                origLastIndex,
                 lastLastIndex,
-                separator2,
-                match,
-                lastIndex,
-                lastLength,
-                val;
+                lastLength;
 
             // "0".split(undefined, 0) -> []
             if ($.isUndefined(separator) && $.isZero(limit)) {
-                val = [];
-            } else if ($.isRegExp(separator)) {
-                flags = 'g';
-                if (separator.ignoreCase) {
-                    flags += 'i';
-                }
-
-                if (separator.multiline) {
-                    flags += 'm';
-                }
-
-                if (separator.extended) {
-                    flags += 'x';
-                }
-
-                if (separator.sticky) {
-                    flags += 'y';
-                }
-
-                separator = new RegExp(separator.source, flags);
-                if ($.isFalse(compliantExecNpcg)) {
-                    separator2 = new RegExp('^' + separator.source + '$(?!\\s)', flags);
-                }
-
+                output = [];
+            } else if (!$.isRegExp(separator)) {
+                // Browsers handle nonregex split correctly, so use the faster native method
+                output = splitFN.apply(str, $.arraySlice(arguments, 1));
+            } else {
+                output = [];
+                origLastIndex = separator.lastIndex;
+                lastLastIndex = 0;
+                /* Values for `limit`, per the spec:
+                 * If undefined: pow(2,32) - 1
+                 * If 0, Infinity, or NaN: 0
+                 * If positive number: limit = floor(limit); if (limit >= pow(2,32)) limit -= pow(2,32);
+                 * If negative number: pow(2,32) - floor(abs(limit))
+                 * If other: Type-convert, then use the above rules
+                 */
                 if ($.isUndefined(limit)) {
                     limit = $.MAX_UINT32;
                 } else {
                     limit = $.toUint32(limit);
                 }
 
-                val = [];
-                lastLastIndex = $.POSITIVE_ZERO;
-                match = separator.exec(string);
-                while (match) {
-                    lastIndex = match.index + $.arrayFirst(match).length;
-                    if ($.gt(lastIndex, lastLastIndex)) {
-                        $.arrayPush(val, string.slice(lastLastIndex, match.index));
-                        if ($.isFalse(compliantExecNpcg) && $.gt(match.length, 1)) {
-                            stringSplitReplacer(separator2, match, arguments);
+                regExpForEach(str, separator, function (match) {
+                    // This condition is not the same as `if (match[0].length)`
+                    if ($.gt(match.index + match[0].length, lastLastIndex)) {
+                        $.arrayPush(output, str.slice(lastLastIndex, match.index));
+                        if ($.gt(match.length, 1) && $.lt(match.index, str.length)) {
+                            $.arrayPush.apply($.privateUndefined, [output].concat(match.slice(1)));
                         }
 
-                        if ($.gt(match.length, 1) && $.lt(match.index, string.length)) {
-                            val = val.concat(match.slice(1));
-                        }
-
-                        lastLength = $.arrayFirst(match).length;
-                        lastLastIndex = lastIndex;
-                        if ($.gte(val.length, limit)) {
-                            break;
-                        }
+                        lastLength = match[0].length;
+                        lastLastIndex = match.index + lastLength;
                     }
+                });
 
-                    if ($.strictEqual(separator.lastIndex, match.index)) {
-                        separator.lastIndex += 1;
-                    }
-
-                    match = separator.exec(string);
-                }
-
-                if ($.strictEqual(lastLastIndex, string.length)) {
-                    if (lastLength || !separator.test(emptyString)) {
-                        $.arrayPush(val, emptyString);
+                if ($.strictEqual(lastLastIndex, str.length)) {
+                    if (!testFN.call(separator, emptyString) || lastLength) {
+                        $.arrayPush(output, emptyString);
                     }
                 } else {
-                    $.arrayPush(val, string.slice(lastLastIndex));
+                    $.arrayPush(output, str.slice(lastLastIndex));
                 }
 
-                if ($.gt(val.length, limit)) {
-                    val = val.slice($.POSITIVE_ZERO, limit);
+                separator.lastIndex = origLastIndex;
+                if ($.gt(output.length, limit)) {
+                    output = $.arraySlice(output, $.POSITIVE_ZERO, limit);
                 }
-            } else {
-                val = splitFN.apply(string, $.arraySlice(arguments, 1));
             }
 
-            return val;
+            return output;
         };
     } else {
         $.stringSplit = function (stringArg, separator, limit) {
+            console.log('# stringSplit patch');
             var val;
 
             // "0".split(undefined, 0) -> []
