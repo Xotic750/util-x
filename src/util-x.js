@@ -1831,7 +1831,7 @@
      * @return {number}
      */
     // named $.arrayPush instead of push because of SpiderMonkey and Blackberry bug
-    if ($.strictEqual(baseArray.push.call([], 0), 1)) {
+    if ($.strictEqual(baseArray.push.call([], $.POSITIVE_ZERO), 1)) {
         $.arrayPush = function (array) {
             return baseArray.push.apply(array, $.arraySlice(arguments, 1));
         };
@@ -1853,7 +1853,7 @@
      * @return {number}
      */
     // named $.arrayUnshift instead of unshift because of SpiderMonkey and Blackberry bug
-    if ($.strictEqual(baseArray.unshift.call([], 0), 1)) {
+    if ($.strictEqual(baseArray.unshift.call([], $.POSITIVE_ZERO), 1)) {
         $.arrayUnshift = function (array) {
             return baseArray.unshift.apply(array, $.arraySlice(arguments, 1));
         };
@@ -1982,7 +1982,9 @@
             }
 
             // Fix browsers that increment `lastIndex` after zero-length matches
-            if ($.isTrue(regExpArg.global) && !$.isZero(match[0].length) && $.gt(regExpArg.lastIndex, match.index)) {
+            if ($.isTrue(regExpArg.global) && !$.isZero($.arrayFirst(match).length) &&
+                                                $.gt(regExpArg.lastIndex, match.index)) {
+
                 regExpArg.lastIndex = match.index;
             }
         }
@@ -2029,13 +2031,13 @@
             }),
             match;
 
-        r2.lastIndex = pos = clampInteger(pos, 0, $.MAX_INTEGER);
+        r2.lastIndex = pos = clampInteger(pos, $.POSITIVE_ZERO, $.MAX_INTEGER);
         match = $.regExpExec(r2, str);
         if ($.isTrue(regExpArg.global)) {
             if ($.arrayIsArray(match)) {
                 regExpArg.lastIndex = r2.lastIndex;
             } else {
-                regExpArg.lastIndex = 0;
+                regExpArg.lastIndex = $.POSITIVE_ZERO;
             }
         }
 
@@ -2059,8 +2061,8 @@
         throwIfIsNotRegExp(regExpArg);
 
         var str = onlyCoercibleToString(stringArg),
-            pos = 0,
-            index = -1,
+            pos = $.POSITIVE_ZERO,
+            index = $.POSITIVE_ZERO,
             match = regExpForEachExec(str, regExpArg, pos);
 
         while ($.arrayIsArray(match)) {
@@ -2071,7 +2073,7 @@
             // globalized versions of regexes, mutating the regex will not have any effect on the
             // iteration or matched strings, which is a nice side effect that brings extra safety
             callback.call(context, match, index, str, regExpArg);
-            pos = match.index + clampInteger(match[0].length, 1, $.UWORD32);
+            pos = match.index + clampInteger($.arrayFirst(match).length, 1, $.UWORD32);
             match = regExpForEachExec(str, regExpArg, pos);
             index += 1;
         }
@@ -2112,7 +2114,7 @@
             } else {
                 output = [];
                 origLastIndex = separator.lastIndex;
-                lastLastIndex = 0;
+                lastLastIndex = $.POSITIVE_ZERO;
                 /* Values for `limit`, per the spec:
                  * If undefined: pow(2,32) - 1
                  * If 0, Infinity, or NaN: 0
@@ -2128,13 +2130,13 @@
 
                 regExpForEach(str, separator, function (match) {
                     // This condition is not the same as `if (match[0].length)`
-                    if ($.gt(match.index + match[0].length, lastLastIndex)) {
+                    if ($.gt(match.index + $.arrayFirst(match).length, lastLastIndex)) {
                         $.arrayPush(output, str.slice(lastLastIndex, match.index));
                         if ($.gt(match.length, 1) && $.lt(match.index, str.length)) {
                             $.arrayPush.apply($.privateUndefined, [output].concat(match.slice(1)));
                         }
 
-                        lastLength = match[0].length;
+                        lastLength = $.arrayFirst(match).length;
                         lastLastIndex = match.index + lastLength;
                     }
                 });
@@ -2190,7 +2192,8 @@
             // Only needed if `search` is nonglobal
             origLastIndex = search.lastIndex;
         } else {
-            search = $.anyToString(search); // Type-convert
+            // Type-convert
+            search = $.anyToString(search);
         }
 
         // Don't use `typeof`; some older browsers return 'function' for regex objects
@@ -2220,24 +2223,29 @@
                 /*jshint -W098 */
                 return replaceFN.call($.anyToString(replacement), replacementToken, function ($0, $1, $2) {
                     // Else, special variable or numbered backreference without curly braces
-                    if ($.strictEqual($2, '$')) { // $$
+                    // $$
+                    if ($.strictEqual($2, '$')) {
                         return '$';
                     }
 
-                    if ($.strictEqual($2, '&') || $.isZero($.toNumber($2))) { // $&, $0 (not followed by 1-9), $00
+                    // $&, $0 (not followed by 1-9), $00
+                    if ($.strictEqual($2, '&') || $.isZero($.toNumber($2))) {
                         return $.arrayFirst(args);
                     }
 
-                    if ($.strictEqual($2, '`')) { // $` (left context)
-                        return $.arraySlice(args[length - 1], 0, args[length - 2]);
+                    // $` (left context)
+                    if ($.strictEqual($2, '`')) {
+                        return $.arraySlice($.arrayLast(args), $.POSITIVE_ZERO, args[length - 2]);
                     }
 
-                    if ($.strictEqual($2, '\'')) { // $' (right context)
-                        return $.arraySlice(args[length - 1], args[length - 2] + $.arrayFirst(args).length);
+                    // $' (right context)
+                    if ($.strictEqual($2, '\'')) {
+                        return $.arraySlice($.arrayLast(args), args[length - 2] + $.arrayFirst(args).length);
                     }
 
                     // Else, numbered backreference without curly braces
-                    $2 = $.toNumber($2); // Type-convert; drop leading zero
+                    // Type-convert; drop leading zero
+                    $2 = $.toNumber($2);
                     /* XRegExp behavior for `$n` and `$nn`:
                      * - Backrefs end after 1 or 2 digits. Use `${..}` for more digits.
                      * - `$1` is an error if no capturing groups.
@@ -2268,7 +2276,7 @@
         if ($.isTrue(isRegex)) {
             if ($.isTrue(search.global)) {
                 // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
-                search.lastIndex = 0;
+                search.lastIndex = $.POSITIVE_ZERO;
             } else {
                 // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
                 search.lastIndex = origLastIndex;
@@ -2295,7 +2303,7 @@
         } else if ($.isTrue(regExpArg.global)) {
             result = matchFN.apply(str, $.arraySlice(arguments, 1));
             // Fixes IE bug
-            regExpArg.lastIndex = 0;
+            regExpArg.lastIndex = $.POSITIVE_ZERO;
 
             return result;
         }
@@ -2629,7 +2637,8 @@
      */
     /*jshint -W098 */
     $.arrayContains = function (array, searchElement) {
-        return $.notStrictEqual($.arrayIndexOf.apply($.privateUndefined, $.arraySlice(arguments, 0, 2)), -1);
+        return $.notStrictEqual($.arrayIndexOf.apply($.privateUndefined,
+                                                     $.arraySlice(arguments, $.POSITIVE_ZERO, 2)), -1);
     };
     /*jshint +W098 */
 
@@ -2949,7 +2958,7 @@
             length;
 
         if (shouldSplitString && $.isString(inputArg)) {
-            for (index = 0, length = inputArg.length; $.lt(index, length); index += 1) {
+            for (index = $.POSITIVE_ZERO, length = inputArg.length; $.lt(index, length); index += 1) {
                 object[index] = inputArg.charAt(index);
             }
         }
@@ -3416,7 +3425,7 @@
                 throw new TypeError('reduce of empty array with no initial value');
             }
 
-            index = 0;
+            index = $.POSITIVE_ZERO;
             if ($.gt(arguments.length, 2)) {
                 accumulator = initialValue;
             } else {
@@ -3750,13 +3759,13 @@
                     fromIndex = length - 1;
                 }
 
-                if ($.gte(fromIndex, 0)) {
+                if ($.gte(fromIndex, $.POSITIVE_ZERO)) {
                     fromIndex = globalMathMin(fromIndex, length - 1);
                 } else {
                     fromIndex = length - globalMathAbs(fromIndex);
                 }
 
-                for (index = fromIndex; $.gte(index, 0); index -= 1) {
+                for (index = fromIndex; $.gte(index, $.POSITIVE_ZERO); index -= 1) {
                     if ($.hasProperty(object, index) && $.strictEqual(object[index], searchElement)) {
                         val = index;
                         break;
@@ -3979,7 +3988,7 @@
         }
 
         testObject1 = {
-            abc: 0,
+            abc: $.POSITIVE_ZERO,
             def: '',
             ghi: true,
             jkl: $.noop
@@ -3989,7 +3998,7 @@
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
-        if ($.notStrictEqual(testObject1.abc, 0) || $.notStrictEqual(testObject1.def, '') ||
+        if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, '') ||
                 $.notStrictEqual(testObject1.ghi, true) || $.notStrictEqual(testObject1.jkl, $.noop)) {
 
             throw new Error();
@@ -4001,8 +4010,8 @@
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
-        if ($.notStrictEqual(testObject1[0], 10) || $.notStrictEqual(testObject1[1], true) ||
-                $.notStrictEqual(testObject1[2], '') || $.notStrictEqual(testObject1[3], $.noop)) {
+        if ($.notStrictEqual($.arrayFirst(testObject1), 10) || $.notStrictEqual(testObject1[1], true) ||
+                $.notStrictEqual(testObject1[2], '') || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
 
             throw new Error();
         }
