@@ -58,7 +58,7 @@
 
             arr = utilx.arraySlice(someArgs());
             expect(utilx.objectHasOwnProperty(arr, 0)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(arr, 1)).to.not.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 1)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 2)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 3)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 4)).to.be.ok();
@@ -76,7 +76,7 @@
 
             arr = someArgs();
             expect(utilx.objectHasOwnProperty(arr, 0)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(arr, 1)).to.not.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 1)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 2)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 3)).to.be.ok();
             expect(utilx.objectHasOwnProperty(arr, 4)).to.be.ok();
