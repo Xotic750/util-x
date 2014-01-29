@@ -49,7 +49,7 @@
             /*
             msg = 'should throw an exception when called on null or undefined context, if strict mode is supported';
             it(msg, function () {
-                [null, undefined].forEach(function (value) {
+                utilx.arrayForEach([null, undefined], function (value) {
                     // This doesn't work the same when strict mode isn't supported, because the match
                     // method will be called with the global object (window) as its context, rather
                     // than null or undefined
@@ -94,7 +94,7 @@
                     }
                 ];
 
-                tests.forEach(function (test) {
+                utilx.arrayForEach(tests, function (test) {
                     expect(utilx.arraySlice(utilx.stringMatch(test.str, test.regex))).to.eql(test.result);
                 });
             });
@@ -102,7 +102,7 @@
             /*
             msg = 'should throw an exception when called on null or undefined context, if strict mode is supported';
             it(msg, function () {
-                [null, undefined].forEach(function (value) {
+                utilx.arrayForEach([null, undefined], function (value) {
                     // This doesn't work the same when strict mode isn't supported, because the match
                     // method will be called with the global object (window) as its context, rather
                     // than null or undefined

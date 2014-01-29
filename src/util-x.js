@@ -838,27 +838,6 @@
     };
 
     /**
-     * Returns true if the operand inputArg is deemed numeric.
-     * @memberOf utilx
-     * @function
-     * @param {*} inputArg
-     * @return {boolean}
-     */
-    $.isNumeric = function (inputArg) {
-        var val = false,
-            string;
-
-        if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
-            string = $.anyToString(inputArg).replace(rxPlusMinus, emptyString);
-            if (!globalIsNaN(parseFloat(string)) && globalIsFinite(string)) {
-                val = true;
-            }
-        }
-
-        return val;
-    };
-
-    /**
      * The abstract operation throws an error if its argument is a value that cannot be
      * converted to an Object using $.argToObject, otherwise returns the argument.
      * @memberOf utilx
@@ -1042,7 +1021,7 @@
      * @return {boolean}
      */
     if ($.isTypeObject(window) && $.isTruthy(window.alert) && $.isUndefined(window.alert.toString) &&
-                rxBeginsFunction.test(window.alert)) {
+                testFN.call(rxBeginsFunction, window.alert)) {
 
         isIENativeFunction = function (inputArg) {
             // $.isTruthy(inputArg)
@@ -1056,14 +1035,14 @@
             // so next step is a "safe" destructuration
             // assumption
 
-            // rxBeginsFunction.test(inputArg)
+            // testFN.call(rxBeginsFunction, inputArg)
             // we are looking for a function
             // and IE shows them with function
             // as first word. Eventually
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return $.isTruthy(inputArg) && $.isUndefined(inputArg.toString) && rxBeginsFunction.test(inputArg);
+            return $.isTruthy(inputArg) && $.isUndefined(inputArg.toString) && testFN.call(rxBeginsFunction, inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -1088,7 +1067,7 @@
         testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
         rxOperaNative = new RegExp(testValue);
         isNativeFunction = function (inputArg) {
-            return rxOperaNative.test(inputArg);
+            return testFN.call(rxOperaNative, inputArg);
         };
     } catch (e) {
         isNativeFunction = function (inputArg) {
@@ -2003,12 +1982,12 @@
             }
 
             // Fix browsers that increment `lastIndex` after zero-length matches
-            if ($.isTruthy(regExpArg.global) && !$.isZero(match[0].length) && $.gt(regExpArg.lastIndex, match.index)) {
+            if ($.isTrue(regExpArg.global) && !$.isZero(match[0].length) && $.gt(regExpArg.lastIndex, match.index)) {
                 regExpArg.lastIndex = match.index;
             }
         }
 
-        if ($.isFalsy(regExpArg.global)) {
+        if ($.isFalse(regExpArg.global)) {
             // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
             regExpArg.lastIndex = origLastIndex;
         }
@@ -2052,7 +2031,7 @@
 
         r2.lastIndex = pos = clampInteger(pos, 0, $.MAX_INTEGER);
         match = $.regExpExec(r2, str);
-        if ($.isTruthy(regExpArg.global)) {
+        if ($.isTrue(regExpArg.global)) {
             if ($.arrayIsArray(match)) {
                 regExpArg.lastIndex = r2.lastIndex;
             } else {
@@ -2221,7 +2200,7 @@
             result = replaceFN.call(str, search, function () {
                 // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                 // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
-                if ($.isTrue(isRegex) && $.isTruthy(search.global)) {
+                if ($.isTrue(isRegex) && $.isTrue(search.global)) {
                     search.lastIndex = arguments[arguments.length - 2] + $.arrayFirst(arguments).length;
                 }
 
@@ -2287,7 +2266,7 @@
         }
 
         if ($.isTrue(isRegex)) {
-            if ($.isTruthy(search.global)) {
+            if ($.isTrue(search.global)) {
                 // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
                 search.lastIndex = 0;
             } else {
@@ -2313,7 +2292,7 @@
 
         if (!$.isRegExp(regExpArg)) {
             regExpArg = new RegExp(regExpArg);
-        } else if ($.isTruthy(regExpArg.global)) {
+        } else if ($.isTrue(regExpArg.global)) {
             result = matchFN.apply(str, $.arraySlice(arguments, 1));
             // Fixes IE bug
             regExpArg.lastIndex = 0;
@@ -3889,7 +3868,29 @@
      * @return {boolean}
      */
     $.isDigits = function (string) {
-        return $.isStringNotEmpty(string) && rxNotDigits.test(string);
+        return $.isStringNotEmpty(string) && $.regExpTest(rxNotDigits, string);
+    };
+
+
+    /**
+     * Returns true if the operand inputArg is deemed numeric.
+     * @memberOf utilx
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    $.isNumeric = function (inputArg) {
+        var val = false,
+            string;
+
+        if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
+            string = $.stringReplace($.anyToString(inputArg), rxPlusMinus, emptyString);
+            if (!globalIsNaN(parseFloat(string)) && globalIsFinite(string)) {
+                val = true;
+            }
+        }
+
+        return val;
     };
 
     /**
@@ -5117,8 +5118,8 @@
             var result = '"';
 
             rxEscapable.lastIndex = $.POSITIVE_ZERO;
-            if (rxEscapable.test(string)) {
-                result += string.replace(rxEscapable, function (a) {
+            if ($.regExpTest(rxEscapable, string)) {
+                result += $.stringReplace(string, rxEscapable, function (a) {
                     var c = stringifyMeta[a],
                         r;
 
@@ -5347,15 +5348,14 @@
 
             text = $.anyToString(text);
             rxParseCharacterTest.lastIndex = $.POSITIVE_ZERO;
-            if (rxParseCharacterTest.test(text)) {
-                text = text.replace(rxParseCharacterTest, function (a) {
+            if ($.regExpTest(rxParseCharacterTest, text)) {
+                text = $.stringReplace(text, rxParseCharacterTest, function (a) {
                     return '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
                 });
             }
 
-            if (rxParseProtect1.test(text.replace(rxParseProtect2, '@')
-                                     .replace(rxParseProtect3, ']')
-                                     .replace(rxParseProtect4, emptyString))) {
+            if ($.regExpTest(rxParseProtect1, $.stringReplace($.stringReplace($.stringReplace(text,
+                                        rxParseProtect2, '@'), rxParseProtect3, ']'), rxParseProtect4, emptyString))) {
 
                 /*jslint evil: true */
                 j = eval('(' + text + ')');
