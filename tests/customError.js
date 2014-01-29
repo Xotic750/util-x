@@ -55,13 +55,13 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(e.toString()).to.match(new RegExp('^MyError: test'));
+                expect(utilx.regExpTest(new RegExp('^MyError: test'), e.toString())).to.be.ok();
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                expect(e.toString()).to.match(new RegExp('^MySyntaxError: test'));
+                expect(utilx.regExpTest(new RegExp('^MySyntaxError: test'), e.toString())).to.be.ok();
             });
 
             expect(function () {
@@ -90,7 +90,7 @@
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(e.toString()).to.match(new RegExp('^MyError: test'));
+                expect(utilx.regExpTest(new RegExp('^MyError: test'), e.toString())).to.be.ok();
                 if (utilx.isString(e.stack)) {
                     /*global console */
                     console.log('# An example stack trace');

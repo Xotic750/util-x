@@ -29,7 +29,7 @@
                 throw new Error(message);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(Error);
-                expect(e.toString()).to.match(new RegExp('^Error: ' + message));
+                expect(utilx.regExpTest(new RegExp('^Error: ' + message), e.toString())).to.be.ok();
             });
 
             expect(!utilx.normaliseErrorIEToStringOff()).to.be.ok();

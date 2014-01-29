@@ -236,7 +236,7 @@
             }];
 
             utilx.arrayForEach(values, function (value) {
-                expect(value.target.replace(value.search, value.replacement)).to.be(value.expected);
+                expect(utilx.stringReplace(value.target, value.search, value.replacement)).to.be(value.expected);
             });
 
             // Implicit undefined search and replacement
@@ -267,7 +267,7 @@
             }];
 
             utilx.arrayForEach(values, function (value) {
-                expect(value.target.replace(value.search, value.replacement)).to.be(value.expected);
+                expect(utilx.stringReplace(value.target, value.search, value.replacement)).to.be(value.expected);
             });
 
             // Implicit undefined replacement
