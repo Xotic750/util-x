@@ -88,7 +88,7 @@
         tostringFnFN = baseFunction.toString,
         CtrFunction = baseFunction.constructor,
 
-        baseRegExp = new RegExp('base'),
+        baseRegExp = new RegExp(),
         execFN = baseRegExp.exec,
         testFN = baseRegExp.test,
         correctExecNpcg,
@@ -115,8 +115,8 @@
         defineGetterFN = baseObject[defineGetter],
         defineSetterFN = baseObject[defineSetter],
 
-        objectName = 'object',
-        functionName = 'function',
+        objectString = 'object',
+        functionString = 'function',
         calleeString = 'callee',
         lengthString = 'length',
         prototypeString = 'prototype',
@@ -128,30 +128,40 @@
         stackString = 'stack',
         stacktraceString = 'stacktrace',
         messageString = 'message',
-        newLine = '\n',
+        newlineString = '\n',
         factoryString = 'factory',
+        numberString = 'number',
+        stringString = 'string',
+        nullString = 'null',
+        booleanString = 'boolean',
+        undefinedString = 'undefined',
         setString = 'set',
         getString = 'get',
-        emptyString = '',
+        emptyString = baseString,
+        zeroString = '0',
+        gString = 'g',
         dotString = '.',
 
-        argumentsString = '[object Arguments]',
-        functionString = '[object Function]',
-        objectString = '[object Object]',
-        undefinedString = '[object Undefined]',
-        nullString = '[object Null]',
-        errorString = '[object Error]',
-        regexpString = '[object RegExp]',
-        arrayString = '[object Array]',
-        dateString = '[object Date]',
-        stringString = '[object String]',
+        argumentsObjectString = '[object Arguments]',
+        functionObjectString = '[object Function]',
+        objectObjectString = '[object Object]',
+        undefinedObjectString = '[object Undefined]',
+        nullObjectString = '[object Null]',
+        errorObjectString = '[object Error]',
+        regexpObjectString = '[object RegExp]',
+        arrayObjectString = '[object Array]',
+        dateObjectString = '[object Date]',
+        stringObjectString = '[object String]',
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
         rxNotDigits = new RegExp('^\\d+$'),
         rxTest = new RegExp(testString),
-        rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
+        rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', gString),
         rxBeginsFunction = new RegExp('^\\s*\\bfunction\\b'),
+        rxReplacementToken = new RegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', gString),
+        rxGetNativeFlags = new RegExp('\\/([a-z]*)$', 'i'),
+        rxClipDuplicates = new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', gString),
         rxOperaNative,
         wsTrimRX,
 
@@ -183,6 +193,7 @@
         isIENativeFunction,
         isNativeFunction,
         boxedString,
+        reduceTypeErrorMessage,
 
         // JSON compliance result
         isSupportedResult,
@@ -619,7 +630,7 @@
      * @return {boolean}
      */
     $.isUndefined = function (inputArg) {
-        return $.strictEqual(typeof inputArg, 'undefined');
+        return $.strictEqual(typeof inputArg, undefinedString);
     };
 
     /**
@@ -714,7 +725,7 @@
      * @return {boolean}
      */
     $.isNumber = function (inputArg) {
-        return $.strictEqual(typeof inputArg, 'number');
+        return $.strictEqual(typeof inputArg, numberString);
     };
 
     /**
@@ -758,7 +769,7 @@
      * @return {boolean}
      */
     $.isString = function (inputArg) {
-        return $.strictEqual(typeof inputArg, 'string');
+        return $.strictEqual(typeof inputArg, stringString);
     };
 
     /**
@@ -794,13 +805,13 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.isTrue($.strictEqual(typeof rxTest, objectName))) {
+    if ($.isTrue($.strictEqual(typeof rxTest, objectString))) {
         $.isTypeOfObject = function (inputArg) {
-            return $.strictEqual(typeof inputArg, objectName);
+            return $.strictEqual(typeof inputArg, objectString);
         };
     } else {
         $.isTypeOfObject = function (inputArg) {
-            return $.strictEqual(typeof inputArg, objectName) || $.isRegExp(inputArg);
+            return $.strictEqual(typeof inputArg, objectString) || $.isRegExp(inputArg);
         };
     }
 
@@ -889,7 +900,7 @@
         if ($.isString(inputArg)) {
             val = inputArg;
         } else if ($.isUndefined(inputArg)) {
-            val = 'undefined';
+            val = undefinedString;
         } else {
             val = String(inputArg);
         }
@@ -917,20 +928,20 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
+    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsObjectString)) {
         $.isArguments = function (inputArg) {
-            return $.strictEqual(toStringFN.call(inputArg), argumentsString);
+            return $.strictEqual(toStringFN.call(inputArg), argumentsObjectString);
         };
-    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionString)) {
+    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionObjectString)) {
         isArgumentsCheck = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectString) &&
+                $.strictEqual(toStringFN.call(inputArg), objectObjectString) &&
                 hasOwnPropertyFN.call(inputArg, calleeString) &&
                 hasOwnPropertyFN.call(inputArg, lengthString) &&
                 $.isNumber(inputArg.length);
         };
 
-        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionString)) {
+        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionObjectString)) {
             $.isArguments = function (inputArg) {
                 return isArgumentsCheck(inputArg) &&
                     !propertyIsEnumerableFN.call(inputArg, calleeString) &&
@@ -944,7 +955,7 @@
     if ($.isUndefined($.isArguments)) {
         $.isArguments = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectString) &&
+                $.strictEqual(toStringFN.call(inputArg), objectObjectString) &&
                 $.hasProperty(inputArg, calleeString) &&
                 $.hasProperty(inputArg, lengthString) &&
                 $.isNumber(inputArg.length);
@@ -960,9 +971,9 @@
      * @return {string}
      */
     try {
-        if ($.strictEqual(toStringFN.call(), undefinedString) &&
-                $.strictEqual(toStringFN.call(null), nullString) &&
-                $.strictEqual(toStringFN.call($.returnArgs()), argumentsString)) {
+        if ($.strictEqual(toStringFN.call(), undefinedObjectString) &&
+                $.strictEqual(toStringFN.call(null), nullObjectString) &&
+                $.strictEqual(toStringFN.call($.returnArgs()), argumentsObjectString)) {
 
             $.toObjectString = function (object) {
                 return toStringFN.call(object);
@@ -975,11 +986,11 @@
             var val;
 
             if ($.isUndefined(object)) {
-                val = undefinedString;
+                val = undefinedObjectString;
             } else if ($.isNull(object)) {
-                val = nullString;
+                val = nullObjectString;
             } else if ($.isArguments(object)) {
-                val = argumentsString;
+                val = argumentsObjectString;
             } else {
                 val = toStringFN.call(object);
             }
@@ -996,7 +1007,7 @@
      * @return {boolean}
      */
     $.isError = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), errorString) ||
+        return $.strictEqual($.toObjectString(inputArg), errorObjectString) ||
             ($.isTypeObject(inputArg) && $.objectInstanceOf(inputArg, Error));
     };
 
@@ -1008,7 +1019,7 @@
      * @return {boolean}
      */
     $.isRegExp = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), regexpString) &&
+        return $.strictEqual($.toObjectString(inputArg), regexpObjectString) &&
             $.isString(inputArg.source) && $.isBoolean(inputArg.global);
     };
 
@@ -1099,10 +1110,10 @@
      * @return {boolean}
      */
     function isFunctionBasic(inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), functionString) ||
-            ($.strictEqual(typeof inputArg, functionName) &&
-             $.strictEqual(typeof inputArg.call, functionName) &&
-             $.strictEqual(typeof inputArg.apply, functionName));
+        return $.strictEqual($.toObjectString(inputArg), functionObjectString) ||
+            ($.strictEqual(typeof inputArg, functionString) &&
+             $.strictEqual(typeof inputArg.call, functionString) &&
+             $.strictEqual(typeof inputArg.apply, functionString));
     }
 
     /**
@@ -1183,7 +1194,7 @@
      * @return {boolean}
      */
     $.isObject = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), objectString) && !$.isFunction(inputArg);
+        return $.strictEqual($.toObjectString(inputArg), objectObjectString) && !$.isFunction(inputArg);
     };
 
     /**
@@ -1250,7 +1261,7 @@
         $.arrayIsArray = isArrayFN;
     } else {
         $.arrayIsArray = function (inputArg) {
-            return $.strictEqual($.toObjectString(inputArg), arrayString);
+            return $.strictEqual($.toObjectString(inputArg), arrayObjectString);
         };
     }
 
@@ -1281,7 +1292,7 @@
      * @return {boolean}
      */
     $.isDate = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), dateString);
+        return $.strictEqual($.toObjectString(inputArg), dateObjectString);
     };
 
     /**
@@ -1896,7 +1907,7 @@
      * @returns {string} String with any duplicate characters removed.
      */
     function clipDuplicates(str) {
-        return replaceFN.call(str, /([\s\S])(?=[\s\S]*\1)/g, emptyString);
+        return replaceFN.call(str, rxClipDuplicates, emptyString);
     }
 
     /**
@@ -1928,7 +1939,7 @@
         }
 
         // Get native flags in use
-        var flags = execFN.call(/\/([a-z]*)$/i, $.anyToString(regExpArg))[1];
+        var flags = execFN.call(rxGetNativeFlags, $.anyToString(regExpArg))[1];
 
         if (options.add) {
             flags = clipDuplicates(flags + options.add);
@@ -1936,14 +1947,14 @@
 
         if (options.remove) {
             // Would need to escape `options.remove` if this was public
-            flags = replaceFN.call(flags, new RegExp('[' + options.remove + ']+', 'g'), emptyString);
+            flags = replaceFN.call(flags, new RegExp('[' + options.remove + ']+', gString), emptyString);
         }
 
         return new RegExp(regExpArg.source, flags);
     }
 
     // Check for correct `exec` handling of nonparticipating capturing groups
-    correctExecNpcg = $.isUndefined(execFN.call(/()??/, emptyString)[1]);
+    correctExecNpcg = $.isUndefined(execFN.call(new RegExp('()??'), emptyString)[1]);
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -1965,7 +1976,7 @@
             // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
             // older IEs. IE 9 in standards mode follows the spec
             if ($.isFalse(correctExecNpcg) && $.gt(match.length, 1) && $.arrayContains(match, emptyString)) {
-                r2 = copyRegExp(regExpArg, {remove: 'g'});
+                r2 = copyRegExp(regExpArg, {remove: gString});
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
                 replaceFN.call($.anyToString(str).slice(match.index), r2, function () {
@@ -2026,7 +2037,7 @@
 
         var str = onlyCoercibleToString(stringArg),
             r2 = copyRegExp(regExpArg, {
-                add: 'g',
+                add: gString,
                 remove: 'y'
             }),
             match;
@@ -2201,28 +2212,29 @@
             // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
             // functions isn't type-converted to a string
             result = replaceFN.call(str, search, function () {
+                var args = $.arraySlice(arguments);
+
                 // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                 // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
                 if ($.isTrue(isRegex) && $.isTrue(search.global)) {
-                    search.lastIndex = arguments[arguments.length - 2] + $.arrayFirst(arguments).length;
+                    search.lastIndex = args[args.length - 2] + $.arrayFirst(args).length;
                 }
 
                 // Should pass `undefined` as context; see
                 // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                return replacement.apply($.privateUndefined, arguments);
+                return replacement.apply($.privateUndefined, args);
             });
         } else {
             // Ensure that the last value of `args` will be a string when given nonstring `this`,
             // while still throwing on `null` or `undefined` context
             result = replaceFN.call(str, search, function () {
                 // Keep this function's `arguments` available through closure
-                var replacementToken = /\$(?:\{(\$+)\}|(\d\d?|[\s\S]))/g,
-                    args = arguments,
+                var args = $.arraySlice(arguments),
                     length = args.length;
 
                 /*jshint -W098 */
-                return replaceFN.call($.anyToString(replacement), replacementToken, function ($0, $1, $2) {
-                    // Else, special variable or numbered backreference without curly braces
+                return replaceFN.call($.anyToString(replacement), rxReplacementToken, function ($0, $1, $2) {
+                    // Special variable or numbered backreference without curly braces
                     // $$
                     if ($.strictEqual($2, '$')) {
                         return '$';
@@ -2243,16 +2255,11 @@
                         return $.arraySlice($.arrayLast(args), args[length - 2] + $.arrayFirst(args).length);
                     }
 
-                    // Else, numbered backreference without curly braces
+                    // Numbered backreference without curly braces
                     // Type-convert; drop leading zero
                     $2 = $.toNumber($2);
-                    /* XRegExp behavior for `$n` and `$nn`:
-                     * - Backrefs end after 1 or 2 digits. Use `${..}` for more digits.
-                     * - `$1` is an error if no capturing groups.
-                     * - `$10` is an error if less than 10 capturing groups. Use `${1}0` instead.
-                     * - `$01` is `$1` if at least one capturing group, else it's an error.
-                     * - `$0` (not followed by 1-9) and `$00` are the entire match.
-                     * Native behavior, for comparison:
+                    /*
+                     * Native behavior
                      * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
                      * - `$1` is a literal `$1` if no capturing groups.
                      * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
@@ -2704,26 +2711,15 @@
      * @return {boolean}
      */
     if ($.isNativeFunction(propertyIsEnumerableFN)) {
-        if (hasDontEnumBug) {
+        if ($.isTrue(hasDontEnumBug)) {
             $.objectPropertyIsEnumerable = function (object, property) {
-                var skipProto = hasFuncProtoBug && $.isFunction(object),
-                    val;
-
-                if ($.objectInstanceOf(object, CtrObject)) {
-                    val = !(skipProto && $.strictEqual(property, prototypeString)) &&
+                return !($.isTrue(hasDontEnumBug) && $.isFunction(object) &&
+                            $.strictEqual(property, prototypeString)) &&
                             (propertyIsEnumerableFN.call(object, property) ||
                              ($.arrayContains(defaultProperties, property) && $.hasProperty(object, property) &&
                               !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
-                } else {
-                    val = !(skipProto && $.strictEqual(property, prototypeString)) &&
-                            (propertyIsEnumerableCustom(object, property) ||
-                             ($.arrayContains(defaultProperties, property) && $.hasProperty(object, property) &&
-                              !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
-                }
-
-                return val;
             };
-        } else if (hasFuncProtoBug) {
+        } else if ($.isTrue(hasFuncProtoBug)) {
             $.objectPropertyIsEnumerable = function (object, property) {
                 var val;
 
@@ -2760,14 +2756,14 @@
     // Create our own local "hasOwnProperty" function: native -> shim -> sham
     // named $.objectHasOwnProperty instead of hasOwnProperty because of SpiderMonkey and Blackberry bug
     if ($.isNativeFunction(hasOwnPropertyFN)) {
-        if (hasDontEnumBug) {
+        if ($.isTrue(hasDontEnumBug)) {
             $.objectHasOwnProperty = function (object, property) {
                 return hasOwnPropertyFN.call(object, property) ||
                     ($.arrayContains(defaultProperties, property) &&
                         $.hasProperty(object, property) &&
                         !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
             };
-        } else if (hasFuncProtoBug) {
+        } else if ($.isTrue(hasFuncProtoBug)) {
             $.objectHasOwnProperty = function (object, property) {
                 var val;
 
@@ -2948,8 +2944,8 @@
      * @param {*} inputArg
      * @return {object}
      */
-    boxedString = $.argToObject('a');
-    shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], 'a') ||
+    boxedString = $.argToObject(gString);
+    shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], gString) ||
                             !$.hasProperty(boxedString, $.POSITIVE_ZERO);
 
     $.toObjectFixIndexedAccess = function (inputArg) {
@@ -3108,7 +3104,7 @@
         });
 
         if ($.isNativeFunction(forEachFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringString)) {
+                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
 
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
@@ -3153,7 +3149,7 @@
         });
 
         if ($.isNativeFunction(someFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringString)) {
+                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
 
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
@@ -3203,7 +3199,7 @@
         });
 
         if ($.isNativeFunction(mapFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringString)) {
+                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
 
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
@@ -3344,7 +3340,7 @@
         });
 
         if ($.isNativeFunction(filterFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringString)) {
+                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
 
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
@@ -3401,7 +3397,7 @@
         });
 
         if ($.isNativeFunction(reduceFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringString)) {
+                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
 
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
@@ -3412,6 +3408,7 @@
             throw new Error();
         }
     } catch (e) {
+        reduceTypeErrorMessage = 'reduce of empty array with no initial value';
         $.arrayReduce = function (array, fn, initialValue) {
             var object = $.toObjectFixIndexedAccess(array),
                 accumulator,
@@ -3422,7 +3419,7 @@
             throwIfNotAFunction(fn);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             if ($.isZero(length) && $.strictEqual(arguments.length, 2)) {
-                throw new TypeError('reduce of empty array with no initial value');
+                throw new TypeError(reduceTypeErrorMessage);
             }
 
             index = $.POSITIVE_ZERO;
@@ -3439,7 +3436,7 @@
                 }
 
                 if ($.isFalse(kPresent)) {
-                    throw new TypeError('reduce of empty array with no initial value');
+                    throw new TypeError(reduceTypeErrorMessage);
                 }
             }
 
@@ -3661,10 +3658,10 @@
         }
     } catch (e) {
         whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
-            return previous + '\\u' + $.padLeadingChar(element.toString(16), '0', 4);
+            return previous + '\\u' + $.padLeadingChar(element.toString(16), zeroString, 4);
         }, emptyString);
 
-        wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', 'g');
+        wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', gString);
         $.stringTrim = function (inputArg) {
             return $.stringReplace(onlyCoercibleToString(inputArg), wsTrimRX, emptyString);
         };
@@ -3940,7 +3937,7 @@
 
         // Test assign to array
         try {
-            testObject1 = definePropertyFN([], '0', {
+            testObject1 = definePropertyFN([], zeroString, {
                 value: null
             });
 
@@ -3953,7 +3950,7 @@
 
         // Test overwrite array property when no value defined
         try {
-            testObject1 = definePropertyFN([10], '0', {});
+            testObject1 = definePropertyFN([10], zeroString, {});
             if ($.notStrictEqual(testObject1[$.POSITIVE_ZERO], 10)) {
                 throw new Error('Fails overwrite check');
             }
@@ -3989,7 +3986,7 @@
 
         testObject1 = {
             abc: $.POSITIVE_ZERO,
-            def: '',
+            def: emptyString,
             ghi: true,
             jkl: $.noop
         };
@@ -3998,20 +3995,20 @@
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
-        if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, '') ||
+        if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, emptyString) ||
                 $.notStrictEqual(testObject1.ghi, true) || $.notStrictEqual(testObject1.jkl, $.noop)) {
 
             throw new Error();
         }
 
-        testObject1 = [10, true, '', $.noop];
+        testObject1 = [10, true, emptyString, $.noop];
 
         $.arrayForEach($.objectKeys(testObject1), function (key) {
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
         if ($.notStrictEqual($.arrayFirst(testObject1), 10) || $.notStrictEqual(testObject1[1], true) ||
-                $.notStrictEqual(testObject1[2], '') || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
+                $.notStrictEqual(testObject1[2], emptyString) || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
 
             throw new Error();
         }
@@ -4475,7 +4472,7 @@
      * @return {string}
      */
     $.escapeRegex = function (string) {
-        return $.stringReplace(string, rxEscapeThese, '\\$&');
+        return $.stringReplace($.anyToString(string), rxEscapeThese, '\\$&');
     };
 
     /**
@@ -4500,7 +4497,7 @@
      * @return {string}
      */
     $.replaceAll = function (string, pattern, characters) {
-        return $.stringReplace(string, new RegExp($.escapeRegex(pattern), 'g'), characters);
+        return $.stringReplace(string, new RegExp($.escapeRegex(pattern), gString), characters);
     };
 
     /**
@@ -4730,7 +4727,7 @@
             throw new Error(message);
         } catch (e) {
             if ($.strictEqual(e.message, message) &&
-                    $.strictEqual(e.toString(), errorString)) {
+                    $.strictEqual(e.toString(), errorObjectString)) {
 
                 previousIEErrorToString = Error.prototype.toString;
                 $.objectDefineProperties(Error.prototype, {
@@ -4861,7 +4858,7 @@
                             return val;
                         });
 
-                        messageToString += $.arrayJoin(arr, newLine);
+                        messageToString += $.arrayJoin(arr, newlineString);
                     } else {
                         messageToString += this.message;
                     }
@@ -5045,10 +5042,10 @@
             isSupportedResult =
                 // Firefox 3.1b1 and b2 serialize string, number, and boolean
                 // primitives as object literals.
-                $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), '0') &&
+                $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), zeroString) &&
                 // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
                 // literals.
-                $.strictEqual(globalJsonStringify(new CtrNumber()), '0') &&
+                $.strictEqual(globalJsonStringify(new CtrNumber()), zeroString) &&
                 $.strictEqual(globalJsonStringify(new CtrString()), '""') &&
                 // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
                 // does not define a canonical JSON representation (this applies to
@@ -5072,7 +5069,7 @@
                 // `"[null]"`.
                 $.strictEqual(globalJsonStringify([$.privateUndefined]), '[null]') &&
                 // YUI 3.0.0b1 fails to serialize `null` literals.
-                $.strictEqual(globalJsonStringify(null), 'null') &&
+                $.strictEqual(globalJsonStringify(null), nullString) &&
                 // FF 3.1b1, 2 halts serialization if an array contains a function:
                 // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
                 // of Firefox also allow trailing commas in JSON objects and arrays.
@@ -5112,7 +5109,7 @@
     } else {
         escapableRxString = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
         escapableRxString += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-        rxEscapable = new RegExp(escapableRxString, 'g');
+        rxEscapable = new RegExp(escapableRxString, gString);
         stringifyMeta = {
             '\b': '\\b',
             '\t': '\\t',
@@ -5164,18 +5161,18 @@
             }
 
             switch (typeof value) {
-            case 'string':
+            case stringString:
                 return stringifyQuote(value);
-            case 'number':
+            case numberString:
                 if ($.numberIsFinite(value)) {
                     return $.anyToString(value);
                 }
 
-                return 'null';
-            case 'boolean':
-            case 'null':
+                return nullString;
+            case booleanString:
+            case nullString:
                 return $.anyToString(value);
-            case 'object':
+            case objectString:
                 if ($.isNull(value)) {
                     return $.anyToString(value);
                 }
@@ -5185,14 +5182,14 @@
                 if ($.arrayIsArray(value)) {
                     length = value.length;
                     for (index = $.POSITIVE_ZERO; index < length; index += 1) {
-                        $.arrayAssign(partial, index, stringifyToString(index, value) || 'null');
+                        $.arrayAssign(partial, index, stringifyToString(index, value) || nullString);
                     }
 
                     if ($.isZero(partial.length)) {
                         member = '[]';
                     } else if ($.isStringNotEmpty(stringifyGap)) {
-                        member = '[' + newLine + stringifyGap + $.arrayJoin(partial, ',' + newLine + stringifyGap) +
-                                                newLine + mind + ']';
+                        member = '[' + newlineString + stringifyGap +
+                            $.arrayJoin(partial, ',' + newlineString + stringifyGap) + newlineString + mind + ']';
                     } else {
                         member = '[' + $.arrayJoin(partial) + ']';
                     }
@@ -5228,8 +5225,8 @@
                 if ($.isZero(partial.length)) {
                     member = '{}';
                 } else if ($.isStringNotEmpty(stringifyGap)) {
-                    member = '{' + newLine + stringifyGap + $.arrayJoin(partial, ',' + newLine + stringifyGap) +
-                                                newLine + mind + '}';
+                    member = '{' + newlineString + stringifyGap +
+                        $.arrayJoin(partial, ',' + newlineString + stringifyGap) + newlineString + mind + '}';
                 } else {
                     member = '{' + $.arrayJoin(partial) + '}';
                 }
@@ -5281,7 +5278,7 @@
             // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
             // Conforming implementations should also coerce the initial argument to
             // a string prior to parsing.
-            if ($.isZero(globalJsonParse('0')) && $.isFalse(globalJsonParse(false))) {
+            if ($.isZero(globalJsonParse(zeroString)) && $.isFalse(globalJsonParse(false))) {
                 // Simple parsing test.
                 testValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
                 isSupportedResult = $.strictEqual(testValue.A.length, 5) &&
@@ -5328,12 +5325,13 @@
         }
     } else {
         rxParseProtect1 = new RegExp('^[\\],:{}\\s]*$');
-        rxParseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
-        rxParseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
-        rxParseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
+        rxParseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', gString);
+        rxParseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?',
+                                     gString);
+        rxParseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', gString);
         parseRxCharacterString = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
         parseRxCharacterString += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-        rxParseCharacterTest = new RegExp(parseRxCharacterString, 'g');
+        rxParseCharacterTest = new RegExp(parseRxCharacterString, gString);
         $.jsonParse = function (text, reviver) {
             var j;
 
