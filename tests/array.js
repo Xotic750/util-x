@@ -48,5 +48,41 @@
             expect(utilx.objectHasOwnProperty(testSubject, 6)).to.be.ok();
             expect(utilx.objectHasOwnProperty(testSubject, 7)).to.be.ok();
         });
+
+        it('can be fixed1?', function () {
+            var arr;
+
+            function someArgs() {
+                return utilx.returnArgs.apply(null, testSubject);
+            }
+
+            arr = utilx.arraySlice(someArgs());
+            expect(utilx.objectHasOwnProperty(arr, 0)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 1)).to.not.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 2)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 3)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 4)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 5)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 6)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 7)).to.be.ok();
+        });
+
+        it('can be fixed2?', function () {
+            var arr;
+
+            function someArgs() {
+                return utilx.returnArgs.apply(null, testSubject);
+            }
+
+            arr = someArgs();
+            expect(utilx.objectHasOwnProperty(arr, 0)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 1)).to.not.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 2)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 3)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 4)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 5)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 6)).to.be.ok();
+            expect(utilx.objectHasOwnProperty(arr, 7)).to.be.ok();
+        });
     });
 }());
