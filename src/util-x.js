@@ -33,7 +33,6 @@
         propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
         CtrObject = baseObject.constructor,
         baseObjectPrototype = CtrObject.prototype,
-        //noNewCtrObject = CtrObject,
         isIsFn = CtrObject.is,
         getPrototypeOfFN = CtrObject.getPrototypeOf,
         keysFN = CtrObject.keys,
@@ -88,7 +87,6 @@
         },
         tostringFnFN = baseFunction.toString,
         CtrFunction = baseFunction.constructor,
-        //noNewCtrFunction = CtrFunction,
 
         baseRegExp = new RegExp('base'),
         execFN = baseRegExp.exec,
@@ -150,7 +148,6 @@
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
-        //rxNpcgCheck = new RegExp('()??'),
         rxNotDigits = new RegExp('^\\d+$'),
         rxTest = new RegExp(testString),
         rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
@@ -177,13 +174,11 @@
         TestConstructor,
         previousIEErrorToString,
         isArgumentsCheck,
-        //compliantExecNpcg,
         fixOpera10GetPrototypeOf,
         testProp,
         testValue,
         shouldSplitString,
         isOkToUseOtherErrors,
-        //stringSplitReplacer,
         isFunctionInternal,
         isIENativeFunction,
         isNativeFunction,
@@ -1918,8 +1913,8 @@
     /**
      * Removes any duplicate characters from the provided string.
      * @private
-     * @param {String} str String to remove duplicate characters from.
-     * @returns {String} String with any duplicate characters removed.
+     * @param {string} str String to remove duplicate characters from.
+     * @returns {string} String with any duplicate characters removed.
      */
     function clipDuplicates(str) {
         return replaceFN.call(str, /([\s\S])(?=[\s\S]*\1)/g, emptyString);
@@ -1975,8 +1970,8 @@
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
      * @memberOf utilx
      * @param {RegExp} regExpArg
-     * @param {String} stringArg String to search.
-     * @returns {Array} Match array with named backreference properties, or `null`.
+     * @param {string} stringArg String to search.
+     * @returns {array} Match array with named backreference properties, or `null`.
      */
     $.regExpExec = function (regExpArg, stringArg) {
         throwIfIsNotRegExp(regExpArg);
@@ -2022,16 +2017,28 @@
     };
 
     /**
+     * Fixes browser bugs in the native `RegExp.prototype.test`.
+     * @memberOf utilx
+     * @param {RegExp} regExpArg
+     * @param {string} stringArg String to search.
+     * @returns {Boolean} Whether the regex matched the provided value.
+     */
+    $.regExpTest = function (regExpArg, stringArg) {
+        // Do this the easy way :-)
+        return $.isTruthy($.regExpExec(regExpArg, stringArg));
+    };
+
+    /**
      * Executes a regex search in a specified string. Returns a match array or `null`.
      * Optional `pos` argument specifies the search start position.
      * The `lastIndex` property of the provided regex is not
      * used, but is updated for compatibility. Also fixes browser bugs compared to the native
      * `RegExp.prototype.exec` and can be used reliably cross-browser.
      * @private
-     * @param {String} stringArg String to search.
+     * @param {string} stringArg String to search.
      * @param {RegExp} regExpArg Regex to search with.
      * @param {Number} [pos=0] Zero-based index at which to start the search.
-     * @returns {Array} Match array or `null`.
+     * @returns {array} Match array or `null`.
      */
     function regExpForEachExec(stringArg, regExpArg, pos) {
         throwIfIsNotRegExp(regExpArg);
@@ -2059,7 +2066,7 @@
     /**
      * Executes a provided function once per regex match.
      * @private
-     * @param {String} str String to search.
+     * @param {string} str String to search.
      * @param {RegExp} regex Regex to search with.
      * @param {Function} callback Function to execute for each match. Invoked with four arguments:
      *   <li>The match array, with named backreference properties.
@@ -2068,13 +2075,6 @@
      *   <li>The regex object being used to traverse the string.
      * @param {*} [context] Object to use as `this` when executing `callback`.
      * @returns {*} Provided `context` object.
-     * @example
-     *
-     * // Extracts every other digit from a string
-     * regExpForEach('1a2345', /\d/, function(match, i) {
-     *   if (i % 2) this.push(+match[0]);
-     * }, []);
-     * // -> [2, 4]
      */
     function regExpForEach(stringArg, regExpArg, callback, context) {
         throwIfIsNotRegExp(regExpArg);
@@ -2117,9 +2117,7 @@
             !$.isZero(splitFN.call(emptyString, new RegExp('.?')).length) ||
             $.gt(splitFN.call(dotString, new RegExp('()()')).length, 1)) {
 
-        /*global console */
         $.stringSplit = function (stringArg, separator, limit) {
-            console.log('# stringSplit shim');
             var str = onlyCoercibleToString(stringArg),
                 output,
                 origLastIndex,
@@ -2180,7 +2178,6 @@
         };
     } else {
         $.stringSplit = function (stringArg, separator, limit) {
-            console.log('# stringSplit patch');
             var val;
 
             // "0".split(undefined, 0) -> []
@@ -2193,6 +2190,132 @@
             return val;
         };
     }
+
+    /**
+     * Fixes browser bugs in replacement text syntax when performing a replacement using a nonregex search
+     * value, and the value of a replacement regex's `lastIndex` property during replacement iterations
+     * and upon completion. Note that this doesn't support SpiderMonkey's proprietary third (`flags`)
+     * argument.
+     * @memberOf utilx
+     * @param {RegExp|String} search Search pattern to be replaced.
+     * @param {String|Function} replacement Replacement string or a function invoked to create it.
+     * @returns {String} New string with one or all matches replaced.
+     */
+    $.stringReplace = function (stringArg, search, replacement) {
+        var str = onlyCoercibleToString(stringArg),
+            isRegex = $.isRegExp(search),
+            result;
+
+        if ($.isFalse(isRegex)) {
+            search = $.anyToString(search); // Type-convert
+        }
+
+        // Don't use `typeof`; some older browsers return 'function' for regex objects
+        if ($.isFunction(replacement)) {
+            // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
+            // functions isn't type-converted to a string
+            result = replaceFN.call(str, search, function () {
+                // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
+                // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
+                if ($.isTrue(isRegex) && $.isTruthy(search.global)) {
+                    search.lastIndex = arguments[arguments.length - 2] + $.arrayFirst(arguments).length;
+                }
+
+                // Should pass `undefined` as context; see
+                // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
+                return replacement.apply($.privateUndefined, arguments);
+            });
+        } else {
+            // Ensure that the last value of `args` will be a string when given nonstring `this`,
+            // while still throwing on `null` or `undefined` context
+            result = replaceFN.call(str, search, function () {
+                // Keep this function's `arguments` available through closure
+                var replacementToken = /\$(?:\{(\$+)\}|(\d\d?|[\s\S]))/g,
+                    args = arguments,
+                    length = args.length;
+
+                /*jshint -W098 */
+                return replaceFN.call($.anyToString(replacement), replacementToken, function ($0, $1, $2) {
+                    // Else, special variable or numbered backreference without curly braces
+                    if ($.strictEqual($2, '$')) { // $$
+                        return '$';
+                    }
+
+                    if ($.strictEqual($2, '&') || $.isZero($.toNumber($2))) { // $&, $0 (not followed by 1-9), $00
+                        return $.arrayFirst(args);
+                    }
+
+                    if ($.strictEqual($2, '`')) { // $` (left context)
+                        return $.arraySlice(args[length - 1], 0, args[length - 2]);
+                    }
+
+                    if ($.strictEqual($2, '\'')) { // $' (right context)
+                        return $.arraySlice(args[length - 1], args[length - 2] + $.arrayFirst(args).length);
+                    }
+
+                    // Else, numbered backreference without curly braces
+                    $2 = $.toNumber($2); // Type-convert; drop leading zero
+                    /* XRegExp behavior for `$n` and `$nn`:
+                     * - Backrefs end after 1 or 2 digits. Use `${..}` for more digits.
+                     * - `$1` is an error if no capturing groups.
+                     * - `$10` is an error if less than 10 capturing groups. Use `${1}0` instead.
+                     * - `$01` is `$1` if at least one capturing group, else it's an error.
+                     * - `$0` (not followed by 1-9) and `$00` are the entire match.
+                     * Native behavior, for comparison:
+                     * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
+                     * - `$1` is a literal `$1` if no capturing groups.
+                     * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
+                     * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
+                     * - `$0` is a literal `$0`.
+                     */
+                    if (!$.numberIsNaN($2)) {
+                        if ($.gt($2, length - 3)) {
+                            throw new SyntaxError('Backreference to undefined group ' + $0);
+                        }
+
+                        return args[$2] || emptyString;
+                    }
+
+                    throw new SyntaxError('Invalid token ' + $0);
+                });
+                /*jshint +W098 */
+            });
+        }
+
+        if ($.isTrue(isRegex)) {
+            if ($.isTruthy(search.global)) {
+                // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
+                search.lastIndex = 0;
+            }
+        }
+
+        return result;
+    };
+
+    /**
+     * Fixes browser bugs in the native `String.prototype.match`.
+     * @memberOf utilx
+     * @param {string} stringArg String to search.
+     * @param {(RegExp|*)} regExpArg Regex to search with. If not a regex object, it is passed to `RegExp`.
+     * @returns {array} If `regex` uses flag g, an array of match strings or `null`. Without flag g,
+     * the result of calling `$.regExpExec(regExpArg)`.
+     */
+    $.stringMatch = function (stringArg, regExpArg) {
+        var str = onlyCoercibleToString(stringArg),
+            result;
+
+        if (!$.isRegExp(regExpArg)) {
+            regExpArg = new RegExp(regExpArg);
+        } else if ($.isTruthy(regExpArg.global)) {
+            result = matchFN.apply(str, $.arraySlice(arguments, 1));
+            // Fixes IE bug
+            regExpArg.lastIndex = 0;
+
+            return result;
+        }
+
+        return $.regExpExec(regExpArg, str);
+    };
 
     /**
      * Coerces its argument to a string and returns the first character of that string.
