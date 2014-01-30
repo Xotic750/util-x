@@ -43,7 +43,8 @@
         }
 
         beforeEach(function () {
-            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0];
+            testSubject = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej',
+                                                            null, false, 0));
             delete testSubject[1];
         });
 
