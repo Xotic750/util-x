@@ -100,7 +100,7 @@
         "harness": "mocha",
         "files": "tests/*.js",
         "browsers": [
-            "iexplore/8.0..latest",
+            "iexplore/6.0..latest",
             "firefox/3.0..latest",
             "firefox/nightly",
             "chrome/4..latest",
