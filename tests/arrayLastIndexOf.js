@@ -17,7 +17,7 @@
                 'propertyIsEnumerable',
                 'constructor'
             ],
-            arr2 = [2, 3, utilx.privateUndefined, true, 'hej', null, 2, false, 0];
+            arr2 = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej', null, 2, false, 0));
 
         delete arr2[1];
         delete arr2[7];
