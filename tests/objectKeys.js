@@ -126,11 +126,17 @@
         });
 
         it('should not list', function () {
+            console.log('# Object.prototype: ' + utilx.objectKeys(Object.prototype));
             expect(utilx.objectKeys(Object.prototype).length).to.be(0);
+            console.log('# Function.prototype: ' + utilx.objectKeys(Function.prototype));
             expect(utilx.objectKeys(Function.prototype).length).to.be(0);
+            console.log('# : Boolean.prototype' + utilx.objectKeys(Boolean.prototype));
             expect(utilx.objectKeys(Boolean.prototype).length).to.be(0);
+            console.log('# String.prototype: ' + utilx.objectKeys(String.prototype));
             expect(utilx.objectKeys(String.prototype).length).to.be(0);
+            console.log('# Number.prototype: ' + utilx.objectKeys(Number.prototype));
             expect(utilx.objectKeys(Number.prototype).length).to.be(0);
+            console.log('# Error.prototype: ' + utilx.objectKeys(Error.prototype));
             expect(utilx.objectKeys(Error.prototype).length).to.be(0);
         });
     });

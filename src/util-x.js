@@ -2798,6 +2798,19 @@
      * @param {*} inputArg
      * @return {boolean}
      */
+    /*
+            if ($.isTrue(hasDontEnumBug) && $.notStrictEqual(object, baseObjectPrototype)) {
+                ctor = object.constructor;
+                isProto = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
+                nonEnum = nonEnumProps[$.toObjectString(object)];
+                $.arrayForEach(shadowedProps, function (property) {
+                    if (!($.isTrue(isProto) && $.isTrue(nonEnum[property])) &&
+                            $.objectHasOwnProperty(object, property)) {
+
+                        $.arrayPush(props, property);
+                    }
+                });
+    */
     if ($.isNativeFunction(propertyIsEnumerableFN)) {
         if ($.isTrue(hasDontEnumBug)) {
             $.objectPropertyIsEnumerable = function (object, property) {
@@ -2805,12 +2818,14 @@
 
                 if ($.objectInstanceOf(object, CtrObject)) {
                     val = propertyIsEnumerableFN.call(object, property) ||
-                           $.objectHasOwnProperty(object, property);
+                           ($.objectHasOwnProperty(shadowedProps, property) && $.hasProperty(object, property) &&
+                            !$.strictEqual(object[property], $.objectGetPrototypeOf(object)[property]));
                 } else {
                     val = !($.isTrue(hasFuncProtoBug) && $.isFunction(object) &&
                             $.strictEqual(property, prototypeString)) &&
                                 (propertyIsEnumerableCustom(object, property) ||
-                                 $.objectHasOwnProperty(object, property));
+                                 ($.arrayContains(shadowedProps, property) && $.hasProperty(object, property) &&
+                                  !$.strictEqual(object[property], $.objectGetPrototypeOf(object)[property])));
                 }
 
                 return val;
