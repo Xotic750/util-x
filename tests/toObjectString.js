@@ -22,6 +22,15 @@
             expect(utilx.toObjectString(new RegExp('c'))).to.be('[object RegExp]');
             expect(utilx.toObjectString(new Date())).to.be('[object Date]');
             expect(utilx.toObjectString(new Error('x'))).to.be('[object Error]');
+            expect(utilx.toObjectString(Object.prototype)).to.be('[object Object]');
+            expect(utilx.toObjectString(Array.prototype)).to.be('[object Array]');
+            expect(utilx.toObjectString(Boolean.prototype)).to.be('[object Boolean]');
+            expect(utilx.toObjectString(Number.prototype)).to.be('[object Number]');
+            expect(utilx.toObjectString(String.prototype)).to.be('[object String]');
+            expect(utilx.toObjectString(Error.prototype)).to.be('[object Error]');
+            expect(utilx.toObjectString(Date.prototype)).to.be('[object Date]');
+            expect(utilx.toObjectString(RegExp.prototype)).to.be('[object RegExp]');
+            expect(utilx.toObjectString(Function.prototype)).to.be('[object Function]');
         });
     });
 }());

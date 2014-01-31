@@ -130,7 +130,7 @@
             expect(utilx.objectKeys(Object.prototype).length).to.be(0);
             console.log('# Function.prototype: ' + utilx.objectKeys(Function.prototype));
             expect(utilx.objectKeys(Function.prototype).length).to.be(0);
-            console.log('# : Boolean.prototype' + utilx.objectKeys(Boolean.prototype));
+            console.log('# Boolean.prototype.' + utilx.objectKeys(Boolean.prototype));
             expect(utilx.objectKeys(Boolean.prototype).length).to.be(0);
             console.log('# String.prototype: ' + utilx.objectKeys(String.prototype));
             expect(utilx.objectKeys(String.prototype).length).to.be(0);

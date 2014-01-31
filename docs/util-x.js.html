@@ -59,7 +59,7 @@
         hasOwnPropertyFN = baseObject.hasOwnProperty,
         propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
         CtrObject = baseObject.constructor,
-        baseObjectPrototype = CtrObject.prototype,
+        prototypeOfObject = CtrObject.prototype,
         isIsFn = CtrObject.is,
         getPrototypeOfFN = CtrObject.getPrototypeOf,
         keysFN = CtrObject.keys,
@@ -97,6 +97,7 @@
         matchFN = baseString.match,
         replaceFN = baseString.replace,
         CtrString = baseString.constructor,
+        prototypeOfString = CtrString.prototype,
         repeatFN = CtrString.repeat,
 
         baseNumber = 0,
@@ -105,20 +106,57 @@
         isNaNFN = CtrNumber.isNaN,
         toIntegerFN = CtrNumber.toInteger,
         isIntegerFN = CtrNumber.isInteger,
+        prototypeOfNumber = CtrNumber.prototype,
 
         baseBoolean = true,
         CtrBoolean = baseBoolean.constructor,
+        prototypeOfBoolean = CtrBoolean.prototype,
 
         baseFunction = function () {
             return;
         },
         tostringFnFN = baseFunction.toString,
         CtrFunction = baseFunction.constructor,
+        prototypeOfFunction = CtrFunction.prototype,
 
         baseRegExp = new RegExp(),
         execFN = baseRegExp.exec,
         testFN = baseRegExp.test,
+        CtrRegExp = baseRegExp.constructor,
+        prototypeOfRegExp = CtrRegExp.prototype,
         correctExecNpcg,
+
+        baseDate = new Date(),
+        CtrDate = baseDate.constructor,
+        prototypeOfDate = CtrDate.prototype,
+
+        baseError = new Error(),
+        CtrError = baseError.constructor,
+        prototypeOfError = CtrError.prototype,
+
+        baseTypeError = new TypeError(),
+        CtrTypeError = baseTypeError.constructor,
+        prototypeOfTypeError = CtrTypeError.prototype,
+
+        baseSyntaxError = new SyntaxError(),
+        CtrSyntaxError = baseSyntaxError.constructor,
+        prototypeOfSyntaxError = CtrSyntaxError.prototype,
+
+        baseRangeError = new RangeError(),
+        CtrRangeError = baseRangeError.constructor,
+        prototypeOfRangeError = CtrRangeError.prototype,
+
+        baseEvalError = new EvalError(),
+        CtrEvalError = baseEvalError.constructor,
+        prototypeOfEvalError = CtrEvalError.prototype,
+
+        baseReferenceError = new ReferenceError(),
+        CtrReferenceError = baseReferenceError.constructor,
+        prototypeOfReferenceError = CtrReferenceError.prototype,
+
+        baseURIError = new URIError(),
+        CtrURIError = baseURIError.constructor,
+        prototypeOfURIError = CtrURIError.prototype,
 
         globalIsNaN = isNaN,
         globalIsFinite = isFinite,
@@ -225,6 +263,7 @@
         isNativeFunction,
         boxedString,
         reduceTypeErrorMessage,
+        isErrorTypePrototype,
 
         // JSON compliance result
         isSupportedResult,
@@ -680,7 +719,7 @@
      * @memberOf utilx
      * @type {boolean}
      */
-    $.isProtoSupported = $.isNull(baseObjectPrototype[protoName]);
+    $.isProtoSupported = $.isNull(prototypeOfObject[protoName]);
 
     /**
      * Returns true if the operand inputArg is undefined or null.
@@ -994,6 +1033,39 @@
     }
 
     /**
+     * Tests to see if the argument is one of the seven standard Error type prototypes.
+     * @private
+     * @function
+     * @param {*} inputArg
+     * @return {boolean}
+     */
+    isErrorTypePrototype = function (inputArg) {
+        var result;
+
+        switch (inputArg) {
+        case prototypeOfError:
+            /* falls through */
+        case prototypeOfTypeError:
+            /* falls through */
+        case prototypeOfSyntaxError:
+            /* falls through */
+        case prototypeOfRangeError:
+            /* falls through */
+        case prototypeOfEvalError:
+            /* falls through */
+        case prototypeOfReferenceError:
+            /* falls through */
+        case prototypeOfURIError:
+            result = true;
+            break;
+        default:
+            result = false;
+        }
+
+        return result;
+    };
+
+    /**
      * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
      * @memberOf utilx
      * @name toObjectString
@@ -1004,6 +1076,8 @@
     try {
         if ($.strictEqual(toStringFN.call(), undefinedClass) &amp;&amp;
                 $.strictEqual(toStringFN.call(null), nullClass) &amp;&amp;
+                $.strictEqual(toStringFN.call(prototypeOfString), stringClass) &amp;&amp;
+                $.strictEqual(toStringFN.call(prototypeOfError), errorClass) &amp;&amp;
                 $.strictEqual(toStringFN.call($.returnArgs()), argumentsClass)) {
 
             $.toObjectString = function (object) {
@@ -1022,6 +1096,22 @@
                 val = nullClass;
             } else if ($.isArguments(object)) {
                 val = argumentsClass;
+            } else if ($.strictEqual(object, prototypeOfNumber)) {
+                val = numberClass;
+            } else if ($.strictEqual(object, prototypeOfBoolean)) {
+                val = booleanClass;
+            } else if ($.strictEqual(object, prototypeOfObject)) {
+                val = objectClass;
+            } else if ($.strictEqual(object, prototypeOfFunction)) {
+                val = functionClass;
+            } else if ($.strictEqual(object, prototypeOfString)) {
+                val = stringClass;
+            } else if ($.strictEqual(object, prototypeOfDate)) {
+                val = dateClass;
+            } else if ($.strictEqual(object, prototypeOfRegExp)) {
+                val = regexpClass;
+            } else if (isErrorTypePrototype(object)) {
+                val = errorClass;
             } else {
                 val = toStringFN.call(object);
             }
@@ -1039,7 +1129,7 @@
      */
     $.isError = function (inputArg) {
         return $.strictEqual($.toObjectString(inputArg), errorClass) ||
-            ($.isTypeObject(inputArg) &amp;&amp; $.objectInstanceOf(inputArg, Error));
+            ($.isTypeObject(inputArg) &amp;&amp; $.objectInstanceOf(inputArg, CtrError));
     };
 
     /**
@@ -1244,7 +1334,7 @@
      */
     function throwIfNotAFunction(inputArg) {
         if (!$.isFunction(inputArg)) {
-            throw new TypeError(inputArg + ' is not a function');
+            throw new CtrTypeError(inputArg + ' is not a function');
         }
 
         return inputArg;
@@ -1271,7 +1361,7 @@
      */
     function throwIfIsNotTypeObjectOrIsNotFunction(inputArg) {
         if (!isTypeObjectOrIsFunction(inputArg)) {
-            throw new TypeError('called on non-object');
+            throw new CtrTypeError('called on non-object');
         }
 
         return inputArg;
@@ -1371,7 +1461,7 @@
             val;
 
         if ($.lt(length, 2)) {
-            throw new SyntaxError('must supply at least 2 arguments');
+            throw new CtrSyntaxError('must supply at least 2 arguments');
         }
 
         typeA = typeof a;
@@ -1400,7 +1490,7 @@
             val;
 
         if ($.lt(length, 2)) {
-            throw new SyntaxError('must supply at least 2 arguments');
+            throw new CtrSyntaxError('must supply at least 2 arguments');
         }
 
         typeA = $.toObjectString(a);
@@ -1425,11 +1515,11 @@
      */
     function inRange(value, min, max) {
         if (!$.isNumber(value) &amp;&amp; !$.isString(value)) {
-            throw new TypeError('arguments must be either numbers or strings');
+            throw new CtrTypeError('arguments must be either numbers or strings');
         }
 
         if ($.strictEqual(min, max) || $.numberIsNaN(min) || $.numberIsNaN(max)) {
-            throw new RangeError('min and max do not define a range');
+            throw new CtrRangeError('min and max do not define a range');
         }
 
         return $.gte(value, min) &amp;&amp; $.lte(value, max);
@@ -1446,7 +1536,7 @@
      */
     $.inRange = function (value, min, max) {
         if (!$.areSameTypeOf(value, min, max)) {
-            throw new TypeError('arguments must be of the same type');
+            throw new CtrTypeError('arguments must be of the same type');
         }
 
         return inRange(value, min, max);
@@ -1569,7 +1659,7 @@
     // named $.numberIsInteger instead of toInteger because of SpiderMonkey and Blackberry bug
     try {
         if (isIntegerFN($.UNSAFE_INTEGER) || isIntegerFN(-$.UNSAFE_INTEGER)) {
-            throw new Error('Failed unsafe integer check');
+            throw new CtrError('Failed unsafe integer check');
         }
 
         $.numberIsInteger = isIntegerFN;
@@ -1949,7 +2039,7 @@
      */
     function throwIfIsNotRegExp(inputArg) {
         if (!$.isRegExp(inputArg)) {
-            throw new TypeError('Type RegExp expected');
+            throw new CtrTypeError('Type RegExp expected');
         }
 
         return inputArg;
@@ -2300,13 +2390,13 @@
                      */
                     if (!$.numberIsNaN($2)) {
                         if ($.gt($2, length - 3)) {
-                            throw new SyntaxError('Backreference to undefined group ' + $0);
+                            throw new CtrSyntaxError('Backreference to undefined group ' + $0);
                         }
 
                         return args[$2] || emptyString;
                     }
 
-                    throw new SyntaxError('Invalid token ' + $0);
+                    throw new CtrSyntaxError('Invalid token ' + $0);
                 });
                 /*jshint +W098 */
             });
@@ -2507,7 +2597,7 @@
                 times = $.numberToInteger(count);
 
             if (isLtZeroOrPositiveInfinity(times)) {
-                throw new RangeError();
+                throw new CtrRangeError();
             }
 
             return stringRepeatRep(thisString, times);
@@ -2634,12 +2724,12 @@
             return throwIfIsNotTypeObjectOrIsNotFunction(object)[protoName];
         };
     } else {
-        if ($.notStrictEqual($.returnArgs().constructor.prototype, baseObjectPrototype)) {
+        if ($.notStrictEqual($.returnArgs().constructor.prototype, prototypeOfObject)) {
             fixOpera10GetPrototypeOf = true;
         }
 
         $.objectGetPrototypeOf = function (object) {
-            if ($.strictEqual(throwIfIsNotTypeObjectOrIsNotFunction(object), baseObjectPrototype)) {
+            if ($.strictEqual(throwIfIsNotTypeObjectOrIsNotFunction(object), prototypeOfObject)) {
                 return null;
             }
 
@@ -2647,18 +2737,18 @@
 
             if ($.isFunction(object.constructor)) {
                 if (fixOpera10GetPrototypeOf &amp;&amp; $.isArguments(object)) {
-                    ctrProto = baseObjectPrototype;
+                    ctrProto = prototypeOfObject;
                 } else {
                     ctrProto = object.constructor.prototype;
                 }
             } else if ($.isObject(object[protoName])) {
                 ctrProto = object[protoName];
             } else {
-                ctrProto = baseObjectPrototype;
+                ctrProto = prototypeOfObject;
             }
 
             if ($.strictEqual(object, ctrProto)) {
-                return baseObjectPrototype;
+                return prototypeOfObject;
             }
 
             return ctrProto;
@@ -2826,7 +2916,7 @@
      * @return {boolean}
      */
     /*
-            if ($.isTrue(hasDontEnumBug) &amp;&amp; $.notStrictEqual(object, baseObjectPrototype)) {
+            if ($.isTrue(hasDontEnumBug) &amp;&amp; $.notStrictEqual(object, prototypeOfObject)) {
                 ctor = object.constructor;
                 isProto = $.isFunction(ctor) &amp;&amp; $.strictEqual(ctor.prototype, object);
                 nonEnum = nonEnumProps[$.toObjectString(object)];
@@ -2911,7 +3001,7 @@
      */
     function throwIfIsNotTypeObjectOrIsFunction(inputArg) {
         if (isNotTypeObjectOrIsFunction(inputArg)) {
-            throw new TypeError('called on a invalid object');
+            throw new CtrTypeError('called on a invalid object');
         }
 
         return inputArg;
@@ -2926,7 +3016,7 @@
      */
     function throwIfIsNotHasValidLength(inputArg) {
         if (!hasValidLength(inputArg)) {
-            throw new TypeError('invalid length property');
+            throw new CtrTypeError('invalid length property');
         }
 
         return inputArg;
@@ -3073,7 +3163,7 @@
                     return spliceFN.apply(array, $.arraySlice(arguments, 1));
                 };
             } else {
-                throw new Error();
+                throw new CtrError();
             }
         } catch (e) {
             $.arraySplice = function (array) {
@@ -3205,7 +3295,7 @@
             };
             /*jshint +W098 */
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.arrayForEach = function (array, fn, thisArg) {
@@ -3250,7 +3340,7 @@
             };
             /*jshint +W098 */
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.arraySome = function (array, fn, thisArg) {
@@ -3300,7 +3390,7 @@
             };
             /*jshint +W098 */
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.arrayMap = function (array, fn, thisArg) {
@@ -3354,7 +3444,7 @@
                 $.notStrictEqual(sliceFN.call(someArgs(), $.POSITIVE_ZERO, 4).toString(), ',,1,a') ||
                 $.notStrictEqual(sliceFN.call(someArgs(), 3, 6).toString(), 'a,2,b')) {
 
-            throw new Error();
+            throw new CtrError();
         }
 
         $.arraySlice = function (array, start, end) {
@@ -3441,7 +3531,7 @@
             };
             /*jshint +W098 */
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.arrayFilter = function (array, fn, thisArg) {
@@ -3498,7 +3588,7 @@
             };
             /*jshint +W098 */
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         reduceTypeErrorMessage = 'reduce of empty array with no initial value';
@@ -3512,7 +3602,7 @@
             throwIfNotAFunction(fn);
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             if ($.isZero(length) &amp;&amp; $.strictEqual(arguments.length, 2)) {
-                throw new TypeError(reduceTypeErrorMessage);
+                throw new CtrTypeError(reduceTypeErrorMessage);
             }
 
             index = $.POSITIVE_ZERO;
@@ -3529,7 +3619,7 @@
                 }
 
                 if ($.isFalse(kPresent)) {
-                    throw new TypeError(reduceTypeErrorMessage);
+                    throw new CtrTypeError(reduceTypeErrorMessage);
                 }
             }
 
@@ -3747,7 +3837,7 @@
                 return trimFN.call(inputArg);
             };
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
@@ -3899,7 +3989,7 @@
         if ($.isNativeFunction(keysFN) &amp;&amp; $.strictEqual(keysFN(testObject1).length, 7)) {
             $.objectKeys = keysFN;
         } else {
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.objectKeys = function (object) {
@@ -3920,7 +4010,7 @@
                 }
             }
 
-            if ($.isTrue(hasDontEnumBug) &amp;&amp; $.notStrictEqual(object, baseObjectPrototype)) {
+            if ($.isTrue(hasDontEnumBug) &amp;&amp; $.notStrictEqual(object, prototypeOfObject)) {
                 ctor = object.constructor;
                 isProto = $.isFunction(ctor) &amp;&amp; $.strictEqual(ctor.prototype, object);
                 nonEnum = nonEnumProps[$.toObjectString(object)];
@@ -4014,7 +4104,7 @@
         });
 
         if (!$.isNull(testObject1[sentinelString])) {
-            throw new Error('Fails sentinel check');
+            throw new CtrError('Fails sentinel check');
         }
 
         // Test string integer
@@ -4024,7 +4114,7 @@
             });
 
             if (!$.isNull(testValue[1])) {
-                throw new Error('Fails integer check');
+                throw new CtrError('Fails integer check');
             }
         } catch (e) {
             definePropertyPatch1 = true;
@@ -4037,7 +4127,7 @@
             });
 
             if (!$.isNull(testObject1[$.POSITIVE_ZERO])) {
-                throw new Error('Fails array check');
+                throw new CtrError('Fails array check');
             }
         } catch (e) {
             definePropertyPatch2 = true;
@@ -4047,7 +4137,7 @@
         try {
             testObject1 = definePropertyFN([10], zeroString, {});
             if ($.notStrictEqual(testObject1[$.POSITIVE_ZERO], 10)) {
-                throw new Error('Fails overwrite check');
+                throw new CtrError('Fails overwrite check');
             }
         } catch (e) {
             definePropertyPatch3 = true;
@@ -4093,7 +4183,7 @@
         if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, emptyString) ||
                 $.notStrictEqual(testObject1.ghi, true) || $.notStrictEqual(testObject1.jkl, $.noop)) {
 
-            throw new Error();
+            throw new CtrError();
         }
 
         testObject1 = [10, true, emptyString, $.noop];
@@ -4105,19 +4195,19 @@
         if ($.notStrictEqual($.arrayFirst(testObject1), 10) || $.notStrictEqual(testObject1[1], true) ||
                 $.notStrictEqual(testObject1[2], emptyString) || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
 
-            throw new Error();
+            throw new CtrError();
         }
     } catch (e) {
         $.objectDefineProperty = function (object, property, descriptor) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
             if (!isTypeObjectOrIsFunction(descriptor)) {
-                throw new TypeError('Property description must be an object: ' + $.anyToString(descriptor));
+                throw new CtrTypeError('Property description must be an object: ' + $.anyToString(descriptor));
             }
 
             if ($.objectHasOwnProperty(descriptor, valueString) &amp;&amp; ($.objectHasOwnProperty(descriptor, getString) ||
                         $.objectHasOwnProperty(descriptor, setString))) {
 
-                throw new TypeError('Invalid property. A property cannot have accessors and a value');
+                throw new CtrTypeError('Invalid property. A property cannot have accessors and a value');
             }
 
             var prototype;
@@ -4126,7 +4216,7 @@
                 if ($.objectHasOwnProperty(descriptor, valueString) || !$.objectHasOwnProperty(object, property)) {
                     if ($.isTrue($.isProtoSupported)) {
                         prototype = object[protoName];
-                        object[protoName] = baseObjectPrototype;
+                        object[protoName] = prototypeOfObject;
                         if (isArrayOrArguments(object) &amp;&amp; $.isNumeric(property) &amp;&amp; $.isUint32($.toNumber(property))) {
                             $.arrayAssign(object, property, descriptor[valueString]);
                         } else {
@@ -4149,7 +4239,7 @@
                 }
             } else {
                 if (!$.isNativeFunction(defineGetterFN) || !$.isNativeFunction(defineSetterFN)) {
-                    throw new TypeError('getters &amp; setters can not be defined on this javascript engine');
+                    throw new CtrTypeError('getters &amp; setters can not be defined on this javascript engine');
                 }
 
                 if ($.isNativeFunction(descriptor[getString])) {
@@ -4179,7 +4269,7 @@
     $.objectDefineProperties = function (object, props) {
         throwIfIsNotTypeObjectOrIsNotFunction(object);
         if (!isTypeObjectOrIsFunction(props)) {
-            throw new TypeError('Property description must be an object');
+            throw new CtrTypeError('Property description must be an object');
         }
 
         $.arrayForEach($.objectKeys(props), function (key) {
@@ -4218,7 +4308,7 @@
                 $.notStrictEqual(getOwnPropDescFN(testObject2, 5), $.privateUndefined) ||
                 $.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), valueString)) {
 
-            throw new Error();
+            throw new CtrError();
         }
 
         if ($.isFalse(getOwnPropDescFN(function (a) {
@@ -4257,7 +4347,7 @@
 
                 if ($.isTrue($.areGetSetSupported)) {
                     prototype = object[protoName];
-                    object[protoName] = baseObjectPrototype;
+                    object[protoName] = prototypeOfObject;
                     getter = lookupGetterFN.call(object, property);
                     setter = lookupSetterFN.call(object, property);
                     if ($.isUndefined(prototype)) {
@@ -4292,7 +4382,7 @@
                         /* falls through */
                     case CtrArray:
                         /* falls through */
-                    case Function:
+                    case CtrFunction:
                         /* falls through */
                     case CtrBoolean:
                         /* falls through */
@@ -4300,23 +4390,23 @@
                         /* falls through */
                     case CtrNumber:
                         /* falls through */
-                    case Date:
+                    case CtrDate:
                         /* falls through */
-                    case RegExp:
+                    case CtrRegExp:
                         /* falls through */
-                    case Error:
+                    case CtrError:
                         /* falls through */
-                    case TypeError:
+                    case CtrTypeError:
                         /* falls through */
-                    case SyntaxError:
+                    case CtrSyntaxError:
                         /* falls through */
-                    case RangeError:
+                    case CtrRangeError:
                         /* falls through */
-                    case EvalError:
+                    case CtrEvalError:
                         /* falls through */
-                    case ReferenceError:
+                    case CtrReferenceError:
                         /* falls through */
-                    case URIError:
+                    case CtrURIError:
                         descriptor.writable = false;
                         descriptor.configurable = false;
                         break;
@@ -4467,7 +4557,7 @@
      */
     $.isPlainObject = function (object) {
         return $.isTypeObject(object) &amp;&amp; $.isObject(object) &amp;&amp;
-            $.strictEqual($.objectGetPrototypeOf(object), baseObjectPrototype);
+            $.strictEqual($.objectGetPrototypeOf(object), prototypeOfObject);
     };
 
     /**
@@ -4524,7 +4614,7 @@
         });
 
         if ($.notStrictEqual(testObject1.foo, testString)) {
-            throw new Error();
+            throw new CtrError();
         }
 
         $.objectCreate = objectCreateFN;
@@ -4760,19 +4850,19 @@
         var result;
 
         switch (inputArg) {
-        case Error:
+        case CtrError:
             /* falls through */
-        case TypeError:
+        case CtrTypeError:
             /* falls through */
-        case SyntaxError:
+        case CtrSyntaxError:
             /* falls through */
-        case RangeError:
+        case CtrRangeError:
             /* falls through */
-        case EvalError:
+        case CtrEvalError:
             /* falls through */
-        case ReferenceError:
+        case CtrReferenceError:
             /* falls through */
-        case URIError:
+        case CtrURIError:
             result = true;
             break;
         default:
@@ -4819,13 +4909,13 @@
         var message = 'Should we patch IE6&amp;7?';
 
         try {
-            throw new Error(message);
+            throw new CtrError(message);
         } catch (e) {
             if ($.strictEqual(e.message, message) &amp;&amp;
                     $.strictEqual(e.toString(), errorClass)) {
 
-                previousIEErrorToString = Error.prototype.toString;
-                $.objectDefineProperties(Error.prototype, {
+                previousIEErrorToString = prototypeOfError.toString;
+                $.objectDefineProperties(prototypeOfError, {
                     toString: $.extend({
                         value: function () {
                             return this.name + ': ' + this.message;
@@ -4849,7 +4939,7 @@
      */
     $.normaliseErrorIEToStringOff = function () {
         if ($.isTrue(patchedIEErrorToString)) {
-            $.objectDefineProperties(Error.prototype, {
+            $.objectDefineProperties(prototypeOfError, {
                 toString: $.extend({
                     value: previousIEErrorToString
                 }, notEnumerableProperties)
@@ -4883,11 +4973,11 @@
      */
     function makeCustomError(name, ErrorConstructor, maxMessageLength) {
         if (!$.isString(name) || $.isEmptyString(name)) {
-            throw new TypeError('"name" was not a valid string');
+            throw new CtrTypeError('"name" was not a valid string');
         }
 
         if (!$.isErrorTypeConstructor(ErrorConstructor)) {
-            throw new TypeError('"ErrorConstructor" was not an Error type');
+            throw new CtrTypeError('"ErrorConstructor" was not an Error type');
         }
 
         maxMessageLength = $.toNumber(maxMessageLength);
@@ -4967,8 +5057,8 @@
     }
 
     try {
-        TestConstructor = makeCustomError('CustomSyntaxError', SyntaxError);
-        isOkToUseOtherErrors = $.objectInstanceOf(new TestConstructor(testString), SyntaxError);
+        TestConstructor = makeCustomError('CustomSyntaxError', CtrSyntaxError);
+        isOkToUseOtherErrors = $.objectInstanceOf(new TestConstructor(testString), CtrSyntaxError);
     } catch (e) {
         // IE &lt; 9
         isOkToUseOtherErrors = false;
@@ -4987,21 +5077,21 @@
      */
     $.customError = function (name, ErrorConstructor, maxMessageLength) {
         if (!$.isString(name)) {
-            throw new TypeError('"name" was not a string');
+            throw new CtrTypeError('"name" was not a string');
         }
 
         if ($.isEmptyString(name)) {
-            throw new SyntaxError('"name" was an empty string');
+            throw new CtrSyntaxError('"name" was an empty string');
         }
 
         if ($.isUndefined(maxMessageLength) &amp;&amp;
                 ($.isNumber(ErrorConstructor) || $.isString(ErrorConstructor))) {
             maxMessageLength = ErrorConstructor;
-            ErrorConstructor = Error;
+            ErrorConstructor = CtrError;
         }
 
         if (!isOkToUseOtherErrors || !$.isErrorTypeConstructor(ErrorConstructor)) {
-            ErrorConstructor = Error;
+            ErrorConstructor = CtrError;
         }
 
         return makeCustomError(name, ErrorConstructor, maxMessageLength);
@@ -5184,16 +5274,16 @@
                 $.strictEqual(globalJsonStringify([1, 2], null, 1), '[\n 1,\n 2\n]') &amp;&amp;
                 // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
                 // serialize extended years.
-                $.strictEqual(globalJsonStringify(new Date(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
+                $.strictEqual(globalJsonStringify(new CtrDate(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &amp;&amp;
                 // The milliseconds are optional in ES 5, but required in 5.1.
-                $.strictEqual(globalJsonStringify(new Date(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
+                $.strictEqual(globalJsonStringify(new CtrDate(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &amp;&amp;
                 // Firefox &lt;= 11.0 incorrectly serializes years prior to 0 as negative
                 // four-digit years instead of six-digit years. Credits: @Yaffle.
-                $.strictEqual(globalJsonStringify(new Date(-621987552e5)),
+                $.strictEqual(globalJsonStringify(new CtrDate(-621987552e5)),
                                   '"-000001-01-01T00:00:00.000Z"') &amp;&amp;
                 // Safari &lt;= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
                 // values less than 1000. Credits: @Yaffle.
-                $.strictEqual(globalJsonStringify(new Date(-1)), '"1969-12-31T23:59:59.999Z"');
+                $.strictEqual(globalJsonStringify(new CtrDate(-1)), '"1969-12-31T23:59:59.999Z"');
         } catch (e) {
             isSupportedResult = false;
         }
@@ -5348,7 +5438,7 @@
             if (!$.isUndefinedOrNull(replacer) &amp;&amp; !$.isFunction(replacer) &amp;&amp;
                     !$.arrayIsArray(replacer)) {
 
-                throw new Error('JSON.stringify');
+                throw new CtrError('JSON.stringify');
             }
 
             return stringifyToString(emptyString, {
@@ -5404,7 +5494,7 @@
         try {
             globalJsonParse();
         } catch (e) {
-            threwSynatxError = $.objectInstanceOf(e, SyntaxError);
+            threwSynatxError = $.objectInstanceOf(e, CtrSyntaxError);
         }
 
         if ($.isTrue(threwSynatxError)) {
@@ -5412,7 +5502,7 @@
         } else {
             $.jsonParse = function (text, reviver) {
                 if ($.isUndefined(text)) {
-                    throw new SyntaxError('globalJsonParse');
+                    throw new CtrSyntaxError('globalJsonParse');
                 }
 
                 return globalJsonParse(text, reviver);
@@ -5472,7 +5562,7 @@
                 return j;
             }
 
-            throw new SyntaxError('JSON.parse');
+            throw new CtrSyntaxError('JSON.parse');
         };
     }
 
@@ -5551,7 +5641,7 @@
      */
 
     if (!$.isTypeObject(globalThis)) {
-        throw new TypeError('Invalid global context');
+        throw new CtrTypeError('Invalid global context');
     }
 
     publicUtil = $.objectDefineProperty(factory(), factoryString, $.extend({
@@ -5598,7 +5688,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Fri Jan 31 2014 19:27:31 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Fri Jan 31 2014 22:59:29 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
