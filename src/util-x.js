@@ -3868,7 +3868,7 @@
     });
 
     try {
-        if ($.strictEqual(keysFN(testObject1).length, 7)) {
+        if ($.isNativeFunction(keysFN) && $.strictEqual(keysFN(testObject1).length, 7)) {
             $.objectKeys = keysFN;
         } else {
             throw new Error();
@@ -3881,7 +3881,7 @@
                 props = [],
                 prop,
                 ctor,
-                skipConstructor,
+                isProto,
                 nonEnum;
 
             for (prop in object) {
@@ -3895,10 +3895,16 @@
             //if (object !== baseObjectPrototype) {
             if ($.isTrue(hasDontEnumBug)) {
                 ctor = object.constructor;
-                skipConstructor = $.isFunction(ctor) && $.objectIs(ctor.prototype, object);
+                isProto = $.isFunction(ctor) && $.objectIs(ctor.prototype, object);
                 nonEnum = nonEnumProps[$.toObjectString(object)];
                 $.arrayForEach(shadowedProps, function (property) {
-                    if (!($.isTrue(skipConstructor) && $.isTrue(nonEnum[property])) &&
+                    /*global console */
+                    console.log('# property: ' + property);
+                    console.log('# isProto: ' + isProto);
+                    console.log('# nonEnum: ' + nonEnum[property]);
+                    console.log('# condition: ' + !($.isTrue(isProto) && $.isTrue(nonEnum[property])));
+                    console.log('# hasOwnProperty: ' + $.objectHasOwnProperty(object, property));
+                    if (!($.isTrue(isProto) && $.isTrue(nonEnum[property])) &&
                             $.objectHasOwnProperty(object, property)) {
 
                         $.arrayPush(props, property);
