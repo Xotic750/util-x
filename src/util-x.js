@@ -142,16 +142,18 @@
         gString = 'g',
         dotString = '.',
 
-        argumentsObjectString = '[object Arguments]',
-        functionObjectString = '[object Function]',
-        objectObjectString = '[object Object]',
-        undefinedObjectString = '[object Undefined]',
-        nullObjectString = '[object Null]',
-        errorObjectString = '[object Error]',
-        regexpObjectString = '[object RegExp]',
-        arrayObjectString = '[object Array]',
-        dateObjectString = '[object Date]',
-        stringObjectString = '[object String]',
+        argumentsClass = '[object Arguments]',
+        functionClass = '[object Function]',
+        objectClass = '[object Object]',
+        undefinedClass = '[object Undefined]',
+        nullClass = '[object Null]',
+        errorClass = '[object Error]',
+        regexpClass = '[object RegExp]',
+        arrayClass = '[object Array]',
+        dateClass = '[object Date]',
+        stringClass = '[object String]',
+        booleanClass = '[object Boolean]',
+        numberClass = '[object Number]',
 
         rxSplitNewLine = new RegExp('\\r\\n|\\n'),
         rxPlusMinus = new RegExp('^[+\\-]?'),
@@ -179,6 +181,7 @@
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
+        nonEnumProps,
         testObject1,
         testObject2,
         TestConstructor,
@@ -187,6 +190,7 @@
         fixOpera10GetPrototypeOf,
         testProp,
         testValue,
+        testIndex,
         shouldSplitString,
         isOkToUseOtherErrors,
         isFunctionInternal,
@@ -223,7 +227,7 @@
          * @ignore
          * @type {array.<string>}
          */
-        defaultProperties = [
+        shadowedProps = [
             toStringString,
             'toLocaleString',
             'valueOf',
@@ -928,20 +932,20 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsObjectString)) {
+    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsClass)) {
         $.isArguments = function (inputArg) {
-            return $.strictEqual(toStringFN.call(inputArg), argumentsObjectString);
+            return $.strictEqual(toStringFN.call(inputArg), argumentsClass);
         };
-    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionObjectString)) {
+    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionClass)) {
         isArgumentsCheck = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectObjectString) &&
+                $.strictEqual(toStringFN.call(inputArg), objectClass) &&
                 hasOwnPropertyFN.call(inputArg, calleeString) &&
                 hasOwnPropertyFN.call(inputArg, lengthString) &&
                 $.isNumber(inputArg.length);
         };
 
-        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionObjectString)) {
+        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionClass)) {
             $.isArguments = function (inputArg) {
                 return isArgumentsCheck(inputArg) &&
                     !propertyIsEnumerableFN.call(inputArg, calleeString) &&
@@ -955,7 +959,7 @@
     if ($.isUndefined($.isArguments)) {
         $.isArguments = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectObjectString) &&
+                $.strictEqual(toStringFN.call(inputArg), objectClass) &&
                 $.hasProperty(inputArg, calleeString) &&
                 $.hasProperty(inputArg, lengthString) &&
                 $.isNumber(inputArg.length);
@@ -971,9 +975,9 @@
      * @return {string}
      */
     try {
-        if ($.strictEqual(toStringFN.call(), undefinedObjectString) &&
-                $.strictEqual(toStringFN.call(null), nullObjectString) &&
-                $.strictEqual(toStringFN.call($.returnArgs()), argumentsObjectString)) {
+        if ($.strictEqual(toStringFN.call(), undefinedClass) &&
+                $.strictEqual(toStringFN.call(null), nullClass) &&
+                $.strictEqual(toStringFN.call($.returnArgs()), argumentsClass)) {
 
             $.toObjectString = function (object) {
                 return toStringFN.call(object);
@@ -986,11 +990,11 @@
             var val;
 
             if ($.isUndefined(object)) {
-                val = undefinedObjectString;
+                val = undefinedClass;
             } else if ($.isNull(object)) {
-                val = nullObjectString;
+                val = nullClass;
             } else if ($.isArguments(object)) {
-                val = argumentsObjectString;
+                val = argumentsClass;
             } else {
                 val = toStringFN.call(object);
             }
@@ -1007,7 +1011,7 @@
      * @return {boolean}
      */
     $.isError = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), errorObjectString) ||
+        return $.strictEqual($.toObjectString(inputArg), errorClass) ||
             ($.isTypeObject(inputArg) && $.objectInstanceOf(inputArg, Error));
     };
 
@@ -1019,7 +1023,7 @@
      * @return {boolean}
      */
     $.isRegExp = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), regexpObjectString) &&
+        return $.strictEqual($.toObjectString(inputArg), regexpClass) &&
             $.isString(inputArg.source) && $.isBoolean(inputArg.global);
     };
 
@@ -1110,7 +1114,7 @@
      * @return {boolean}
      */
     function isFunctionBasic(inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), functionObjectString) ||
+        return $.strictEqual($.toObjectString(inputArg), functionClass) ||
             ($.strictEqual(typeof inputArg, functionString) &&
              $.strictEqual(typeof inputArg.call, functionString) &&
              $.strictEqual(typeof inputArg.apply, functionString));
@@ -1194,7 +1198,7 @@
      * @return {boolean}
      */
     $.isObject = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), objectObjectString) && !$.isFunction(inputArg);
+        return $.strictEqual($.toObjectString(inputArg), objectClass) && !$.isFunction(inputArg);
     };
 
     /**
@@ -1261,7 +1265,7 @@
         $.arrayIsArray = isArrayFN;
     } else {
         $.arrayIsArray = function (inputArg) {
-            return $.strictEqual($.toObjectString(inputArg), arrayObjectString);
+            return $.strictEqual($.toObjectString(inputArg), arrayClass);
         };
     }
 
@@ -1292,7 +1296,7 @@
      * @return {boolean}
      */
     $.isDate = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), dateObjectString);
+        return $.strictEqual($.toObjectString(inputArg), dateClass);
     };
 
     /**
@@ -1980,12 +1984,13 @@
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
                 replaceFN.call($.anyToString(str).slice(match.index), r2, function () {
-                    var len = arguments.length - 2,
+                    var args = $.arraySlice(arguments),
+                        len = args.length - 2,
                         index;
 
                     // Skip index 0 and the last 2
                     for (index = 1; $.lt(index, len); index += 1) {
-                        if ($.isUndefined(arguments[index])) {
+                        if ($.isUndefined(args[index])) {
                             $.arrayAssign(match, index, $.privateUndefined);
                         }
                     }
@@ -2649,6 +2654,115 @@
     };
     /*jshint +W098 */
 
+    /*
+     * Test for hasDontEnumBug and hasFuncProtoBug.
+     */
+    testObject1 = {
+        toString: null
+    };
+
+    for (testProp in testObject1) {
+        if ($.strictEqual(testProp, toStringString) &&
+                $.isNull(testObject1[testProp])) {
+
+            hasDontEnumBug = false;
+        }
+    }
+
+    testObject1 = function () {
+        return;
+    };
+
+    testObject1.prototype.constructor = testObject1;
+    for (testProp in testObject1) {
+        if ($.strictEqual(testProp, prototypeString)) {
+            hasFuncProtoBug = true;
+        }
+    }
+
+    if ($.isTrue(hasDontEnumBug)) {
+        // Used to avoid iterating non-enumerable properties in IE < 9
+        nonEnumProps = {};
+
+        nonEnumProps[arrayClass] = nonEnumProps[dateClass] = nonEnumProps[numberClass] = {
+            constructor: true,
+            toLocaleString: true,
+            toString: true,
+            valueOf: true
+        };
+
+        nonEnumProps[booleanClass] = nonEnumProps[stringClass] = {
+            constructor: true,
+            toString: true,
+            valueOf: true
+        };
+
+        nonEnumProps[errorClass] = nonEnumProps[functionClass] = nonEnumProps[regexpClass] = {
+            constructor: true,
+            toString: true
+        };
+
+        nonEnumProps[objectClass] = {
+            constructor: true
+        };
+
+        for (testIndex = $.POSITIVE_ZERO; $.lt(testIndex, shadowedProps.length); testIndex += 1) {
+            testValue = shadowedProps[testIndex];
+            for (testProp in nonEnumProps) {
+                if (hasOwnPropertyFN.call(nonEnumProps, testProp) &&
+                        !hasOwnPropertyFN.call(nonEnumProps[testProp], testValue)) {
+
+                    nonEnumProps[testProp][testValue] = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the $.hasProperty function, this method does not check down the object's prototype
+     * chain.
+     * @memberOf utilx
+     * @name objectHasOwnProperty
+     * @function
+     * @param {object} object
+     * @param {string} property
+     * @return {boolean}
+     */
+    // http://ecma-international.org/ecma-262/5.1/#sec-15.2.4.5
+    // Create our own local "hasOwnProperty" function: native -> shim -> sham
+    // named $.objectHasOwnProperty instead of hasOwnProperty because of SpiderMonkey and Blackberry bug
+    if ($.isNativeFunction(hasOwnPropertyFN)) {
+        if ($.isTrue(hasDontEnumBug)) {
+            $.objectHasOwnProperty = function (object, property) {
+                return hasOwnPropertyFN.call(object, property) ||
+                    ($.arrayContains(shadowedProps, property) &&
+                        $.hasProperty(object, property) &&
+                        !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
+            };
+        } else if ($.isTrue(hasFuncProtoBug)) {
+            $.objectHasOwnProperty = function (object, property) {
+                var val;
+
+                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
+                    val = true;
+                } else {
+                    val = hasOwnPropertyFN.call(object, property);
+                }
+
+                return val;
+            };
+        } else {
+            $.objectHasOwnProperty = function (object, property) {
+                return hasOwnPropertyFN.call(object, property);
+            };
+        }
+    } else {
+        $.objectHasOwnProperty = function (object, property) {
+            return $.hasProperty(object, property) && $.isUndefined($.objectGetPrototypeOf(object)[property]);
+        };
+    }
     /**
      * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
      * Used by $.objectPropertyIsEnumerable
@@ -2676,32 +2790,6 @@
         return val;
     }
 
-    /*
-     * Test for hasDontEnumBug and hasFuncProtoBug.
-     */
-    testObject1 = {
-        toString: null
-    };
-
-    for (testProp in testObject1) {
-        if ($.strictEqual(testProp, toStringString) &&
-                $.isNull(testObject1[testProp])) {
-
-            hasDontEnumBug = false;
-        }
-    }
-
-    testObject1 = function () {
-        return;
-    };
-
-    testObject1.prototype.constructor = testObject1;
-    for (testProp in testObject1) {
-        if ($.strictEqual(testProp, prototypeString)) {
-            hasFuncProtoBug = true;
-        }
-    }
-
     /**
      * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
      * @memberOf utilx
@@ -2710,6 +2798,18 @@
      * @param {*} inputArg
      * @return {boolean}
      */
+    /*
+    ctor = object.constructor;
+    skipConstructor = $.isFunction(ctor) && $.objectIs(ctor.prototype, object);
+    nonEnum = nonEnumProps[$.toObjectString(object)];
+    $.arrayForEach(shadowedProps, function (property) {
+        if (!($.isTrue(skipConstructor) && $.isTrue(nonEnum[property])) &&
+                $.objectHasOwnProperty(object, property)) {
+
+            $.arrayPush(props, property);
+        }
+    });
+    */
     if ($.isNativeFunction(propertyIsEnumerableFN)) {
         if ($.isTrue(hasDontEnumBug)) {
             $.objectPropertyIsEnumerable = function (object, property) {
@@ -2717,13 +2817,13 @@
 
                 if ($.objectInstanceOf(object, CtrObject)) {
                     val = (propertyIsEnumerableFN.call(object, property) ||
-                           ($.arrayContains(defaultProperties, property) && $.hasProperty(object, property) &&
+                           ($.arrayContains(shadowedProps, property) && $.hasProperty(object, property) &&
                             !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
                 } else {
                     val = !($.isTrue(hasFuncProtoBug) && $.isFunction(object) &&
                             $.strictEqual(property, prototypeString)) &&
                                 (propertyIsEnumerableCustom(object, property) ||
-                                 ($.arrayContains(defaultProperties, property) && $.hasProperty(object, property) &&
+                                 ($.arrayContains(shadowedProps, property) && $.hasProperty(object, property) &&
                                   !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property])));
                 }
 
@@ -2748,52 +2848,6 @@
         }
     } else {
         $.objectPropertyIsEnumerable = propertyIsEnumerableCustom;
-    }
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the $.hasProperty function, this method does not check down the object's prototype
-     * chain.
-     * @memberOf utilx
-     * @name objectHasOwnProperty
-     * @function
-     * @param {object} object
-     * @param {string} property
-     * @return {boolean}
-     */
-    // http://ecma-international.org/ecma-262/5.1/#sec-15.2.4.5
-    // Create our own local "hasOwnProperty" function: native -> shim -> sham
-    // named $.objectHasOwnProperty instead of hasOwnProperty because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(hasOwnPropertyFN)) {
-        if ($.isTrue(hasDontEnumBug)) {
-            $.objectHasOwnProperty = function (object, property) {
-                return hasOwnPropertyFN.call(object, property) ||
-                    ($.arrayContains(defaultProperties, property) &&
-                        $.hasProperty(object, property) &&
-                        !$.objectIs(object[property], $.objectGetPrototypeOf(object)[property]));
-            };
-        } else if ($.isTrue(hasFuncProtoBug)) {
-            $.objectHasOwnProperty = function (object, property) {
-                var val;
-
-                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
-                    val = true;
-                } else {
-                    val = hasOwnPropertyFN.call(object, property);
-                }
-
-                return val;
-            };
-        } else {
-            $.objectHasOwnProperty = function (object, property) {
-                return hasOwnPropertyFN.call(object, property);
-            };
-        }
-    } else {
-        $.objectHasOwnProperty = function (object, property) {
-            return $.hasProperty(object, property) && $.isUndefined($.objectGetPrototypeOf(object)[property]);
-        };
     }
 
     /**
@@ -3016,7 +3070,8 @@
                 actualDeleteCount,
                 k = $.POSITIVE_ZERO,
                 from,
-                argLength = arguments.length,
+                args = $.arraySlice(arguments),
+                argLength = args.length,
                 item = 3,
                 itemCount = globalMathMax(argLength - item, $.POSITIVE_ZERO),
                 to,
@@ -3085,7 +3140,7 @@
 
             k = actualStart;
             while (item < argLength) {
-                object[k] = arguments[item];
+                object[k] = args[item];
                 k += 1;
                 item += 1;
             }
@@ -3114,7 +3169,7 @@
         });
 
         if ($.isNativeFunction(forEachFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
+                $.strictEqual($.toObjectString(testObject1), stringClass)) {
 
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
@@ -3159,7 +3214,7 @@
         });
 
         if ($.isNativeFunction(someFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
+                $.strictEqual($.toObjectString(testObject1), stringClass)) {
 
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
@@ -3209,7 +3264,7 @@
         });
 
         if ($.isNativeFunction(mapFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
+                $.strictEqual($.toObjectString(testObject1), stringClass)) {
 
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
@@ -3350,7 +3405,7 @@
         });
 
         if ($.isNativeFunction(filterFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
+                $.strictEqual($.toObjectString(testObject1), stringClass)) {
 
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
@@ -3407,7 +3462,7 @@
         });
 
         if ($.isNativeFunction(reduceFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringObjectString)) {
+                $.strictEqual($.toObjectString(testObject1), stringClass)) {
 
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
@@ -3808,7 +3863,7 @@
      */
     // named $.objectKeys instead of keys because of SpiderMonkey and Blackberry bug
     testObject1 = {};
-    $.arrayForEach(defaultProperties, function (element) {
+    $.arrayForEach(shadowedProps, function (element) {
         testObject1[element] = null;
     });
 
@@ -3826,7 +3881,8 @@
                 props = [],
                 prop,
                 ctor,
-                skipConstructor;
+                skipConstructor,
+                nonEnum;
 
             for (prop in object) {
                 if (!($.isTrue(skipProto) && $.strictEqual(prop, prototypeString)) &&
@@ -3836,11 +3892,13 @@
                 }
             }
 
+            //if (object !== baseObjectPrototype) {
             if ($.isTrue(hasDontEnumBug)) {
                 ctor = object.constructor;
-                skipConstructor = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
-                $.arrayForEach(defaultProperties, function (property) {
-                    if (!($.isTrue(skipConstructor) && $.strictEqual(property, constructorString)) &&
+                skipConstructor = $.isFunction(ctor) && $.objectIs(ctor.prototype, object);
+                nonEnum = nonEnumProps[$.toObjectString(object)];
+                $.arrayForEach(shadowedProps, function (property) {
+                    if (!($.isTrue(skipConstructor) && $.isTrue(nonEnum[property])) &&
                             $.objectHasOwnProperty(object, property)) {
 
                         $.arrayPush(props, property);
@@ -4737,7 +4795,7 @@
             throw new Error(message);
         } catch (e) {
             if ($.strictEqual(e.message, message) &&
-                    $.strictEqual(e.toString(), errorObjectString)) {
+                    $.strictEqual(e.toString(), errorClass)) {
 
                 previousIEErrorToString = Error.prototype.toString;
                 $.objectDefineProperties(Error.prototype, {

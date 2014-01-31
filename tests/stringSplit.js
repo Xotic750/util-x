@@ -295,7 +295,12 @@
             var txt = '.',
                 rx = new RegExp('(.)?(.)?');
 
-            expect(utilx.stringSplit(txt, rx)).to.eql(['', '.', utilx.privateUndefined, '']);
+            expect(utilx.stringSplit(txt, rx)).to.eql(utilx.arraySlice(utilx.returnArgs(
+                '',
+                '.',
+                utilx.privateUndefined,
+                ''
+            )));
         });
 
         msg = '(\'A<B>bold</B>and<CODE>coded</CODE>\', /<(\\/)?([^<>]+)>/) results in [\'A\', undefined, ' +
@@ -305,13 +310,33 @@
                 rx = new RegExp('<(\\/)?([^<>]+)>');
 
             expect(utilx.stringSplit(txt, rx))
-                .to.eql(['A', undefined, 'B', 'bold', '/', 'B', 'and', undefined, 'CODE', 'coded', '/', 'CODE', '']);
+                .to.eql(utilx.arraySlice(utilx.returnArgs(
+                    'A',
+                    utilx.privateUndefined,
+                    'B',
+                    'bold',
+                    '/',
+                    'B',
+                    'and',
+                    utilx.privateUndefined,
+                    'CODE',
+                    'coded',
+                    '/',
+                    'CODE',
+                    ''
+                )));
         });
 
         it('(\'test\', /(s)*/) results in [\'t\', undefined, \'e\', \'s\', \'t\']', function () {
             var txt = 'tesst';
 
-            expect(utilx.stringSplit(txt, /(s)*/)).to.eql(['t', utilx.privateUndefined, 'e', 's', 't']);
+            expect(utilx.stringSplit(txt, /(s)*/)).to.eql(utilx.arraySlice(utilx.returnArgs(
+                't',
+                utilx.privateUndefined,
+                'e',
+                's',
+                't'
+            )));
         });
 
         msg = '(\'test\', /(s)*?/) results in [\'t\', undefined, \'e\',' +
@@ -320,7 +345,7 @@
             var txt = 'tesst';
 
             expect(utilx.stringSplit(txt, /(s)*?/))
-                .to.eql([
+                .to.eql(utilx.arraySlice(utilx.returnArgs(
                     't',
                     utilx.privateUndefined,
                     'e',
@@ -330,7 +355,7 @@
                     's',
                     utilx.privateUndefined,
                     't'
-                ]);
+                )));
         });
 
         it('(\'test\', /(s*)/) results in [\'t\', \'\', \'e\', \'ss\', \'t\']', function () {
