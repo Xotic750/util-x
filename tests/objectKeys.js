@@ -108,6 +108,9 @@
             if (!utilx.isZero(utilx.objectKeys(Constructor.prototype).length)) {
                 console.log('# Constructor.prototype lists constructor (must be IE<9 !): ' +
                             utilx.objectKeys(Constructor.prototype));
+
+                console.log('# Corner case when set to a non-function (will/can not fix)');
+                expect(utilx.objectKeys(Constructor.prototype).length).to.be(1);
             } else {
                 expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
             }
