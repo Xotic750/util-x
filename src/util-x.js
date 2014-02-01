@@ -166,6 +166,7 @@
         stackString = 'stack',
         stacktraceString = 'stacktrace',
         messageString = 'message',
+        nameString = 'name',
         newlineString = '\n',
         factoryString = 'factory',
         numberString = 'number',
@@ -219,6 +220,7 @@
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
+        hasErrorProps,
         nonEnumProps,
         testObject1,
         testObject2,
@@ -2770,6 +2772,9 @@
         }
     }
 
+    hasErrorProps = propertyIsEnumerableFN.call(prototypeOfError, messageString) ||
+                        propertyIsEnumerableFN.call(prototypeOfError, nameString);
+
     if ($.isTrue(hasDontEnumBug)) {
         // Used to avoid iterating non-enumerable properties in IE < 9
         nonEnumProps = {};
@@ -3969,6 +3974,7 @@
             throwIfIsNotTypeObjectOrIsNotFunction(object);
 
             var skipProto = $.isTrue(hasFuncProtoBug) && $.isFunction(object),
+                skipErrorProps = $.isTrue(hasErrorProps) && isErrorTypePrototype(object),
                 props = [],
                 prop,
                 ctor,
@@ -3977,7 +3983,9 @@
 
             for (prop in object) {
                 if (!($.isTrue(skipProto) && $.strictEqual(prop, prototypeString)) &&
-                        $.objectHasOwnProperty(object, prop)) {
+                        !($.isTrue(skipErrorProps) && ($.strictEqual(prop, messageString) ||
+                                                       $.strictEqual(prop, nameString))) &&
+                            $.objectHasOwnProperty(object, prop)) {
 
                     $.arrayPush(props, prop);
                 }
