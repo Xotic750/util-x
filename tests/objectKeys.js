@@ -131,15 +131,10 @@
             expect(utilx.objectKeys(Boolean.prototype).length).to.be(0);
             expect(utilx.objectKeys(String.prototype).length).to.be(0);
             expect(utilx.objectKeys(Number.prototype).length).to.be(0);
-            console.log('# Error.prototype: ' + utilx.objectKeys(Error.prototype));
             expect(utilx.objectKeys(Error.prototype).length).to.be(0);
-            console.log('# TypeError.prototype: ' + utilx.objectKeys(TypeError.prototype));
             expect(utilx.objectKeys(TypeError.prototype).length).to.be(0);
-            console.log('# SyntaxError.prototype: ' + utilx.objectKeys(SyntaxError.prototype));
             expect(utilx.objectKeys(SyntaxError.prototype).length).to.be(0);
-            console.log('# Date.prototype: ' + utilx.objectKeys(Date.prototype));
             expect(utilx.objectKeys(Date.prototype).length).to.be(0);
-            console.log('# RegExp.prototype: ' + utilx.objectKeys(RegExp.prototype));
             expect(utilx.objectKeys(RegExp.prototype).length).to.be(0);
         });
     });

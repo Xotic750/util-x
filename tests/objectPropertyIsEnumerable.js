@@ -86,5 +86,10 @@
             expect(utilx.objectPropertyIsEnumerable(new Constructor(), 'prototype')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(new Constructor(), 'constructor')).to.be.ok();
         });
+
+        it('should not list name or message', function () {
+            expect(utilx.objectPropertyIsEnumerable(Error.prototype, 'name')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(Error.prototype, 'message')).to.not.be.ok();
+        });
     });
 }());
