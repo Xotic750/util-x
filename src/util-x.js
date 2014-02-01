@@ -2871,54 +2871,35 @@
             $.objectPropertyIsEnumerable = function (object, property) {
                 $.checkObjectCoercible(object);
 
-                var //skipProto = $.isTrue(hasFuncProtoBug) && $.isFunction(object),
-                    skipErrorProps = $.isTrue(hasErrorProps) && isErrorTypePrototype(object),
-                    //ctor,
-                    //isProto,
-                    //nonEnum,
-                    val;
+                var val = false,
+                    ctor,
+                    isProto,
+                    nonEnum;
 
                 if (isTypeObjectOrIsFunction(object)) {
                     if (propertyIsEnumerableFN.call(object, property)) {
-                        if ($.isTrue(skipErrorProps) &&
-                                $.notStrictEqual(property, messageString) && $.notStrictEqual(property, nameString)) {
+                        if ($.isTrue(hasFuncProtoBug) && $.isFunction(object) &&
+                                $.notStrictEqual(property, prototypeString)) {
+
+                            val = true;
+                        } else if ($.isTrue(hasErrorProps) && isErrorTypePrototype(object) &&
+                                        $.notStrictEqual(property, messageString) &&
+                                        $.notStrictEqual(property, nameString)) {
 
                             val = true;
                         }
-                    }
-
-                    /*
-                    if (!($.isTrue(skipProto) && $.strictEqual(property, prototypeString)) &&
-                            !($.isTrue(skipErrorProps) && ($.strictEqual(property, messageString) ||
-                                                       $.strictEqual(property, nameString))) &&
-                                propertyIsEnumerableFN.call(object, property)) {
-
-                        val = true;
-                    }
-                    */
-
-                    /*
-                    if ($.notStrictEqual(object, prototypeOfObject)) {
-                        ctor = object.constructor;
-                        isProto = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
-                        nonEnum = nonEnumProps[$.toObjectString(object)];
-                        $.arrayForEach(shadowedProps, function (prop) {
-                            if (!($.isTrue(isProto) && $.isTrue(nonEnum[prop])) &&
-                                    propertyIsEnumerableFN.call(object, prop)) {
+                    } else {
+                        if ($.notStrictEqual(object, prototypeOfObject)) {
+                            ctor = object.constructor;
+                            isProto = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
+                            nonEnum = nonEnumProps[$.toObjectString(object)];
+                            if (!($.isTrue(isProto) && $.isTrue(nonEnum[property])) &&
+                                    $.objectHasOwnProperty(object, property)) {
 
                                 val = true;
                             }
-                        });
+                        }
                     }
-                    */
-
-                    /*
-                    val = propertyIsEnumerableFN.call(object, property) ||
-                           ($.objectHasOwnProperty(shadowedProps, property) && $.hasProperty(object, property) &&
-                            !$.strictEqual(object[property], $.objectGetPrototypeOf(object)[property]));
-                    */
-                } else {
-                    val = false;
                 }
 
                 return val;
