@@ -21,6 +21,38 @@
             obj2 = {};
         /*jshint +W001 */
 
+        it('should throw errors if undefined or null', function () {
+            expect(function () {
+                utilx.objectPropertyIsEnumerable(utilx.privateUndefined, 'toString');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.objectPropertyIsEnumerable(null, 'toString');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.objectPropertyIsEnumerable(1, 'toString');
+            }).to.not.throwException();
+
+            expect(function () {
+                utilx.objectPropertyIsEnumerable(true, 'toString');
+            }).to.not.throwException();
+
+            expect(function () {
+                utilx.objectPropertyIsEnumerable('', 'toString');
+            }).to.not.throwException();
+        });
+
+        it('primitives that are not undefined or null should return false', function () {
+            expect(utilx.objectPropertyIsEnumerable(1, 'toString')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable(true, 'toString')).to.not.be.ok();
+            expect(utilx.objectPropertyIsEnumerable('', 'toString')).to.not.be.ok();
+        });
+
         it('defined on object should be ok in each case', function () {
             expect(utilx.objectPropertyIsEnumerable(obj, 'toString')).to.be.ok();
             expect(utilx.objectPropertyIsEnumerable(obj, 'toLocaleString')).to.be.ok();

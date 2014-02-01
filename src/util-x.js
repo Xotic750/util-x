@@ -2855,37 +2855,7 @@
             };
         }
     } else {
-        $.objectHasOwnProperty = function (object, property) {
-            console.log('# objectHasOwnProperty shim');
-            return $.hasProperty(object, property) && $.isUndefined($.objectGetPrototypeOf(object)[property]);
-        };
-    }
-    /**
-     * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
-     * Used by $.objectPropertyIsEnumerable
-     * @private
-     * @function
-     * @param {*} object
-     * @param {string} property
-     * @return {boolean}
-     */
-    function propertyIsEnumerableCustom(object, property) {
-        console.log('# propertyIsEnumerableCustom');
-        // KJS in Safari 2 is not ECMAScript compatible and lacks crucial methods
-        // such as propertyIsEnumerable. We therefore use a workaround.
-        var val = false,
-            key;
-
-        if ($.hasProperty(object, property)) {
-            for (key in object) {
-                if ($.strictEqual(key, property) && $.objectHasOwnProperty(object, property)) {
-                    val = true;
-                    break;
-                }
-            }
-        }
-
-        return val;
+        throw new Error('hasOwnProperty is a vital method');
     }
 
     /**
@@ -2896,35 +2866,45 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    /*
-            if ($.isTrue(hasDontEnumBug) && $.notStrictEqual(object, prototypeOfObject)) {
-                ctor = object.constructor;
-                isProto = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
-                nonEnum = nonEnumProps[$.toObjectString(object)];
-                $.arrayForEach(shadowedProps, function (property) {
-                    if (!($.isTrue(isProto) && $.isTrue(nonEnum[property])) &&
-                            $.objectHasOwnProperty(object, property)) {
-
-                        $.arrayPush(props, property);
-                    }
-                });
-    */
     if ($.isNativeFunction(propertyIsEnumerableFN)) {
         if ($.isTrue(hasDontEnumBug)) {
             $.objectPropertyIsEnumerable = function (object, property) {
-                var val;
+                var skipProto = $.isTrue(hasFuncProtoBug) && $.isFunction(object),
+                    skipErrorProps = $.isTrue(hasErrorProps) && isErrorTypePrototype(object),
+                    ctor,
+                    isProto,
+                    nonEnum,
+                    val;
 
-                if ($.objectInstanceOf(object, CtrObject)) {
+                if (isTypeObjectOrIsFunction(object)) {
+                    if (!($.isTrue(skipProto) && $.strictEqual(property, prototypeString)) &&
+                            !($.isTrue(skipErrorProps) && ($.strictEqual(property, messageString) ||
+                                                       $.strictEqual(property, nameString))) &&
+                                propertyIsEnumerableFN.call(object, property)) {
+
+                        val = true;
+                    }
+
+                    if ($.notStrictEqual(object, prototypeOfObject)) {
+                        ctor = object.constructor;
+                        isProto = $.isFunction(ctor) && $.strictEqual(ctor.prototype, object);
+                        nonEnum = nonEnumProps[$.toObjectString(object)];
+                        $.arrayForEach(shadowedProps, function (prop) {
+                            if (!($.isTrue(isProto) && $.isTrue(nonEnum[prop])) &&
+                                    propertyIsEnumerableFN.call(object, prop)) {
+
+                                val = true;
+                            }
+                        });
+                    }
+
+                    /*
                     val = propertyIsEnumerableFN.call(object, property) ||
                            ($.objectHasOwnProperty(shadowedProps, property) && $.hasProperty(object, property) &&
                             !$.strictEqual(object[property], $.objectGetPrototypeOf(object)[property]));
+                    */
                 } else {
-                    console.log('# propertyIsEnumerable part 2');
-                    val = !($.isTrue(hasFuncProtoBug) && $.isFunction(object) &&
-                            $.strictEqual(property, prototypeString)) &&
-                                (propertyIsEnumerableCustom(object, property) ||
-                                 ($.arrayContains(shadowedProps, property) && $.hasProperty(object, property) &&
-                                  !$.strictEqual(object[property], $.objectGetPrototypeOf(object)[property])));
+                    val = false;
                 }
 
                 return val;
@@ -2947,7 +2927,7 @@
             };
         }
     } else {
-        $.objectPropertyIsEnumerable = propertyIsEnumerableCustom;
+        throw new Error('propertyIsEnumerable is a vital method');
     }
 
     /**
