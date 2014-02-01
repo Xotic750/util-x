@@ -2878,7 +2878,6 @@
 
                 console.log('# property: ' + property);
                 if (isTypeObjectOrIsFunction(object)) {
-                    console.log('# isTypeObjectOrIsFunction: ' + object);
                     if (propertyIsEnumerableFN.call(object, property)) {
                         console.log('# propertyIsEnumerableFN: ' + true);
                         if ($.isTrue(hasFuncProtoBug) && $.isFunction(object) &&
