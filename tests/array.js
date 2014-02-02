@@ -1,52 +1,44 @@
-/*global require, describe, it, beforeEach */
+/*global require, console */
 
 (function () {
     'use strict';
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0];
 
-    describe('Native Array object', function () {
-        var testSubject;
+    delete testSubject[1];
 
-        beforeEach(function () {
-            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0];
-            delete testSubject[1];
-        });
+    if (utilx.notStrictEqual(testSubject.length, 8) ||
+            utilx.notStrictEqual(testSubject[0], 2) ||
+            utilx.notStrictEqual(testSubject[1], utilx.privateUndefined) ||
+            utilx.notStrictEqual(testSubject[2], utilx.privateUndefined) ||
+            utilx.notStrictEqual(testSubject[3], true) ||
+            utilx.notStrictEqual(testSubject[4], 'hej') ||
+            utilx.notStrictEqual(testSubject[5], null) ||
+            utilx.notStrictEqual(testSubject[6], false) ||
+            utilx.notStrictEqual(testSubject[7], 0) ||
 
-        it('should have correct values', function () {
-            expect(testSubject.length).to.be(8);
-            expect(testSubject[0]).to.be(2);
-            expect(testSubject[1]).to.be(utilx.privateUndefined);
-            expect(testSubject[2]).to.be(utilx.privateUndefined);
-            expect(testSubject[3]).to.be(true);
-            expect(testSubject[4]).to.be('hej');
-            expect(testSubject[5]).to.be(null);
-            expect(testSubject[6]).to.be(false);
-            expect(testSubject[7]).to.be(0);
-        });
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 0), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 1), false) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 2), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 3), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 4), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 5), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 6), true) ||
+            utilx.notStrictEqual(utilx.hasProperty(testSubject, 7), true) ||
 
-        it('should have properties (using \'in\')', function () {
-            expect(utilx.hasProperty(testSubject, 0)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 1)).to.not.be.ok();
-            expect(utilx.hasProperty(testSubject, 2)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 3)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 4)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 5)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 6)).to.be.ok();
-            expect(utilx.hasProperty(testSubject, 7)).to.be.ok();
-        });
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 0), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 1), false) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 2), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 3), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 4), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 5), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 6), true) ||
+            utilx.notStrictEqual(utilx.objectHasOwnProperty(testSubject, 7), true)) {
 
-        it('should have own properties (using \'hasOwnProperty\')', function () {
-            expect(utilx.objectHasOwnProperty(testSubject, 0)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 1)).to.not.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 2)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 3)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 4)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 5)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 6)).to.be.ok();
-            expect(utilx.objectHasOwnProperty(testSubject, 7)).to.be.ok();
-        });
-    });
+        console.log('#####################################################');
+        console.log('# Array object has serious bugs in this environment #');
+        console.log('#####################################################');
+    }
 }());
