@@ -24,11 +24,88 @@
  */
 
 /*global console */
-(function (globalThis, Math, window, JSON, module, define) {
+(function (globalThis, window, JSON, module, define) {
     /* jshint -W034 */
     'use strict';
 
-    var baseObject = {},
+    var nativ = {
+            isNaN: isNaN,
+            isFinite: isFinite,
+            Math: {
+                sign: Math.sign,
+                min: Math.min,
+                max: Math.max,
+                floor: Math.floor,
+                ceil: Math.ceil,
+                abs: Math.abs,
+                random: Math.random
+            },
+            JSON: {}
+        },
+
+        strings = {
+            object: 'object',
+            function: 'function',
+            callee: 'callee',
+            Length: 'length',
+            Prototype: 'prototype',
+            ToString: 'toString',
+            Constructor: 'constructor',
+            value: 'value',
+            sentinel: 'sentinel',
+            test: 'test',
+            stack: 'stack',
+            stacktrace: 'stacktrace',
+            message: 'message',
+            name: 'name',
+            newline: '\n',
+            factory: 'factory',
+            number: 'number',
+            string: 'string',
+            null: 'null',
+            boolean: 'boolean',
+            undefined: 'undefined',
+            set: 'set',
+            get: 'get',
+            empty: '',
+            zero: '0',
+            g: 'g',
+            period: '.',
+            proto: '__proto__',
+            defineGetter: '__defineGetter__',
+            defineSetter: '__defineSetter__',
+            lookupGetter: '__lookupGetter__',
+            lookupSetter: '__lookupSetter__'
+        },
+
+        className = {
+            arguments: '[object Arguments]',
+            function: '[object Function]',
+            object: '[object Object]',
+            undefined: '[object Undefined]',
+            null: '[object Null]',
+            error: '[object Error]',
+            regexp: '[object RegExp]',
+            array: '[object Array]',
+            date: '[object Date]',
+            string: '[object String]',
+            boolean: '[object Boolean]',
+            number: '[object Number]'
+        },
+
+        rx = {
+            splitNewLine: new RegExp('\\r\\n|\\n'),
+            plusMinus: new RegExp('^[+\\-]?'),
+            notDigits: new RegExp('^\\d+$'),
+            test: new RegExp(strings.test),
+            escapeThese: new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', strings.g),
+            beginsFunction: new RegExp('^\\s*\\bfunction\\b'),
+            replacementToken: new RegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', strings.g),
+            getNativeFlags: new RegExp('\\/([a-z]*)$', 'i'),
+            clipDuplicates: new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', strings.g)
+        },
+
+        baseObject = {},
         toStringFN = baseObject.toString,
         hasOwnPropertyFN = baseObject.hasOwnProperty,
         propertyIsEnumerableFN = baseObject.propertyIsEnumerable,
@@ -132,86 +209,17 @@
         CtrURIError = baseURIError.constructor,
         prototypeOfURIError = CtrURIError.prototype,
 
-        globalIsNaN = isNaN,
-        globalIsFinite = isFinite,
-        globalMathSign = Math.sign,
-        globalMathMin = Math.min,
-        globalMathMax = Math.max,
-        globalMathFloor = Math.floor,
-        globalMathCeil = Math.ceil,
-        globalMathAbs = Math.abs,
-        globalMathRandom = Math.random,
-        globalJsonParse,
-        globalJsonStringify,
-
-        protoName = '__proto__',
-        defineGetter = '__defineGetter__',
-        defineSetter = '__defineSetter__',
-        lookupGetter = '__lookupGetter__',
-        lookupSetter = '__lookupSetter__',
-        lookupGetterFN = baseObject[lookupGetter],
-        lookupSetterFN = baseObject[lookupSetter],
-        defineGetterFN = baseObject[defineGetter],
-        defineSetterFN = baseObject[defineSetter],
-
-        objectString = 'object',
-        functionString = 'function',
-        calleeString = 'callee',
-        lengthString = 'length',
-        prototypeString = 'prototype',
-        toStringString = 'toString',
-        constructorString = 'constructor',
-        valueString = 'value',
-        sentinelString = 'sentinel',
-        testString = 'test',
-        stackString = 'stack',
-        stacktraceString = 'stacktrace',
-        messageString = 'message',
-        nameString = 'name',
-        newlineString = '\n',
-        factoryString = 'factory',
-        numberString = 'number',
-        stringString = 'string',
-        nullString = 'null',
-        booleanString = 'boolean',
-        undefinedString = 'undefined',
-        setString = 'set',
-        getString = 'get',
-        emptyString = baseString,
-        zeroString = '0',
-        gString = 'g',
-        dotString = '.',
-
-        argumentsClass = '[object Arguments]',
-        functionClass = '[object Function]',
-        objectClass = '[object Object]',
-        undefinedClass = '[object Undefined]',
-        nullClass = '[object Null]',
-        errorClass = '[object Error]',
-        regexpClass = '[object RegExp]',
-        arrayClass = '[object Array]',
-        dateClass = '[object Date]',
-        stringClass = '[object String]',
-        booleanClass = '[object Boolean]',
-        numberClass = '[object Number]',
-
-        rxSplitNewLine = new RegExp('\\r\\n|\\n'),
-        rxPlusMinus = new RegExp('^[+\\-]?'),
-        rxNotDigits = new RegExp('^\\d+$'),
-        rxTest = new RegExp(testString),
-        rxEscapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', gString),
-        rxBeginsFunction = new RegExp('^\\s*\\bfunction\\b'),
-        rxReplacementToken = new RegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', gString),
-        rxGetNativeFlags = new RegExp('\\/([a-z]*)$', 'i'),
-        rxClipDuplicates = new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', gString),
-        rxOperaNative,
-        wsTrimRX,
+        lookupGetterFN = baseObject[strings.lookupGetter],
+        lookupSetterFN = baseObject[strings.lookupSetter],
+        defineGetterFN = baseObject[strings.defineGetter],
+        defineSetterFN = baseObject[strings.defineSetter],
 
         constantProperties = {
             enumerable: false,
             writable: false,
             configurable: false
         },
+
         notEnumerableProperties = {
             enumerable: false,
             writable: true,
@@ -240,14 +248,13 @@
         boxedString,
         reduceTypeErrorMessage,
         isErrorTypePrototype,
+        objectGetOwnPropertyDescriptor,
 
         // JSON compliance result
         isSupportedResult,
 
         // JSON stringify variables
         stringifiedValue,
-        escapableRxString,
-        rxEscapable,
         stringifyGap,
         stringifyIndent,
         stringifyMeta,
@@ -257,12 +264,6 @@
 
         // JSON parse variables
         threwSynatxError,
-        rxParseProtect1,
-        rxParseProtect2,
-        rxParseProtect3,
-        rxParseProtect4,
-        parseRxCharacterString,
-        rxParseCharacterTest,
 
         /**
          * For hasOwnProperty bug.
@@ -270,13 +271,13 @@
          * @type {array.<string>}
          */
         shadowedProps = [
-            toStringString,
+            strings.ToString,
             'toLocaleString',
             'valueOf',
             'hasOwnProperty',
             'isPrototypeOf',
             'propertyIsEnumerable',
-            constructorString
+            strings.Constructor
         ],
 
         whiteSpacesList = [
@@ -665,7 +666,7 @@
      * @return {number}
      */
     $.clamp = function (number, min, max) {
-        return globalMathMin(globalMathMax(number, min), max);
+        return nativ.Math.min(nativ.Math.max(number, min), max);
     };
 
     /**
@@ -676,7 +677,7 @@
      * @return {boolean}
      */
     $.isUndefined = function (inputArg) {
-        return $.strictEqual(typeof inputArg, undefinedString);
+        return $.strictEqual(typeof inputArg, strings.undefined);
     };
 
     /**
@@ -695,7 +696,7 @@
      * @memberOf utilx
      * @type {boolean}
      */
-    $.isProtoSupported = $.isNull(prototypeOfObject[protoName]);
+    $.isProtoSupported = $.isNull(prototypeOfObject[strings.proto]);
 
     /**
      * Returns true if the operand inputArg is undefined or null.
@@ -771,7 +772,7 @@
      * @return {boolean}
      */
     $.isNumber = function (inputArg) {
-        return $.strictEqual(typeof inputArg, numberString);
+        return $.strictEqual(typeof inputArg, strings.number);
     };
 
     /**
@@ -815,7 +816,7 @@
      * @return {boolean}
      */
     $.isString = function (inputArg) {
-        return $.strictEqual(typeof inputArg, stringString);
+        return $.strictEqual(typeof inputArg, strings.string);
     };
 
     /**
@@ -851,13 +852,13 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.isTrue($.strictEqual(typeof rxTest, objectString))) {
+    if ($.isTrue($.strictEqual(typeof rx.test, strings.object))) {
         $.isTypeOfObject = function (inputArg) {
-            return $.strictEqual(typeof inputArg, objectString);
+            return $.strictEqual(typeof inputArg, strings.object);
         };
     } else {
         $.isTypeOfObject = function (inputArg) {
-            return $.strictEqual(typeof inputArg, objectString) || $.isRegExp(inputArg);
+            return $.strictEqual(typeof inputArg, strings.object) || $.isRegExp(inputArg);
         };
     }
 
@@ -880,7 +881,7 @@
      * @return {boolean}
      */
     $.isEmptyString = function (inputArg) {
-        return $.strictEqual(inputArg, emptyString);
+        return $.strictEqual(inputArg, strings.empty);
     };
 
     /**
@@ -891,7 +892,7 @@
      * @return {boolean}
      */
     $.isStringNotEmpty = function (inputArg) {
-        return $.isString(inputArg) && !$.isEmptyString(inputArg, emptyString);
+        return $.isString(inputArg) && !$.isEmptyString(inputArg, strings.empty);
     };
 
     /**
@@ -946,9 +947,11 @@
         if ($.isString(inputArg)) {
             val = inputArg;
         } else if ($.isUndefined(inputArg)) {
-            val = undefinedString;
+            val = strings.undefined;
         } else {
-            val = String(inputArg);
+            /*jshint -W064 */
+            val = CtrString(inputArg);
+            /*jshint +W064 */
         }
 
         return val;
@@ -974,24 +977,24 @@
      * @param {*} inputArg
      * @return {boolean}
      */
-    if ($.strictEqual(toStringFN.call($.returnArgs()), argumentsClass)) {
+    if ($.strictEqual(toStringFN.call($.returnArgs()), className.arguments)) {
         $.isArguments = function (inputArg) {
-            return $.strictEqual(toStringFN.call(inputArg), argumentsClass);
+            return $.strictEqual(toStringFN.call(inputArg), className.arguments);
         };
-    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), functionClass)) {
+    } else if ($.strictEqual(toStringFN.call(hasOwnPropertyFN), className.function)) {
         isArgumentsCheck = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectClass) &&
-                hasOwnPropertyFN.call(inputArg, calleeString) &&
-                hasOwnPropertyFN.call(inputArg, lengthString) &&
+                $.strictEqual(toStringFN.call(inputArg), className.object) &&
+                hasOwnPropertyFN.call(inputArg, strings.callee) &&
+                hasOwnPropertyFN.call(inputArg, strings.Length) &&
                 $.isNumber(inputArg.length);
         };
 
-        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), functionClass)) {
+        if ($.strictEqual(toStringFN.call(propertyIsEnumerableFN), className.function)) {
             $.isArguments = function (inputArg) {
                 return isArgumentsCheck(inputArg) &&
-                    !propertyIsEnumerableFN.call(inputArg, calleeString) &&
-                    !propertyIsEnumerableFN.call(inputArg, lengthString);
+                    !propertyIsEnumerableFN.call(inputArg, strings.callee) &&
+                    !propertyIsEnumerableFN.call(inputArg, strings.Length);
             };
         } else {
             $.isArguments = isArgumentsCheck;
@@ -1001,9 +1004,9 @@
     if ($.isUndefined($.isArguments)) {
         $.isArguments = function (inputArg) {
             return $.isTypeObject(inputArg) &&
-                $.strictEqual(toStringFN.call(inputArg), objectClass) &&
-                $.hasProperty(inputArg, calleeString) &&
-                $.hasProperty(inputArg, lengthString) &&
+                $.strictEqual(toStringFN.call(inputArg), className.object) &&
+                $.hasProperty(inputArg, strings.callee) &&
+                $.hasProperty(inputArg, strings.Length) &&
                 $.isNumber(inputArg.length);
         };
     }
@@ -1050,11 +1053,11 @@
      * @return {string}
      */
     try {
-        if ($.strictEqual(toStringFN.call(), undefinedClass) &&
-                $.strictEqual(toStringFN.call(null), nullClass) &&
-                $.strictEqual(toStringFN.call(prototypeOfString), stringClass) &&
-                $.strictEqual(toStringFN.call(prototypeOfError), errorClass) &&
-                $.strictEqual(toStringFN.call($.returnArgs()), argumentsClass)) {
+        if ($.strictEqual(toStringFN.call(), className.undefined) &&
+                $.strictEqual(toStringFN.call(null), className.null) &&
+                $.strictEqual(toStringFN.call(prototypeOfString), className.string) &&
+                $.strictEqual(toStringFN.call(prototypeOfError), className.error) &&
+                $.strictEqual(toStringFN.call($.returnArgs()), className.arguments)) {
 
             $.toObjectString = function (object) {
                 return toStringFN.call(object);
@@ -1067,27 +1070,27 @@
             var val;
 
             if ($.isUndefined(object)) {
-                val = undefinedClass;
+                val = className.undefined;
             } else if ($.isNull(object)) {
-                val = nullClass;
+                val = className.null;
             } else if ($.isArguments(object)) {
-                val = argumentsClass;
+                val = className.arguments;
             } else if ($.strictEqual(object, prototypeOfNumber)) {
-                val = numberClass;
+                val = className.number;
             } else if ($.strictEqual(object, prototypeOfBoolean)) {
-                val = booleanClass;
+                val = className.boolean;
             } else if ($.strictEqual(object, prototypeOfObject)) {
-                val = objectClass;
+                val = className.object;
             } else if ($.strictEqual(object, prototypeOfFunction)) {
-                val = functionClass;
+                val = className.function;
             } else if ($.strictEqual(object, prototypeOfString)) {
-                val = stringClass;
+                val = className.string;
             } else if ($.strictEqual(object, prototypeOfDate)) {
-                val = dateClass;
+                val = className.date;
             } else if ($.strictEqual(object, prototypeOfRegExp)) {
-                val = regexpClass;
+                val = className.regexp;
             } else if (isErrorTypePrototype(object)) {
-                val = errorClass;
+                val = className.error;
             } else {
                 val = toStringFN.call(object);
             }
@@ -1104,7 +1107,7 @@
      * @return {boolean}
      */
     $.isError = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), errorClass) ||
+        return $.strictEqual($.toObjectString(inputArg), className.error) ||
             ($.isTypeObject(inputArg) && $.objectInstanceOf(inputArg, CtrError));
     };
 
@@ -1116,7 +1119,7 @@
      * @return {boolean}
      */
     $.isRegExp = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), regexpClass) &&
+        return $.strictEqual($.toObjectString(inputArg), className.regexp) &&
             $.isString(inputArg.source) && $.isBoolean(inputArg.global);
     };
 
@@ -1129,7 +1132,7 @@
      * @return {boolean}
      */
     if ($.isTypeObject(window) && $.isTruthy(window.alert) && $.isUndefined(window.alert.toString) &&
-                testFN.call(rxBeginsFunction, window.alert)) {
+                testFN.call(rx.beginsFunction, window.alert)) {
 
         isIENativeFunction = function (inputArg) {
             // $.isTruthy(inputArg)
@@ -1143,14 +1146,14 @@
             // so next step is a "safe" destructuration
             // assumption
 
-            // testFN.call(rxBeginsFunction, inputArg)
+            // testFN.call(rx.beginsFunction, inputArg)
             // we are looking for a function
             // and IE shows them with function
             // as first word. Eventually
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return $.isTruthy(inputArg) && $.isUndefined(inputArg.toString) && testFN.call(rxBeginsFunction, inputArg);
+            return $.isTruthy(inputArg) && $.isUndefined(inputArg.toString) && testFN.call(rx.beginsFunction, inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -1173,9 +1176,9 @@
         /*jslint evil: false */
         // Opera 10 doesn't play ball so have to test the string
         testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
-        rxOperaNative = new RegExp(testValue);
+        rx.operaNative = new RegExp(testValue);
         isNativeFunction = function (inputArg) {
-            return testFN.call(rxOperaNative, inputArg);
+            return testFN.call(rx.operaNative, inputArg);
         };
     } catch (e) {
         isNativeFunction = function (inputArg) {
@@ -1207,10 +1210,10 @@
      * @return {boolean}
      */
     function isFunctionBasic(inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), functionClass) ||
-            ($.strictEqual(typeof inputArg, functionString) &&
-             $.strictEqual(typeof inputArg.call, functionString) &&
-             $.strictEqual(typeof inputArg.apply, functionString));
+        return $.strictEqual($.toObjectString(inputArg), className.function) ||
+            ($.strictEqual(typeof inputArg, strings.function) &&
+             $.strictEqual(typeof inputArg.call, strings.function) &&
+             $.strictEqual(typeof inputArg.apply, strings.function));
     }
 
     /**
@@ -1291,7 +1294,7 @@
      * @return {boolean}
      */
     $.isObject = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), objectClass) && !$.isFunction(inputArg);
+        return $.strictEqual($.toObjectString(inputArg), className.object) && !$.isFunction(inputArg);
     };
 
     /**
@@ -1358,7 +1361,7 @@
         $.arrayIsArray = isArrayFN;
     } else {
         $.arrayIsArray = function (inputArg) {
-            return $.strictEqual($.toObjectString(inputArg), arrayClass);
+            return $.strictEqual($.toObjectString(inputArg), className.array);
         };
     }
 
@@ -1389,7 +1392,7 @@
      * @return {boolean}
      */
     $.isDate = function (inputArg) {
-        return $.strictEqual($.toObjectString(inputArg), dateClass);
+        return $.strictEqual($.toObjectString(inputArg), className.date);
     };
 
     /**
@@ -1460,7 +1463,7 @@
      * @param {...*} [var_args]
      * @return {boolean}
      */
-    $.areSameObjectClass = function (a, b) {
+    $.areSameClass = function (a, b) {
         var length = arguments.length,
             typeA,
             val;
@@ -1549,7 +1552,7 @@
         $.numberIsFinite = isFiniteFN;
     } else {
         $.numberIsFinite = function (number) {
-            return $.isNumber(number) && globalIsFinite(number);
+            return $.isNumber(number) && nativ.isFinite(number);
         };
     }
 
@@ -1564,8 +1567,8 @@
      * @return {number}
      */
     // named mathSign instead of sign because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(globalMathSign)) {
-        $.mathSign = globalMathSign;
+    if ($.isNativeFunction(nativ.Math.sign)) {
+        $.mathSign = nativ.Math.sign;
     } else {
         $.mathSign = function nfeSign(value) {
             var number = $.toNumber(value),
@@ -1615,7 +1618,7 @@
             } else if (isZeroOrNotFinite(number)) {
                 val = number;
             } else {
-                val = $.mathSign(number) * globalMathFloor(globalMathAbs(number));
+                val = $.mathSign(number) * nativ.Math.floor(nativ.Math.abs(number));
             }
 
             return val;
@@ -1634,6 +1637,10 @@
      */
     // named $.numberIsInteger instead of toInteger because of SpiderMonkey and Blackberry bug
     try {
+        if (!$.isNativeFunction(isIntegerFN)) {
+            throw new CtrError();
+        }
+
         if (isIntegerFN($.UNSAFE_INTEGER) || isIntegerFN(-$.UNSAFE_INTEGER)) {
             throw new CtrError('Failed unsafe integer check');
         }
@@ -1662,7 +1669,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD32);
+            val = $.mod($.mathSign(number) * nativ.Math.floor(nativ.Math.abs(number)), $.UWORD32);
             if ($.gt(val, $.MAX_INT32)) {
                 val -= $.UWORD32;
             } else if ($.lt(val, $.MIN_INT32)) {
@@ -1700,7 +1707,7 @@
      * @return {number}
      */
     $.modulo = function (dividend, divisor) {
-        return dividend - divisor * globalMathFloor(dividend / divisor);
+        return dividend - divisor * nativ.Math.floor(dividend / divisor);
     };
 
     /**
@@ -1790,7 +1797,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD16);
+            val = $.mod($.mathSign(number) * nativ.Math.floor(nativ.Math.abs(number)), $.UWORD16);
             if ($.gt(val, $.MAX_INT16)) {
                 val -= $.UWORD16;
             } else if ($.lt(val, $.MIN_INT16)) {
@@ -1867,7 +1874,7 @@
         if (isZeroOrNotFinite(number)) {
             val = $.POSITIVE_ZERO;
         } else {
-            val  = $.mod($.mathSign(number) * globalMathFloor(globalMathAbs(number)), $.UWORD8);
+            val  = $.mod($.mathSign(number) * nativ.Math.floor(nativ.Math.abs(number)), $.UWORD8);
             if ($.gt(val, $.MAX_INT8)) {
                 val -= $.UWORD8;
             } else if ($.lt(val, $.MIN_INT8)) {
@@ -2004,7 +2011,7 @@
      * @returns {string} String with any duplicate characters removed.
      */
     function clipDuplicates(str) {
-        return replaceFN.call(str, rxClipDuplicates, emptyString);
+        return replaceFN.call(str, rx.clipDuplicates, strings.empty);
     }
 
     /**
@@ -2036,7 +2043,7 @@
         }
 
         // Get native flags in use
-        var flags = execFN.call(rxGetNativeFlags, $.anyToString(regExpArg))[1];
+        var flags = execFN.call(rx.getNativeFlags, $.anyToString(regExpArg))[1];
 
         if (options.add) {
             flags = clipDuplicates(flags + options.add);
@@ -2044,14 +2051,14 @@
 
         if (options.remove) {
             // Would need to escape `options.remove` if this was public
-            flags = replaceFN.call(flags, new RegExp('[' + options.remove + ']+', gString), emptyString);
+            flags = replaceFN.call(flags, new RegExp('[' + options.remove + ']+', strings.g), strings.empty);
         }
 
         return new RegExp(regExpArg.source, flags);
     }
 
     // Check for correct `exec` handling of nonparticipating capturing groups
-    correctExecNpcg = $.isUndefined(execFN.call(new RegExp('()??'), emptyString)[1]);
+    correctExecNpcg = $.isUndefined(execFN.call(new RegExp('()??'), strings.empty)[1]);
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -2072,8 +2079,8 @@
             // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
             // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
             // older IEs. IE 9 in standards mode follows the spec
-            if ($.isFalse(correctExecNpcg) && $.gt(match.length, 1) && $.arrayContains(match, emptyString)) {
-                r2 = copyRegExp(regExpArg, {remove: gString});
+            if ($.isFalse(correctExecNpcg) && $.gt(match.length, 1) && $.arrayContains(match, strings.empty)) {
+                r2 = copyRegExp(regExpArg, {remove: strings.g});
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
                 replaceFN.call($.anyToString(str).slice(match.index), r2, function () {
@@ -2135,7 +2142,7 @@
 
         var str = onlyCoercibleToString(stringArg),
             r2 = copyRegExp(regExpArg, {
-                add: gString,
+                add: strings.g,
                 remove: 'y'
             }),
             match;
@@ -2201,11 +2208,11 @@
      * @return {array.<string>}
      */
     // named $.stringSplit instead of split because of SpiderMonkey and Blackberry bug
-    if ($.notStrictEqual(splitFN.call(testString, new RegExp('(?:test)*')).length, 2) ||
-            $.notStrictEqual(splitFN.call(dotString, new RegExp('(.?)(.?)')).length, 4) ||
+    if ($.notStrictEqual(splitFN.call(strings.test, new RegExp('(?:test)*')).length, 2) ||
+            $.notStrictEqual(splitFN.call(strings.period, new RegExp('(.?)(.?)')).length, 4) ||
             $.strictEqual(splitFN.call('tesst', new RegExp('(s)*'))[1], 't') ||
-            !$.isZero(splitFN.call(emptyString, new RegExp('.?')).length) ||
-            $.gt(splitFN.call(dotString, new RegExp('()()')).length, 1)) {
+            !$.isZero(splitFN.call(strings.empty, new RegExp('.?')).length) ||
+            $.gt(splitFN.call(strings.period, new RegExp('()()')).length, 1)) {
 
         $.stringSplit = function (stringArg, separator, limit) {
             var str = onlyCoercibleToString(stringArg),
@@ -2251,8 +2258,8 @@
                 });
 
                 if ($.strictEqual(lastLastIndex, str.length)) {
-                    if (!testFN.call(separator, emptyString) || lastLength) {
-                        $.arrayPush(output, emptyString);
+                    if (!testFN.call(separator, strings.empty) || lastLength) {
+                        $.arrayPush(output, strings.empty);
                     }
                 } else {
                     $.arrayPush(output, str.slice(lastLastIndex));
@@ -2331,7 +2338,7 @@
                     length = args.length;
 
                 /*jshint -W098 */
-                return replaceFN.call($.anyToString(replacement), rxReplacementToken, function ($0, $1, $2) {
+                return replaceFN.call($.anyToString(replacement), rx.replacementToken, function ($0, $1, $2) {
                     // Special variable or numbered backreference without curly braces
                     // $$
                     if ($.strictEqual($2, '$')) {
@@ -2369,7 +2376,7 @@
                             throw new CtrSyntaxError('Backreference to undefined group ' + $0);
                         }
 
-                        return args[$2] || emptyString;
+                        return args[$2] || strings.empty;
                     }
 
                     throw new CtrSyntaxError('Invalid token ' + $0);
@@ -2540,7 +2547,7 @@
             val;
 
         if ($.lt(times, 1)) {
-            val = emptyString;
+            val = strings.empty;
         } else if ($.mod(times, 2)) {
             val = stringRepeatRep(s, times - 1) + s;
         } else {
@@ -2695,9 +2702,9 @@
         $.objectGetPrototypeOf = function (object) {
             return getPrototypeOfFN(throwIfIsNotTypeObjectOrIsNotFunction(object));
         };
-    } else if ($.isNull(CtrObject.prototype[protoName])) {
+    } else if ($.isNull(CtrObject.prototype[strings.proto])) {
         $.objectGetPrototypeOf = function (object) {
-            return throwIfIsNotTypeObjectOrIsNotFunction(object)[protoName];
+            return throwIfIsNotTypeObjectOrIsNotFunction(object)[strings.proto];
         };
     } else {
         if ($.notStrictEqual($.returnArgs().constructor.prototype, prototypeOfObject)) {
@@ -2717,8 +2724,8 @@
                 } else {
                     ctrProto = object.constructor.prototype;
                 }
-            } else if ($.isObject(object[protoName])) {
-                ctrProto = object[protoName];
+            } else if ($.isObject(object[strings.proto])) {
+                ctrProto = object[strings.proto];
             } else {
                 ctrProto = prototypeOfObject;
             }
@@ -2755,7 +2762,7 @@
     };
 
     for (testProp in testObject1) {
-        if ($.strictEqual(testProp, toStringString) &&
+        if ($.strictEqual(testProp, strings.ToString) &&
                 $.isNull(testObject1[testProp])) {
 
             hasDontEnumBug = false;
@@ -2768,37 +2775,37 @@
 
     testObject1.prototype.constructor = testObject1;
     for (testProp in testObject1) {
-        if ($.strictEqual(testProp, prototypeString)) {
+        if ($.strictEqual(testProp, strings.Prototype)) {
             hasFuncProtoBug = true;
         }
     }
 
-    hasErrorProps = propertyIsEnumerableFN.call(prototypeOfError, messageString) ||
-                        propertyIsEnumerableFN.call(prototypeOfError, nameString);
+    hasErrorProps = propertyIsEnumerableFN.call(prototypeOfError, strings.message) ||
+                        propertyIsEnumerableFN.call(prototypeOfError, strings.name);
 
     if ($.isTrue(hasDontEnumBug)) {
         // Used to avoid iterating non-enumerable properties in IE < 9
         nonEnumProps = {};
 
-        nonEnumProps[arrayClass] = nonEnumProps[dateClass] = nonEnumProps[numberClass] = {
+        nonEnumProps[className.array] = nonEnumProps[className.date] = nonEnumProps[className.number] = {
             constructor: true,
             toLocaleString: true,
             toString: true,
             valueOf: true
         };
 
-        nonEnumProps[booleanClass] = nonEnumProps[stringClass] = {
+        nonEnumProps[className.boolean] = nonEnumProps[className.string] = {
             constructor: true,
             toString: true,
             valueOf: true
         };
 
-        nonEnumProps[errorClass] = nonEnumProps[functionClass] = nonEnumProps[regexpClass] = {
+        nonEnumProps[className.error] = nonEnumProps[className.function] = nonEnumProps[className.regexp] = {
             constructor: true,
             toString: true
         };
 
-        nonEnumProps[objectClass] = {
+        nonEnumProps[className.object] = {
             constructor: true
         };
 
@@ -2841,7 +2848,7 @@
             $.objectHasOwnProperty = function (object, property) {
                 var val;
 
-                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
+                if ($.isFunction(object) && $.strictEqual(property, strings.Prototype)) {
                     val = true;
                 } else {
                     val = hasOwnPropertyFN.call(object, property);
@@ -2856,66 +2863,6 @@
         }
     } else {
         throw new Error('hasOwnProperty is a vital method');
-    }
-
-    /**
-     * The propertyIsEnumerable() method returns a Boolean indicating whether the specified property is enumerable.
-     * @memberOf utilx
-     * @name objectPropertyIsEnumerable
-     * @function
-     * @param {*} inputArg
-     * @return {boolean}
-     */
-    if ($.isNativeFunction(propertyIsEnumerableFN)) {
-        if ($.isTrue(hasDontEnumBug)) {
-            $.objectPropertyIsEnumerable = function (object, property) {
-                $.checkObjectCoercible(object);
-
-                var val = false;
-
-                if (isTypeObjectOrIsFunction(object)) {
-                    console.log('# property: ' + property);
-                    console.log('# propertyIsEnumerableFN: ' + propertyIsEnumerableFN.call(object, property));
-                    if (propertyIsEnumerableFN.call(object, property)) {
-                        if ($.isTrue(hasErrorProps) && isErrorTypePrototype(object) &&
-                                        $.notStrictEqual(property, messageString) &&
-                                        $.notStrictEqual(property, nameString)) {
-
-                            val = true;
-                        }
-                    }
-
-
-                    if ($.isFalse(val) && $.arrayContains(shadowedProps, property) &&
-                                $.isFalsy(nonEnumProps[$.toObjectString(object)]) &&
-                                $.objectHasOwnProperty(object, property)) {
-
-                        val = true;
-                    }
-                }
-
-                console.log('# objectPropertyIsEnumerable: ' + val);
-                return val;
-            };
-        } else if ($.isTrue(hasFuncProtoBug)) {
-            $.objectPropertyIsEnumerable = function (object, property) {
-                var val;
-
-                if ($.isFunction(object) && $.strictEqual(property, prototypeString)) {
-                    val = false;
-                } else {
-                    val = propertyIsEnumerableFN.call(object, property);
-                }
-
-                return val;
-            };
-        } else {
-            $.objectPropertyIsEnumerable = function (object, property) {
-                return propertyIsEnumerableFN.call(object, property);
-            };
-        }
-    } else {
-        throw new Error('propertyIsEnumerable is a vital method');
     }
 
     /**
@@ -2938,7 +2885,7 @@
      * @return {boolean}
      */
     function hasValidLength(inputArg) {
-        return $.isTypeObject(inputArg) && $.objectHasOwnProperty(inputArg, lengthString) &&
+        return $.isTypeObject(inputArg) && $.objectHasOwnProperty(inputArg, strings.Length) &&
             $.isNumber(inputArg.length) && $.isUint32(inputArg.length);
     }
 
@@ -3076,8 +3023,8 @@
      * @param {*} inputArg
      * @return {object}
      */
-    boxedString = $.argToObject(gString);
-    shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], gString) ||
+    boxedString = $.argToObject(strings.g);
+    shouldSplitString = $.notStrictEqual(boxedString[$.POSITIVE_ZERO], strings.g) ||
                             !$.hasProperty(boxedString, $.POSITIVE_ZERO);
 
     $.toObjectFixIndexedAccess = function (inputArg) {
@@ -3141,7 +3088,7 @@
                 args = $.arraySlice(arguments),
                 argLength = args.length,
                 item = 3,
-                itemCount = globalMathMax(argLength - item, $.POSITIVE_ZERO),
+                itemCount = nativ.Math.max(argLength - item, $.POSITIVE_ZERO),
                 to,
                 loopCache;
 
@@ -3150,9 +3097,9 @@
             }
 
             if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
-                actualStart = globalMathMax(length + relativeStart, $.POSITIVE_ZERO);
+                actualStart = nativ.Math.max(length + relativeStart, $.POSITIVE_ZERO);
             } else {
-                actualStart = globalMathMin(relativeStart, length);
+                actualStart = nativ.Math.min(relativeStart, length);
             }
 
             if ($.lt(argLength, 3)) {
@@ -3237,7 +3184,7 @@
         });
 
         if ($.isNativeFunction(forEachFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringClass)) {
+                $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
             $.arrayForEach = function (array, fn, thisArg) {
@@ -3282,7 +3229,7 @@
         });
 
         if ($.isNativeFunction(someFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringClass)) {
+                $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
             $.arraySome = function (array, fn, thisArg) {
@@ -3332,7 +3279,7 @@
         });
 
         if ($.isNativeFunction(mapFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringClass)) {
+                $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
             $.arrayMap = function (array, fn, thisArg) {
@@ -3423,9 +3370,9 @@
                 k;
 
             if ($.lt($.mathSign(relativeStart), $.POSITIVE_ZERO)) {
-                k = globalMathMax(length + relativeStart, $.POSITIVE_ZERO);
+                k = nativ.Math.max(length + relativeStart, $.POSITIVE_ZERO);
             } else {
-                k = globalMathMin(relativeStart, length);
+                k = nativ.Math.min(relativeStart, length);
             }
 
             if ($.isUndefined(end)) {
@@ -3435,12 +3382,12 @@
             }
 
             if ($.lt($.mathSign(relativeEnd), $.POSITIVE_ZERO)) {
-                final = globalMathMax(length + relativeEnd, $.POSITIVE_ZERO);
+                final = nativ.Math.max(length + relativeEnd, $.POSITIVE_ZERO);
             } else {
-                final = globalMathMin(relativeEnd, length);
+                final = nativ.Math.min(relativeEnd, length);
             }
 
-            val.length = globalMathMax(final - k, $.POSITIVE_ZERO);
+            val.length = nativ.Math.max(final - k, $.POSITIVE_ZERO);
             while ($.lt(k, final)) {
                 if ($.hasProperty(object, k)) {
                     $.arrayAssign(val, next, object[k]);
@@ -3473,7 +3420,7 @@
         });
 
         if ($.isNativeFunction(filterFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringClass)) {
+                $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
             $.arrayFilter = function (array, fn, thisArg) {
@@ -3530,7 +3477,7 @@
         });
 
         if ($.isNativeFunction(reduceFN) && $.isTypeObject(testObject1) &&
-                $.strictEqual($.toObjectString(testObject1), stringClass)) {
+                $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
             $.arrayReduce = function (array, fn, initialValue) {
@@ -3612,14 +3559,14 @@
             val;
 
         if ($.lt(min, $.POSITIVE_ZERO) && $.gt(max, $.POSITIVE_ZERO) && $.gt(max - min + 1, $.MAX_INTEGER)) {
-            mult = globalMathFloor(globalMathRandom() * 2);
+            mult = nativ.Math.floor(nativ.Math.random() * 2);
             if ($.isZero(mult)) {
                 mult = -1;
             }
 
-            val = globalMathFloor(globalMathRandom() * $.UNSAFE_INTEGER) * mult;
+            val = nativ.Math.floor(nativ.Math.random() * $.UNSAFE_INTEGER) * mult;
         } else {
-            val = globalMathFloor(globalMathRandom() * (max - min + 1) + min);
+            val = nativ.Math.floor(nativ.Math.random() * (max - min + 1) + min);
         }
 
         return val;
@@ -3696,7 +3643,7 @@
         if ($.lt(length, 2)) {
             val = $.arraySlice(array);
         } else {
-            middle = globalMathCeil(length / 2);
+            middle = nativ.Math.ceil(length / 2);
             val = merge(mergeSort($.arraySlice(array, $.POSITIVE_ZERO, middle), comparefn),
                          mergeSort($.arraySlice(array, middle), comparefn), comparefn);
         }
@@ -3767,7 +3714,7 @@
      * @return {string}
      */
     function buildTestString(previous, element) {
-        return previous + String.fromCharCode(element);
+        return previous + baseString.fromCharCode(element);
     }
 
     /**
@@ -3781,7 +3728,7 @@
     // named $.stringTrim instead of trim because of SpiderMonkey and Blackberry bug
     try {
         if ($.isNativeFunction(trimFN) &&
-                $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, emptyString)).length)) {
+                $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, strings.empty)).length)) {
 
             $.stringTrim = function (inputArg) {
                 return trimFN.call(inputArg);
@@ -3791,12 +3738,12 @@
         }
     } catch (e) {
         whiteSpacesString = $.arrayReduce(whiteSpacesList, function (previous, element) {
-            return previous + '\\u' + $.padLeadingChar(element.toString(16), zeroString, 4);
-        }, emptyString);
+            return previous + '\\u' + $.padLeadingChar(element.toString(16), strings.zero, 4);
+        }, strings.empty);
 
-        wsTrimRX = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', gString);
+        rx.wsTrim = new RegExp('^[' + whiteSpacesString + ']+|[' + whiteSpacesString + ']+$', strings.g);
         $.stringTrim = function (inputArg) {
-            return $.stringReplace(onlyCoercibleToString(inputArg), wsTrimRX, emptyString);
+            return $.stringReplace(onlyCoercibleToString(inputArg), rx.wsTrim, strings.empty);
         };
     }
 
@@ -3835,7 +3782,7 @@
 
                 if ($.lt(fromIndex, length)) {
                     if ($.lt(fromIndex, $.POSITIVE_ZERO)) {
-                        fromIndex = length - globalMathAbs(fromIndex);
+                        fromIndex = length - nativ.Math.abs(fromIndex);
                     }
 
                     if ($.lt(fromIndex, $.POSITIVE_ZERO)) {
@@ -3890,9 +3837,9 @@
                 }
 
                 if ($.gte(fromIndex, $.POSITIVE_ZERO)) {
-                    fromIndex = globalMathMin(fromIndex, length - 1);
+                    fromIndex = nativ.Math.min(fromIndex, length - 1);
                 } else {
-                    fromIndex = length - globalMathAbs(fromIndex);
+                    fromIndex = length - nativ.Math.abs(fromIndex);
                 }
 
                 for (index = fromIndex; $.gte(index, $.POSITIVE_ZERO); index -= 1) {
@@ -3954,9 +3901,9 @@
                 nonEnum;
 
             for (prop in object) {
-                if (!($.isTrue(skipProto) && $.strictEqual(prop, prototypeString)) &&
-                        !($.isTrue(skipErrorProps) && ($.strictEqual(prop, messageString) ||
-                                                       $.strictEqual(prop, nameString))) &&
+                if (!($.isTrue(skipProto) && $.strictEqual(prop, strings.Prototype)) &&
+                        !($.isTrue(skipErrorProps) && ($.strictEqual(prop, strings.message) ||
+                                                       $.strictEqual(prop, strings.name))) &&
                             $.objectHasOwnProperty(object, prop)) {
 
                     $.arrayPush(props, prop);
@@ -4012,7 +3959,7 @@
      * @return {boolean}
      */
     $.isDigits = function (string) {
-        return $.isStringNotEmpty(string) && $.regExpTest(rxNotDigits, string);
+        return $.isStringNotEmpty(string) && $.regExpTest(rx.notDigits, string);
     };
 
 
@@ -4028,8 +3975,8 @@
             string;
 
         if ($.isNumber(inputArg) || $.isStringNotEmpty(inputArg)) {
-            string = $.stringReplace($.anyToString(inputArg), rxPlusMinus, emptyString);
-            if (!globalIsNaN(parseFloat(string)) && globalIsFinite(string)) {
+            string = $.stringReplace($.anyToString(inputArg), rx.plusMinus, strings.empty);
+            if (!nativ.isNaN(parseFloat(string)) && nativ.isFinite(string)) {
                 val = true;
             }
         }
@@ -4052,11 +3999,11 @@
     // Create our own local "defineProperty" function: native -> sham
     // named $.objectDefineProperty instead of defineProperty because of SpiderMonkey and Blackberry bug
     try {
-        testObject1 = definePropertyFN({}, sentinelString, {
+        testObject1 = definePropertyFN({}, strings.sentinel, {
             value: null
         });
 
-        if (!$.isNull(testObject1[sentinelString])) {
+        if (!$.isNull(testObject1[strings.sentinel])) {
             throw new CtrError('Fails sentinel check');
         }
 
@@ -4075,7 +4022,7 @@
 
         // Test assign to array
         try {
-            testObject1 = definePropertyFN([], zeroString, {
+            testObject1 = definePropertyFN([], strings.zero, {
                 value: null
             });
 
@@ -4088,7 +4035,7 @@
 
         // Test overwrite array property when no value defined
         try {
-            testObject1 = definePropertyFN([10], zeroString, {});
+            testObject1 = definePropertyFN([10], strings.zero, {});
             if ($.notStrictEqual(testObject1[$.POSITIVE_ZERO], 10)) {
                 throw new CtrError('Fails overwrite check');
             }
@@ -4100,7 +4047,7 @@
             $.objectDefineProperty = function (object, property, descriptor) {
                 var isA = isArrayOrArguments(object) && $.isNumeric(property) && $.isUint32($.toNumber(property)),
                     isB = ($.isTrue(definePropertyPatch1) || $.isTrue(definePropertyPatch2)) &&
-                            $.objectHasOwnProperty(descriptor, valueString);
+                            $.objectHasOwnProperty(descriptor, strings.value);
 
                 if ($.isTrue(definePropertyPatch1) && $.isTrue(isA)) {
                     property = $.toNumber(property);
@@ -4109,11 +4056,11 @@
                 if ($.isTrue(definePropertyPatch2) && $.isTrue(isA) &&
                         ($.isTrue(isB) || !$.objectHasOwnProperty(object, property))) {
 
-                    $.arrayAssign(object, property, descriptor[valueString]);
+                    $.arrayAssign(object, property, descriptor[strings.value]);
                 }
 
                 if ($.isTrue(definePropertyPatch3) && $.isTrue(isA) && $.isFalse(isB)) {
-                    descriptor[valueString] = object[property];
+                    descriptor[strings.value] = object[property];
                 }
 
                 return definePropertyFN(object, property, descriptor);
@@ -4124,7 +4071,7 @@
 
         testObject1 = {
             abc: $.POSITIVE_ZERO,
-            def: emptyString,
+            def: strings.empty,
             ghi: true,
             jkl: $.noop
         };
@@ -4133,20 +4080,20 @@
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
-        if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, emptyString) ||
+        if ($.notStrictEqual(testObject1.abc, $.POSITIVE_ZERO) || $.notStrictEqual(testObject1.def, strings.empty) ||
                 $.notStrictEqual(testObject1.ghi, true) || $.notStrictEqual(testObject1.jkl, $.noop)) {
 
             throw new CtrError();
         }
 
-        testObject1 = [10, true, emptyString, $.noop];
+        testObject1 = [10, true, strings.empty, $.noop];
 
         $.arrayForEach($.objectKeys(testObject1), function (key) {
             $.objectDefineProperty(testObject1, key, notEnumerableProperties);
         });
 
         if ($.notStrictEqual($.arrayFirst(testObject1), 10) || $.notStrictEqual(testObject1[1], true) ||
-                $.notStrictEqual(testObject1[2], emptyString) || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
+                $.notStrictEqual(testObject1[2], strings.empty) || $.notStrictEqual($.arrayLast(testObject1), $.noop)) {
 
             throw new CtrError();
         }
@@ -4157,36 +4104,36 @@
                 throw new CtrTypeError('Property description must be an object: ' + $.anyToString(descriptor));
             }
 
-            if ($.objectHasOwnProperty(descriptor, valueString) && ($.objectHasOwnProperty(descriptor, getString) ||
-                        $.objectHasOwnProperty(descriptor, setString))) {
+            if ($.objectHasOwnProperty(descriptor, strings.value) && ($.objectHasOwnProperty(descriptor, strings.get) ||
+                        $.objectHasOwnProperty(descriptor, strings.set))) {
 
                 throw new CtrTypeError('Invalid property. A property cannot have accessors and a value');
             }
 
             var prototype;
 
-            if (!$.objectHasOwnProperty(descriptor, getString) && !$.objectHasOwnProperty(descriptor, setString)) {
-                if ($.objectHasOwnProperty(descriptor, valueString) || !$.objectHasOwnProperty(object, property)) {
+            if (!$.objectHasOwnProperty(descriptor, strings.get) && !$.objectHasOwnProperty(descriptor, strings.set)) {
+                if ($.objectHasOwnProperty(descriptor, strings.value) || !$.objectHasOwnProperty(object, property)) {
                     if ($.isTrue($.isProtoSupported)) {
-                        prototype = object[protoName];
-                        object[protoName] = prototypeOfObject;
+                        prototype = object[strings.proto];
+                        object[strings.proto] = prototypeOfObject;
                         if (isArrayOrArguments(object) && $.isNumeric(property) && $.isUint32($.toNumber(property))) {
-                            $.arrayAssign(object, property, descriptor[valueString]);
+                            $.arrayAssign(object, property, descriptor[strings.value]);
                         } else {
                             delete object[property];
-                            object[property] = descriptor[valueString];
+                            object[property] = descriptor[strings.value];
                         }
 
                         if ($.isUndefined(prototype)) {
-                            delete object[protoName];
+                            delete object[strings.proto];
                         } else {
-                            object[protoName] = prototype;
+                            object[strings.proto] = prototype;
                         }
                     } else {
                         if (isArrayOrArguments(object) && $.isNumeric(property) && $.isUint32($.toNumber(property))) {
-                            $.arrayAssign(object, property, descriptor[valueString]);
+                            $.arrayAssign(object, property, descriptor[strings.value]);
                         } else {
-                            object[property] = descriptor[valueString];
+                            object[property] = descriptor[strings.value];
                         }
                     }
                 }
@@ -4195,12 +4142,12 @@
                     throw new CtrTypeError('getters & setters can not be defined on this javascript engine');
                 }
 
-                if ($.isNativeFunction(descriptor[getString])) {
-                    defineGetterFN.call(object, property, descriptor[getString]);
+                if ($.isNativeFunction(descriptor[strings.get])) {
+                    defineGetterFN.call(object, property, descriptor[strings.get]);
                 }
 
-                if ($.isNativeFunction(descriptor[setString])) {
-                    defineSetterFN.call(object, property, descriptor[setString]);
+                if ($.isNativeFunction(descriptor[strings.set])) {
+                    defineSetterFN.call(object, property, descriptor[strings.set]);
                 }
             }
 
@@ -4231,150 +4178,6 @@
 
         return object;
     };
-
-    /**
-     * Returns a property descriptor for an own property (that is, one directly present on an object,
-     * not present by dint of being along an object's prototype chain) of a given object.
-     * On environments that do not support it natively, this is just a sham to allow code to work.
-     * @memberOf utilx
-     * @name objectGetOwnPropertyDescriptor
-     * @function
-     * @param {object} object
-     * @param {string} property
-     * @return {object}
-     */
-    // Create our own local "getOwnPropertyDescriptor" function: native -> sham
-    // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
-    // and Blackberry bug
-    try {
-        testObject1 = {
-            sentinel: null
-        };
-
-        testObject2 = [10, 20, 30];
-        testObject2[4] = $.privateUndefined;
-        if (!$.isNull(getOwnPropDescFN(testObject1, sentinelString).value) ||
-                $.notStrictEqual(getOwnPropDescFN(testObject2, 3).value, 30) ||
-                $.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
-                !$.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), valueString) ||
-                $.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, $.privateUndefined) ||
-                $.notStrictEqual(getOwnPropDescFN(testObject2, 5), $.privateUndefined) ||
-                $.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), valueString)) {
-
-            throw new CtrError();
-        }
-
-        if ($.isFalse(getOwnPropDescFN(function (a) {
-                return a;
-            }, lengthString).writable)) {
-
-            $.objectGetOwnPropertyDescriptor = getOwnPropDescFN;
-        } else {
-            $.objectGetOwnPropertyDescriptor = function (object, property) {
-                var descriptor = getOwnPropDescFN(object, property);
-
-                if ($.isFunction(object) && $.strictEqual(property, lengthString) &&
-                        $.isTrue(descriptor.writable)) {
-
-                    descriptor.writable = false;
-                }
-
-                return descriptor;
-            };
-        }
-    } catch (e) {
-        $.objectGetOwnPropertyDescriptor = function (object, property) {
-            var descriptor,
-                prototype,
-                getter,
-                setter;
-
-            if ($.objectHasOwnProperty(throwIfIsNotTypeObjectOrIsNotFunction(object), property)) {
-                descriptor = {};
-                descriptor.configurable = true;
-                try {
-                    descriptor.enumerable = $.objectPropertyIsEnumerable(object, property);
-                } catch (e) {
-                    descriptor.enumerable = true;
-                }
-
-                if ($.isTrue($.areGetSetSupported)) {
-                    prototype = object[protoName];
-                    object[protoName] = prototypeOfObject;
-                    getter = lookupGetterFN.call(object, property);
-                    setter = lookupSetterFN.call(object, property);
-                    if ($.isUndefined(prototype)) {
-                        delete object[protoName];
-                    } else {
-                        object[protoName] = prototype;
-                    }
-
-                    if ($.isNativeFunction(getter) || $.isNativeFunction(setter)) {
-                        if ($.isNativeFunction(getter)) {
-                            descriptor[getString] = getter;
-                        }
-
-                        if ($.isNativeFunction(setter)) {
-                            descriptor[setString] = setter;
-                        }
-                    }
-                }
-
-                descriptor[valueString] = object[property];
-                if ($.strictEqual(property, lengthString)) {
-                    if ($.isFunction(object)) {
-                        descriptor.writable = false;
-                        descriptor.configurable = false;
-                    } else if (isArrayOrArguments(object)) {
-                        descriptor.writable = true;
-                        descriptor.configurable = false;
-                    }
-                } else if ($.strictEqual(property, prototypeString)) {
-                    switch (object) {
-                    case CtrObject:
-                        /* falls through */
-                    case CtrArray:
-                        /* falls through */
-                    case CtrFunction:
-                        /* falls through */
-                    case CtrBoolean:
-                        /* falls through */
-                    case CtrString:
-                        /* falls through */
-                    case CtrNumber:
-                        /* falls through */
-                    case CtrDate:
-                        /* falls through */
-                    case CtrRegExp:
-                        /* falls through */
-                    case CtrError:
-                        /* falls through */
-                    case CtrTypeError:
-                        /* falls through */
-                    case CtrSyntaxError:
-                        /* falls through */
-                    case CtrRangeError:
-                        /* falls through */
-                    case CtrEvalError:
-                        /* falls through */
-                    case CtrReferenceError:
-                        /* falls through */
-                    case CtrURIError:
-                        descriptor.writable = false;
-                        descriptor.configurable = false;
-                        break;
-                    default:
-                        descriptor.writable = true;
-                        descriptor.configurable = false;
-                    }
-                } else {
-                    descriptor.writable = true;
-                }
-            }
-
-            return descriptor;
-        };
-    }
 
     /**
      * Freezes an object: that is, prevents new properties from being added to it; prevents existing properties
@@ -4562,11 +4365,11 @@
             }, notEnumerableProperties),
 
             foo: $.extend({
-                value: testString
+                value: strings.test
             }, notEnumerableProperties)
         });
 
-        if ($.notStrictEqual(testObject1.foo, testString)) {
+        if ($.notStrictEqual(testObject1.foo, strings.test)) {
             throw new CtrError();
         }
 
@@ -4577,7 +4380,7 @@
 
             ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
             newObject = new ObjectCreateFunc();
-            $.objectDefineProperty(newObject, protoName, $.extend({
+            $.objectDefineProperty(newObject, strings.proto, $.extend({
                 value: prototype
             }, notEnumerableProperties));
 
@@ -4610,7 +4413,7 @@
      * @return {string}
      */
     $.escapeRegex = function (string) {
-        return $.stringReplace($.anyToString(string), rxEscapeThese, '\\$&');
+        return $.stringReplace($.anyToString(string), rx.escapeThese, '\\$&');
     };
 
     /**
@@ -4635,7 +4438,7 @@
      * @return {string}
      */
     $.replaceAll = function (string, pattern, characters) {
-        return $.stringReplace(string, new RegExp($.escapeRegex(pattern), gString), characters);
+        return $.stringReplace(string, new RegExp($.escapeRegex(pattern), strings.g), characters);
     };
 
     /**
@@ -4787,7 +4590,7 @@
         ctor.super_ = superCtor;
         /*jslint nomen: false */
         ctor.prototype = $.objectCreate(superCtor.prototype);
-        $.objectDefineProperty(ctor.prototype, constructorString, $.extend({
+        $.objectDefineProperty(ctor.prototype, strings.Constructor, $.extend({
             value: ctor
         }, notEnumerableProperties));
     };
@@ -4865,7 +4668,7 @@
             throw new CtrError(message);
         } catch (e) {
             if ($.strictEqual(e.message, message) &&
-                    $.strictEqual(e.toString(), errorClass)) {
+                    $.strictEqual(e.toString(), className.error)) {
 
                 previousIEErrorToString = prototypeOfError.toString;
                 $.objectDefineProperties(prototypeOfError, {
@@ -4946,7 +4749,7 @@
                                                maxMessageLength);
             }
 
-            $.objectDefineProperty(this, messageString, $.extend({
+            $.objectDefineProperty(this, strings.message, $.extend({
                 value: message
             }, notEnumerableProperties));
 
@@ -4959,13 +4762,13 @@
                 ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
             } else {
                 err = ErrorConstructor.call(this);
-                if ($.isString(err[stackString])) {
-                    $.objectDefineProperty(this, stackString, $.extend({
-                        value: err[stackString]
+                if ($.isString(err[strings.stack])) {
+                    $.objectDefineProperty(this, strings.stack, $.extend({
+                        value: err[strings.stack]
                     }, notEnumerableProperties));
-                } else if ($.isString(err[stacktraceString])) {
-                    $.objectDefineProperty(this, stackString, $.extend({
-                        value: err[stacktraceString]
+                } else if ($.isString(err[strings.stacktrace])) {
+                    $.objectDefineProperty(this, strings.stack, $.extend({
+                        value: err[strings.stacktrace]
                     }, notEnumerableProperties));
                 }
             }
@@ -4980,7 +4783,7 @@
 
             toString: $.extend({
                 value: function () {
-                    var arr = $.stringSplit(this.message, rxSplitNewLine),
+                    var arr = $.stringSplit(this.message, rx.splitNewLine),
                         messageToString = this.name + ': ';
 
                     if ($.gt(arr.length, 1)) {
@@ -4996,7 +4799,7 @@
                             return val;
                         });
 
-                        messageToString += $.arrayJoin(arr, newlineString);
+                        messageToString += $.arrayJoin(arr, strings.newline);
                     } else {
                         messageToString += this.message;
                     }
@@ -5011,7 +4814,7 @@
 
     try {
         TestConstructor = makeCustomError('CustomSyntaxError', CtrSyntaxError);
-        isOkToUseOtherErrors = $.objectInstanceOf(new TestConstructor(testString), CtrSyntaxError);
+        isOkToUseOtherErrors = $.objectInstanceOf(new TestConstructor(strings.test), CtrSyntaxError);
     } catch (e) {
         // IE < 9
         isOkToUseOtherErrors = false;
@@ -5051,6 +4854,101 @@
     };
 
     /**
+     * Returns a property descriptor for an own property (that is, one directly present on an object,
+     * not present by dint of being along an object's prototype chain) of a given object.
+     * On environments that do not support it natively, this is just a sham to allow code to work.
+     * @private
+     * @name objectGetOwnPropertyDescriptor
+     * @function
+     * @param {object} object
+     * @param {string} property
+     * @return {object}
+     */
+    // Create our own local "getOwnPropertyDescriptor" function: native -> sham
+    // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
+    // and Blackberry bug
+    try {
+        if (!$.isNativeFunction(getOwnPropDescFN)) {
+            throw new CtrError();
+        }
+
+        testObject1 = {
+            sentinel: null
+        };
+
+        testObject2 = [10, 20, 30];
+        testObject2[4] = $.privateUndefined;
+        if (!$.isNull(getOwnPropDescFN(testObject1, strings.sentinel).value) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 3).value, 30) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, '3').value, 30) ||
+                !$.objectHasOwnProperty(getOwnPropDescFN(testObject2, 4), strings.value) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 4).value, $.privateUndefined) ||
+                $.notStrictEqual(getOwnPropDescFN(testObject2, 5), $.privateUndefined) ||
+                $.objectHasOwnProperty(getOwnPropDescFN(testObject2, 5), strings.value)) {
+
+            throw new CtrError();
+        }
+
+        if ($.isFalse(getOwnPropDescFN(function (a) {
+                return a;
+            }, strings.Length).writable)) {
+
+            objectGetOwnPropertyDescriptor = getOwnPropDescFN;
+        } else {
+            objectGetOwnPropertyDescriptor = function (object, property) {
+                var descriptor = getOwnPropDescFN(object, property);
+
+                if ($.isFunction(object) && $.strictEqual(property, strings.Length) &&
+                        $.isTrue(descriptor.writable)) {
+
+                    descriptor.writable = false;
+                }
+
+                return descriptor;
+            };
+        }
+    } catch (e) {
+        objectGetOwnPropertyDescriptor = function (object, property) {
+            var descriptor,
+                prototype,
+                getter,
+                setter;
+
+            if ($.objectHasOwnProperty(throwIfIsNotTypeObjectOrIsNotFunction(object), property)) {
+                descriptor = {};
+                descriptor.configurable = true;
+                descriptor.enumerable = true;
+                if ($.isTrue($.areGetSetSupported)) {
+                    prototype = object[strings.proto];
+                    object[strings.proto] = prototypeOfObject;
+                    getter = lookupGetterFN.call(object, property);
+                    setter = lookupSetterFN.call(object, property);
+                    if ($.isUndefined(prototype)) {
+                        delete object[strings.proto];
+                    } else {
+                        object[strings.proto] = prototype;
+                    }
+
+                    if ($.isNativeFunction(getter) || $.isNativeFunction(setter)) {
+                        if ($.isNativeFunction(getter)) {
+                            descriptor[strings.get] = getter;
+                        }
+
+                        if ($.isNativeFunction(setter)) {
+                            descriptor[strings.set] = setter;
+                        }
+                    }
+                }
+
+                descriptor[strings.value] = object[property];
+                descriptor.writable = true;
+            }
+
+            return descriptor;
+        };
+    }
+
+    /**
      * Swap places of 2 item values on an object's properties.
      * @memberOf utilx
      * @function
@@ -5069,10 +4967,10 @@
             num;
 
         if ($.notStrictEqual(prop1, prop2)) {
-            temp1 = $.objectGetOwnPropertyDescriptor(object, prop1);
-            temp2 = $.objectGetOwnPropertyDescriptor(object, prop2);
+            temp1 = objectGetOwnPropertyDescriptor(object, prop1);
+            temp2 = objectGetOwnPropertyDescriptor(object, prop2);
             num = $.toUint32(prop2);
-            if (!$.isPlainObject(temp1) || !$.objectHasOwnProperty(temp1, valueString)) {
+            if (!$.isPlainObject(temp1) || !$.objectHasOwnProperty(temp1, strings.value)) {
                 if ($.isTypeObject(object) && !$.isFunction(object) &&
                         hasValidLength(object) && $.strictEqual($.anyToString(num), prop2) &&
                         $.strictEqual(num, object.length - 1)) {
@@ -5093,7 +4991,7 @@
             }
 
             num = $.toUint32(prop1);
-            if (!$.isPlainObject(temp2) || !$.objectHasOwnProperty(temp2, valueString)) {
+            if (!$.isPlainObject(temp2) || !$.objectHasOwnProperty(temp2, strings.value)) {
                 if ($.isTypeObject(object) && !$.isFunction(object) && hasValidLength(object) &&
                         $.strictEqual($.anyToString(num), prop1) &&
                         $.strictEqual(num, object.length - 1)) {
@@ -5147,11 +5045,11 @@
 
     if ($.isTypeObject(JSON)) {
         if ($.isNativeFunction(JSON.parse)) {
-            globalJsonParse = JSON.parse;
+            nativ.JSON.parse = JSON.parse;
         }
 
         if ($.isNativeFunction(JSON.stringify)) {
-            globalJsonStringify = JSON.stringify;
+            nativ.JSON.stringify = JSON.stringify;
         }
     }
 
@@ -5166,7 +5064,7 @@
      * @param {number} space
      * @return {string}
      */
-    if ($.isNativeFunction(globalJsonStringify)) {
+    if ($.isNativeFunction(nativ.JSON.stringify)) {
         // A test function object with a custom `toJSON` method.
         (function () {
             stringifiedValue = function () {
@@ -5180,74 +5078,74 @@
             isSupportedResult =
                 // Firefox 3.1b1 and b2 serialize string, number, and boolean
                 // primitives as object literals.
-                $.strictEqual(globalJsonStringify($.POSITIVE_ZERO), zeroString) &&
+                $.strictEqual(nativ.JSON.stringify($.POSITIVE_ZERO), strings.zero) &&
                 // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
                 // literals.
-                $.strictEqual(globalJsonStringify(new CtrNumber()), zeroString) &&
-                $.strictEqual(globalJsonStringify(new CtrString()), '""') &&
+                $.strictEqual(nativ.JSON.stringify(new CtrNumber()), strings.zero) &&
+                $.strictEqual(nativ.JSON.stringify(new CtrString()), '""') &&
                 // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
-                $.strictEqual(globalJsonStringify($.noop), $.privateUndefined) &&
+                $.strictEqual(nativ.JSON.stringify($.noop), $.privateUndefined) &&
                 // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
                 // 3.1b3 pass this test.
-                $.strictEqual(globalJsonStringify($.privateUndefined), $.privateUndefined) &&
+                $.strictEqual(nativ.JSON.stringify($.privateUndefined), $.privateUndefined) &&
                 // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
                 // respectively, if the stringifiedValue is omitted entirely.
-                $.strictEqual(globalJsonStringify(), $.privateUndefined) &&
+                $.strictEqual(nativ.JSON.stringify(), $.privateUndefined) &&
                 // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
                 // string, array, object, Boolean, or `null` literal. This applies to
                 // objects with custom `toJSON` methods as well, unless they are nested
                 // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
                 // methods entirely.
-                $.strictEqual(globalJsonStringify(stringifiedValue), '1') &&
-                $.strictEqual(globalJsonStringify([stringifiedValue]), '[1]') &&
+                $.strictEqual(nativ.JSON.stringify(stringifiedValue), '1') &&
+                $.strictEqual(nativ.JSON.stringify([stringifiedValue]), '[1]') &&
                 // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
                 // `"[null]"`.
-                $.strictEqual(globalJsonStringify([$.privateUndefined]), '[null]') &&
+                $.strictEqual(nativ.JSON.stringify([$.privateUndefined]), '[null]') &&
                 // YUI 3.0.0b1 fails to serialize `null` literals.
-                $.strictEqual(globalJsonStringify(null), nullString) &&
+                $.strictEqual(nativ.JSON.stringify(null), strings.null) &&
                 // FF 3.1b1, 2 halts serialization if an array contains a function:
                 // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
                 // of Firefox also allow trailing commas in JSON objects and arrays.
                 // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
                 // define custom `toJSON` methods.
-                $.strictEqual(globalJsonStringify([$.privateUndefined, $.noop, null]),
+                $.strictEqual(nativ.JSON.stringify([$.privateUndefined, $.noop, null]),
                                   '[null,null,null]') &&
                 // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
                 // where character escape codes are expected (e.g., `\b` => `\u0008`).
                 // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
                 // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
-                $.strictEqual(globalJsonStringify({
+                $.strictEqual(nativ.JSON.stringify({
                     'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
                 }), '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}') &&
                 // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                //$.strictEqual(globalJsonStringify(null, stringifiedValue), '"1"') &&
-                $.strictEqual(globalJsonStringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
+                //$.strictEqual(nativ.JSON.stringify(null, stringifiedValue), '"1"') &&
+                $.strictEqual(nativ.JSON.stringify([1, 2], null, 1), '[\n 1,\n 2\n]') &&
                 // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
                 // serialize extended years.
-                $.strictEqual(globalJsonStringify(new CtrDate(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &&
+                $.strictEqual(nativ.JSON.stringify(new CtrDate(-8.64e15)), '"-271821-04-20T00:00:00.000Z"') &&
                 // The milliseconds are optional in ES 5, but required in 5.1.
-                $.strictEqual(globalJsonStringify(new CtrDate(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &&
+                $.strictEqual(nativ.JSON.stringify(new CtrDate(8.64e15)), '"+275760-09-13T00:00:00.000Z"') &&
                 // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
                 // four-digit years instead of six-digit years. Credits: @Yaffle.
-                $.strictEqual(globalJsonStringify(new CtrDate(-621987552e5)),
+                $.strictEqual(nativ.JSON.stringify(new CtrDate(-621987552e5)),
                                   '"-000001-01-01T00:00:00.000Z"') &&
                 // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
                 // values less than 1000. Credits: @Yaffle.
-                $.strictEqual(globalJsonStringify(new CtrDate(-1)), '"1969-12-31T23:59:59.999Z"');
+                $.strictEqual(nativ.JSON.stringify(new CtrDate(-1)), '"1969-12-31T23:59:59.999Z"');
         } catch (e) {
             isSupportedResult = false;
         }
     }
 
     if ($.isTrue(isSupportedResult)) {
-        $.jsonStringify = globalJsonStringify;
+        $.jsonStringify = nativ.JSON.stringify;
     } else {
-        escapableRxString = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
-        escapableRxString += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-        rxEscapable = new RegExp(escapableRxString, gString);
+        strings.stringifyRxCharacters = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
+        strings.stringifyRxCharacters += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        rx.stringifyEscapable = new RegExp(strings.stringifyRxCharacters, strings.g);
         stringifyMeta = {
             '\b': '\\b',
             '\t': '\\t',
@@ -5261,9 +5159,9 @@
         stringifyQuote = function (string) {
             var result = '"';
 
-            rxEscapable.lastIndex = $.POSITIVE_ZERO;
-            if ($.regExpTest(rxEscapable, string)) {
-                result += $.stringReplace(string, rxEscapable, function (a) {
+            rx.stringifyEscapable.lastIndex = $.POSITIVE_ZERO;
+            if ($.regExpTest(rx.stringifyEscapable, string)) {
+                result += $.stringReplace(string, rx.stringifyEscapable, function (a) {
                     var c = stringifyMeta[a],
                         r;
 
@@ -5299,18 +5197,18 @@
             }
 
             switch (typeof value) {
-            case stringString:
+            case strings.string:
                 return stringifyQuote(value);
-            case numberString:
+            case strings.number:
                 if ($.numberIsFinite(value)) {
                     return $.anyToString(value);
                 }
 
-                return nullString;
-            case booleanString:
-            case nullString:
+                return strings.null;
+            case strings.boolean:
+            case strings.null:
                 return $.anyToString(value);
-            case objectString:
+            case strings.object:
                 if ($.isNull(value)) {
                     return $.anyToString(value);
                 }
@@ -5320,14 +5218,14 @@
                 if ($.arrayIsArray(value)) {
                     length = value.length;
                     for (index = $.POSITIVE_ZERO; index < length; index += 1) {
-                        $.arrayAssign(partial, index, stringifyToString(index, value) || nullString);
+                        $.arrayAssign(partial, index, stringifyToString(index, value) || strings.null);
                     }
 
                     if ($.isZero(partial.length)) {
                         member = '[]';
                     } else if ($.isStringNotEmpty(stringifyGap)) {
-                        member = '[' + newlineString + stringifyGap +
-                            $.arrayJoin(partial, ',' + newlineString + stringifyGap) + newlineString + mind + ']';
+                        member = '[' + strings.newline + stringifyGap +
+                            $.arrayJoin(partial, ',' + strings.newline + stringifyGap) + strings.newline + mind + ']';
                     } else {
                         member = '[' + $.arrayJoin(partial) + ']';
                     }
@@ -5363,8 +5261,8 @@
                 if ($.isZero(partial.length)) {
                     member = '{}';
                 } else if ($.isStringNotEmpty(stringifyGap)) {
-                    member = '{' + newlineString + stringifyGap +
-                        $.arrayJoin(partial, ',' + newlineString + stringifyGap) + newlineString + mind + '}';
+                    member = '{' + strings.newline + stringifyGap +
+                        $.arrayJoin(partial, ',' + strings.newline + stringifyGap) + strings.newline + mind + '}';
                 } else {
                     member = '{' + $.arrayJoin(partial) + '}';
                 }
@@ -5378,13 +5276,13 @@
         };
 
         $.jsonStringify = function (value, replacer, space) {
-            stringifyGap = emptyString;
+            stringifyGap = strings.empty;
             if ($.isNumber(space)) {
                 stringifyIndent = $.stringRepeat(' ', space);
             } else if ($.isString(space)) {
                 stringifyIndent = space;
             } else {
-                stringifyIndent = emptyString;
+                stringifyIndent = strings.empty;
             }
 
             stringifyReplacer = replacer;
@@ -5394,7 +5292,7 @@
                 throw new CtrError('JSON.stringify');
             }
 
-            return stringifyToString(emptyString, {
+            return stringifyToString(strings.empty, {
                 '': value
             });
         };
@@ -5411,21 +5309,21 @@
      */
     // Determines whether the (possibly native) `JSON.stringify` and `parse`
     // implementations are spec-compliant. Based on work by Ken Snyder.
-    if ($.isNativeFunction(globalJsonParse)) {
+    if ($.isNativeFunction(nativ.JSON.parse)) {
         try {
             // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
             // Conforming implementations should also coerce the initial argument to
             // a string prior to parsing.
-            if ($.isZero(globalJsonParse(zeroString)) && $.isFalse(globalJsonParse(false))) {
+            if ($.isZero(nativ.JSON.parse(strings.zero)) && $.isFalse(nativ.JSON.parse(false))) {
                 // Simple parsing test.
-                testValue = globalJsonParse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
+                testValue = nativ.JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
                 isSupportedResult = $.strictEqual(testValue.A.length, 5) &&
                                         $.strictEqual(testValue.A[$.POSITIVE_ZERO], 1);
 
                 if ($.isTrue(isSupportedResult)) {
                     try {
                         // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
-                        isSupportedResult = $.isString(globalJsonParse('"\t"'));
+                        isSupportedResult = $.isString(nativ.JSON.parse('"\t"'));
                     } catch (ignore) {}
 
                     if ($.isTrue(isSupportedResult)) {
@@ -5433,7 +5331,7 @@
                             // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
                             // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
                             // allow certain octal literals.
-                            isSupportedResult = $.notStrictEqual(globalJsonParse('01'), 1);
+                            isSupportedResult = $.notStrictEqual(nativ.JSON.parse('01'), 1);
                         } catch (ignore) {}
                     }
                 }
@@ -5445,31 +5343,31 @@
 
     if ($.isTrue(isSupportedResult)) {
         try {
-            globalJsonParse();
+            nativ.JSON.parse();
         } catch (e) {
             threwSynatxError = $.objectInstanceOf(e, CtrSyntaxError);
         }
 
         if ($.isTrue(threwSynatxError)) {
-            $.jsonParse = globalJsonParse;
+            $.jsonParse = nativ.JSON.parse;
         } else {
             $.jsonParse = function (text, reviver) {
                 if ($.isUndefined(text)) {
-                    throw new CtrSyntaxError('globalJsonParse');
+                    throw new CtrSyntaxError('JSON.parse');
                 }
 
-                return globalJsonParse(text, reviver);
+                return nativ.JSON.parse(text, reviver);
             };
         }
     } else {
-        rxParseProtect1 = new RegExp('^[\\],:{}\\s]*$');
-        rxParseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', gString);
-        rxParseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?',
-                                     gString);
-        rxParseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', gString);
-        parseRxCharacterString = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
-        parseRxCharacterString += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
-        rxParseCharacterTest = new RegExp(parseRxCharacterString, gString);
+        rx.parseProtect1 = new RegExp('^[\\],:{}\\s]*$');
+        rx.parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', strings.g);
+        rx.parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?',
+                                     strings.g);
+        rx.parseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', strings.g);
+        strings.parseRxCharacters = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
+        strings.parseRxCharacters += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        rx.parseCharacterTest = new RegExp(strings.parseRxCharacters, strings.g);
         $.jsonParse = function (text, reviver) {
             var j;
 
@@ -5492,15 +5390,15 @@
             }
 
             text = $.anyToString(text);
-            rxParseCharacterTest.lastIndex = $.POSITIVE_ZERO;
-            if ($.regExpTest(rxParseCharacterTest, text)) {
-                text = $.stringReplace(text, rxParseCharacterTest, function (a) {
+            rx.parseCharacterTest.lastIndex = $.POSITIVE_ZERO;
+            if ($.regExpTest(rx.parseCharacterTest, text)) {
+                text = $.stringReplace(text, rx.parseCharacterTest, function (a) {
                     return '\\u' + ('0000' + a.charCodeAt($.POSITIVE_ZERO).toString(16)).slice(-4);
                 });
             }
 
-            if ($.regExpTest(rxParseProtect1, $.stringReplace($.stringReplace($.stringReplace(text,
-                                        rxParseProtect2, '@'), rxParseProtect3, ']'), rxParseProtect4, emptyString))) {
+            if ($.regExpTest(rx.parseProtect1, $.stringReplace($.stringReplace($.stringReplace(text,
+                                    rx.parseProtect2, '@'), rx.parseProtect3, ']'), rx.parseProtect4, strings.empty))) {
 
                 /*jslint evil: true */
                 j = eval('(' + text + ')');
@@ -5509,7 +5407,7 @@
                 if ($.isFunction(reviver)) {
                     return walk({
                         '': j
-                    }, emptyString);
+                    }, strings.empty);
                 }
 
                 return j;
@@ -5597,10 +5495,10 @@
         throw new CtrTypeError('Invalid global context');
     }
 
-    publicUtil = $.objectDefineProperty(factory(), factoryString, $.extend({
+    publicUtil = $.objectDefineProperty(factory(), strings.factory, $.extend({
         value: function () {
-            return $.objectDefineProperty(factory(), factoryString, $.extend({
-                value: publicUtil[factoryString]
+            return $.objectDefineProperty(factory(), strings.factory, $.extend({
+                value: publicUtil[strings.factory]
             }, notEnumerableProperties));
         }
     }, notEnumerableProperties));
@@ -5620,7 +5518,7 @@
     }
 
     /*global module, define, window */
-}(this, Math,
+}(this,
     typeof window === 'object' && window,
     typeof JSON === 'object' && JSON,
     typeof module === 'object' && module,
