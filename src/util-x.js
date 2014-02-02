@@ -45,7 +45,7 @@
 
         strings = {
             object: 'object',
-            function: 'function',
+            Function: 'function',
             callee: 'callee',
             Length: 'length',
             Prototype: 'prototype',
@@ -1211,9 +1211,9 @@
      */
     function isFunctionBasic(inputArg) {
         return $.strictEqual($.toObjectString(inputArg), className.function) ||
-            ($.strictEqual(typeof inputArg, strings.function) &&
-             $.strictEqual(typeof inputArg.call, strings.function) &&
-             $.strictEqual(typeof inputArg.apply, strings.function));
+            ($.strictEqual(typeof inputArg, strings.Function) &&
+             $.strictEqual(typeof inputArg.call, strings.Function) &&
+             $.strictEqual(typeof inputArg.apply, strings.Function));
     }
 
     /**
