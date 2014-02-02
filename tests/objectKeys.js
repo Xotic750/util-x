@@ -126,25 +126,25 @@
         });
 
         it('should not list', function () {
-            console.log('#1: ' + Object.prototype);
+            console.log('#1: ' + utilx.objectKeys(Object.prototype));
             expect(utilx.objectKeys(Object.prototype).length).to.be(0);
-            console.log('#2: ' + Function.prototype);
+            console.log('#2: ' + utilx.objectKeys(Function.prototype));
             expect(utilx.objectKeys(Function.prototype).length).to.be(0);
-            console.log('#3: ' + Boolean.prototype);
+            console.log('#3: ' + utilx.objectKeys(Boolean.prototype));
             expect(utilx.objectKeys(Boolean.prototype).length).to.be(0);
-            console.log('#4: ' + String.prototype);
+            console.log('#4: ' + utilx.objectKeys(String.prototype));
             expect(utilx.objectKeys(String.prototype).length).to.be(0);
-            console.log('#5: ' + Number.prototype);
+            console.log('#5: ' + utilx.objectKeys(Number.prototype));
             expect(utilx.objectKeys(Number.prototype).length).to.be(0);
-            console.log('#6: ' + Error.prototype);
+            console.log('#6: ' + utilx.objectKeys(Error.prototype));
             expect(utilx.objectKeys(Error.prototype).length).to.be(0);
-            console.log('#7: ' + TypeError.prototype);
+            console.log('#7: ' + utilx.objectKeys(TypeError.prototype));
             expect(utilx.objectKeys(TypeError.prototype).length).to.be(0);
-            console.log('#8: ' + SyntaxError.prototype);
+            console.log('#8: ' + utilx.objectKeys(SyntaxError.prototype));
             expect(utilx.objectKeys(SyntaxError.prototype).length).to.be(0);
-            console.log('#9: ' + Date.prototype);
+            console.log('#9: ' + utilx.objectKeys(Date.prototype));
             expect(utilx.objectKeys(Date.prototype).length).to.be(0);
-            console.log('#10: ' + RegExp.prototype);
+            console.log('#10: ' + utilx.objectKeys(RegExp.prototype));
             expect(utilx.objectKeys(RegExp.prototype).length).to.be(0);
         });
     });
