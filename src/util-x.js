@@ -3859,7 +3859,7 @@
     for (testProp in prototypeOfError) {
         if ($.arrayContains(unwantedErrorProps, testProp)) {
             hasErrorProps = true;
-            unwantedErrorProps = $.arrayFilter(unwantedErrorPropsFilter, testProp);
+            unwantedErrorProps = $.arrayFilter(unwantedErrorProps, unwantedErrorPropsFilter, testProp);
         }
     }
 
