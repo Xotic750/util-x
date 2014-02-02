@@ -109,7 +109,7 @@
                 console.log('# Constructor.prototype lists constructor (must be IE<9 !): ' +
                             utilx.objectKeys(Constructor.prototype));
 
-                console.log('# Corner case when set to a non-function (will/can not fix)');
+                console.log('# Corner case when set to something other than constructor function (will/can not fix?)');
                 expect(utilx.objectKeys(Constructor.prototype).length).to.be(1);
             } else {
                 expect(utilx.objectKeys(Constructor.prototype).length).to.be(0);
@@ -126,15 +126,25 @@
         });
 
         it('should not list', function () {
+            console.log('#1: ' + Object.prototype);
             expect(utilx.objectKeys(Object.prototype).length).to.be(0);
+            console.log('#2: ' + Function.prototype);
             expect(utilx.objectKeys(Function.prototype).length).to.be(0);
+            console.log('#3: ' + Boolean.prototype);
             expect(utilx.objectKeys(Boolean.prototype).length).to.be(0);
+            console.log('#4: ' + String.prototype);
             expect(utilx.objectKeys(String.prototype).length).to.be(0);
+            console.log('#5: ' + Number.prototype);
             expect(utilx.objectKeys(Number.prototype).length).to.be(0);
+            console.log('#6: ' + Error.prototype);
             expect(utilx.objectKeys(Error.prototype).length).to.be(0);
+            console.log('#7: ' + TypeError.prototype);
             expect(utilx.objectKeys(TypeError.prototype).length).to.be(0);
+            console.log('#8: ' + SyntaxError.prototype);
             expect(utilx.objectKeys(SyntaxError.prototype).length).to.be(0);
+            console.log('#9: ' + Date.prototype);
             expect(utilx.objectKeys(Date.prototype).length).to.be(0);
+            console.log('#10: ' + RegExp.prototype);
             expect(utilx.objectKeys(RegExp.prototype).length).to.be(0);
         });
     });
