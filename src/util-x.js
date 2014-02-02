@@ -285,7 +285,10 @@
             'lineNumber',
             'columnNumber',
             strings.name,
-            strings.message
+            strings.message,
+            strings.stack,
+            'arguments',
+            'type'
         ],
 
         whiteSpacesList = [
