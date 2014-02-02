@@ -62,9 +62,9 @@
             factory: 'factory',
             number: 'number',
             string: 'string',
-            null: 'null',
+            Null: 'null',
             boolean: 'boolean',
-            undefined: 'undefined',
+            Undefined: 'undefined',
             set: 'set',
             get: 'get',
             empty: '',
@@ -677,7 +677,7 @@
      * @return {boolean}
      */
     $.isUndefined = function (inputArg) {
-        return $.strictEqual(typeof inputArg, strings.undefined);
+        return $.strictEqual(typeof inputArg, strings.Undefined);
     };
 
     /**
@@ -947,7 +947,7 @@
         if ($.isString(inputArg)) {
             val = inputArg;
         } else if ($.isUndefined(inputArg)) {
-            val = strings.undefined;
+            val = strings.Undefined;
         } else {
             /*jshint -W064 */
             val = CtrString(inputArg);
@@ -5105,7 +5105,7 @@
                 // `"[null]"`.
                 $.strictEqual(nativ.JSON.stringify([$.privateUndefined]), '[null]') &&
                 // YUI 3.0.0b1 fails to serialize `null` literals.
-                $.strictEqual(nativ.JSON.stringify(null), strings.null) &&
+                $.strictEqual(nativ.JSON.stringify(null), strings.Null) &&
                 // FF 3.1b1, 2 halts serialization if an array contains a function:
                 // `[1, true, $.noop, 1]` serializes as "[1,true,],". These versions
                 // of Firefox also allow trailing commas in JSON objects and arrays.
@@ -5204,9 +5204,9 @@
                     return $.anyToString(value);
                 }
 
-                return strings.null;
+                return strings.Null;
             case strings.boolean:
-            case strings.null:
+            case strings.Null:
                 return $.anyToString(value);
             case strings.object:
                 if ($.isNull(value)) {
@@ -5218,7 +5218,7 @@
                 if ($.arrayIsArray(value)) {
                     length = value.length;
                     for (index = $.POSITIVE_ZERO; index < length; index += 1) {
-                        $.arrayAssign(partial, index, stringifyToString(index, value) || strings.null);
+                        $.arrayAssign(partial, index, stringifyToString(index, value) || strings.Null);
                     }
 
                     if ($.isZero(partial.length)) {
