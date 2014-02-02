@@ -3850,10 +3850,16 @@
         };
     }
 
+    /*jshint -W040 */
+    function unwantedErrorPropsFilter(key) {
+        return $.notStrictEqual(key, this);
+    }
+    /*jshint +W040 */
+
     for (testProp in prototypeOfError) {
         if ($.arrayContains(unwantedErrorProps, testProp)) {
             hasErrorProps = true;
-            break;
+            unwantedErrorProps = $.arrayFilter(unwantedErrorPropsFilter, testProp);
         }
     }
 
@@ -3887,12 +3893,8 @@
                     var keys = keysFN(object);
 
                     if (isErrorTypePrototype(object)) {
-                        $.arrayFilter(keys, function (key) {
-                            if ($.arrayContains(unwantedErrorProps, key)) {
-                                key = $.privateUndefined;
-                            }
-
-                            return key;
+                        keys = $.arrayFilter(keys, function (key) {
+                            return !$.arrayContains(unwantedErrorProps, key);
                         });
                     }
 
