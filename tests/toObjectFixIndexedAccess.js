@@ -48,5 +48,21 @@
             expect(str[1]).to.be('o');
             expect(str[2]).to.be('o');
         });
+
+        it('should be same object', function () {
+            var testObject = [];
+
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+            testObject = {};
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+            testObject = utilx.noop;
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+            testObject = Object('test');
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+            testObject = Object(true);
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+            testObject = Object(10);
+            expect(utilx.toObjectFixIndexedAccess(testObject)).to.be(testObject);
+        });
     });
 }());
