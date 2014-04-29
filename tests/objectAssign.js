@@ -31,7 +31,7 @@
             });
         });
 
-        it('should not merge three objects', function () {
+        it('should merge three objects', function () {
             var target = {
                     a: 1
                 },
@@ -45,7 +45,8 @@
 
             expect(returned).to.eql({
                 a: 1,
-                b: 2
+                b: 2,
+                c: 3
             });
         });
 
@@ -68,6 +69,32 @@
                 baz: true,
                 a: 1
             });
+        });
+
+        it('works with arrays', function () {
+            expect(utilx.objectAssign([1, 2, 3], [ , , , 4, 5, 6])).to.eql([1, 2, 3, 4, 5, 6]);
+            expect(utilx.objectAssign([1, 2, 3], [ , null, utilx.privateUndefined, {}, 4, 5, 6]))
+                .to.eql([1, null, utilx.privateUndefined, {}, 4, 5, 6]);
+
+            expect(utilx.objectAssign([1, 2, 3], {
+                3: 4,
+                4: 5,
+                5: 6,
+                length: 6
+            })).to.eql([1, 2, 3, 4, 5, 6]);
+
+            expect(utilx.objectAssign([1, 2, 3, 6, 7, 8, 9], {
+                3: 4,
+                4: 5,
+                5: 6,
+                length: 6
+            })).to.eql([1, 2, 3, 4, 5, 6]);
+
+            expect(utilx.objectAssign([1, 2, 3, 6, 7, 8, 9], {
+                3: 4,
+                4: 5,
+                5: 6
+            })).to.eql([1, 2, 3, 4, 5, 6, 9]);
         });
 
         it('throws when target is not an object', function () {

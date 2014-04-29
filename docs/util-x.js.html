@@ -3094,7 +3094,12 @@
         var numIndex;
 
         if ($.gte(arguments.length, 3)) {
-            numIndex = $.numberToInteger(index);
+            if ($.numberIsFinite($.toNumber(index))) {
+                numIndex = $.numberToInteger(index);
+            } else {
+                numIndex = $.NAN;
+            }
+
             if (inRange(numIndex, $.POSITIVE_ZERO, $.MAX_UINT32 - 1)) {
                 array[numIndex] = value;
                 numIndex += 1;
@@ -4780,36 +4785,32 @@
      * @memberOf utilx
      * @function
      * @param {object} target
-     * @param {object} source
+     * @param {...object} source
      * @return {object}
      */
     if ($.isNativeFunction(assignFN)) {
         $.objectAssign = assignFN;
     } else {
-        $.objectAssign = function (target, source) {
+        $.objectAssign = function (target) {
             throwIfIsNotTypeObjectOrIsNotFunction(target);
-            throwIfIsNotTypeObjectOrIsNotFunction(source);
-            $.arrayForEach($.objectKeys(source), function (key) {
-                target[key] = source[key];
+
+            var isTargetArray = $.arrayIsArray(target);
+
+            $.arrayForEach($.arraySlice(arguments, 1), function (source) {
+                $.arrayForEach($.objectKeys(throwIfIsNotTypeObjectOrIsNotFunction(source)), function (key) {
+                    var value = source[key];
+
+                    if (isTargetArray) {
+                        $.arrayAssign(target, key, value);
+                    } else {
+                        target[key] = value;
+                    }
+                });
             });
 
             return target;
         };
     }
-
-    /**
-     * "shallow" extend the properties from the source objects over to the target object,
-     * and return the target object. It's in-order, so the last source will override properties of
-     * the same name in previous arguments.
-     * @memberOf utilx
-     * @function
-     * @param {object} target
-     * @param {...object} source
-     * @return {object}
-     */
-    $.extend = function () {
-        return $.arrayReduce(arguments, $.objectAssign);
-    };
 
     /**
      * The constructor used by $.objectCreate if shimmed.
@@ -4832,11 +4833,11 @@
     // named $.objectCreate instead of create because of SpiderMonkey and Blackberry bug
     try {
         testObject1 = objectCreateFN(ObjectCreateFunc.prototype, {
-            constructor: $.extend({
+            constructor: $.objectAssign({
                 value: ObjectCreateFunc
             }, notEnumerableProperties),
 
-            foo: $.extend({
+            foo: $.objectAssign({
                 value: strings.test
             }, notEnumerableProperties)
         });
@@ -4852,7 +4853,7 @@
 
             ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
             newObject = new ObjectCreateFunc();
-            $.objectDefineProperty(newObject, strings.proto, $.extend({
+            $.objectDefineProperty(newObject, strings.proto, $.objectAssign({
                 value: prototype
             }, notEnumerableProperties));
 
@@ -5062,7 +5063,7 @@
         ctor.super_ = superCtor;
         /*jslint nomen: false */
         ctor.prototype = $.objectCreate(superCtor.prototype);
-        $.objectDefineProperty(ctor.prototype, strings.Constructor, $.extend({
+        $.objectDefineProperty(ctor.prototype, strings.Constructor, $.objectAssign({
             value: ctor
         }, notEnumerableProperties));
     };
@@ -5144,7 +5145,7 @@
 
                 previousIEErrorToString = prototypeOfError.toString;
                 $.objectDefineProperties(prototypeOfError, {
-                    toString: $.extend({
+                    toString: $.objectAssign({
                         value: function () {
                             return this.name + ': ' + this.message;
                         }
@@ -5168,7 +5169,7 @@
     $.normaliseErrorIEToStringOff = function () {
         if ($.isTrue(patchedIEErrorToString)) {
             $.objectDefineProperties(prototypeOfError, {
-                toString: $.extend({
+                toString: $.objectAssign({
                     value: previousIEErrorToString
                 }, notEnumerableProperties)
             });
@@ -5221,7 +5222,7 @@
                                                maxMessageLength);
             }
 
-            $.objectDefineProperty(this, strings.message, $.extend({
+            $.objectDefineProperty(this, strings.message, $.objectAssign({
                 value: message
             }, notEnumerableProperties));
 
@@ -5235,11 +5236,11 @@
             } else {
                 err = ErrorConstructor.call(this);
                 if ($.isString(err[strings.stack])) {
-                    $.objectDefineProperty(this, strings.stack, $.extend({
+                    $.objectDefineProperty(this, strings.stack, $.objectAssign({
                         value: err[strings.stack]
                     }, notEnumerableProperties));
                 } else if ($.isString(err[strings.stacktrace])) {
-                    $.objectDefineProperty(this, strings.stack, $.extend({
+                    $.objectDefineProperty(this, strings.stack, $.objectAssign({
                         value: err[strings.stacktrace]
                     }, notEnumerableProperties));
                 }
@@ -5249,11 +5250,11 @@
         $.inherits(CustomError, ErrorConstructor);
 
         $.objectDefineProperties(CustomError.prototype, {
-            name: $.extend({
+            name: $.objectAssign({
                 value: name
             }, notEnumerableProperties),
 
-            toString: $.extend({
+            toString: $.objectAssign({
                 value: function () {
                     var arr = $.stringSplit(this.message, rx.splitNewLine),
                         messageToString = this.name + ': ';
@@ -5933,7 +5934,7 @@
     };
 
     function factory() {
-        var utilx = $.extend({}, $);
+        var utilx = $.objectAssign({}, $);
 
         // set the properties of utilx to not enumerable
         $.arrayForEach($.objectKeys(utilx), function (key) {
@@ -6010,16 +6011,16 @@
         throw new CtrTypeError('Invalid global context');
     }
 
-    publicUtil = $.objectDefineProperty(factory(), strings.factory, $.extend({
+    publicUtil = $.objectDefineProperty(factory(), strings.factory, $.objectAssign({
         value: function () {
-            return $.objectDefineProperty(factory(), strings.factory, $.extend({
+            return $.objectDefineProperty(factory(), strings.factory, $.objectAssign({
                 value: publicUtil[strings.factory]
             }, notEnumerableProperties));
         }
     }, notEnumerableProperties));
 
     if ($.isTypeObject(module) &amp;&amp; $.isTypeObject(module.exports)) {
-        $.objectDefineProperty(module, 'exports', $.extend({
+        $.objectDefineProperty(module, 'exports', $.objectAssign({
             value: publicUtil
         }, notEnumerableProperties));
     } else if ($.isFunction(define) &amp;&amp; $.isTypeObject(define.amd)) {
@@ -6027,7 +6028,7 @@
             return publicUtil;
         });
     } else {
-        $.objectDefineProperty(globalThis, 'utilx', $.extend({
+        $.objectDefineProperty(globalThis, 'utilx', $.objectAssign({
             value: publicUtil
         }, notEnumerableProperties));
     }
@@ -6054,7 +6055,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Mon Apr 28 2014 23:24:55 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Apr 29 2014 01:57:27 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
