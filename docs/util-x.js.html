@@ -27,7 +27,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.0.89
+ * @version 0.0.90
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -131,6 +131,7 @@
             clipDuplicates: new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', strings.g)
         },
 
+        testShims = false,
         baseObject = {},
         toStringFN = baseObject.toString,
         hasOwnPropertyFN = baseObject.hasOwnProperty,
@@ -1393,13 +1394,27 @@
      * @param {...*} [var_args]
      * @return {function}
      */
-    if ($.isNativeFunction(bindFN)) {
+    try {
+        if (testShims || !$.isNativeFunction(bindFN)) {
+            throw new CtrError();
+        }
+
+        testObject1 = [1, 2, 3];
+        TestConstructor = bindFN.call(function () {
+            return testObject1;
+        }, null);
+        testObject2 = new TestConstructor();
+
+        if ($.notStrictEqual(testObject1, testObject2)) {
+            throw new CtrError();
+        }
+
         /*jshint -W098 */
         $.bind = function (fn, thisArg) {
             return bindFN.apply(fn, $.arraySlice(arguments, 1));
         };
         /*jshint +W098 */
-    } else {
+    } catch (e) {
         BindCtor = function () {
             return;
         };
@@ -1453,7 +1468,7 @@
      * @return {boolean}
      */
     // named $.arrayIsArray instead of isArray because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isArrayFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isArrayFN)) {
         $.arrayIsArray = isArrayFN;
     } else {
         $.arrayIsArray = function (inputArg) {
@@ -1501,7 +1516,7 @@
      * @return {boolean}
      */
     // named $.objectIs instead of $.objectIs because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isIsFn)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isIsFn)) {
         $.objectIs = isIsFn;
     } else {
         $.objectIs = function (x, y) {
@@ -1626,7 +1641,7 @@
      * @return {boolean}
      */
     // named $.numberIsNaN instead of isNaN because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isNaNFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isNaNFN)) {
         $.numberIsNaN = isNaNFN;
     } else {
         $.numberIsNaN = function (number) {
@@ -1644,7 +1659,7 @@
      * @return {boolean}
      */
     // named $.numberIsFinite instead of isFinite because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isFiniteFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isFiniteFN)) {
         $.numberIsFinite = isFiniteFN;
     } else {
         $.numberIsFinite = function (number) {
@@ -1663,7 +1678,7 @@
      * @return {number}
      */
     // named mathSign instead of sign because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(nativ.Math.sign)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(nativ.Math.sign)) {
         $.mathSign = nativ.Math.sign;
     } else {
         $.mathSign = function nfeSign(value) {
@@ -1702,7 +1717,7 @@
      * @return {number}
      */
     // named $.numberToInteger instead of toInteger because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(toIntegerFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(toIntegerFN)) {
         $.numberToInteger = toIntegerFN;
     } else {
         $.numberToInteger = function (inputArg) {
@@ -1733,7 +1748,7 @@
      */
     // named $.numberIsInteger instead of toInteger because of SpiderMonkey and Blackberry bug
     try {
-        if (!$.isNativeFunction(isIntegerFN)) {
+        if (testShims || !$.isNativeFunction(isIntegerFN)) {
             throw new CtrError();
         }
 
@@ -2664,7 +2679,7 @@
      * @return {string}
      */
     // named $.stringRepeat instead of repeat because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(repeatFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(repeatFN)) {
         /*jshint -W098 */
         $.stringRepeat = function (string, times) {
             return repeatFN.apply(string, $.arraySlice(arguments, 1));
@@ -2695,7 +2710,7 @@
      * @return {boolean}
      */
     // named stringStartsWith instead of startsWith because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(startsWithFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(startsWithFN)) {
         /*jshint -W098 */
         $.stringStartsWith = function (string, searchString, position) {
             return startsWithFN.apply(string, $.arraySlice(arguments, 1));
@@ -2723,7 +2738,7 @@
      * @return {boolean}
      */
     // named stringEndsWith instead of endsWith because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(endsWithFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(endsWithFN)) {
         /*jshint -W098 */
         $.stringEndsWith = function (string, searchString, position) {
             return endsWithFN.apply(string, $.arraySlice(arguments, 1));
@@ -2762,7 +2777,7 @@
      * @return {boolean}
      */
     // named $.stringContains instead of contains because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(containsFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(containsFN)) {
         /*jshint -W098 */
         $.stringContains = function (string, searchString, position) {
             return containsFN.apply(string, $.arraySlice(arguments, 1));
@@ -2794,7 +2809,7 @@
      * @return {Prototype}
      */
     // named $.objectGetPrototypeOf instead of getPrototypeOf because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(getPrototypeOfFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(getPrototypeOfFN)) {
         $.objectGetPrototypeOf = function (object) {
             return getPrototypeOfFN(throwIfIsNotTypeObjectOrIsNotFunction(object));
         };
@@ -3152,7 +3167,9 @@
      * @param {...*} [element]
      */
     // named $.arraySplice instead of arraySplice because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(spliceFN) &amp;&amp; $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(spliceFN) &amp;&amp;
+            $.strictEqual(spliceFN.call([1, 2], $.POSITIVE_ZERO).length, 2)) {
+
         try {
             if ($.isZero(spliceFN.call([1, 2]).length)) {
                 $.arraySplice = function (array) {
@@ -3282,7 +3299,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(forEachFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(forEachFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3327,7 +3344,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(someFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(someFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3370,7 +3387,7 @@
      * @param {object} [thisArg]
      * @return {*}
      */
-    if ($.isNativeFunction(findFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(findFN)) {
         /*jshint -W098 */
         $.arrayFind = function (array, fn, thisArg) {
             return findFN.apply(array, $.arraySlice(arguments, 1));
@@ -3409,7 +3426,7 @@
      * @param {object} [thisArg]
      * @return {number}
      */
-    if ($.isNativeFunction(findIndexFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(findIndexFN)) {
         /*jshint -W098 */
         $.arrayFindIndex = function (array, fn, thisArg) {
             return findIndexFN.apply(array, $.arraySlice(arguments, 1));
@@ -3444,7 +3461,7 @@
      * @param {...*} [var_args]
      * @return {array}
      */
-    if ($.isNativeFunction(ofFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(ofFN)) {
         $.arrayOf = ofFN;
     } else {
         $.arrayOf = function () {
@@ -3457,13 +3474,13 @@
      * DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) into a new Array() and returns it.
      * @memberOf utilx
      * @name arrayFrom
-     * @function arrayOf
+     * @function arrayFrom
      * @param {object} arrayLike
      * @param {function} [mapfn]
      * @param {object} [thisArg]
      * @return {array}
      */
-    if ($.isNativeFunction(fromFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(fromFN)) {
         $.arrayFrom = fromFN;
     } else {
         $.arrayFrom = function (arrayLike, mapfn, thisArg) {
@@ -3473,7 +3490,8 @@
                 mapping,
                 array,
                 index,
-                value;
+                value,
+                isTargetArrayOrArguments;
 
             if ($.isUndefined(mapfn)) {
                 mapping = false;
@@ -3486,8 +3504,10 @@
             length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
             if ($.isFunction(Ctr)) {
                 array = new Ctr(length);
+                isTargetArrayOrArguments = isArrayOrArguments(array);
             } else {
                 array = [];
+                isTargetArrayOrArguments = true;
             }
 
             for (index = 0; index &lt; length; index += 1) {
@@ -3496,10 +3516,15 @@
                     value = mapfn.call(thisArg, value, index);
                 }
 
-                $.arrayAssign(array, index, value);
+                if (isTargetArrayOrArguments) {
+                    $.arrayAssign(array, index, value);
+                } else {
+                    array[index] = value;
+                }
             }
 
             array.length = length;
+
             return array;
         };
     }
@@ -3522,7 +3547,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(everyFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(everyFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3572,7 +3597,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(mapFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(mapFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3674,7 +3699,7 @@
      * @return {array}
      */
     try {
-        if (!$.isNativeFunction(sliceFN) ||
+        if (testShims || !$.isNativeFunction(sliceFN) ||
                 $.notStrictEqual(sliceFN.call(someArgs()).toString(), ',,1,a,2,b,,') ||
                 $.notStrictEqual(sliceFN.call(someArgs(),
                                 $.privateUndefined, $.privateUndefined).toString(), ',,1,a,2,b,,') ||
@@ -3728,7 +3753,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(filterFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(filterFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3785,7 +3810,7 @@
             testObject1 = list;
         });
 
-        if ($.isNativeFunction(reduceFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(reduceFN) &amp;&amp; $.isTypeObject(testObject1) &amp;&amp;
                 $.strictEqual($.toObjectString(testObject1), className.string)) {
 
             /*jshint -W098 */
@@ -3971,20 +3996,22 @@
      */
     $.arrayStableSort = function (array, comparefn) {
         var object = $.toObjectFixIndexedAccess(array),
-            length,
-            index;
+            isTargetArrayOrArguments;
 
         if ($.isUndefined(comparefn)) {
             comparefn = defaultComparison;
         }
 
         throwIfNotAFunction(comparefn);
-        length = clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32);
-        if ($.gt(length, 1)) {
-            object = mergeSort(object, comparefn);
-            for (index = $.POSITIVE_ZERO; $.lt(index, length); index += 1) {
-                array[index] = object[index];
-            }
+        if ($.gt(clampInteger(object.length, $.POSITIVE_ZERO, $.MAX_UINT32), 1)) {
+            isTargetArrayOrArguments = isArrayOrArguments(object);
+            $.arrayForEach(mergeSort(object, comparefn), function (value, index) {
+                if (isTargetArrayOrArguments) {
+                    $.arrayAssign(array, index, value);
+                } else {
+                    array[index] = value;
+                }
+            });
         }
 
         return array;
@@ -3999,7 +4026,7 @@
      * @param {Function} [compareFN]
      * @return {array}
      */
-    if ($.isNativeFunction(sortFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(sortFN)) {
         $.arraySort = function (array, comparefn) {
             $.checkObjectCoercible(array);
             if ($.isUndefined(comparefn)) {
@@ -4036,7 +4063,7 @@
      */
     // named $.stringTrim instead of trim because of SpiderMonkey and Blackberry bug
     try {
-        if ($.isNativeFunction(trimFN) &amp;&amp;
+        if (!testShims &amp;&amp; $.isNativeFunction(trimFN) &amp;&amp;
                 $.isZero(trimFN.call($.arrayReduce(whiteSpacesList, buildTestString, strings.empty)).length)) {
 
             $.stringTrim = function (inputArg) {
@@ -4069,7 +4096,9 @@
     // http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.14
     // Create our own local "indexOf" function: native -> polyfill
     // named $.arrayIndexOf instead of indexOf because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], 1, 2), -1)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(indexOfFN) &amp;&amp;
+            $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], 1, 2), -1)) {
+
         /*jshint -W098 */
         $.arrayIndexOf = function (array, searchElement, fromIndex) {
             return indexOfFN.apply(array, $.arraySlice(arguments, 1));
@@ -4124,7 +4153,9 @@
     // http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.15
     // Create our own local "lastIndexOf" function: native -> polyfill
     // named $.arrayLastIndexOf instead of indexOf because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(indexOfFN) &amp;&amp; $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], $.POSITIVE_ZERO, -3), -1)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(indexOfFN) &amp;&amp;
+            $.strictEqual(indexOfFN.call([$.POSITIVE_ZERO, 1], $.POSITIVE_ZERO, -3), -1)) {
+
         /*jshint -W098 */
         $.arrayLastIndexOf = function (array, searchElement, fromIndex) {
             return lastIndexOfFN.apply(array, $.arraySlice(arguments, 1));
@@ -4174,7 +4205,7 @@
      * @param {number} [end]
      * @return {array}
      */
-    if ($.isNativeFunction(fillFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(fillFN)) {
         /*jshint -W098 */
         $.arrayFill = function (array, value, start, end) {
             return fillFN.apply(array, $.arraySlice(arguments, 1));
@@ -4187,7 +4218,8 @@
                 relativeStart = $.numberToInteger(start),
                 relativeEnd,
                 final,
-                index;
+                index,
+                isTargetArrayOrArguments;
 
             if ($.lt(start, $.POSITIVE_ZERO)) {
                 relativeStart = nativ.Math.max(length + relativeStart, $.POSITIVE_ZERO);
@@ -4207,8 +4239,13 @@
                 final = nativ.Math.min(relativeEnd, length);
             }
 
+            isTargetArrayOrArguments = isArrayOrArguments(object);
             for (index = relativeStart; $.lt(index, final); index += 1) {
-                $.arrayAssign(object, index, value);
+                if (isTargetArrayOrArguments) {
+                    $.arrayAssign(object, index, value);
+                } else {
+                    object[index] = value;
+                }
             }
 
             return object;
@@ -4226,7 +4263,7 @@
      * @param {number} [end]
      * @return {array}
      */
-    if ($.isNativeFunction(copyWithinFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(copyWithinFN)) {
         /*jshint -W098 */
         $.arrayCopyWithin = function (array, target, start, end) {
             return copyWithinFN.apply(array, $.arraySlice(arguments, 1));
@@ -4245,7 +4282,8 @@
                 final,
                 count,
                 direction,
-                index;
+                index,
+                isTargetArrayOrArguments;
 
             if ($.lt(relativeTarget, $.POSITIVE_ZERO)) {
                 to = nativ.Math.max(length + relativeTarget, $.POSITIVE_ZERO);
@@ -4280,9 +4318,14 @@
                 direction = 1;
             }
 
+            isTargetArrayOrArguments = isArrayOrArguments(object);
             for (index = count; $.gt(index, $.POSITIVE_ZERO); index -= 1) {
                 if ($.objectHasOwnProperty(object, from)) {
-                    object[to] = object[from];
+                    if (isTargetArrayOrArguments) {
+                        $.arrayAssign(object, to, object[from]);
+                    } else {
+                        object[to] = object[from];
+                    }
                 } else {
                     delete object[to];
                 }
@@ -4333,7 +4376,7 @@
      */
     // named $.objectKeys instead of keys because of SpiderMonkey and Blackberry bug
     try {
-        if ($.isNativeFunction(keysFN)) {
+        if (!testShims &amp;&amp; $.isNativeFunction(keysFN)) {
             if ($.isTrue(hasErrorProps)) {
                 $.objectKeys = function (object) {
                     var keys = keysFN(object);
@@ -4655,7 +4698,7 @@
      */
     // Create our own local "freeze" function: native -> sham
     // named $.objectFreeze instead of freeze because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(freezeFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(freezeFN)) {
         $.objectFreeze = freezeFN;
     } else {
         $.objectFreeze = function (object) {
@@ -4695,7 +4738,7 @@
      */
     // Create our own local "isFrozen" function: native -> sham
     // named $.objectIsFrozen instead of isFrozen because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isFrozenFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isFrozenFN)) {
         $.objectIsFrozen = isFrozenFN;
     } else {
         $.objectIsFrozen = function (object) {
@@ -4735,7 +4778,7 @@
      * @return {boolean}
      */
     // named $.objectInstanceOf instead of instanceOf because of SpiderMonkey and Blackberry bug
-    if ($.isNativeFunction(isPrototypeOfFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(isPrototypeOfFN)) {
         $.objectInstanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
@@ -4788,19 +4831,19 @@
      * @param {...object} source
      * @return {object}
      */
-    if ($.isNativeFunction(assignFN)) {
+    if (!testShims &amp;&amp; $.isNativeFunction(assignFN)) {
         $.objectAssign = assignFN;
     } else {
         $.objectAssign = function (target) {
             throwIfIsNotTypeObjectOrIsNotFunction(target);
 
-            var isTargetArray = $.arrayIsArray(target);
+            var isTargetArrayOrArguments = isArrayOrArguments(target);
 
             $.arrayForEach($.arraySlice(arguments, 1), function (source) {
                 $.arrayForEach($.objectKeys(throwIfIsNotTypeObjectOrIsNotFunction(source)), function (key) {
                     var value = source[key];
 
-                    if (isTargetArray) {
+                    if (isTargetArrayOrArguments) {
                         $.arrayAssign(target, key, value);
                     } else {
                         target[key] = value;
@@ -5341,7 +5384,7 @@
     // named objectGetOwnPropertyDescriptor instead of getOwnPropertyDescriptor because of SpiderMonkey
     // and Blackberry bug
     try {
-        if (!$.isNativeFunction(getOwnPropDescFN)) {
+        if (testShims || !$.isNativeFunction(getOwnPropDescFN)) {
             throw new CtrError();
         }
 
@@ -5516,7 +5559,7 @@
         return array;
     };
 
-    if ($.isTypeObject(JSON)) {
+    if (!testShims &amp;&amp; $.isTypeObject(JSON)) {
         if ($.isNativeFunction(JSON.parse)) {
             nativ.JSON.parse = JSON.parse;
         }
@@ -5654,9 +5697,7 @@
         };
 
         stringifyToString = function (key, holder) {
-            var index,
-                member,
-                length,
+            var member,
                 mind = stringifyGap,
                 partial,
                 value = holder[key];
@@ -5687,12 +5728,12 @@
                 }
 
                 stringifyGap += stringifyIndent;
-                partial = [];
                 if ($.arrayIsArray(value)) {
-                    length = value.length;
-                    for (index = $.POSITIVE_ZERO; index &lt; length; index += 1) {
-                        $.arrayAssign(partial, index, stringifyToString(index, value) || strings.Null);
-                    }
+                    /*jshint -W098 */
+                    partial = $.arrayMap(value, function (element, index) {
+                        return stringifyToString(index, value) || strings.Null;
+                    });
+                    /*jshint +W098 */
 
                     if ($.isZero(partial.length)) {
                         member = '[]';
@@ -5709,26 +5750,30 @@
                 }
 
                 if ($.arrayIsArray(stringifyReplacer)) {
-                    $.arrayForEach(stringifyReplacer, function (element) {
+                    partial = $.arrayReduce(stringifyReplacer, function (prev, element) {
                         var v;
 
                         if ($.isString(element)) {
                             v = stringifyToString(element, value);
                             if (!$.isUndefined(v)) {
-                                $.arrayPush(partial, stringifyQuote(element) +
+                                $.arrayPush(prev, stringifyQuote(element) +
                                                 ($.isStringNotEmpty(stringifyGap)  ? ': ' : ':') + v);
                             }
                         }
-                    });
+
+                        return prev;
+                    }, []);
                 } else {
-                    $.arrayForEach($.objectKeys(value), function (k) {
+                    partial = $.arrayReduce($.objectKeys(value), function (prev, k) {
                         var v = stringifyToString(k, value);
 
                         if (!$.isUndefined(v)) {
-                            $.arrayPush(partial, stringifyQuote(k) +
+                            $.arrayPush(prev, stringifyQuote(k) +
                                             ($.isStringNotEmpty(stringifyGap) ? ': ' : ':') + v);
                         }
-                    });
+
+                        return prev;
+                    }, []);
                 }
 
                 if ($.isZero(partial.length)) {
@@ -6055,7 +6100,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Apr 29 2014 02:34:13 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Apr 29 2014 22:12:59 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

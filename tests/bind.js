@@ -69,7 +69,7 @@
         });
 
         it('binds a context and supplies bound arguments', function () {
-            testSubject.func = func.bind(actual, 1, 2, 3);
+            testSubject.func = utilx.bind(func, actual, 1, 2, 3);
             testSubject.func(4, 5, 6);
             expect(actual).to.eql([1, 2, 3, 4, 5, 6]);
             expect(testSubject.a).to.eql([]);
