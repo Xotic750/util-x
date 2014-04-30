@@ -28,10 +28,9 @@
         };
 
         beforeEach(function () {
-            testSubject = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej',
-                                                            3, null, false, 0));
+            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0, , 9];
             delete testSubject[1];
-            filteredArray = utilx.arraySlice(utilx.returnArgs(2, utilx.privateUndefined, 'hej', null, false, 0));
+            filteredArray = [2, utilx.privateUndefined, 'hej', false, 0, 9];
         });
 
         it('should not throw an error in each case', function () {

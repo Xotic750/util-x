@@ -24,8 +24,7 @@
         beforeEach(function () {
             var i = -1;
 
-            testSubject = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej',
-                                                            null, false, 0));
+            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0, , 9];
             delete testSubject[1];
             callback = function () {
                 i += 1;
@@ -96,7 +95,7 @@
         });
 
         it('should only run for the number of objects in the array when it started', function () {
-            var arr = [1, 2, 3],
+            var arr = [1, 2, 3, , 5],
                 i = 0;
 
             utilx.arrayMap(arr, function (o) {
@@ -106,20 +105,20 @@
                 return o;
             });
 
-            expect(arr).to.eql([1, 2, 3, 4, 5, 6]);
-            expect(i).to.be(3);
+            expect(arr).to.eql([1, 2, 3, , 5, 4, 5, 6, 8]);
+            expect(i).to.be(4);
         });
 
         it('should properly translate the values as according to the callback', function () {
             var result = utilx.arrayMap(testSubject, callback),
-                expected = [0, 0, 1, 2, 3, 4, 5, 6];
+                expected = [0, 0, 1, 2, 3, 4, 5, 6, , 7];
 
             delete expected[1];
             expect(result).to.eql(expected);
         });
 
         it('should skip non-existing values', function () {
-            var array = [1, 2, 3, 4],
+            var array = [1, 2, 3, 4, , 6],
                 i = 0;
 
             delete array[2];
@@ -127,7 +126,7 @@
                 i += 1;
             });
 
-            expect(i).to.be(3);
+            expect(i).to.be(4);
         });
 
         it('should have a boxed object as list argument of callback', function () {

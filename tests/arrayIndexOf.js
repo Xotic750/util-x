@@ -17,7 +17,7 @@
                 'propertyIsEnumerable',
                 'constructor'
             ],
-            arr2 = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej', null, 2, false, 0));
+            arr2 = [2, 3, utilx.privateUndefined, true, 'hej', null, 2, false, 0, , 9];
 
         delete arr2[1];
 
@@ -64,8 +64,8 @@
         });
 
         it('should work with negative fromIndex', function () {
-            expect(utilx.arrayIndexOf(arr2, 2, -3)).to.be(6);
-            expect(utilx.arrayIndexOf(arr2, 2, -9)).to.be(0);
+            expect(utilx.arrayIndexOf(arr2, 2, -5)).to.be(6);
+            expect(utilx.arrayIndexOf(arr2, 2, -11)).to.be(0);
         });
 
         it('should work with fromIndex being greater than the length', function () {

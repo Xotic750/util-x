@@ -295,12 +295,12 @@
             var txt = '.',
                 rx = new RegExp('(.)?(.)?');
 
-            expect(utilx.stringSplit(txt, rx)).to.eql(utilx.arraySlice(utilx.returnArgs(
+            expect(utilx.stringSplit(txt, rx)).to.eql([
                 '',
                 '.',
                 utilx.privateUndefined,
                 ''
-            )));
+            ]);
         });
 
         msg = '(\'A<B>bold</B>and<CODE>coded</CODE>\', /<(\\/)?([^<>]+)>/) results in [\'A\', undefined, ' +
@@ -310,7 +310,7 @@
                 rx = new RegExp('<(\\/)?([^<>]+)>');
 
             expect(utilx.stringSplit(txt, rx))
-                .to.eql(utilx.arraySlice(utilx.returnArgs(
+                .to.eql([
                     'A',
                     utilx.privateUndefined,
                     'B',
@@ -324,19 +324,19 @@
                     '/',
                     'CODE',
                     ''
-                )));
+                ]);
         });
 
         it('(\'test\', /(s)*/) results in [\'t\', undefined, \'e\', \'s\', \'t\']', function () {
             var txt = 'tesst';
 
-            expect(utilx.stringSplit(txt, /(s)*/)).to.eql(utilx.arraySlice(utilx.returnArgs(
+            expect(utilx.stringSplit(txt, /(s)*/)).to.eql([
                 't',
                 utilx.privateUndefined,
                 'e',
                 's',
                 't'
-            )));
+            ]);
         });
 
         msg = '(\'test\', /(s)*?/) results in [\'t\', undefined, \'e\',' +
@@ -345,7 +345,7 @@
             var txt = 'tesst';
 
             expect(utilx.stringSplit(txt, /(s)*?/))
-                .to.eql(utilx.arraySlice(utilx.returnArgs(
+                .to.eql([
                     't',
                     utilx.privateUndefined,
                     'e',
@@ -355,7 +355,7 @@
                     's',
                     utilx.privateUndefined,
                     't'
-                )));
+                ]);
         });
 
         it('(\'test\', /(s*)/) results in [\'t\', \'\', \'e\', \'ss\', \'t\']', function () {

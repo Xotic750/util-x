@@ -22,7 +22,8 @@
                 4: 'hej',
                 5: null,
                 6: false,
-                7: 0
+                7: 0,
+                9: 9
             },
             str = 'Hello, World!',
             testIndex;
@@ -43,8 +44,7 @@
         }
 
         beforeEach(function () {
-            testSubject = utilx.arraySlice(utilx.returnArgs(2, 3, utilx.privateUndefined, true, 'hej',
-                                                            null, false, 0));
+            testSubject = [2, 3, utilx.privateUndefined, true, 'hej', null, false, 0, , 9];
             delete testSubject[1];
         });
 
