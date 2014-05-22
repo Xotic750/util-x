@@ -1,0 +1,94 @@
+/*global require, describe, it */
+
+(function () {
+    'use strict';
+
+    var required = require('../scripts/'),
+        utilx = required.utilx,
+        expect = required.expect;
+
+    function F() {
+        return;
+    }
+
+    describe('Array.isEmpty', function () {
+        it('should not throw an error in each case', function () {
+            expect(function () {
+                utilx.Array.isEmpty();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(1);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(true);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty('');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(new Error('x'));
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(new Date());
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(new RegExp('x'));
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(utilx.Function.noop);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty(new F());
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.isEmpty({});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(utilx.Array.isEmpty([])).to.be.ok();
+            expect(utilx.Array.isEmpty(utilx.Function.returnArgs())).to.be.ok();
+            expect(utilx.Array.isEmpty([''])).to.not.be.ok();
+            expect(utilx.Array.isEmpty(utilx.Function.returnArgs(''))).to.not.be.ok();
+        });
+    });
+}());

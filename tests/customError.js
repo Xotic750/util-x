@@ -49,19 +49,19 @@
             }).to.not.throwException();
 
             expect(function () {
-                utilx.customError('FnError', utilx.noop);
+                utilx.customError('FnError', utilx.Function.noop);
             }).to.not.throwException();
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(utilx.regExpTest(new RegExp('^MyError: test'), e.toString())).to.be.ok();
+                expect(utilx.RegExp.test(new RegExp('^MyError: test'), e.toString())).to.be.ok();
             });
 
             expect(function () {
                 throw new MySyntaxError('test');
             }).to.throwException(function (e) {
-                expect(utilx.regExpTest(new RegExp('^MySyntaxError: test'), e.toString())).to.be.ok();
+                expect(utilx.RegExp.test(new RegExp('^MySyntaxError: test'), e.toString())).to.be.ok();
             });
 
             expect(function () {
@@ -77,24 +77,48 @@
             });
 
             expect(new MyError('test').message).to.be('test');
-            expect(utilx.objectInstanceOf(new MyError('test'), Error)).to.be(true);
-            expect(utilx.objectInstanceOf(new MyError('test'), MyError)).to.be(true);
-            expect(utilx.objectInstanceOf(new MyError('test'), SyntaxError)).to.be(false);
-            expect(utilx.objectInstanceOf(new MyError('test'), TypeError)).to.be(false);
-
-            expect(new MySyntaxError('test').message).to.be('test');
-            expect(utilx.objectInstanceOf(new MySyntaxError('test'), Error)).to.be(true);
-            expect(utilx.objectInstanceOf(new MySyntaxError('test'), MySyntaxError)).to.be(true);
-            expect(utilx.objectInstanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(Error);
+            });
 
             expect(function () {
                 throw new MyError('test');
             }).to.throwException(function (e) {
-                expect(utilx.regExpTest(new RegExp('^MyError: test'), e.toString())).to.be.ok();
-                if (utilx.isString(e.stack)) {
+                expect(e).to.be.a(MyError);
+            });
+
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(e).to.not.be.a(SyntaxError);
+            });
+
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(e).to.not.be.a(TypeError);
+            });
+
+            expect(utilx.Object.instanceOf(new MyError('test'), Error)).to.be(true);
+            expect(utilx.Object.instanceOf(new MyError('test'), MyError)).to.be(true);
+            expect(utilx.Object.instanceOf(new MyError('test'), SyntaxError)).to.be(false);
+            expect(utilx.Object.instanceOf(new MyError('test'), TypeError)).to.be(false);
+
+            expect(new MySyntaxError('test').message).to.be('test');
+            expect(utilx.Object.instanceOf(new MySyntaxError('test'), Error)).to.be(true);
+            expect(utilx.Object.instanceOf(new MySyntaxError('test'), MySyntaxError)).to.be(true);
+            expect(utilx.Object.instanceOf(new MySyntaxError('test'), TypeError)).to.be(false);
+
+            expect(function () {
+                throw new MyError('test');
+            }).to.throwException(function (e) {
+                expect(utilx.RegExp.test(new RegExp('^MyError: test'), e.toString())).to.be.ok();
+                if (utilx.String.isString(e.stack)) {
                     /*global console */
                     console.log('# An example stack trace');
-                    console.log('# ' + utilx.arrayJoin(utilx.stringSplit(e.stack, '\n'), '\n# '));
+                    console.log('# ' + e.stack.split('\n').join('\n# '));
                 }
 
             });
@@ -105,7 +129,7 @@
                 msex = new MySyntaxErrorX('test');
 
             try {
-                if (!utilx.objectInstanceOf(msex, SyntaxError)) {
+                if (!utilx.Object.instanceOf(msex, SyntaxError)) {
                     throw msex;
                 }
 
@@ -114,7 +138,7 @@
                 });
             } catch (e) {
                 it('environment supports Error type', function () {
-                    expect(utilx.objectInstanceOf(e, Error)).to.be(true);
+                    expect(utilx.Object.instanceOf(e, Error)).to.be(true);
                 });
             }
         });

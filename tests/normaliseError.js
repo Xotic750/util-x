@@ -17,8 +17,8 @@
             try {
                 throw new Error(message);
             } catch (e) {
-                if (utilx.strictEqual(e.message, message) &&
-                        utilx.strictEqual(e.toString(), '[object Error]')) {
+                if (e.message === message &&
+                        e.toString() === '[object Error]') {
 
                     expect(utilx.normaliseErrorIEToStringOn()).to.be.ok();
                     expect(utilx.normaliseErrorIEToStringState()).to.be.ok();
@@ -29,7 +29,7 @@
                 throw new Error(message);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(Error);
-                expect(utilx.regExpTest(new RegExp('^Error: ' + message), e.toString())).to.be.ok();
+                expect(utilx.RegExp.test(new RegExp('^Error: ' + message), e.toString())).to.be.ok();
             });
 
             expect(!utilx.normaliseErrorIEToStringOff()).to.be.ok();
