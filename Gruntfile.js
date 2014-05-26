@@ -111,7 +111,8 @@
                     src: ['README.md', 'lib/<%= pkg.name %>.js'],
                     options: {
                         destination: 'docs',
-                        private: false
+                        private: false,
+                        lenient: true
                     }
                 }
             },

@@ -27,7 +27,7 @@
 
 <header>
     <h2>
-        <span class="ancestors"><a href="utilx.html">utilx</a>.</span>
+        <span class="ancestors"><a href="global.html#utilx">utilx</a>.</span>
     
     Function
     </h2>
@@ -64,7 +64,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line554">line 554</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line881">line 881</a>
     </li></ul></dd>
     
 
@@ -98,7 +98,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="bind"><span class="type-signature">&lt;static> </span>bind<span class="signature">(fn, thisArg, <span class="optional">var_args</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
+    <h4 class="name" id="bind"><span class="type-signature">&lt;static> </span>bind<span class="signature">(fn, thisArg, <span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#boundFunction">boundFunction</a>}</span></h4>
 
     
 </dt>
@@ -106,8 +106,10 @@
 
     
     <div class="description">
-        This method creates a new function that, when called, has its this keyword set to the provided value,
-with a given sequence of arguments preceding any provided when the new function is called.
+        The bind() function creates a new function (a bound function) with the same function body
+(internal call property in ECMAScript 5 terms) as the function it is being called on
+(the bound function's target function) with the this value bound to thisArg,
+which cannot be overridden.
     </div>
     
 
@@ -149,7 +151,7 @@ with a given sequence of arguments preceding any provided when the new function 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><a href="global.html#bindTargetFunction">bindTargetFunction</a></span>
 
 
             
@@ -180,7 +182,7 @@ with a given sequence of arguments preceding any provided when the new function 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">*</span>
 
 
             
@@ -198,14 +200,14 @@ with a given sequence of arguments preceding any provided when the new function 
 
             
 
-            <td class="description last"></td>
+            <td class="description last">the this argument to be bound to the new function</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>var_args</code></td>
+                <td class="name"><code>varArgs</code></td>
             
 
             <td class="type">
@@ -233,7 +235,7 @@ with a given sequence of arguments preceding any provided when the new function 
 
             
 
-            <td class="description last"></td>
+            <td class="description last">any arguments to be bound to the new function.</td>
         </tr>
 
     
@@ -264,12 +266,19 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1831">line 1831</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2197">line 2197</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -285,11 +294,42 @@ with a given sequence of arguments preceding any provided when the new function 
     
 
     
+    <h5>Throws:</h5>
+    
+            
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        if fn is not a function.
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+
+        
 
     
     <h5>Returns:</h5>
     
             
+<div class="param-desc">
+    .
+</div>
+
 
 
 <dl>
@@ -298,7 +338,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">function</span>
+<span class="param-type"><a href="global.html#boundFunction">boundFunction</a></span>
 
 
     </dd>
@@ -312,7 +352,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="inherits"><span class="type-signature">&lt;static> </span>inherits<span class="signature">(ctor, superCtor)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    <h4 class="name" id="inherits"><span class="type-signature">&lt;static> </span>inherits<span class="signature">(ctor, superCtor)</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
 
     
 </dt>
@@ -320,7 +360,7 @@ with a given sequence of arguments preceding any provided when the new function 
 
     
     <div class="description">
-        Inherit the prototype methods from one constructor into another.
+        This <a href="global.html#boundPrototypalFunction">method</a> inherits the prototype methods from one constructor into another.
     </div>
     
 
@@ -424,7 +464,7 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5967">line 5967</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6553">line 6553</a>
     </li></ul></dd>
     
 
@@ -458,7 +498,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">undefined</span>
+<span class="param-type"><a href="global.html#undefined">undefined</a></span>
 
 
     </dd>
@@ -472,7 +512,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="isFunction"><span class="type-signature">&lt;static> </span>isFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="isFunction"><span class="type-signature">&lt;static> </span>isFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
 
     
 </dt>
@@ -561,12 +601,19 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1745">line 1745</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2109">line 2109</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.11">http://www.ecma-international.org/ecma-262/5.1/#sec-9.11</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -595,7 +642,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type"><a href="global.html#boolean">boolean</a></span>
 
 
     </dd>
@@ -609,7 +656,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="isNativeFunction"><span class="type-signature">&lt;static> </span>isNativeFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="isNativeFunction"><span class="type-signature">&lt;static> </span>isNativeFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
 
     
 </dt>
@@ -698,7 +745,7 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1757">line 1757</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2122">line 2122</a>
     </li></ul></dd>
     
 
@@ -732,7 +779,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type"><a href="global.html#boolean">boolean</a></span>
 
 
     </dd>
@@ -746,7 +793,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="noop"><span class="type-signature">&lt;static> </span>noop<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    <h4 class="name" id="noop"><span class="type-signature">&lt;static> </span>noop<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
 
     
 </dt>
@@ -754,7 +801,8 @@ with a given sequence of arguments preceding any provided when the new function 
 
     
     <div class="description">
-        Returns the primitive value undefined.
+        Returns the <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2">primitive</a> value
+<a href="global.html#undefined">undefined</a>.
     </div>
     
 
@@ -787,7 +835,7 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line807">line 807</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1146">line 1146</a>
     </li></ul></dd>
     
 
@@ -821,7 +869,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">undefined</span>
+<span class="param-type"><a href="global.html#undefined">undefined</a></span>
 
 
     </dd>
@@ -835,7 +883,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="returnArgs"><span class="type-signature">&lt;static> </span>returnArgs<span class="signature">(var_args)</span><span class="type-signature"> &rarr; {arguments}</span></h4>
+    <h4 class="name" id="returnArgs"><span class="type-signature">&lt;static> </span>returnArgs<span class="signature">(<span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Arguments">Arguments</a>}</span></h4>
 
     
 </dt>
@@ -879,7 +927,7 @@ with a given sequence of arguments preceding any provided when the new function 
 
         <tr>
             
-                <td class="name"><code>var_args</code></td>
+                <td class="name"><code>varArgs</code></td>
             
 
             <td class="type">
@@ -893,6 +941,8 @@ with a given sequence of arguments preceding any provided when the new function 
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -936,7 +986,7 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line816">line 816</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1156">line 1156</a>
     </li></ul></dd>
     
 
@@ -970,7 +1020,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">arguments</span>
+<span class="param-type"><a href="global.html#Arguments">Arguments</a></span>
 
 
     </dd>
@@ -984,7 +1034,7 @@ with a given sequence of arguments preceding any provided when the new function 
         
             
 <dt>
-    <h4 class="name" id="ToMethod"><span class="type-signature">&lt;static> </span>ToMethod<span class="signature">(protoFn)</span><span class="type-signature"> &rarr; {function}</span></h4>
+    <h4 class="name" id="ToMethod"><span class="type-signature">&lt;static> </span>ToMethod<span class="signature">(protoFn)</span><span class="type-signature"> &rarr; {<a href="global.html#boundPrototypalFunction">boundPrototypalFunction</a>}</span></h4>
 
     
 </dt>
@@ -1032,7 +1082,7 @@ with a given sequence of arguments preceding any provided when the new function 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><a href="global.html#prototypalFunction">prototypalFunction</a></span>
 
 
             
@@ -1073,7 +1123,7 @@ with a given sequence of arguments preceding any provided when the new function 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1909">line 1909</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2281">line 2281</a>
     </li></ul></dd>
     
 
@@ -1094,6 +1144,33 @@ with a given sequence of arguments preceding any provided when the new function 
     
 
     
+    <h5>Throws:</h5>
+    
+            
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        if protoFn is not a function.
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+
+        
 
     
     <h5>Returns:</h5>
@@ -1107,7 +1184,7 @@ with a given sequence of arguments preceding any provided when the new function 
     </dt>
     <dd>
         
-<span class="param-type">function</span>
+<span class="param-type"><a href="global.html#boundPrototypalFunction">boundPrototypalFunction</a></span>
 
 
     </dd>
@@ -1134,13 +1211,13 @@ with a given sequence of arguments preceding any provided when the new function 
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="utilx.html">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clampToInt">clampToInt</a></li><li><a href="global.html#getOwnPropertyDescriptor">getOwnPropertyDescriptor</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="global.html#utilx">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu May 22 2014 02:28:40 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Mon May 26 2014 03:58:29 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

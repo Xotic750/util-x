@@ -32,6 +32,26 @@
             testSubject.a = [];
         });
 
+        it('should throw a TypeError in each case', function () {
+            expect(function () {
+                utilx.Function.bind();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Function.bind(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Function.bind(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('binds properly without a context', function () {
             var context;
 

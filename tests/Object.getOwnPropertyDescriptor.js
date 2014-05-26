@@ -7,7 +7,7 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    describe('utilx.Object.getOwnPropertyDescriptor', function () {
+    describe('Object.getOwnPropertyDescriptor', function () {
         it('should return undefined because the object does not own the property', function () {
             var descr = utilx.Object.getOwnPropertyDescriptor({}, 'name');
 
