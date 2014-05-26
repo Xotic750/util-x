@@ -14,8 +14,8 @@
 
             expect(utilx.Array.unique(list)).to.eql([1, 2, 3, 4]);
 
-            list = [1, 1, 1, 2, 2, 3];
-            expect(utilx.Array.unique(list)).to.eql([1, 2, 3]);
+            list = [1, 1, 1, NaN, 2, 2, 3, NaN];
+            expect(utilx.Array.unique(list).join(',')).to.be([1, NaN, 2, 3, NaN].join(','));
 
             list = [{
                 name: 'moe'
@@ -28,7 +28,7 @@
             }];
 
             expect(utilx.Array.unique(list)).to.eql(list);
-            expect(utilx.Array.unique(list, true)).to.eql([{
+            expect(utilx.Array.unique(list, utilx.Object.deepStrictEqual)).to.eql([{
                 name: 'moe'
             }, {
                 name: 'curly'
@@ -36,8 +36,8 @@
                 name: 'larry'
             }]);
 
-            list = [1, 2, 2, 3, 4, 4];
-            expect(utilx.Array.unique(list, true)).to.eql([1, 2, 3, 4]);
+            list = [1, 2, 2, NaN, 3, 4, NaN, 4];
+            expect(utilx.Array.unique(list, utilx.Object.is).join(',')).to.be([1, 2, NaN, 3, 4].join(','));
 
             result = (function () {
                 return utilx.Array.unique(arguments);

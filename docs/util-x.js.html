@@ -53,6 +53,12 @@
 /*jslint maxlen: 120 */
 
 /**
+ * Type whose sole value is the undefined value
+ * @typedef {undefined} undefined
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined
+ */
+
+/**
  * A regular expression object for matching text with a pattern.
  * @typedef {Object} null
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null
@@ -68,13 +74,11 @@
  * @typedef {(string|number)} StringLike
  */
 
-/*jslint maxlen: 131 */
 /**
  * An Array-like object corresponding to the arguments passed to a function.
  * @typedef {Arguments} Arguments
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/arguments
  */
-/*jslint maxlen: 120 */
 
 /**
  * Host objects that are of an array structure.
@@ -84,14 +88,20 @@
 /**
  * Objects that are array like, in that they are an integer indexed list
  * that have a length property which is integer between 0 and 2^32-1 (inclusive)
- * @typedef {(Arrays|!Object)} ArrayLike
+ * @typedef {(Arrays|Object)} ArrayLike
  */
 
 /**
  * @private
  * @namespace globalThis
  */
-(function (globalThis, window, JSON, module, define, base) {
+
+/**
+ * @private
+ * @name Undefiend
+ * @type {undefined}
+ */
+(function (globalThis, window, JSON, module, define, base, Undefined) {
     'use strict';
 
     /**
@@ -268,42 +278,41 @@
      * @namespace {Object} base.object
      */
     base.object = {};
-    base.object.instance = {};
-    base.object.Ctr = base.object.instance.constructor;
-    base.object.proto = base.object.Ctr.prototype;
-    base.object.assign = base.object.Ctr.assign;
-    base.object.create = base.object.Ctr.create;
-    base.object.defineProperties = base.object.Ctr.defineProperties;
-    base.object.defineProperty = base.object.Ctr.defineProperty;
-    base.object.freeze = base.object.Ctr.freeze;
-    base.object.getOwnPropertyDescriptor = base.object.Ctr.getOwnPropertyDescriptor;
-    base.object.getOwnPropertyNames = base.object.Ctr.getOwnPropertyNames;
-    base.object.getPrototypeOf = base.object.Ctr.getPrototypeOf;
-    base.object.is = base.object.Ctr.is;
-    base.object.isnt = base.object.Ctr.isnt;
-    base.object.isExtensible = base.object.Ctr.isExtensible;
-    base.object.isFrozen = base.object.Ctr.isFrozen;
-    base.object.isSealed = base.object.Ctr.isSealed;
-    base.object.keys = base.object.Ctr.keys;
-    base.object.preventExtensions = base.object.Ctr.preventExtensions;
-    base.object.seal = base.object.Ctr.seal;
-    base.object.setPrototypeOf = base.object.Ctr.setPrototypeOf;
-    base.object[base.str.defineGetter] = base.object.instance[base.str.defineGetter];
-    base.object[base.str.defineSetter] = base.object.instance[base.str.defineSetter];
-    base.object[base.str.lookupGetter] = base.object.instance[base.str.lookupGetter];
-    base.object[base.str.lookupGetter] = base.object.instance[base.str.lookupGetter];
+    base.object.Ctr = Object;
+    base.object.proto = Object.prototype;
+    base.object.assign = Object.assign;
+    base.object.create = Object.create;
+    base.object.defineProperties = Object.defineProperties;
+    base.object.defineProperty = Object.defineProperty;
+    base.object.freeze = Object.freeze;
+    base.object.getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+    base.object.getOwnPropertyNames = Object.getOwnPropertyNames;
+    base.object.getPrototypeOf = Object.getPrototypeOf;
+    base.object.is = Object.is;
+    base.object.isnt = Object.isnt;
+    base.object.isExtensible = Object.isExtensible;
+    base.object.isFrozen = Object.isFrozen;
+    base.object.isSealed = Object.isSealed;
+    base.object.keys = Object.keys;
+    base.object.preventExtensions = Object.preventExtensions;
+    base.object.seal = Object.seal;
+    base.object.setPrototypeOf = Object.setPrototypeOf;
+    base.object[base.str.defineGetter] = Object.prototype[base.str.defineGetter];
+    base.object[base.str.defineSetter] = Object.prototype[base.str.defineSetter];
+    base.object[base.str.lookupGetter] = Object.prototype[base.str.lookupGetter];
+    base.object[base.str.lookupGetter] = Object.prototype[base.str.lookupGetter];
     /*jslint evil:true */
-    base.object.eval = base.object.instance.eval;
+    base.object.eval = Object.prototype.eval;
     /*jslint evil:false */
-    base.object.hasOwn = base.object.instance.hasOwnProperty;
-    base.object.isPrototypeOf = base.object.instance.isPrototypeOf;
-    base.object.propertyIsEnumerable = base.object.instance.propertyIsEnumerable;
-    base.object.toLocaleString = base.object.instance.toLocaleString;
-    base.object.toSource = base.object.instance.toSource;
-    base.object.toString = base.object.instance.toString;
-    base.object.unwatch = base.object.instance.unwatch;
-    base.object.valueOf = base.object.instance.valueOf;
-    base.object.watch = base.object.instance.watch;
+    base.object.hasOwn = Object.prototype.hasOwnProperty;
+    base.object.isPrototypeOf = Object.prototype.isPrototypeOf;
+    base.object.propertyIsEnumerable = Object.prototype.propertyIsEnumerable;
+    base.object.toLocaleString = Object.prototype.toLocaleString;
+    base.object.toSource = Object.prototype.toSource;
+    base.object.toString = Object.prototype.toString;
+    base.object.unwatch = Object.prototype.unwatch;
+    base.object.valueOf = Object.prototype.valueOf;
+    base.object.watch = Object.prototype.watch;
 
     /**
      * A javascript array object.
@@ -316,34 +325,33 @@
      * @namespace {Object} base.array
      */
     base.array = {};
-    base.array.instance = [];
-    base.array.Ctr = base.array.constructor;
-    base.array.proto = base.array.Ctr.prototype;
-    base.array.isArray = base.array.Ctr.isArray;
-    base.array.of = base.array.Ctr.of;
-    base.array.from = base.array.Ctr.from;
-    base.array.concat = base.array.instance.concat;
-    base.array.every = base.array.instance.every;
-    base.array.filter = base.array.instance.filter;
-    base.array.find = base.array.instance.find;
-    base.array.findIndex = base.array.instance.findIndex;
-    base.array.forEach = base.array.instance.forEach;
-    base.array.indexOf = base.array.instance.indexOf;
-    base.array.join = base.array.instance.join;
-    base.array.lastIndexOf = base.array.instance.lastIndexOf;
-    base.array.map = base.array.instance.map;
-    base.array.pop = base.array.instance.pop;
-    base.array.push = base.array.instance.push;
-    base.array.reduce = base.array.instance.reduce;
-    base.array.reduceRight = base.array.instance.reduceRight;
-    base.array.reverse = base.array.instance.reverse;
-    base.array.shift = base.array.instance.shift;
-    base.array.slice = base.array.instance.slice;
-    base.array.some = base.array.instance.some;
-    base.array.sort = base.array.instance.sort;
-    base.array.splice = base.array.instance.splice;
-    base.array.toString = base.array.instance.toString;
-    base.array.unshift = base.array.instance.unshift;
+    base.array.Ctr = Array;
+    base.array.proto = Array.prototype;
+    base.array.isArray = Array.isArray;
+    base.array.of = Array.of;
+    base.array.from = Array.from;
+    base.array.concat = Array.prototype.concat;
+    base.array.every = Array.prototype.every;
+    base.array.filter = Array.prototype.filter;
+    base.array.find = Array.prototype.find;
+    base.array.findIndex = Array.prototype.findIndex;
+    base.array.forEach = Array.prototype.forEach;
+    base.array.indexOf = Array.prototype.indexOf;
+    base.array.join = Array.prototype.join;
+    base.array.lastIndexOf = Array.prototype.lastIndexOf;
+    base.array.map = Array.prototype.map;
+    base.array.pop = Array.prototype.pop;
+    base.array.push = Array.prototype.push;
+    base.array.reduce = Array.prototype.reduce;
+    base.array.reduceRight = Array.prototype.reduceRight;
+    base.array.reverse = Array.prototype.reverse;
+    base.array.shift = Array.prototype.shift;
+    base.array.slice = Array.prototype.slice;
+    base.array.some = Array.prototype.some;
+    base.array.sort = Array.prototype.sort;
+    base.array.splice = Array.prototype.splice;
+    base.array.toString = Array.prototype.toString;
+    base.array.unshift = Array.prototype.unshift;
 
     /**
      * Set of all possible String values.
@@ -356,41 +364,40 @@
      * @namespace {Object} base.string
      */
     base.string = {};
-    base.string.instance = '';
-    base.string.Ctr = base.string.instance.constructor;
-    base.string.proto = base.string.Ctr.prototype;
-    base.string.fromCharCode = base.string.Ctr.fromCharCode;
-    base.string.fromCodePoint = base.string.Ctr.fromCodePoint;
-    base.string.anchor = base.string.instance.anchor;
-    base.string.charAt = base.string.instance.charAt;
-    base.string.charCodeAt = base.string.instance.charCodeAt;
-    base.string.codePointAt = base.string.instance.codePointAt;
-    base.string.concat = base.string.instance.concat;
-    base.string.contains = base.string.instance.contains;
-    base.string.endsWith = base.string.instance.endsWith;
-    base.string.indexOf = base.string.instance.indexOf;
-    base.string.lastIndexOf = base.string.instance.lastIndexOf;
-    base.string.link = base.string.instance.link;
-    base.string.localeCompare = base.string.instance.localeCompare;
-    base.string.match = base.string.instance.match;
-    base.string.normalize = base.string.instance.normalize;
-    base.string.repeat = base.string.instance.repeat;
-    base.string.replace = base.string.instance.replace;
-    base.string.search = base.string.instance.search;
-    base.string.slice = base.string.instance.slice;
-    base.string.split = base.string.instance.split;
-    base.string.startsWith = base.string.instance.startsWith;
-    base.string.substr = base.string.instance.substr;
-    base.string.substring = base.string.instance.substring;
-    base.string.toLocaleLowerCase = base.string.instance.toLocaleLowerCase;
-    base.string.toLocaleUpperCase = base.string.instance.toLocaleUpperCase;
-    base.string.toLowerCase = base.string.instance.toLowerCase;
-    base.string.toString = base.string.instance.toString;
-    base.string.toUpperCase = base.string.instance.toUpperCase;
-    base.string.trim = base.string.instance.trim;
-    base.string.trimLeft = base.string.instance.trimLeft;
-    base.string.trimRight = base.string.instance.trimRight;
-    base.string.valueOf = base.string.instance.valueOf;
+    base.string.Ctr = String;
+    base.string.proto = String.prototype;
+    base.string.fromCharCode = String.fromCharCode;
+    base.string.fromCodePoint = String.fromCodePoint;
+    base.string.anchor = String.prototype.anchor;
+    base.string.charAt = String.prototype.charAt;
+    base.string.charCodeAt = String.prototype.charCodeAt;
+    base.string.codePointAt = String.prototype.codePointAt;
+    base.string.concat = String.prototype.concat;
+    base.string.contains = String.prototype.contains;
+    base.string.endsWith = String.prototype.endsWith;
+    base.string.indexOf = String.prototype.indexOf;
+    base.string.lastIndexOf = String.prototype.lastIndexOf;
+    base.string.link = String.prototype.link;
+    base.string.localeCompare = String.prototype.localeCompare;
+    base.string.match = String.prototype.match;
+    base.string.normalize = String.prototype.normalize;
+    base.string.repeat = String.prototype.repeat;
+    base.string.replace = String.prototype.replace;
+    base.string.search = String.prototype.search;
+    base.string.slice = String.prototype.slice;
+    base.string.split = String.prototype.split;
+    base.string.startsWith = String.prototype.startsWith;
+    base.string.substr = String.prototype.substr;
+    base.string.substring = String.prototype.substring;
+    base.string.toLocaleLowerCase = String.prototype.toLocaleLowerCase;
+    base.string.toLocaleUpperCase = String.prototype.toLocaleUpperCase;
+    base.string.toLowerCase = String.prototype.toLowerCase;
+    base.string.toString = String.prototype.toString;
+    base.string.toUpperCase = String.prototype.toUpperCase;
+    base.string.trim = String.prototype.trim;
+    base.string.trimLeft = String.prototype.trimLeft;
+    base.string.trimRight = String.prototype.trimRight;
+    base.string.valueOf = String.prototype.valueOf;
     base.string.whiteSpaces = [
         0x0009, // Tab
         0x000a, // Line Feed
@@ -434,27 +441,26 @@
      * @namespace {Object} base.number
      */
     base.number = {};
-    base.number.instance = 0;
-    base.number.Ctr = base.number.instance.constructor;
-    base.number.proto = base.number.Ctr.prototype;
-    base.number.EPSILON = base.number.Ctr.EPSILON;
-    base.number.MAX_VALUE = base.number.Ctr.MAX_VALUE;
-    base.number.MIN_VALUE = base.number.Ctr.MIN_VALUE;
-    base.number.NEGATIVE_INFINITY = base.number.Ctr.NEGATIVE_INFINITY;
-    base.number.NaN = base.number.Ctr.NaN;
-    base.number.POSITIVE_INFINITY = base.number.Ctr.POSITIVE_INFINITY;
-    base.number.isFinite = base.number.Ctr.isFinite;
-    base.number.isInteger = base.number.Ctr.isInteger;
-    base.number.isNaN = base.number.Ctr.isNaN;
-    base.number.parseFloat = base.number.Ctr.parseFloat;
-    base.number.parseInt = base.number.Ctr.parseInt;
-    base.number.toInteger = base.number.Ctr.toInteger;
-    base.number.toExponential = base.number.instance.toExponential;
-    base.number.toFixed = base.number.instance.toFixed;
-    base.number.toLocaleString = base.number.instance.toLocaleString;
-    base.number.toPrecision = base.number.instance.toPrecision;
-    base.number.toString = base.number.instance.toString;
-    base.number.valueOf = base.number.instance.valueOf;
+    base.number.Ctr = Number;
+    base.number.proto = Number.prototype;
+    base.number.EPSILON = Number.EPSILON;
+    base.number.MAX_VALUE = Number.MAX_VALUE;
+    base.number.MIN_VALUE = Number.MIN_VALUE;
+    base.number.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
+    base.number.NaN = Number.NaN;
+    base.number.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
+    base.number.isFinite = Number.isFinite;
+    base.number.isInteger = Number.isInteger;
+    base.number.isNaN = Number.isNaN;
+    base.number.parseFloat = Number.parseFloat;
+    base.number.parseInt = Number.parseInt;
+    base.number.toInteger = Number.toInteger;
+    base.number.toExponential = Number.prototype.toExponential;
+    base.number.toFixed = Number.prototype.toFixed;
+    base.number.toLocaleString = Number.prototype.toLocaleString;
+    base.number.toPrecision = Number.prototype.toPrecision;
+    base.number.toString = Number.prototype.toString;
+    base.number.valueOf = Number.prototype.valueOf;
 
     /**
      * Type consisting of the {@link http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2 primitive}
@@ -468,11 +474,10 @@
      * @namespace {Object} base.Boolean
      */
     base.Boolean = {};
-    base.Boolean.instance = true;
-    base.Boolean.Ctr = base.Boolean.instance.constructor;
-    base.Boolean.proto = base.Boolean.Ctr.prototype;
-    base.Boolean.toString = base.Boolean.instance.toString;
-    base.Boolean.valueOf = base.Boolean.instance.valueOf;
+    base.Boolean.Ctr = Boolean;
+    base.Boolean.proto = Boolean.prototype;
+    base.Boolean.toString = Boolean.prototype.toString;
+    base.Boolean.valueOf = Boolean.prototype.valueOf;
 
     /**
      * In JavaScript every function is actually a Function object.
@@ -485,44 +490,16 @@
      * @namespace {Object} base.Function
      */
     base.Function = {};
-    /**
-     * @private
-     * @memberof base.Function
-     * @name instance
-     * @function
-     * @returns {undefined}
-     */
-    base.Function.instance = function () {
-        return;
-    };
-
-    base.Function.Ctr = base.Function.instance.constructor;
-    base.Function.proto = base.Function.Ctr.prototype;
-    base.Function.apply = base.Function.instance.apply;
-    base.Function.bind = base.Function.instance.bind;
-    base.Function.call = base.Function.instance.call;
-    base.Function.toString = base.Function.instance.toString;
-
-    /*jslint maxlen: 131 */
-    /**
-     * Type whose sole value is the undefined value
-     * @typedef {undefined} undefined
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined
-     */
-    /*jslint maxlen: 120 */
-
-    /**
-     * @private
-     * @memberof base
-     * @name Undefiend
-     * @type {undefined}
-     * @const
-     */
-    base.Undefined = base.Function.instance();
+    base.Function.Ctr = Function;
+    base.Function.proto = Function.prototype;
+    base.Function.apply = Function.prototype.apply;
+    base.Function.bind = Function.prototype.bind;
+    base.Function.call = Function.prototype.call;
+    base.Function.toString = Function.prototype.toString;
 
     /**
      * A regular expression object for matching text with a pattern.
-     * @typedef {!RegExp} RegExp
+     * @typedef {RegExp} RegExp
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp
      */
 
@@ -532,11 +509,11 @@
      */
     base.regExp = {};
     base.regExp.instance = new RegExp();
-    base.regExp.Ctr = base.regExp.instance.constructor;
-    base.regExp.proto = base.regExp.Ctr.prototype;
-    base.regExp.exec = base.regExp.instance.exec;
-    base.regExp.test = base.regExp.instance.test;
-    base.regExp.toString = base.regExp.instance.toString;
+    base.regExp.Ctr = RegExp;
+    base.regExp.proto = RegExp.prototype;
+    base.regExp.exec = RegExp.prototype.exec;
+    base.regExp.test = RegExp.prototype.test;
+    base.regExp.toString = RegExp.prototype.toString;
     base.regExp.splitNewLine = new base.regExp.Ctr('\\r\\n|\\n');
     base.regExp.plusMinus = new base.regExp.Ctr('^[+\\-]?');
     base.regExp.notDigits = new base.regExp.Ctr('^\\d+$');
@@ -560,10 +537,10 @@
      */
     base.date = {};
     base.date.instance = new Date();
-    base.date.Ctr = base.date.instance.constructor;
-    base.date.proto = base.date.Ctr.prototype;
-    base.date.now = base.date.Ctr.now;
-    base.date.getTime = base.date.instance.getTime;
+    base.date.Ctr = Date;
+    base.date.proto = Date.prototype;
+    base.date.now = Date.now;
+    base.date.getTime = Date.prototype.getTime;
 
     /**
      * Instances of Error objects are thrown when runtime errors occur.
@@ -577,8 +554,8 @@
      */
     base.error = {};
     base.error.instance = new Error();
-    base.error.Ctr = base.error.instance.constructor;
-    base.error.proto = base.error.Ctr.prototype;
+    base.error.Ctr = Error;
+    base.error.proto = Error.prototype;
 
     /**
      * The TypeError object represents an error when a value is not of the expected type.
@@ -592,8 +569,8 @@
      */
     base.typeError = {};
     base.typeError.instance = new TypeError();
-    base.typeError.Ctr = base.typeError.instance.constructor;
-    base.typeError.proto = base.typeError.Ctr.prototype;
+    base.typeError.Ctr = TypeError;
+    base.typeError.proto = TypeError.prototype;
 
     /**
      * The SyntaxError object represents an error when trying to interpret syntactically invalid code.
@@ -607,8 +584,8 @@
      */
     base.syntaxError = {};
     base.syntaxError.instance = new SyntaxError();
-    base.syntaxError.Ctr = base.syntaxError.instance.constructor;
-    base.syntaxError.proto = base.syntaxError.Ctr.prototype;
+    base.syntaxError.Ctr = SyntaxError;
+    base.syntaxError.proto = SyntaxError.prototype;
 
     /**
      * The RangeError object indicates an error when a value is not in the set or range of allowed values.
@@ -622,8 +599,8 @@
      */
     base.rangeError = {};
     base.rangeError.instance = new RangeError();
-    base.rangeError.Ctr = base.rangeError.instance.constructor;
-    base.rangeError.proto = base.rangeError.Ctr.prototype;
+    base.rangeError.Ctr = RangeError;
+    base.rangeError.proto = RangeError.prototype;
 
     /**
      * The EvalError object indicates an error regarding the global eval() function.
@@ -637,8 +614,8 @@
      */
     base.evalError = {};
     base.evalError.instance = new EvalError();
-    base.evalError.Ctr = base.evalError.instance.constructor;
-    base.evalError.proto = base.evalError.Ctr.prototype;
+    base.evalError.Ctr = EvalError;
+    base.evalError.proto = EvalError.prototype;
 
     /**
      * The ReferenceError object represents an error when a non-existent variable is referenced.
@@ -652,8 +629,8 @@
      */
     base.referenceError = {};
     base.referenceError.instance = new ReferenceError();
-    base.referenceError.Ctr = base.referenceError.instance.constructor;
-    base.referenceError.proto = base.referenceError.Ctr.prototype;
+    base.referenceError.Ctr = ReferenceError;
+    base.referenceError.proto = ReferenceError.prototype;
 
     /**
      * The URIError object represents an error when a global URI handling function was used in a wrong way.
@@ -667,8 +644,8 @@
      */
     base.uriError = {};
     base.uriError.instance = new URIError();
-    base.uriError.Ctr = base.uriError.instance.constructor;
-    base.uriError.proto = base.uriError.Ctr.prototype;
+    base.uriError.Ctr = URIError;
+    base.uriError.proto = URIError.prototype;
 
     /**
      * @private
@@ -941,7 +918,6 @@
      * @memberof utilx.Number
      * @name POSITIVE_ZERO
      * @type {number}
-     * @const
      */
     $.Number.POSITIVE_ZERO = +0;
 
@@ -950,7 +926,6 @@
      * @memberof utilx.Number
      * @name NEGATIVE_ZERO
      * @type {number}
-     * @const
      */
     $.Number.NEGATIVE_ZERO = -0;
 
@@ -959,7 +934,6 @@
      * @memberof utilx.Number
      * @name WORD8
      * @type {number}
-     * @const
      */
     $.Number.WORD8 = 128;
 
@@ -968,7 +942,6 @@
      * @memberof utilx.Number
      * @name UWORD8
      * @type {number}
-     * @const
      */
     $.Number.UWORD8 = 256;
 
@@ -977,7 +950,6 @@
      * @memberof utilx.Number
      * @name WORD16
      * @type {number}
-     * @const
      */
     $.Number.WORD16 = 32768;
 
@@ -986,7 +958,6 @@
      * @memberof utilx.Number
      * @name UWORD16
      * @type {number}
-     * @const
      */
     $.Number.UWORD16 = 65536;
 
@@ -995,7 +966,6 @@
      * @memberof utilx.Number
      * @name WORD32
      * @type {number}
-     * @const
      */
     $.Number.WORD32 = 2147483648;
 
@@ -1004,7 +974,6 @@
      * @memberof utilx.Number
      * @name MAX_UINT32
      * @type {number}
-     * @const
      */
     $.Number.UWORD32 = 4294967296;
 
@@ -1013,7 +982,6 @@
      * @memberof utilx.Number
      * @name MAX_UINT32
      * @type {number}
-     * @const
      */
     $.Number.MAX_UINT32 = 4294967295;
 
@@ -1022,7 +990,6 @@
      * @memberof utilx.Number
      * @name MAX_INT32
      * @type {number}
-     * @const
      */
     $.Number.MAX_INT32 = 2147483647;
 
@@ -1031,7 +998,6 @@
      * @memberof utilx.Number
      * @name MIN_INT32
      * @type {number}
-     * @const
      */
     $.Number.MIN_INT32 = -2147483648;
 
@@ -1040,7 +1006,6 @@
      * @memberof utilx.Number
      * @name MAX_UINT16
      * @type {number}
-     * @const
      */
     $.Number.MAX_UINT16 = 65535;
 
@@ -1049,7 +1014,6 @@
      * @memberof utilx.Number
      * @name MAX_INT16
      * @type {number}
-     * @const
      */
     $.Number.MAX_INT16 = 32767;
 
@@ -1058,7 +1022,6 @@
      * @memberof utilx.Number
      * @name MIN_INT16
      * @type {number}
-     * @const
      */
     $.Number.MIN_INT16 = -32768;
 
@@ -1067,7 +1030,6 @@
      * @memberof utilx.Number
      * @name MAX_UINT8
      * @type {number}
-     * @const
      */
     $.Number.MAX_UINT8 = 255;
 
@@ -1076,7 +1038,6 @@
      * @memberof utilx.Number
      * @name MAX_INT8
      * @type {number}
-     * @const
      */
     $.Number.MAX_INT8 = 127;
 
@@ -1085,7 +1046,6 @@
      * @memberof utilx.Number
      * @name MIN_INT8
      * @type {number}
-     * @const
      */
     $.Number.MIN_INT8 = -128;
 
@@ -1094,7 +1054,6 @@
      * @memberof utilx.Number
      * @name MAX_INTEGER
      * @type {number}
-     * @const
      */
     $.Number.MAX_INTEGER = 9007199254740991;
 
@@ -1103,7 +1062,6 @@
      * @memberof utilx.Number
      * @name MIN_INTEGER
      * @type {number}
-     * @const
      */
     $.Number.MIN_INTEGER = -9007199254740991;
 
@@ -1112,7 +1070,6 @@
      * @memberof utilx.Number
      * @name UNSAFE_INTEGER
      * @type {number}
-     * @const
      */
     $.Number.UNSAFE_INTEGER = 9007199254740992;
 
@@ -1121,7 +1078,6 @@
      * @memberof utilx.Number
      * @name POSITIVE_INFINITY
      * @type {number}
-     * @const
      */
     $.Number.POSITIVE_INFINITY = 1 / $.Number.POSITIVE_ZERO;
 
@@ -1130,7 +1086,6 @@
      * @memberof utilx.Number
      * @name NEGATIVE_INFINITY
      * @type {number}
-     * @const
      */
     $.Number.NEGATIVE_INFINITY = 1 / $.Number.NEGATIVE_ZERO;
 
@@ -1139,7 +1094,6 @@
      * @memberof utilx.Number
      * @name MAX_VALUE
      * @type {number}
-     * @const
      */
     $.Number.MAX_VALUE = 1.7976931348623157e+308;
 
@@ -1148,7 +1102,6 @@
      * @memberof utilx.Number
      * @name MIN_VALUE
      * @type {number}
-     * @const
      */
     $.Number.MIN_VALUE = 5e-324;
 
@@ -1157,7 +1110,6 @@
      * @memberof utilx.Number
      * @name NaN
      * @type {number}
-     * @const
      */
     $.Number.NaN = $.Number.POSITIVE_ZERO / $.Number.POSITIVE_ZERO;
 
@@ -1166,7 +1118,6 @@
      * @memberof utilx.Number
      * @name EPSILON
      * @type {number}
-     * @const
      */
     $.Number.EPSILON = 2.220446049250313e-16;
 
@@ -1178,7 +1129,9 @@
      * @function
      * @returns {undefined}
      */
-    $.Function.noop = base.Function.instance;
+    $.Function.noop = function () {
+        return;
+    };
 
     /**
      * Returns an arguments object of the arguments supplied.
@@ -1775,7 +1728,7 @@
      * @name CheckObjectCoercible
      * @function
      * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@linkundefined}.
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
      * @returns {*}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
      */
@@ -1793,7 +1746,7 @@
      * @name ToObject
      * @function
      * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@linkundefined}.
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
@@ -1918,20 +1871,20 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
      */
     try {
-        if (toClassStr() === base.classString.Undefined &amp;&amp;
-                toClassStr(null) === base.classString.Null &amp;&amp;
-                toClassStr(base.regExp.proto) === base.classString.regexp &amp;&amp;
-                toClassStr(base.string.proto) === base.classString.string &amp;&amp;
-                toClassStr(base.error.proto) === base.classString.error &amp;&amp;
-                toClassStr($.Function.returnArgs()) === base.classString.arguments) {
+        if (testShims || toClassStr() !== base.classString.Undefined ||
+                toClassStr(null) !== base.classString.Null ||
+                toClassStr(base.regExp.proto) !== base.classString.regexp ||
+                toClassStr(base.string.proto) !== base.classString.string ||
+                toClassStr(base.error.proto) !== base.classString.error ||
+                toClassStr($.Function.returnArgs()) !== base.classString.arguments) {
 
-            $.Object.ToClassString = function (inputArg) {
-                return toClassStr(inputArg);
-            };
+            throw new base.error.Ctr();
         }
-    } catch (ignore) {}
 
-    if (strictEqual(typeof $.Object.ToClassString, base.str.Undefined)) {
+        $.Object.ToClassString = function (inputArg) {
+            return toClassStr(inputArg);
+        };
+    } catch (eClass) {
         $.Object.ToClassString = function (inputArg) {
             var val;
 
@@ -2182,7 +2135,7 @@
      * @private
      * @function throwIfNotAFunction
      * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a function.
+     * @throws {TypeError} if inputArg is not a {@link Function function}.
      * @returns {Function}
      */
     function throwIfNotAFunction(inputArg) {
@@ -2211,7 +2164,7 @@
      * @function throwIfIsNotTypeObjectOrIsNotFunction
      * @param {*} inputArg
      * @throws {TypeError} if inputArg is not an object or a function.
-     * @returns {(!Object|Function)}
+     * @returns {(Object|Function)}
      */
     function throwIfIsNotTypeObjectOrIsNotFunction(inputArg) {
         if (!isTypeObjectOrIsFunction(inputArg)) {
@@ -2230,7 +2183,7 @@
      * @name bind
      * @function
      * @param {bindTargetFunction} fn
-     * @throws {TypeError} if fn is not a function.
+     * @throws {TypeError} if fn is not a {@link Function function}.
      * @param {*} thisArg the this argument to be bound to the new function
      * @param {...*} [varArgs] any arguments to be bound to the new function.
      * @returns {boundFunction}.
@@ -2311,7 +2264,7 @@
      * @name ToMethod
      * @function
      * @param {prototypalFunction} protoFn
-     * @throws {TypeError} if protoFn is not a function.
+     * @throws {TypeError} if protoFn is not a {@link Function function}.
      * @returns {boundPrototypalFunction}
      */
     $.Function.ToMethod = function (protoFn) {
@@ -2344,7 +2297,7 @@
      * @name join
      * @function
      * @param {ArrayLike} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@linkundefined}.
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
      * @param {string} [separator]
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
@@ -2476,7 +2429,7 @@
     if (!testShims &amp;&amp; $.Function.isNativeFunction(base.number.isNaN)) {
         $.Number.isNaN = base.number.isNaN;
     } else {
-        $.Number.isNaN = $.Function.bind($.Object.is, base.Undefined, $.Number.NaN);
+        $.Number.isNaN = $.Function.bind($.Object.is, Undefined, $.Number.NaN);
     }
 
     /**
@@ -3002,7 +2955,7 @@
      * @private
      * @function onlyCoercibleToString
      * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@linkundefined}.
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
      * @returns {string}
      */
     function onlyCoercibleToString(inputArg) {
@@ -3119,7 +3072,7 @@
                     // Skip index 0 and the last 2
                     for (index = 1; index &lt; len; index += 1) {
                         if (strictEqual(typeof args[index], base.str.Undefined)) {
-                            $.Array.assign(match, index, base.Undefined);
+                            $.Array.assign(match, index, Undefined);
                         }
                     }
                 });
@@ -3284,7 +3237,7 @@
                     if ((match.index + match[0].length) > lastLastIndex) {
                         push(output, strSlice(str, lastLastIndex, match.index));
                         if (match.length > 1 &amp;&amp; match.index &lt; str.length) {
-                            //$.Array.push.apply(base.Undefined, concat([output], slice(match, 1)));
+                            //$.Array.push.apply(Undefined, concat([output], slice(match, 1)));
                             output = concat(output, slice(match, 1));
                         }
 
@@ -3368,7 +3321,7 @@
 
                 // Should pass `undefined` as context; see
                 // &lt;https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                return replacement.apply(base.Undefined, args);
+                return replacement.apply(Undefined, args);
             });
         } else {
             // Ensure that the last value of `args` will be a string when given nonstring `this`,
@@ -3708,7 +3661,7 @@
                 position = $.Number.toInteger(position);
             }
 
-            return base.string.instance.indexOf.call(thisStr, searchStr, $.Number.clamp(position, 0, thisLen)) !== -1;
+            return base.string.indexOf.call(thisStr, searchStr, $.Number.clamp(position, 0, thisLen)) !== -1;
         };
 
         $.String.contains = $.Function.ToMethod($.String.prototype.contains);
@@ -3920,7 +3873,7 @@
 
     /**
      * Returns true if argument is an object that has own property of length which is a number of uint32
-     * but is not a function.
+     * but is not a {@link Function function}.
      * @private
      * @function hasValidLength
      * @param {*} inputArg
@@ -4076,26 +4029,37 @@
     $.Array.assign = $.Function.ToMethod($.Array.prototype.assign);
 
     /**
-     * This method creates a new array of unique occurences (===) ordered as per the original array.
-     * If deep is set to true then uses deepStrictEqual instead of ===.
+     * Compares operand a against operand b and returns true if they are deemed to be the same value.
+     * Otherwise returns false.
+     * @typedef {Function} equalityFn
+     * @param {*} a
+     * @param {*} b
+     * @returns {boolean}
+     */
+
+    /**
+     * This method creates a new array of unique occurences using
+     * the {@link utilx.Object.strictEqual strictEqual} comparison.
+     * The new array is ordered as per the original array.
+     * A function can be provided as an alternative comparison method.
      * @memberof utilx.Array
      * @name unique
      * @function
      * @param {ArrayLike} array
-     * @param {boolean} deep
+     * @throws {TypeError} if array is {@link null} or {@link undefined}.
+     * @param {equalityFn} [fn]
+     * @throws {TypeError} if equalityFn is not a {@link Function function}.
      * @returns {Array}
      */
-    $.Array.prototype.unique = function (deep) {
+    $.Array.prototype.unique = function (fn) {
         return $.Array.filter(this, function (element, index) {
-            var dontHave = $.Array.indexOf(this, element) === index;
-
-            if (dontHave &amp;&amp; deep) {
-                dontHave = !$.Array.some(this, function (ele, idx) {
-                    return idx &lt; index &amp;&amp; $.Object.deepStrictEqual(element, ele);
-                });
+            if (strictEqual(typeof fn, base.str.Undefined)) {
+                fn = strictEqual;
             }
 
-            return dontHave;
+            return !$.Array.some(this, function (ele, idx) {
+                return idx &lt; index &amp;&amp; fn(this, ele);
+            }, element);
         }, this);
     };
 
@@ -4290,7 +4254,7 @@
      * @name forEach
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {forEachCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4347,7 +4311,7 @@
      * @name some
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {someCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4410,7 +4374,7 @@
      * @name find
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {findCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4462,7 +4426,7 @@
      * @name findIndex
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {findIndexCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4598,7 +4562,7 @@
      * @name every
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {everyCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4661,7 +4625,7 @@
      * @name map
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {mapCallback} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4712,7 +4676,7 @@
      * @returns {Arguments}
      */
     function someArgs() {
-        return $.Function.returnArgs(base.Undefined, null, 1, 'a', 2, 'b', null, base.Undefined);
+        return $.Function.returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
     }
 
     /**
@@ -4784,7 +4748,7 @@
     try {
         if (testShims || !$.Function.isNativeFunction(base.array.slice) ||
                 slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
-                slice(someArgs(), base.Undefined, base.Undefined).toString() !== ',,1,a,2,b,,' ||
+                slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), -1).length !== 1 ||
                 slice(someArgs(), 0).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), 3).toString() !== 'a,2,b,,' ||
@@ -4814,7 +4778,7 @@
      * @name filter
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Function} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [thisArg]
@@ -4872,7 +4836,7 @@
      * @name reduce
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Function} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [initialValue]
@@ -4928,7 +4892,7 @@
 
             while (index &lt; length) {
                 if ($.Object.has(object, index)) {
-                    accumulator = fn.call(base.Undefined, accumulator, object[index], index, object);
+                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
                 index += 1;
@@ -4947,7 +4911,7 @@
      * @name reduceRight
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Function} fn
      * @throws {TypeError} if fn is not a function
      * @param {*} [initialValue]
@@ -5003,7 +4967,7 @@
 
             while (index >= 0) {
                 if ($.Object.has(object, index)) {
-                    accumulator = fn.call(base.Undefined, accumulator, object[index], index, object);
+                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
                 index -= 1;
@@ -5143,7 +5107,7 @@
      * @name stableSort
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Function} [compareFN]
      * @throws {TypeError} if compareFN is defined and is not a function
      * @returns {ArrayLike} same type as supplied array argument.
@@ -5182,7 +5146,7 @@
      * @name sort
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Function} [compareFN]
      * @throws {TypeError} if compareFN is defined and is not a function
      * @returns {ArrayLike} same type as supplied array argument.
@@ -5500,7 +5464,7 @@
      * @name indexOf
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Object} searchElement
      * @param {number} [fromIndex]
      * @returns {number}
@@ -5553,7 +5517,7 @@
      * @name lastIndexOf
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {Object} searchElement
      * @param {number} [fromIndex]
      * @returns {number}
@@ -5602,7 +5566,7 @@
      * @name fill
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {*} value
      * @param {number} [start]
      * @param {number} [end]
@@ -5661,7 +5625,7 @@
      * @name copyWithin
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {number} target
      * @param {number} [start]
      * @param {number} [end]
@@ -6254,7 +6218,7 @@
      * @name assign
      * @function
      * @param {Object} target
-     * @param {...!Object} source
+     * @param {...Object} source
      * @returns {Object}
      */
     if (!testShims &amp;&amp; $.Function.isNativeFunction(base.object.assign)) {
@@ -6884,14 +6848,14 @@
         };
 
         testObject2 = [10, 20, 30];
-        testObject2[4] = base.Undefined;
+        testObject2[4] = Undefined;
         if (testShims || !$.Function.isNativeFunction(base.object.getOwnPropertyDescriptor) ||
                 base.object.getOwnPropertyDescriptor(testObject1, base.str.sentinel).value !== null ||
                 base.object.getOwnPropertyDescriptor(testObject2, 3).value !== 30 ||
                 base.object.getOwnPropertyDescriptor(testObject2, '3').value !== 30 ||
                 !$.Object.hasOwn(base.object.getOwnPropertyDescriptor(testObject2, 4), base.str.value) ||
-                base.object.getOwnPropertyDescriptor(testObject2, 4).value !== base.Undefined ||
-                base.object.getOwnPropertyDescriptor(testObject2, 5) !== base.Undefined ||
+                base.object.getOwnPropertyDescriptor(testObject2, 4).value !== Undefined ||
+                base.object.getOwnPropertyDescriptor(testObject2, 5) !== Undefined ||
                 $.Object.hasOwn(base.object.getOwnPropertyDescriptor(testObject2, 5), base.str.value)) {
 
             throw new base.error.Ctr();
@@ -7026,7 +6990,7 @@
      * @name shuffle
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {NumberLike} [rounds]
      * @returns {ArrayLike} same type as supplied array argument.
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
@@ -7088,13 +7052,13 @@
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
-                base.JSON.stringify($.Function.noop) === base.Undefined &amp;&amp;
+                base.JSON.stringify($.Function.noop) === Undefined &amp;&amp;
                 // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
                 // 3.1b3 pass this test.
-                base.JSON.stringify(base.Undefined) === base.Undefined &amp;&amp;
+                base.JSON.stringify(Undefined) === Undefined &amp;&amp;
                 // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
                 // respectively, if the stringifiedValue is omitted entirely.
-                base.JSON.stringify() === base.Undefined &amp;&amp;
+                base.JSON.stringify() === Undefined &amp;&amp;
                 // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
                 // string, array, object, Boolean, or `null` literal. This applies to
                 // objects with custom `toJSON` methods as well, unless they are nested
@@ -7104,7 +7068,7 @@
                 base.JSON.stringify([stringifiedValue]) === '[1]' &amp;&amp;
                 // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
                 // `"[null]"`.
-                base.JSON.stringify([base.Undefined]) === '[null]' &amp;&amp;
+                base.JSON.stringify([Undefined]) === '[null]' &amp;&amp;
                 // YUI 3.0.0b1 fails to serialize `null` literals.
                 base.JSON.stringify(null) === base.str.Null &amp;&amp;
                 // FF 3.1b1, 2 halts serialization if an array contains a function:
@@ -7112,7 +7076,7 @@
                 // of Firefox also allow trailing commas in JSON objects and arrays.
                 // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
                 // define custom `toJSON` methods.
-                base.JSON.stringify([base.Undefined, $.Function.noop, null]) === '[null,null,null]' &amp;&amp;
+                base.JSON.stringify([Undefined, $.Function.noop, null]) === '[null,null,null]' &amp;&amp;
                 // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
                 // where character escape codes are expected (e.g., `\b` => `\u0008`).
                 // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
@@ -7272,7 +7236,7 @@
                 return member;
             }
 
-            return base.Undefined;
+            return Undefined;
         };
 
         $.JSON.stringify = function (value, replacer, space) {
@@ -7426,7 +7390,7 @@
      * @name powerSet
      * @function
      * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@linkundefined}
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @returns {Array.&lt;Array>}
      * @see http://en.wikipedia.org/wiki/Power_set
      */
@@ -7639,8 +7603,7 @@
     typeof window === 'object' &amp;&amp; window,
     typeof JSON === 'object' &amp;&amp; JSON,
     typeof module === 'object' &amp;&amp; module,
-    typeof define === 'function' &amp;&amp; define,
-    undefined));
+    typeof define === 'function' &amp;&amp; define));
 </code></pre>
         </article>
     </section>
@@ -7657,7 +7620,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Mon May 26 2014 04:14:36 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Mon May 26 2014 14:08:37 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
