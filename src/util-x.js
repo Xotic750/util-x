@@ -1763,7 +1763,7 @@
      * @returns {boolean}
      */
     $.Object.isUndefined = function (inputArg) {
-        return inputArg === Undefined;
+        return typeof inputArg === 'undefined';
     };
 
     /**
@@ -1793,7 +1793,7 @@
      * @returns {boolean}
      */
     $.Object.isUndefinedOrNull = function (inputArg) {
-        return inputArg === null || inputArg === Undefined;
+        return inputArg === null || typeof inputArg === 'undefined';
     };
 
     /**
@@ -1927,8 +1927,10 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
      */
     $.Object.isPrimitive = function (inputArg) {
-        return inputArg === null || inputArg === Undefined || inputArg === true || inputArg === false ||
-                typeof inputArg === 'string' || typeof inputArg === 'number';
+        var type = typeof inputArg;
+
+        return inputArg === null || type === 'undefined' || inputArg === true || inputArg === false ||
+                type === 'string' || type === 'number';
     };
 
     /**
@@ -2180,7 +2182,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
      */
     $.Object.CheckObjectCoercible = function (inputArg) {
-        if (inputArg === null || inputArg === Undefined) {
+        if (inputArg === null || typeof inputArg === 'undefined') {
             throw new TypeError('Cannot convert "' + inputArg + '" to object');
         }
 
@@ -2213,7 +2215,7 @@
     $.String.ToString = function (inputArg) {
         var val;
 
-        if (inputArg === Undefined) {
+        if (typeof inputArg === 'undefined') {
             val = 'undefined';
         } else {
             val = base.String.Ctr(inputArg);
@@ -2355,7 +2357,7 @@
         $.Object.ToClassString = function (inputArg) {
             var val;
 
-            if (inputArg === Undefined) {
+            if (typeof inputArg === 'undefined') {
                 val = base.classString.Undefined;
             } else if (inputArg === null) {
                 val = base.classString.Null;
@@ -2419,7 +2421,7 @@
      * @returns {boolean}
      */
     if ($.Object.isTypeObject(window) && window.alert &&
-                window.alert.toString === Undefined && test(base.RegExp.beginsFunction, window.alert)) {
+                typeof window.alert.toString === 'undefined' && test(base.RegExp.beginsFunction, window.alert)) {
 
         isIENativeFunction = function (inputArg) {
             // inputArg
@@ -2440,7 +2442,7 @@
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return inputArg && inputArg.toString === Undefined && test(base.RegExp.beginsFunction, inputArg);
+            return inputArg && typeof inputArg.toString === 'undefined' && test(base.RegExp.beginsFunction, inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -2766,7 +2768,7 @@
      */
     $.Array.prototype.join = function (separator) {
         $.Object.CheckObjectCoercible(this);
-        if (separator === Undefined) {
+        if (typeof separator === 'undefined') {
             separator = ',';
         }
 
@@ -3499,7 +3501,7 @@
     }
 
     // Check for correct `exec` handling of nonparticipating capturing groups
-    correctExecNpcg = exec(new RegExp('()??'), '')[1] === Undefined;
+    correctExecNpcg = typeof exec(new RegExp('()??'), '')[1] === 'undefined';
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -3530,7 +3532,7 @@
                 replace(strSlice($.String.ToString(str), match.index), r2, function () {
                     // Skip index 0 and the last 2
                     iter(arguments, false, 1, arguments.length - 2, false, function (it, idx) {
-                        if (it === Undefined) {
+                        if (typeof it === 'undefined') {
                             $.Array.assign(this, idx, it);
                         }
                     }, match);
@@ -3669,7 +3671,7 @@
                 lastLength;
 
             // "0".split(undefined, 0) -> []
-            if (separator === Undefined && limit === 0) {
+            if (typeof separator === 'undefined' && limit === 0) {
                 output = [];
             } else if (!$.RegExp.isRegExp(separator)) {
                 // Browsers handle nonregex split correctly, so use the faster native method
@@ -3685,7 +3687,7 @@
                  * If negative number: pow(2,32) - floor(abs(limit))
                  * If other: Type-convert, then use the above rules
                  */
-                if (limit === Undefined) {
+                if (typeof limit === 'undefined') {
                     limit = $.Number.MAX_UINT32;
                 } else {
                     limit = $.Number.toUint32(limit);
@@ -3726,7 +3728,7 @@
             var val;
 
             // "0".split(undefined, 0) -> []
-            if (separator === Undefined && limit === 0) {
+            if (typeof separator === 'undefined' && limit === 0) {
                 val = [];
             } else {
                 val = base.String.split.apply(onlyCoercibleToString(this), arguments);
@@ -4078,7 +4080,7 @@
                 end,
                 start;
 
-            if (position === Undefined) {
+            if (typeof position === 'undefined') {
                 position = thisLen;
             } else {
                 position = $.Number.toInteger(position);
@@ -4113,7 +4115,7 @@
                 searchStr = $.String.ToString(searchString),
                 length = str.length;
 
-            if (position === Undefined) {
+            if (typeof position === 'undefined') {
                 position = 0;
             } else {
                 position = $.Number.toInteger(position);
@@ -4508,7 +4510,7 @@
      */
     $.Array.prototype.unique = function (fn) {
         return $.Array.filter(this, function (element, index) {
-            if (fn === Undefined) {
+            if (typeof fn === 'undefined') {
                 fn = $.Object.strictEqual;
             }
 
@@ -4530,7 +4532,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
     boxedString = $.Object.ToObject('g');
-    shouldSplitString = (boxedString[0] !== 'g' || !$.Object.has(boxedString, 0));
+    shouldSplitString = boxedString[0] !== 'g' || !$.Object.has(boxedString, 0);
     $.Object.ToObjectFixIndexedAccess = function (inputArg) {
         var object = $.Object.ToObject(inputArg);
 
@@ -4951,7 +4953,7 @@
                 array,
                 isTargetArrayOrArguments;
 
-            if (mapfn === Undefined) {
+            if (typeof mapfn === 'undefined') {
                 mapping = false;
             } else {
                 throwIfNotAFunction(mapfn);
@@ -5141,7 +5143,7 @@
             k = mMin(relativeStart, length);
         }
 
-        if (end === Undefined) {
+        if (typeof end === 'undefined') {
             relativeEnd = length;
         } else {
             relativeEnd = $.Number.toInteger(end);
@@ -5548,7 +5550,7 @@
         var object = $.Object.ToObjectFixIndexedAccess(this),
             isTargetArrayOrArguments;
 
-        if (comparefn === Undefined) {
+        if (typeof comparefn === 'undefined') {
             comparefn = defaultComparison;
         }
 
@@ -5585,7 +5587,7 @@
     if (!testShims && $.Function.isNativeFunction(sort)) {
         $.Array.prototype.sort = function (comparefn) {
             $.Object.CheckObjectCoercible(this);
-            if (comparefn === Undefined) {
+            if (typeof comparefn === 'undefined') {
                 comparefn = defaultComparison;
             }
 
@@ -5661,7 +5663,7 @@
             base.RegExp.hex = new RegExp('^0[xX]');
             $.Number.parseInt = function (str, radix) {
                 str = $.String.trim(str);
-                if (radix === Undefined || !$.Number.toInt32(radix)) {
+                if (typeof radix === 'undefined' || !$.Number.toInt32(radix)) {
                     radix = test(base.RegExp.hex, str) ? 16 : 10;
                 }
 
@@ -6016,7 +6018,7 @@
                 relativeStart = mMin(relativeStart, length);
             }
 
-            if (end === Undefined) {
+            if (typeof end === 'undefined') {
                 relativeEnd = length;
             } else {
                 relativeEnd = $.Number.toInteger(end);
@@ -6086,7 +6088,7 @@
                 from = mMin(relativeStart, length);
             }
 
-            if (end === Undefined) {
+            if (typeof end === 'undefined') {
                 relativeEnd = length;
             } else {
                 relativeEnd = $.Number.toInteger(end);
@@ -6451,7 +6453,7 @@
                             object[property] = descriptor.value;
                         }
 
-                        if (prototype === Undefined) {
+                        if (typeof prototype === 'undefined') {
                             delete object[base.str.proto];
                         } else {
                             object[base.str.proto] = prototype;
@@ -7033,7 +7035,7 @@
 
         if (typeof value === 'string') {
             result = value;
-        } else if (value === Undefined || $.Function.isFunction(value) || $.RegExp.isRegExp(value) ||
+        } else if (typeof value === 'undefined' || $.Function.isFunction(value) || $.RegExp.isRegExp(value) ||
                     (typeof value === 'number' && !$.Number.isFinite(value))) {
 
             result = $.String.ToString(value);
@@ -7236,7 +7238,7 @@
             throw new base.SyntaxError.Ctr('"name" was an empty string');
         }
 
-        if (maxMessageLength === Undefined &&
+        if (typeof maxMessageLength === 'undefined' &&
                 (typeof ErrorConstructor === 'number' || typeof ErrorConstructor === 'string')) {
 
             maxMessageLength = ErrorConstructor;
@@ -7314,7 +7316,7 @@
                     object[base.str.proto] = base.Object.proto;
                     getter = base.Object.lookupGetter.call(object, property);
                     setter = base.Object.lookupSetter.call(object, property);
-                    if (prototype === Undefined) {
+                    if (typeof prototype === 'undefined') {
                         delete object[base.str.proto];
                     } else {
                         object[base.str.proto] = prototype;
@@ -7472,13 +7474,13 @@
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
-                base.JSON.stringify($.Function.noop) === Undefined &&
+                typeof base.JSON.stringify($.Function.noop) === 'undefined' &&
                 // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
                 // 3.1b3 pass this test.
-                base.JSON.stringify(Undefined) === Undefined &&
+                typeof base.JSON.stringify(Undefined) === 'undefined' &&
                 // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
                 // respectively, if the stringifiedValue is omitted entirely.
-                base.JSON.stringify() === Undefined &&
+                typeof base.JSON.stringify() === 'undefined' &&
                 // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
                 // string, array, object, Boolean, or `null` literal. This applies to
                 // objects with custom `toJSON` methods as well, unless they are nested
@@ -7733,7 +7735,7 @@
             $.JSON.parse = base.JSON.parse;
         } else {
             $.JSON.parse = function (text, reviver) {
-                if (text === Undefined) {
+                if (typeof text === 'undefined') {
                     throw new base.SyntaxError.Ctr('JSON.parse');
                 }
 
