@@ -262,6 +262,8 @@
             var actual;
 
             utilx.Array.reduceRight('foo', function (accumulator, item, index, list) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 actual = list;
             });
 

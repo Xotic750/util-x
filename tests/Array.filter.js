@@ -23,7 +23,7 @@
         filterArray[25] = 'end';
         callback = function callback(o, i) {
             /*jslint unparam: true */
-            /*jshint unused: true */
+            /*jshint unused: false */
             return i !== 3 && i !== 5;
         };
 
@@ -151,7 +151,7 @@
 
             utilx.Array.filter('foo', function (item, index, list) {
                 /*jslint unparam: true */
-                /*jshint unused: true */
+                /*jshint unused: false */
                 actual = list;
             });
 
@@ -163,6 +163,8 @@
 
         it('should not be affected by same-index mutation', function () {
             var results = utilx.Array.filter([1, 2, 3], function (value, index, array) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 array[index] = 'a';
 
                 return true;

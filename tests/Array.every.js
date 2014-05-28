@@ -212,7 +212,7 @@
 
             utilx.Array.every('foo', function (item, index, list) {
                 /*jslint unparam: true */
-                /*jshint unused: true */
+                /*jshint unused: false */
                 actual = list;
             });
 
@@ -227,7 +227,7 @@
 
             utilx.Array.every('foo', function (item, index, list) {
                 /*jslint unparam: true */
-                /*jshint unused: true */
+                /*jshint unused: false */
                 actual = list;
             });
 

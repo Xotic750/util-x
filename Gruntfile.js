@@ -60,6 +60,7 @@
                     'strict': true,
                     'trailing': true,
                     'undef': true,
+                    'unused': 'strict',
                     'white': true,
                     'noempty': true,
                     'quotmark': 'single'

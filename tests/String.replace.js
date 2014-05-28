@@ -90,6 +90,8 @@
 
             /*jshint -W098 */
             expect(utilx.String.replace('aaa', /a(a)/, function ($0, $1) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return $1 + 'b';
             })).to.be('aba');
             /*jshint +W098 */
@@ -103,6 +105,8 @@
             // Regex search...
             /*jshint -W098 */
             expect(utilx.String.replace('aaa', /a(a)/, function ($0, $1) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return '$1';
             })).to.be('$1a');
             /*jshint +W098 */
@@ -115,18 +119,26 @@
         it('should allow using the match position within replacement functions', function () {
             /*jshint -W098 */
             expect(utilx.String.replace('xaaa', /a/, function ($0, pos) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return utilx.String.ToString(pos);
             })).to.be('x1aa');
 
             expect(utilx.String.replace('xaaa', /a/g, function ($0, pos) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return utilx.String.ToString(pos);
             })).to.be('x123');
 
             expect(utilx.String.replace('xaaa', /(a)/g, function ($0, $1, pos) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return utilx.String.ToString(pos);
             })).to.be('x123');
 
             expect(utilx.String.replace('xaaa', 'a', function ($0, pos) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return utilx.String.ToString(pos);
             })).to.be('x1aa');
             /*jshint +W098 */
@@ -135,14 +147,20 @@
         it('should allow using the source string within replacement functions', function () {
             /*jshint -W098 */
             expect(utilx.String.replace('xaaa', /a/, function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return str;
             })).to.be('xxaaaaa');
 
             expect(utilx.String.replace('xaaa', /(a)/, function ($0, $1, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return str;
             })).to.be('xxaaaaa');
 
             expect(utilx.String.replace('xaaa', 'a', function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return str;
             })).to.be('xxaaaaa');
             /*jshint +W098 */
@@ -153,16 +171,22 @@
 
             /*jshint -W098 */
             expect(utilx.String.replace('100', /0/, function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return typeof str;
             })).to.be('1string0');
 
             /*jshint -W053 */
             expect(utilx.String.replace(new String('100'), /0/, function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return typeof str;
             })).to.be('1string0');
             /*jshint +W053 */
 
             expect(utilx.String.replace(100, /0/, function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
                 return typeof str;
             })).to.be('1string0');
             /*jshint +W098 */

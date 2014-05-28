@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';

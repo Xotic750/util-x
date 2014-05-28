@@ -22,6 +22,8 @@
 
         it('should work with other constructors', function () {
             var Foo = function (length, args) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
                     this.length = length;
                 },
                 args = ['a', 'b', 'c'],
