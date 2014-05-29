@@ -1249,7 +1249,10 @@
         test = toMethod(base.RegExp.test),
         correctExecNpcg,
 
-        notStrictEqual,
+        isStrictMode = (function () {
+            return !this;
+        }()),
+
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
@@ -1662,7 +1665,7 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.5
      */
-    $.Object.notStrictEqual = notStrictEqual = function (a, b) {
+    $.Object.notStrictEqual = function (a, b) {
         return a !== b;
     };
 
@@ -2815,7 +2818,9 @@
         $.Object.is = base.Object.is;
     } else {
         $.Object.is = function (x, y) {
-            var val;
+            var val,
+                a,
+                b;
 
             if (x === y) {
                 if (x === 0) {
@@ -2824,7 +2829,9 @@
                     val = true;
                 }
             } else {
-                val = notStrictEqual(x, x) && notStrictEqual(y, y);
+                a = x;
+                b = y;
+                val = x !== a && y !== b;
             }
 
             return val;
@@ -2862,11 +2869,13 @@
             throw new base.SyntaxError.Ctr('must supply at least 2 arguments');
         }
 
+        var typeA = typeof a;
+
         return !$.Array.some(arguments, function (arg) {
             var type = typeof arg;
 
-            return this !== type;
-        }, typeof a);
+            return typeA !== type;
+        });
     };
 
     /**
@@ -2886,9 +2895,11 @@
             throw new base.SyntaxError.Ctr('must supply at least 2 arguments');
         }
 
+        var classA = $.Object.ToClassString(a);
+
         return !$.Array.some(arguments, function (arg) {
-            return this !== $.Object.ToClassString(arg);
-        }, $.Object.ToClassString(a));
+            return classA !== this(arg);
+        }, $.Object.ToClassString);
     };
 
     /**
@@ -2903,7 +2914,11 @@
     if (!testShims && $.Function.isNativeFunction(base.Number.isNaN)) {
         $.Number.isNaN = base.Number.isNaN;
     } else {
-        $.Number.isNaN = $.Function.bind($.Object.is, Undefined, $.Number.NaN);
+        $.Number.isNaN = function (inputArg) {
+            var myself = inputArg;
+
+            return inputArg !== myself;
+        };
     }
 
     /**
@@ -4313,9 +4328,8 @@
      */
     if (hasDontEnumBug) {
         $.Object.prototype.hasOwn = function (property) {
-            return hasOwn(this, property) ||
-                ($.Array.contains(base.props.shadowed, property) && $.Object.has(this, property) &&
-                    !$.Object.is(this[property], $.Object.getPrototypeOf(this)[property]));
+            return hasOwn(this, property) || ($.Array.contains(base.props.shadowed, property) &&
+                $.Object.has(this, property) && !$.Object.is(this[property], $.Object.getPrototypeOf(this)[property]));
         };
 
         $.Object.hasOwn = $.Function.ToMethod($.Object.prototype.hasOwn);
@@ -4358,7 +4372,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
     function hasValidLength(inputArg) {
-        return $.Object.isTypeObject(inputArg) && $.Object.hasOwn(inputArg, 'length') &&
+        return $.Object.isTypeObject(inputArg) && hasOwn(inputArg, 'length') &&
                     typeof inputArg.length === 'number' && $.Number.isUint32(inputArg.length);
     }
 
@@ -4529,17 +4543,17 @@
      * @returns {Array}
      */
     $.Array.prototype.unique = function (fn) {
-        return $.Array.filter(this, function (element, index) {
+        return $.Array.filter(this, function (element, index, obj) {
             var type = typeof fn;
 
             if (type === 'undefined') {
                 fn = $.Object.strictEqual;
             }
 
-            return !$.Array.some(this, function (ele, idx) {
-                return idx < index && fn(this, ele);
-            }, element);
-        }, this);
+            return !this(obj, function (ele, idx) {
+                return idx < index && this(element, ele);
+            }, fn);
+        }, $.Array.some);
     };
 
     $.Array.unique = $.Function.ToMethod($.Array.prototype.unique);
@@ -4641,7 +4655,7 @@
             actualDeleteCount = mMin(mMax(actualDeleteCount, 0), length - actualStart);
             while (k < actualDeleteCount) {
                 from = actualStart + k;
-                if ($.Object.hasOwn(object, from)) {
+                if (hasOwn(object, from)) {
                     push(removed, object[from]);
                 }
 
@@ -4654,7 +4668,7 @@
                 while (k < loopCache) {
                     from = k + actualDeleteCount;
                     to = k + itemCount;
-                    if ($.Object.hasOwn(object, from)) {
+                    if (hasOwn(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -4674,7 +4688,7 @@
                 while (k > actualStart) {
                     from = k + actualDeleteCount - 1;
                     to = k + itemCount - 1;
-                    if ($.Object.hasOwn(object, from)) {
+                    if (hasOwn(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -4709,9 +4723,11 @@
     function checkV8StrictBug(fn) {
         var hasV8StrictBug = false;
 
-        fn.call([1], function () {
-            hasV8StrictBug = $.String.isStringObject(this);
-        }, 'foo');
+        if (isStrictMode) {
+            fn.call([1], function () {
+                hasV8StrictBug = $.String.isStringObject(this);
+            }, 'foo');
+        }
 
         return hasV8StrictBug;
     }
@@ -5102,8 +5118,7 @@
         });
 
         if (!testShims && $.Function.isNativeFunction(base.Array.map) && $.Object.isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) &&
-                !checkV8StrictBug(base.Array.map)) {
+                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.map)) {
 
             $.Array.map = $.Function.ToMethod(base.Array.map);
         } else {
@@ -5252,8 +5267,7 @@
         });
 
         if (!testShims && $.Function.isNativeFunction(base.Array.filter) && $.Object.isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) &&
-                !checkV8StrictBug(base.Array.filter)) {
+                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.filter)) {
 
             $.Array.filter = $.Function.ToMethod(base.Array.filter);
         } else {
@@ -5581,11 +5595,11 @@
             isTargetArrayOrArguments = isArrayOrArguments(object);
             $.Array.forEach(mergeSort(object, comparefn), function (value, index) {
                 if (isTargetArrayOrArguments) {
-                    $.Array.assign(object, index, value);
+                    this(object, index, value);
                 } else {
                     object[index] = value;
                 }
-            });
+            }, $.Array.assign);
         }
 
         return object;
@@ -6142,9 +6156,9 @@
             iter(object, false, count, 1, true, function (unused1, unused2, obj) {
                 /*jslint unparam: true */
                 /*jshint unused: false */
-                if (this(obj, from)) {
+                if (hasOwn(obj, from)) {
                     if (isTargetArrayOrArguments) {
-                        $.Array.assign(obj, to, obj[from]);
+                        this(obj, to, obj[from]);
                     } else {
                         obj[to] = obj[from];
                     }
@@ -6154,7 +6168,7 @@
 
                 from += direction;
                 to += direction;
-            }, $.Object.hasOwn);
+            }, $.Array.assign);
 
             return object;
         };
@@ -6219,8 +6233,8 @@
 
                     if (isErrorTypePrototype(object)) {
                         keys = $.Array.filter(keys, function (key) {
-                            return !$.Array.contains(base.props.unwantedError, key);
-                        });
+                            return !this(base.props.unwantedError, key);
+                        }, $.Array.contains);
                     }
 
                     return keys;
@@ -6259,10 +6273,10 @@
                 isProto = ($.Function.isFunction(ctor) && ctor.prototype === object);
                 nonEnum = nonEnumProps[$.Object.ToClassString(object)];
                 $.Array.forEach(base.props.shadowed, function (property) {
-                    if (!(isProto && nonEnum[property]) && $.Object.hasOwn(object, property)) {
+                    if (!(isProto && nonEnum[property]) && this(object, property)) {
                         push(props, property);
                     }
-                });
+                }, $.Object.hasOwn);
             }
 
             return props;
@@ -6394,18 +6408,14 @@
 
         if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
             $.Object.defineProperty = function (object, property, descriptor) {
-                var isA = isArrayOrArguments(object) && $.Object.isNumeric(property) &&
-                            $.Number.isUint32(+property),
-                    isB = (definePropertyPatch1 || definePropertyPatch2) &&
-                            $.Object.hasOwn(descriptor, 'value');
+                var isA = isArrayOrArguments(object) && $.Object.isNumeric(property) && $.Number.isUint32(+property),
+                    isB = (definePropertyPatch1 || definePropertyPatch2) && hasOwn(descriptor, 'value');
 
                 if (definePropertyPatch1 && isA) {
                     property = +property;
                 }
 
-                if (definePropertyPatch2 && isA &&
-                        (isB || !$.Object.hasOwn(object, property))) {
-
+                if (definePropertyPatch2 && isA && (isB || !$.Object.hasOwn(object, property))) {
                     $.Array.assign(object, property, descriptor.value);
                 }
 
@@ -6427,8 +6437,8 @@
         };
 
         $.Array.forEach($.Object.keys(testObject1), function (key) {
-            $.Object.defineProperty(testObject1, key, base.properties.notEnumerable);
-        });
+            this(testObject1, key, base.properties.notEnumerable);
+        }, $.Object.defineProperty);
 
         if (testObject1.abc !== 0 || testObject1.def !==  '' || testObject1.ghi !== true ||
                                                         testObject1.jkl !== $.Function.noop) {
@@ -6439,8 +6449,8 @@
         testObject1 = [10, true, '', $.Function.noop];
 
         $.Array.forEach($.Object.keys(testObject1), function (key) {
-            $.Object.defineProperty(testObject1, key, base.properties.notEnumerable);
-        });
+            this(testObject1, key, base.properties.notEnumerable);
+        }, $.Object.defineProperty);
 
         if (testObject1[0] !== 10 || testObject1[1] !== true || testObject1[2] !== '' ||
                                                         testObject1[3] !== $.Function.noop) {
@@ -6451,21 +6461,18 @@
         $.Object.defineProperty = function (object, property, descriptor) {
             throwIfIsNotTypeObjectOrIsNotFunction(object);
             if (!isTypeObjectOrIsFunction(descriptor)) {
-                throw new base.TypeError.Ctr('Property description must be an object: ' +
-                                             $.String.ToString(descriptor));
+                throw new base.TypeError.Ctr('Property descriptor must be an object: ' + $.String.ToString(descriptor));
             }
 
-            if ($.Object.hasOwn(descriptor, 'value') && ($.Object.hasOwn(descriptor, 'get') ||
-                        $.Object.hasOwn(descriptor, 'set'))) {
-
+            if (hasOwn(descriptor, 'value') && (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
                 throw new base.TypeError.Ctr('Invalid property. A property cannot have accessors and a value');
             }
 
             var prototype,
                 type;
 
-            if (!$.Object.hasOwn(descriptor, 'get') && !$.Object.hasOwn(descriptor, 'set')) {
-                if ($.Object.hasOwn(descriptor, 'value') || !$.Object.hasOwn(object, property)) {
+            if (!hasOwn(descriptor, 'get') && !hasOwn(descriptor, 'set')) {
+                if (hasOwn(descriptor, 'value') || !$.Object.hasOwn(object, property)) {
                     if (isProtoSupported) {
                         prototype = object[base.str.proto];
                         object[base.str.proto] = base.Object.proto;
@@ -6538,8 +6545,8 @@
         }
 
         $.Array.forEach($.Object.keys(props), function (key) {
-            $.Object.defineProperty(object, key, props[key]);
-        });
+            this(object, key, props[key]);
+        }, $.Object.defineProperty);
 
         return object;
     };
@@ -6619,10 +6626,10 @@
         $.Array.forEach($.Object.keys(object), function (propKey) {
             var prop = object[propKey];
 
-            if (isTypeObjectOrIsFunction(prop) && !$.Object.isFrozen(prop)) {
-                $.Object.deepFreeze(prop);
+            if (isTypeObjectOrIsFunction(prop) && !this.isFrozen(prop)) {
+                this.deepFreeze(prop);
             }
-        });
+        }, $.Object);
 
         return object;
     };
@@ -6687,16 +6694,16 @@
             var isTargetArrayOrArguments = isArrayOrArguments(target);
 
             $.Array.forEach(slice(arguments, 1), function (source) {
-                $.Array.forEach($.Object.keys(throwIfIsNotTypeObjectOrIsNotFunction(source)), function (key) {
+                this.forEach($.Object.keys(throwIfIsNotTypeObjectOrIsNotFunction(source)), function (key) {
                     var value = source[key];
 
                     if (isTargetArrayOrArguments) {
-                        $.Array.assign(target, key, value);
+                        this.assign(target, key, value);
                     } else {
                         target[key] = value;
                     }
-                });
-            });
+                }, this);
+            }, $.Array);
 
             return target;
         };
@@ -6742,10 +6749,10 @@
         $.Object.create = base.Object.create;
     } catch (eCreate) {
         $.Object.create = function (prototype, propertiesObject) {
-            var newObject;
-
             ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
-            newObject = new ObjectCreateFunc();
+
+            var newObject = new ObjectCreateFunc();
+
             $.Object.defineProperty(newObject, base.str.proto, $.Object.assign({
                 value: prototype
             }, base.properties.notEnumerable));
@@ -6948,8 +6955,8 @@
         }
 
         status = $.Array.some(ka, function (aKey) {
-            return !$.Object.deepEqual(a[aKey], b[aKey], opts);
-        });
+            return !this(a[aKey], b[aKey], opts);
+        }, $.Object.deepEqual);
 
         if (status) {
             return false;
@@ -7221,14 +7228,13 @@
                         arr = $.Array.filter(arr, function (element) {
                             var val;
 
-                            if (!$.String.contains(element,
-                                                     'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
+                            if (!this(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
 
                                 val = element;
                             }
 
                             return val;
-                        });
+                        }, $.String.contains);
 
                         messageToString += $.Array.join(arr, '\n');
                     } else {
@@ -7313,10 +7319,10 @@
                 base.Object.getOwnPropertyDescriptor(testObject1, 'sentinel').value !== null ||
                 base.Object.getOwnPropertyDescriptor(testObject2, 3).value !== 30 ||
                 base.Object.getOwnPropertyDescriptor(testObject2, '3').value !== 30 ||
-                !$.Object.hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 4), 'value') ||
+                !hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 4), 'value') ||
                 base.Object.getOwnPropertyDescriptor(testObject2, 4).value !== Undefined ||
                 base.Object.getOwnPropertyDescriptor(testObject2, 5) !== Undefined ||
-                $.Object.hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 5), 'value')) {
+                hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 5), 'value')) {
 
             throw new Error();
         }
@@ -7403,10 +7409,9 @@
             temp1 = $.Object.getOwnPropertyDescriptor(object, prop1);
             temp2 = $.Object.getOwnPropertyDescriptor(object, prop2);
             num = $.Number.toUint32(prop2);
-            if (!$.Object.isPlainObject(temp1) || !$.Object.hasOwn(temp1, 'value')) {
-                if ($.Object.isTypeObject(object) && !$.Function.isFunction(object) &&
-                        hasValidLength(object) && $.String.ToString(num) === prop2 &&
-                        num === object.length - 1) {
+            if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
+                if ($.Object.isTypeObject(object) && !$.Function.isFunction(object) && hasValidLength(object) &&
+                        $.String.ToString(num) === prop2 && num === object.length - 1) {
 
                     object.length -= 1;
                 }
@@ -7423,7 +7428,7 @@
             }
 
             num = $.Number.toUint32(prop1);
-            if (!$.Object.isPlainObject(temp2) || !$.Object.hasOwn(temp2, 'value')) {
+            if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if ($.Object.isTypeObject(object) && !$.Function.isFunction(object) && hasValidLength(object) &&
                         $.String.ToString(num) === prop1 && num === object.length - 1) {
 
@@ -7567,8 +7572,9 @@
     if (isSupportedResult) {
         $.JSON.stringify = base.JSON.stringify;
     } else {
-        base.str.stringifyRxCharacters = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5';
-        base.str.stringifyRxCharacters += '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        base.str.stringifyRxCharacters = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5' +
+                                            '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+
         base.RegExp.stringifyEscapable = new RegExp(base.str.stringifyRxCharacters, 'g');
         stringifyMeta = {
             '\b': '\\b',
@@ -7637,9 +7643,11 @@
 
                 stringifyGap += stringifyIndent;
                 if ($.Array.isArray(value)) {
-                    partial = $.Array.map(value, function () {
-                        return stringifyToString(slice(arguments, 1, 2), value) || 'null';
-                    });
+                    partial = $.Array.map(value, function (unused, idx, obj) {
+                        /*jslint unparam: true */
+                        /*jshint unused : false */
+                        return this(idx, obj) || 'null';
+                    }, stringifyToString);
 
                     if (!partial.length) {
                         member = '[]';
@@ -7708,9 +7716,8 @@
             }
 
             stringifyReplacer = replacer;
-            if (!$.Object.isUndefinedOrNull(replacer) &&
-                    !$.Function.isFunction(replacer) &&
-                    !$.Array.isArray(replacer)) {
+            if (!$.Object.isUndefinedOrNull(replacer) && !$.Function.isFunction(replacer) &&
+                                                                    !$.Array.isArray(replacer)) {
 
                 throw new base.Error.Ctr('JSON.stringify');
             }
@@ -7788,9 +7795,11 @@
         base.RegExp.parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
         base.RegExp.parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
                                                 '-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
+
         base.RegExp.parseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
-        base.str.parseRxCharacters = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f';
-        base.str.parseRxCharacters += '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        base.str.parseRxCharacters = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f' +
+                                        '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+
         base.RegExp.parseCharacterTest = new RegExp(base.str.parseRxCharacters, 'g');
         $.JSON.parse = function (text, reviver) {
             var j;
@@ -7800,14 +7809,15 @@
 
                 if ($.Object.isTypeObject(value)) {
                     $.Array.forEach($.Object.keys(value), function (k) {
-                        var v = walk(value, k);
+                        var v = this(value, k),
+                            type = typeof v;
 
-                        if (v !== Undefined) {
+                        if (type !== 'undefined') {
                             value[k] = v;
                         } else {
                             delete value[k];
                         }
-                    });
+                    }, walk);
                 }
 
                 return reviver.call(holder, key, value);
@@ -7889,50 +7899,50 @@
         var utilx = {};
 
         $.Array.forEach($.Object.keys($), function (key1) {
-            if (!$.Object.hasOwn(utilx, 'methods')) {
-                $.Object.defineProperty(utilx, 'methods', $.Object.assign({
+            if (!this.hasOwn(utilx, 'methods')) {
+                this.defineProperty(utilx, 'methods', this.assign({
                     value: []
                 }, base.properties.notEnumerable));
             }
 
-            $.Object.defineProperty(utilx, key1, $.Object.assign({
+            this.defineProperty(utilx, key1, this.assign({
                 value: $[key1]
             }, base.properties.notEnumerable));
 
-            if ($.Object.isPlainObject($[key1])) {
-                if (!$.Object.hasOwn(utilx[key1], 'methods')) {
-                    $.Object.defineProperty(utilx[key1], 'methods', $.Object.assign({
+            if (this.isPlainObject($[key1])) {
+                if (!this.hasOwn(utilx[key1], 'methods')) {
+                    this.defineProperty(utilx[key1], 'methods', this.assign({
                         value: []
                     }, base.properties.notEnumerable));
                 }
 
-                $.Array.forEach($.Object.keys($[key1]), function (key2) {
-                    $.Object.defineProperty(utilx[key1], key2, $.Object.assign({
+                $.Array.forEach(this.keys($[key1]), function (key2) {
+                    this.defineProperty(utilx[key1], key2, $.Object.assign({
                         value: $[key1][key2]
                     }, base.properties.notEnumerable));
 
-                    if ($.Object.isPlainObject($[key1][key2])) {
-                        if (!$.Object.hasOwn(utilx[key1][key2], 'methods')) {
-                            $.Object.defineProperty(utilx[key1][key2], 'methods', $.Object.assign({
+                    if (this.isPlainObject($[key1][key2])) {
+                        if (!this.hasOwn(utilx[key1][key2], 'methods')) {
+                            this.defineProperty(utilx[key1][key2], 'methods', this.assign({
                                 value: []
                             }, base.properties.notEnumerable));
                         }
 
-                        $.Array.forEach($.Object.keys($[key1][key2]), function (key3) {
-                            $.Object.defineProperty(utilx[key1][key2], key3, $.Object.assign({
+                        $.Array.forEach(this.keys($[key1][key2]), function (key3) {
+                            this.defineProperty(utilx[key1][key2], key3, this.assign({
                                 value: $[key1][key2][key3]
                             }, base.properties.notEnumerable));
 
                             push(utilx[key1][key2].methods, key3);
-                        });
+                        }, this);
                     } else {
                         push(utilx[key1].methods, key2);
                     }
-                });
+                }, this);
             } else {
                 push(utilx.methods, key1);
             }
-        });
+        }, $.Object);
 
         $.Object.defineProperties(utilx.Number, {
             POSITIVE_ZERO: base.properties.constant,
