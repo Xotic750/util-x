@@ -28,6 +28,50 @@
             testSubject2 = createArrayLikeFromArray(testSubject);
         });
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.reduceRight();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.reduceRight(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if function argument is not a function', function () {
+            expect(function () {
+                utilx.Array.reduceRight([]);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.reduceRight([], undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.reduceRight([], null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should pass the correct arguments to the callback', function () {
             var array = ['1', '2', '3'],
                 progress = ['321', '32', '3'],
@@ -94,14 +138,6 @@
 
             expect(called).to.not.be.ok();
             expect(result).to.be('');
-        });
-
-        it('should throw correctly if no callback is given', function () {
-            expect(function () {
-                utilx.Array.reduceRight(testSubject);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
 
         it('should return the expected result', function () {
@@ -209,14 +245,6 @@
 
             expect(called).to.not.be.ok();
             expect(result).to.be('');
-        });
-
-        it('should throw correctly if no callback is given', function () {
-            expect(function () {
-                utilx.Array.reduceRight(testSubject2);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
 
         it('should return the expected result', function () {

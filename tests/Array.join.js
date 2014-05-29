@@ -8,25 +8,31 @@
         expect = required.expect;
 
     describe('Array.join', function () {
-        it('should not throw an error in each case', function () {
+        it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Array.join();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is undefined', function () {
             expect(function () {
-                utilx.Array.join(undefined);
+                utilx.Array.forEach(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is null', function () {
             expect(function () {
                 utilx.Array.join(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should not throw an error in each case', function () {
             expect(utilx.Array.join([])).to.be('');
             expect(utilx.Array.join([undefined])).to.be('');
             expect(utilx.Array.join([undefined, undefined])).to.be(',');

@@ -28,6 +28,30 @@
             return arr;
         };
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.splice();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.splice(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('basic implementation test 1', function () {
             test = utilx.Array.slice(a, 0);
             expect(utilx.Array.splice(test, 0)).to.eql(a);

@@ -9,7 +9,7 @@
 
     describe('Array.every', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            someArray = [
+            everyArray = [
                 0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
                 true, false, undefined,
                 null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
@@ -42,19 +42,63 @@
             };
         });
 
-        someArray[24] = NaN;
-        someArray[25] = 'end';
+        everyArray[24] = NaN;
+        everyArray[25] = 'end';
+
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.every();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.every(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if function argument is not a function', function () {
+            expect(function () {
+                utilx.Array.every(everyArray);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.every(everyArray, undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.every(everyArray, null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
 
         it('should not throw an error in each case', function () {
-            var result = utilx.Array.every(someArray, function (element, index, array) {
-                expect(array).to.be(someArray);
+            var result = utilx.Array.every(everyArray, function (element, index, array) {
+                expect(array).to.be(everyArray);
                 expect(utilx.Number.isNumber(index)).to.be.ok();
                 expect(utilx.Object.gte(index, 0)).to.be.ok();
                 expect(utilx.Object.lte(index, lastIndex)).to.be.ok();
                 if (utilx.Number.isNumber(element) && utilx.Number.isNaN(element)) {
-                    expect(utilx.Number.isNumber(someArray[index]) && utilx.Number.isNaN(someArray[index])).to.be(true);
+                    expect(utilx.Number.isNumber(everyArray[index]) && utilx.Number.isNaN(everyArray[index])).to.be(true);
                 } else {
-                    expect(element).to.be(someArray[index]);
+                    expect(element).to.be(everyArray[index]);
                 }
 
                 testIndex = index;
@@ -69,7 +113,7 @@
             console.log(result);
             expect(result).to.be(false);
 
-            expect(testIndex).to.be(someArray.length - 1);
+            expect(testIndex).to.be(everyArray.length - 1);
         });
 
         it('should pass the right parameters', function () {

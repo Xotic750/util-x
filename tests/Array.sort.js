@@ -36,25 +36,31 @@
             return val;
         }
 
-        it('should not throw an error in each case', function () {
+        it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Array.sort();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is undefined', function () {
             expect(function () {
-                utilx.Array.sort(undefined);
+                utilx.Array.forEach(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is null', function () {
             expect(function () {
                 utilx.Array.sort(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should not throw an error in each case', function () {
             expect(function () {
                 utilx.Array.sort(1);
             }).to.not.throwException();

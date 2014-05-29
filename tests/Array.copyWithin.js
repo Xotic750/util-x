@@ -8,6 +8,30 @@
         expect = required.expect;
 
     describe('Array.copyWithin', function () {
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.copyWithin();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.copyWithin(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('works with 2 args', function () {
             expect(utilx.Array.copyWithin([1, 2, 3, 4, 5], 0, 3)).to.eql([4, 5, 3, 4, 5]);
             expect(utilx.Array.copyWithin([1, 2, 3, 4, 5], 1, 3)).to.eql([1, 4, 5, 4, 5]);
@@ -37,20 +61,6 @@
             utilx.Array.copyWithin(args, -2, 0);
             expect(utilx.Array.slice(args)).to.eql([1, 1, 2]);
             expect(utilx.Object.isArguments(args)).to.be.ok();
-        });
-
-        it('should throw a TypeError in each case', function () {
-            expect(function () {
-                utilx.Array.copyWithin(null);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Array.copyWithin(undefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
     });
 }());

@@ -3947,7 +3947,9 @@
      * @returns {string}
      */
     $.String.prototype.last = function () {
-        return charAt(this, onlyCoercibleToString(this).length - 1);
+        var str = onlyCoercibleToString(this);
+
+        return charAt(str, str.length - 1);
     };
 
     $.String.last = $.Function.ToMethod($.String.prototype.last);
@@ -4622,7 +4624,7 @@
         }
     } else {
         $.Array.prototype.splice = function (start, deleteCount) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 length = fixLength(object),
                 removed = [],
                 relativeStart = mMin(mMax($.Number.toInteger(start), -$.Number.MAX_UINT32), $.Number.MAX_UINT32),
@@ -4773,7 +4775,7 @@
         }
     } catch (eForEach) {
         $.Array.prototype.forEach = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this);
+            var object = $.Object.ToObject(this);
 
             throwIfNotAFunction(fn);
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -4783,6 +4785,38 @@
 
         $.Array.forEach = $.Function.ToMethod($.Array.prototype.forEach);
     }
+
+    /**
+     * Executes a provided function once per array element position.
+     * Unlike forEach, this method treats the array as dense and allows a some like break.
+     * @memberof utilx.Array
+     * @name forAll
+     * @function
+     * @param {ArrayLike} array
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
+     * @param {someCallback} fn
+     * @throws {TypeError} if fn is not a function
+     * @param {*} [thisArg]
+     * @returns {undefined}
+     */
+    $.Array.prototype.forAll = function (fn, thisArg) {
+        var object = $.Object.ToObject(this),
+            val;
+
+        throwIfNotAFunction(fn);
+        val = false;
+        iter(object, false, 0, fixLength(object), false, function (it, idx, obj) {
+            if (this.call(thisArg, it, idx, obj)) {
+                val = true;
+            }
+
+            return val;
+        }, fn);
+
+        return val;
+    };
+
+    $.Array.forAll = $.Function.ToMethod($.Array.prototype.forAll);
 
     /**
      * some executes the callback function once for each element present in the array until it finds one
@@ -4825,7 +4859,7 @@
         }
     } catch (eSome) {
         $.Array.prototype.some = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -4874,7 +4908,7 @@
         $.Array.find = $.Function.ToMethod(base.Array.find);
     } else {
         $.Array.prototype.find = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -4923,7 +4957,7 @@
         $.Array.findIndex = $.Function.ToMethod(base.Array.findIndex);
     } else {
         $.Array.prototype.findIndex = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 val = -1;
 
             throwIfNotAFunction(fn);
@@ -4984,7 +5018,7 @@
         $.Array.from = base.Array.from;
     } else {
         $.Array.from = function (arrayLike, mapfn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(arrayLike),
+            var object = $.Object.ToObject(arrayLike),
                 type = typeof mapfn,
                 length,
                 mapping,
@@ -5066,7 +5100,7 @@
         }
     } catch (eEvery) {
         $.Array.prototype.every = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -5126,7 +5160,7 @@
         }
     } catch (eMap) {
         $.Array.prototype.map = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 arr;
 
             throwIfNotAFunction(fn);
@@ -5162,7 +5196,7 @@
      * @returns {Array}
      */
     internalSlice = function (start, end) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = $.Object.ToObject(this),
             length = fixLength(object),
             relativeStart = $.Number.toInteger(start),
             val = [],
@@ -5275,7 +5309,7 @@
         }
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 //next,
                 arr;
 
@@ -5327,7 +5361,7 @@
     } catch (eReduce) {
         reduceTypeErrorMessage = 'reduce of empty array with no initial value';
         $.Array.prototype.reduce = function (fn, initialValue) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5402,7 +5436,7 @@
     } catch (eReduceRight) {
         reduceRightTypeErrorMessage = 'reduceRight of empty array with no initial value';
         $.Array.prototype.reduceRight = function (fn, initialValue) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5582,7 +5616,7 @@
      * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
      */
     $.Array.prototype.stableSort = function (comparefn) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = $.Object.ToObject(this),
             type = typeof comparefn,
             isTargetArrayOrArguments;
 
@@ -5941,7 +5975,7 @@
         $.Array.indexOf = $.Function.ToMethod(base.Array.indexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -5995,7 +6029,7 @@
         $.Array.lastIndexOf = $.Function.ToMethod(base.Array.lastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -6046,7 +6080,7 @@
         $.Array.fill = $.Function.ToMethod(base.Array.fill);
     } else {
         $.Array.prototype.fill = function (value, start, end) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 length = fixLength(object),
                 relativeStart = $.Number.toInteger(start),
                 type = typeof end,
@@ -6106,7 +6140,7 @@
         $.Array.copyWithin = $.Function.ToMethod(base.Array.copyWithin);
     } else {
         $.Array.prototype.copyWithin = function (target, start, end) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = $.Object.ToObject(this),
                 length = fixLength(object),
                 relativeTarget = $.Number.toInteger(target),
                 relativeStart = $.Number.toInteger(start),
@@ -7456,18 +7490,26 @@
      * @memberof utilx.Array
      * @name shuffle
      * @function
-     * @param {ArrayLike} array
+     * @param {(ArrayLike|string)} array
      * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {NumberLike} [rounds]
-     * @returns {ArrayLike} same type as supplied array argument.
+     * @returns {(ArrayLike|string)} same type as supplied array argument.
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     $.Array.prototype.shuffle = function (rounds) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
-            length = fixLength(object);
+        var object = $.Object.ToObject(this),
+            isString,
+            length,
+            val;
 
-        if (length > 1 && !$.String.isStringObject(object)) {
-            iter(null, false, 0, mMin(mMax(rounds, 1), $.Number.MAX_INTEGER), false, function () {
+        if (object.length > 1) {
+            isString = $.String.isStringAny(object);
+            if (isString) {
+                object = split(object, '');
+            }
+
+            length = fixLength(object);
+            iter(null, false, 0, mMin(mMax($.Number.toInteger(rounds), 1), $.Number.MAX_INTEGER), false, function () {
                 iter(object, false, 0, length, false, function (unused, idx, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
@@ -7478,7 +7520,13 @@
             object.length = length;
         }
 
-        return this;
+        if (isString) {
+            val = join(object, '');
+        } else {
+            val = this;
+        }
+
+        return val;
     };
 
     $.Array.shuffle = $.Function.ToMethod($.Array.prototype.shuffle);
@@ -7858,18 +7906,21 @@
      * @memberof utilx.Array
      * @name powerSet
      * @function
-     * @param {ArrayLike} array
+     * @param {(ArrayLike|string)} array
      * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @returns {Array.<Array>}
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = function () {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
-            length = fixLength(object),
+        var object = $.Object.ToObject(this),
             lastElement,
             val;
 
-        if (!length) {
+        if ($.String.isStringAny(object)) {
+            object = $.String.split(object, '');
+        }
+
+        if (!fixLength(object)) {
             val = [[]];
         } else {
             lastElement = pop(object);

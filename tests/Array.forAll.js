@@ -7,9 +7,9 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    describe('Array.some', function () {
+    describe('Array.forAll', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            someArray = [
+            forAll = [
                 0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
                 true, false, undefined,
                 null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
@@ -37,17 +37,17 @@
             numberOfRuns = 0;
             expected = {
                 0: 2,
-                2: undefined,
-                3: true
+                1: undefined,
+                2: undefined
             };
         });
 
-        someArray[24] = NaN;
-        someArray[25] = 'end';
+        forAll[24] = NaN;
+        forAll[25] = 'end';
 
         it('should throw if no arguments', function () {
             expect(function () {
-                utilx.Array.some();
+                utilx.Array.forAll();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -63,7 +63,7 @@
 
         it('should throw if argument is null', function () {
             expect(function () {
-                utilx.Array.some(null);
+                utilx.Array.forAll(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -71,34 +71,34 @@
 
         it('should throw if function argument is not a function', function () {
             expect(function () {
-                utilx.Array.some(someArray);
+                utilx.Array.forAll(forAll);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some(someArray, undefined);
+                utilx.Array.forAll(forAll, undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some(someArray, null);
+                utilx.Array.forAll(forAll, null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
         });
 
         it('should not throw an error in each case', function () {
-            expect(utilx.Array.some(someArray, function (element, index, array) {
-                expect(array).to.be(someArray);
+            expect(utilx.Array.forAll(forAll, function (element, index, array) {
+                expect(array).to.be(forAll);
                 expect(utilx.Number.isNumber(index)).to.be.ok();
                 expect(utilx.Object.gte(index, 0)).to.be.ok();
                 expect(utilx.Object.lte(index, lastIndex)).to.be.ok();
                 if (utilx.Number.isNumber(element) && utilx.Number.isNaN(element)) {
-                    expect(utilx.Number.isNumber(someArray[index]) && utilx.Number.isNaN(someArray[index])).to.be(true);
+                    expect(utilx.Number.isNumber(forAll[index]) && utilx.Number.isNaN(forAll[index])).to.be(true);
                 } else {
-                    expect(element).to.be(someArray[index]);
+                    expect(element).to.be(forAll[index]);
                 }
 
                 testIndex = index;
@@ -109,13 +109,13 @@
                 return false;
             })).to.be(true);
 
-            expect(testIndex).to.be(someArray.length - 1);
+            expect(testIndex).to.be(forAll.length - 1);
         });
 
         it('should pass the right parameters', function () {
             var array = ['1'];
 
-            utilx.Array.some(array, function (item, index, list) {
+            utilx.Array.forAll(array, function (item, index, list) {
                 expect(item).to.be('1');
                 expect(index).to.be(0);
                 expect(list).to.be(array);
@@ -126,7 +126,7 @@
             var arr = [1, 2, 3],
                 i = 0;
 
-            utilx.Array.some(arr, function (a) {
+            utilx.Array.forAll(arr, function (a) {
                 i += 1;
                 utilx.Array.push(arr, a + 3);
 
@@ -140,7 +140,7 @@
         it('should set the right context when given none', function () {
             var context;
 
-            utilx.Array.some([1], function () {
+            utilx.Array.forAll([1], function () {
                 context = this;
             });
 
@@ -152,15 +152,26 @@
         });
 
         it('should return false if it runs to the end', function () {
-            var actual = utilx.Array.some(testSubject, function () {
+            var actual = utilx.Array.forAll(testSubject, function () {
                 return;
             });
 
             expect(actual).to.not.be.ok();
         });
 
+
+        it('should not skip over holes', function () {
+            var noHoles = [];
+
+            utilx.Array.forAll(testSubject, function (item) {
+                noHoles.push(item);
+            }, noHoles);
+
+            expect(noHoles).to.eql([2, undefined, undefined, true, 'hej', null, false, 0, undefined, 9]);
+        });
+
         it('should return true if it is stopped somewhere', function () {
-            var actual = utilx.Array.some(testSubject, function () {
+            var actual = utilx.Array.forAll(testSubject, function () {
                 return true;
             });
 
@@ -168,7 +179,7 @@
         });
 
         it('should return false if there are no elements', function () {
-            var actual = utilx.Array.some([], function () {
+            var actual = utilx.Array.forAll([], function () {
                 return true;
             });
 
@@ -178,7 +189,7 @@
         it('should stop after 3 elements', function () {
             var actual = {};
 
-            utilx.Array.some(testSubject, function (obj, index) {
+            utilx.Array.forAll(testSubject, function (obj, index) {
                 actual[index] = obj;
                 numberOfRuns += 1;
                 if (numberOfRuns === 3) {
@@ -197,7 +208,7 @@
                     a: actual
                 };
 
-            utilx.Array.some(testSubject, function (obj, index) {
+            utilx.Array.forAll(testSubject, function (obj, index) {
                 this.a[index] = obj;
                 numberOfRuns += 1;
                 if (numberOfRuns === 3) {
@@ -214,7 +225,7 @@
             var ts = createArrayLikeFromArray(testSubject),
                 actual = {};
 
-            utilx.Array.some(ts, function (obj, index) {
+            utilx.Array.forAll(ts, function (obj, index) {
                 actual[index] = obj;
                 numberOfRuns += 1;
                 if (numberOfRuns === 3) {
@@ -234,7 +245,7 @@
                     a: actual
                 };
 
-            utilx.Array.some(ts, function (obj, index) {
+            utilx.Array.forAll(ts, function (obj, index) {
                 this.a[index] = obj;
                 numberOfRuns += 1;
                 if (numberOfRuns === 3) {
@@ -250,7 +261,7 @@
         it('should have a boxed object as list argument of callback', function () {
             var actual;
 
-            utilx.Array.some('foo', function (item, index, list) {
+            utilx.Array.forAll('foo', function (item, index, list) {
                 /*jslint unparam: true */
                 /*jshint unused: true */
                 actual = list;
@@ -268,7 +279,7 @@
                 }()),
                 actual;
 
-            utilx.Array.some([1], function () {
+            utilx.Array.forAll([1], function () {
                 actual = this;
             }, 'x');
 

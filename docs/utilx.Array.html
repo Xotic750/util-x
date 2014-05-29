@@ -234,7 +234,7 @@ returns the new length of the array.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4479">line 4479</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4481">line 4481</a>
     </li></ul></dd>
     
 
@@ -395,7 +395,7 @@ Using strict equality (the same method used by the === comparison operator).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4238">line 4238</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4240">line 4240</a>
     </li></ul></dd>
     
 
@@ -640,7 +640,7 @@ not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6092">line 6092</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6126">line 6126</a>
     </li></ul></dd>
     
 
@@ -878,7 +878,7 @@ not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5040">line 5040</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5074">line 5074</a>
     </li></ul></dd>
     
 
@@ -1182,7 +1182,7 @@ to but not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6031">line 6031</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6065">line 6065</a>
     </li></ul></dd>
     
 
@@ -1427,7 +1427,7 @@ to but not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5249">line 5249</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5283">line 5283</a>
     </li></ul></dd>
     
 
@@ -1698,7 +1698,7 @@ Otherwise undefined is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4859">line 4859</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4893">line 4893</a>
     </li></ul></dd>
     
 
@@ -1969,7 +1969,7 @@ Otherwise -1 is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4908">line 4908</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4942">line 4942</a>
     </li></ul></dd>
     
 
@@ -2165,7 +2165,7 @@ Otherwise -1 is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4441">line 4441</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4443">line 4443</a>
     </li></ul></dd>
     
 
@@ -2200,6 +2200,270 @@ Otherwise -1 is returned.
     <dd>
         
 <span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="forAll"><span class="type-signature">&lt;static> </span>forAll<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        Executes a provided function once per array element position.
+Unlike forEach, this method treats the array as dense and allows a some like break.
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#someCallback">someCallback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>thisArg</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4789">line 4789</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Throws:</h5>
+    <ul>
+            <li>
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+</li>
+        
+            <li>
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        if fn is not a function
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+</li>
+        </ul>
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#undefined">undefined</a></span>
 
 
     </dd>
@@ -2376,7 +2640,7 @@ Otherwise -1 is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4747">line 4747</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4749">line 4749</a>
     </li></ul></dd>
     
 
@@ -2649,7 +2913,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4972">line 4972</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5006">line 5006</a>
     </li></ul></dd>
     
 
@@ -2861,7 +3125,7 @@ be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5927">line 5927</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5961">line 5961</a>
     </li></ul></dd>
     
 
@@ -3180,7 +3444,7 @@ Otherwise returns null if the argument does not match the rquirements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4421">line 4421</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4423">line 4423</a>
     </li></ul></dd>
     
 
@@ -3536,7 +3800,7 @@ If omitted, the array elements are separated with a comma.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4460">line 4460</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4462">line 4462</a>
     </li></ul></dd>
     
 
@@ -3748,7 +4012,7 @@ can be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5981">line 5981</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6015">line 6015</a>
     </li></ul></dd>
     
 
@@ -3993,7 +4257,7 @@ can be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5100">line 5100</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5134">line 5134</a>
     </li></ul></dd>
     
 
@@ -4204,7 +4468,7 @@ regardless of number or type of the arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4945">line 4945</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4979">line 4979</a>
     </li></ul></dd>
     
 
@@ -4308,6 +4572,9 @@ regardless of number or type of the arguments.
             
                 
 <span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+|
+
+<span class="param-type"><a href="global.html#string">string</a></span>
 
 
             
@@ -4348,7 +4615,7 @@ regardless of number or type of the arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7856">line 7856</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7904">line 7904</a>
     </li></ul></dd>
     
 
@@ -4784,7 +5051,7 @@ as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5299">line 5299</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5333">line 5333</a>
     </li></ul></dd>
     
 
@@ -5055,7 +5322,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5374">line 5374</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5408">line 5408</a>
     </li></ul></dd>
     
 
@@ -5162,7 +5429,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="shuffle"><span class="type-signature">&lt;static> </span>shuffle<span class="signature">(array, <span class="optional">rounds</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#ArrayLike">ArrayLike</a>}</span></h4>
+    <h4 class="name" id="shuffle"><span class="type-signature">&lt;static> </span>shuffle<span class="signature">(array, <span class="optional">rounds</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#ArrayLike">ArrayLike</a>|<a href="global.html#string">string</a>}</span></h4>
 
     
 </dt>
@@ -5213,6 +5480,9 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             
                 
 <span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+|
+
+<span class="param-type"><a href="global.html#string">string</a></span>
 
 
             
@@ -5294,7 +5564,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7454">line 7454</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7488">line 7488</a>
     </li></ul></dd>
     
 
@@ -5367,6 +5637,9 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     <dd>
         
 <span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+|
+
+<span class="param-type"><a href="global.html#string">string</a></span>
 
 
     </dd>
@@ -5545,7 +5818,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5211">line 5211</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5245">line 5245</a>
     </li></ul></dd>
     
 
@@ -5763,7 +6036,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4799">line 4799</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4833">line 4833</a>
     </li></ul></dd>
     
 
@@ -6003,7 +6276,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5610">line 5610</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5644">line 5644</a>
     </li></ul></dd>
     
 
@@ -6313,7 +6586,7 @@ adding new elements while removing old elements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4588">line 4588</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4590">line 4590</a>
     </li></ul></dd>
     
 
@@ -6501,7 +6774,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5570">line 5570</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5604">line 5604</a>
     </li></ul></dd>
     
 
@@ -6749,7 +7022,7 @@ A function can be provided as an alternative comparison method.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4531">line 4531</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4533">line 4533</a>
     </li></ul></dd>
     
 
@@ -7058,7 +7331,7 @@ returns the new length of the array.
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu May 29 2014 04:07:35 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu May 29 2014 16:54:28 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

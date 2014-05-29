@@ -7,11 +7,55 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    describe('Array.reduce', function () {
+    describe('Array.', function () {
         var testSubject;
 
         beforeEach(function () {
             testSubject = [1, 2, 3];
+        });
+
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.some();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.some(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if function argument is not a function', function () {
+            expect(function () {
+                utilx.Array.some([]);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.some([], undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.some([], null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
         });
 
         it('should pass the right parameters', function () {
@@ -59,14 +103,6 @@
                 utilx.Array.reduce([], function () {
                     throw new Error('function should not be called!');
                 });
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw correctly if no callback is given', function () {
-            expect(function () {
-                utilx.Array.reduce([]);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });

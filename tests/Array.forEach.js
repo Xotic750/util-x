@@ -48,6 +48,50 @@
             delete testSubject[1];
         });
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.forEach();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.forEach(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if function argument is not a function', function () {
+            expect(function () {
+                utilx.Array.forEach(forEachArray);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.forEach(forEachArray, undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.forEach(forEachArray, null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             expect(utilx.Array.forEach(forEachArray, function (element, index, array) {
                 expect(array).to.be(forEachArray);

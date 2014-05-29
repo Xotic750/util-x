@@ -18,6 +18,30 @@
                 'constructor'
             ];
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.contains();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.contains(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             expect(utilx.Array.contains(arr, 'toString')).to.be.ok();
             expect(utilx.Array.contains(arr, 'toLocaleString')).to.be.ok();

@@ -10,6 +10,50 @@
     describe('Array.findIndex', function () {
         var list = [5, 10, 15, 20];
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.findIndex();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.findIndex(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.findIndex(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if function argument is not a function', function () {
+            expect(function () {
+                utilx.Array.findIndex(list);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.findIndex(list, undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Array.findIndex(list, null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should find item key by predicate', function () {
             var result = utilx.Array.findIndex(list, function (item) {
                 return item === 15;
@@ -24,14 +68,6 @@
             });
 
             expect(result).to.equal(-1);
-        });
-
-        it('should throw TypeError when function was not passed', function () {
-            expect(function () {
-                utilx.Array.findIndex(list);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
 
         it('should receive all three parameters', function () {
@@ -114,20 +150,6 @@
                 [0, 1],
                 [2, undefined]
             ]);
-        });
-
-        it('should throw a TypeError in each case', function () {
-            expect(function () {
-                utilx.Array.findIndex(null, utilx.Function.noop);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Array.findIndex(undefined, utilx.Function.noop);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
 
         it('does not autobox the content in strict mode', function () {

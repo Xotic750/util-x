@@ -57,6 +57,31 @@
             expect(arr3.length).to.be(4);
         });
 
+        it('should work with strings', function () {
+            var arr1 = '123456789',
+                arr2 = '123456789',
+                arr3 = '';
+
+            arr1 = utilx.Array.shuffle(arr1);
+            expect(arr1.length).to.be(9);
+            arr1 = utilx.Array.shuffle(arr1);
+            expect(arr1.length).to.be(9);
+
+            arr2 = utilx.Array.shuffle(arr2, 5);
+            expect(arr2.length).to.be(9);
+            arr2 = utilx.Array.shuffle(arr2, 5);
+            expect(arr2.length).to.be(9);
+            arr2 = utilx.Array.shuffle(arr2, '5');
+            expect(arr2.length).to.be(9);
+            arr2 = utilx.Array.shuffle(arr2, '5');
+            expect(arr2.length).to.be(9);
+
+            arr3 = utilx.Array.shuffle(arr3);
+            expect(arr3.length).to.be(0);
+            arr3 = utilx.Array.shuffle(arr3, '5');
+            expect(arr3.length).to.be(0);
+        });
+
         it('should work with objects with length', function () {
             var obj1 = {
                     0: 1,
