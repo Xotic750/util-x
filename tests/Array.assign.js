@@ -32,6 +32,19 @@
             });
         });
 
+        it('should throw if argument is invalid', function () {
+            expect(function () {
+                utilx.Array.assign(1, 0, 'a');
+                utilx.Array.assign(true, 0, 'a');
+                utilx.Array.assign('', 0, 'a');
+                utilx.Array.assign(utilx.Function.noop, 0, 'a');
+                utilx.Array.assign({}, 0, 'a');
+                utilx.Array.assign(new utilx.Function.noop(), 0, 'a');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             var arrCmp = [
                     undefined,
