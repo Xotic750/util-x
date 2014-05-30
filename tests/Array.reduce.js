@@ -7,7 +7,7 @@
         utilx = required.utilx,
         expect = required.expect;
 
-    describe('Array.', function () {
+    describe('Array.reduce', function () {
         var testSubject;
 
         beforeEach(function () {

@@ -4277,6 +4277,8 @@
      * @returns {boolean}
      */
     $.Array.prototype.contains = function (searchElement) {
+        /*global console */
+        console.log(typeof this, this);
         return $.Array.indexOf($.Object.CheckObjectCoercible(this), searchElement) !== -1;
     };
 
