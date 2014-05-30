@@ -35,7 +35,7 @@
 
         it('should throw if no arguments', function () {
             expect(function () {
-                utilx.Array.some();
+                utilx.Array.map();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -51,7 +51,7 @@
 
         it('should throw if argument is null', function () {
             expect(function () {
-                utilx.Array.some(null);
+                utilx.Array.map(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -59,19 +59,19 @@
 
         it('should throw if function argument is not a function', function () {
             expect(function () {
-                utilx.Array.some(mapArray);
+                utilx.Array.map(mapArray);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some(mapArray, undefined);
+                utilx.Array.map(mapArray, undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some(mapArray, null);
+                utilx.Array.map(mapArray, null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });

@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -62,10 +62,6 @@
             expect(utilx.Object.isEmpty({})).to.be.ok();
             expect(utilx.Object.isEmpty([])).to.be.ok();
             expect(utilx.Object.isEmpty(utilx.Function.noop)).to.be.ok();
-            if (!utilx.Object.isEmpty(X)) {
-                console.log('# Constructor lists (must be Safari4 !): ' + utilx.Object.keys(X));
-            }
-
             expect(utilx.Object.isEmpty(X)).to.be.ok();
         });
 

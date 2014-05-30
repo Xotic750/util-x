@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -116,7 +116,6 @@
             }).to.throwException(function (e) {
                 expect(utilx.RegExp.test(new RegExp('^MyError: test'), e.toString())).to.be.ok();
                 if (utilx.String.isString(e.stack)) {
-                    /*global console */
                     console.log('# An example stack trace');
                     console.log('# ' + e.stack.split('\n').join('\n# '));
                 }

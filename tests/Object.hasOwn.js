@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -68,10 +68,6 @@
             }
 
             Constructor.prototype.constructor = 1;
-            if (!utilx.Object.hasOwn(Constructor, 'prototype')) {
-                console.log('# Constructor.prototype does not list (must be FF<3.6 or Opera 11.5 !)');
-            }
-
             expect(utilx.Object.hasOwn(Constructor, 'prototype')).to.be.ok();
             expect(utilx.Object.hasOwn(Constructor.prototype, 'constructor')).to.be.ok();
             expect(utilx.Object.hasOwn(new Constructor(), 'prototype')).to.be.ok();

@@ -16,7 +16,7 @@
 
         it('should throw if no arguments', function () {
             expect(function () {
-                utilx.Array.some();
+                utilx.Array.reduce();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -24,7 +24,7 @@
 
         it('should throw if argument is undefined', function () {
             expect(function () {
-                utilx.Array.forEach(undefined);
+                utilx.Array.reduce(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -32,7 +32,7 @@
 
         it('should throw if argument is null', function () {
             expect(function () {
-                utilx.Array.some(null);
+                utilx.Array.reduce(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -40,19 +40,19 @@
 
         it('should throw if function argument is not a function', function () {
             expect(function () {
-                utilx.Array.some([]);
+                utilx.Array.reduce([]);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some([], undefined);
+                utilx.Array.reduce([], undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
 
             expect(function () {
-                utilx.Array.some([], null);
+                utilx.Array.reduce([], null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });

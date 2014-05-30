@@ -1,4 +1,4 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
@@ -101,17 +101,9 @@
             }
 
             Constructor.prototype.constructor = 1;
-            if (!utilx.Number.isZero(utilx.Object.keys(Constructor).length)) {
-                console.log('# Constructor lists prototype (must be Safari4 !): ' +
-                            utilx.Object.keys(Constructor));
-            }
 
             expect(utilx.Object.keys(Constructor).length).to.be(0);
             if (!utilx.Number.isZero(utilx.Object.keys(Constructor.prototype).length)) {
-                console.log('# Constructor.prototype lists constructor (must be IE<9 !): ' +
-                            utilx.Object.keys(Constructor.prototype));
-
-                console.log('# Corner case when set to something other than constructor function (will/can not fix?)');
                 expect(utilx.Object.keys(Constructor.prototype).length).to.be(1);
             } else {
                 expect(utilx.Object.keys(Constructor.prototype).length).to.be(0);
@@ -128,25 +120,15 @@
         });
 
         it('should not list', function () {
-            console.log('#1: ' + utilx.Object.keys(Object.prototype));
             expect(utilx.Object.keys(Object.prototype).length).to.be(0);
-            console.log('#2: ' + utilx.Object.keys(Function.prototype));
             expect(utilx.Object.keys(Function.prototype).length).to.be(0);
-            console.log('#3: ' + utilx.Object.keys(Boolean.prototype));
             expect(utilx.Object.keys(Boolean.prototype).length).to.be(0);
-            console.log('#4: ' + utilx.Object.keys(String.prototype));
             expect(utilx.Object.keys(String.prototype).length).to.be(0);
-            console.log('#5: ' + utilx.Object.keys(Number.prototype));
             expect(utilx.Object.keys(Number.prototype).length).to.be(0);
-            console.log('#6: ' + utilx.Object.keys(Error.prototype));
             expect(utilx.Object.keys(Error.prototype).length).to.be(0);
-            console.log('#7: ' + utilx.Object.keys(TypeError.prototype));
             expect(utilx.Object.keys(TypeError.prototype).length).to.be(0);
-            console.log('#8: ' + utilx.Object.keys(SyntaxError.prototype));
             expect(utilx.Object.keys(SyntaxError.prototype).length).to.be(0);
-            console.log('#9: ' + utilx.Object.keys(Date.prototype));
             expect(utilx.Object.keys(Date.prototype).length).to.be(0);
-            console.log('#10: ' + utilx.Object.keys(RegExp.prototype));
             expect(utilx.Object.keys(RegExp.prototype).length).to.be(0);
         });
     });

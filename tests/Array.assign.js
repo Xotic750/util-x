@@ -10,7 +10,7 @@
     describe('Array.assign', function () {
         it('should throw if no arguments', function () {
             expect(function () {
-                utilx.Array.some();
+                utilx.Array.assign();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -26,7 +26,7 @@
 
         it('should throw if argument is null', function () {
             expect(function () {
-                utilx.Array.some(null);
+                utilx.Array.assign(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });

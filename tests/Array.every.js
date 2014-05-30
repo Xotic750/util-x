@@ -55,7 +55,7 @@
 
         it('should throw if argument is undefined', function () {
             expect(function () {
-                utilx.Array.forEach(undefined);
+                utilx.Array.every(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -109,8 +109,6 @@
                 return true;
             });
 
-            /*global console */
-            console.log(result);
             expect(result).to.be(false);
 
             expect(testIndex).to.be(everyArray.length - 1);

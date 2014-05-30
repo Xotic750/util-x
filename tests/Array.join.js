@@ -18,7 +18,7 @@
 
         it('should throw if argument is undefined', function () {
             expect(function () {
-                utilx.Array.forEach(undefined);
+                utilx.Array.join(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
