@@ -8,6 +8,30 @@
         expect = required.expect;
 
     describe('Array.fill', function () {
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Array.fill();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Array.forEach(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Array.fill(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('works without a value', function () {
             var original = [1, 2, 3, 4, 5, 6],
                 filled = [
@@ -135,20 +159,6 @@
                 filled = [1, 2, 3, 4, 5, 6];
 
             expect(utilx.Array.fill(original, -1, 9)).to.eql(filled);
-        });
-
-        it('should throw a TypeError in each case', function () {
-            expect(function () {
-                utilx.Array.fill(null);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Array.fill(undefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
     });
 }());

@@ -198,5 +198,30 @@
             });
             expect(obj3.length).to.be(undefined);
         });
+
+        it('should do nothing with others', function () {
+            var arr1 = 123456789,
+                arr2 = utilx.Function.noop,
+                arr3 = true;
+
+            arr1 = utilx.Array.shuffle(arr1);
+            expect(arr1).to.be(arr1);
+            arr1 = utilx.Array.shuffle(arr1);
+            expect(arr1).to.be(arr1);
+
+            arr2 = utilx.Array.shuffle(arr2, 5);
+            expect(arr2).to.be(arr2);
+            arr2 = utilx.Array.shuffle(arr2, 5);
+            expect(arr2).to.be(arr2);
+            arr2 = utilx.Array.shuffle(arr2, '5');
+            expect(arr2).to.be(arr2);
+            arr2 = utilx.Array.shuffle(arr2, '5');
+            expect(arr2).to.be(arr2);
+
+            arr3 = utilx.Array.shuffle(arr3);
+            expect(arr3).to.be(arr3);
+            arr3 = utilx.Array.shuffle(arr3, '5');
+            expect(arr3).to.be(arr3);
+        });
     });
 }());

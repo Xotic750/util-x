@@ -130,7 +130,7 @@
                 i += 1;
                 utilx.Array.push(arr, a + 3);
 
-                return utilx.Object.gt(i, 3);
+                return i === 3;
             });
 
             expect(arr).to.eql([1, 2, 3, 4, 5, 6]);

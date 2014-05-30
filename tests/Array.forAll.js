@@ -130,7 +130,7 @@
                 i += 1;
                 utilx.Array.push(arr, a + 3);
 
-                return utilx.Object.gt(i, 3);
+                return i === 3;
             });
 
             expect(arr).to.eql([1, 2, 3, 4, 5, 6]);
@@ -161,13 +161,24 @@
 
 
         it('should not skip over holes', function () {
-            var noHoles = [];
+            var noHoles = {};
 
-            utilx.Array.forAll(testSubject, function (item) {
-                noHoles.push(item);
+            utilx.Array.forAll(testSubject, function (item, idx) {
+                noHoles[idx] = item;
             }, noHoles);
 
-            expect(noHoles).to.eql([2, undefined, undefined, true, 'hej', null, false, 0, undefined, 9]);
+            expect(noHoles).to.eql({
+                0: 2,
+                1: undefined,
+                2: undefined,
+                3: true,
+                4: 'hej',
+                5: null,
+                6: false,
+                7: 0,
+                8: undefined,
+                9: 9
+            });
         });
 
         it('should return true if it is stopped somewhere', function () {

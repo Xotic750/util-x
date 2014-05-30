@@ -38,6 +38,12 @@
  */
 
 /**
+ * Type consisting of the primitive values.
+ * @typedef {(null|undefined|boolean|string|number)} primitive
+ * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+ */
+
+/**
  * A number or string to be used as a number.
  * @typedef {(number|string)} NumberLike
  */
@@ -833,7 +839,7 @@
             bound = base.Function.Ctr('binder', 'return function(' + base.Array.join.call(boundArgs, ',') +
                             '){return binder.apply(this,arguments)}')(binder);
 
-            if (base.Object.toString.call(fn.prototype) === base.classString.object) {
+            if (fn.prototype) {
                 BindCtr.prototype = fn.prototype;
                 bound.prototype = new BindCtr();
                 BindCtr.prototype = base.Function.proto;
@@ -1951,8 +1957,10 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
      */
     $.Object.isNotPrimitive = function (inputArg) {
-        return inputArg !== null && inputArg !== Undefined && inputArg !== true && inputArg !== false &&
-                typeof inputArg !== 'string' && typeof inputArg !== 'number';
+        var type = typeof inputArg;
+
+        return inputArg !== null && type !== 'undefined' && inputArg !== true && inputArg !== false &&
+                type !== 'string' && type !== 'number';
     };
 
     /**
@@ -2054,7 +2062,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.Boolean;
+        return inputArg === true || inputArg === false || toClassStr(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -2090,7 +2098,7 @@
      * @returns {boolean}
      */
     $.String.isStringAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.string;
+        return typeof inputArg === 'string' || toClassStr(inputArg) === base.classString.string;
     };
 
     /**
@@ -2102,7 +2110,7 @@
      * @returns {boolean}
      */
     $.Number.isNumberAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.number;
+        return typeof inputArg === 'number' || toClassStr(inputArg) === base.classString.number;
     };
 
     /**
@@ -2192,7 +2200,7 @@
         var type = typeof inputArg;
 
         if (type === 'undefined' || inputArg === null) {
-            throw new TypeError('Cannot convert "' + inputArg + '" to object');
+            throw new base.TypeError.Ctr('Cannot convert "' + inputArg + '" to object');
         }
 
         return inputArg;
@@ -2227,6 +2235,8 @@
 
         if (type === 'undefined') {
             val = type;
+        } else if (inputArg === null) {
+            val = 'null';
         } else {
             val = base.String.Ctr(inputArg);
         }
@@ -2407,8 +2417,8 @@
      * @returns {boolean}
      */
     $.Error.isError = function (inputArg) {
-        return $.Object.ToClassString(inputArg) === base.classString.error ||
-            ($.Object.isTypeObject(inputArg) && $.Object.instanceOf(inputArg, base.Error.Ctr));
+        return $.Object.isNotPrimitive(inputArg) && ($.Object.ToClassString(inputArg) === base.classString.error ||
+                                                   $.Object.instanceOf(inputArg, base.Error.Ctr));
     };
 
     /**
@@ -2420,8 +2430,8 @@
      * @returns {boolean}
      */
     $.RegExp.isRegExp = function (inputArg) {
-        return $.Object.ToClassString(inputArg) === base.classString.regexp && typeof inputArg.source === 'string' &&
-                    (inputArg.global === true || inputArg.global === false);
+        return $.Object.isNotPrimitive(inputArg) && $.Object.ToClassString(inputArg) === base.classString.regexp &&
+                    typeof inputArg.source === 'string' && (inputArg.global === true || inputArg.global === false);
     };
 
     /**
@@ -2431,11 +2441,13 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    testValue = $.Object.isTypeObject(window) && window.alert && typeof window.alert.toString;
+    testValue = null;
+    if ($.Object.isNotPrimitive(window) && $.Object.isNotPrimitive(window.alert)) {
+        testValue = typeof window.alert.toString;
+    }
+
     if (testValue === 'undefined' && test(base.RegExp.beginsFunction, window.alert)) {
         isIENativeFunction = function (inputArg) {
-            var type = inputArg && typeof inputArg.toString;
-
             // inputArg
             // we want return true or false
 
@@ -2454,7 +2466,15 @@
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            return type === 'undefined' && test(base.RegExp.beginsFunction, inputArg);
+            var val = false,
+                type;
+
+            if ($.Object.isNotPrimitive(inputArg)) {
+                type = typeof inputArg.toString;
+                val = type === 'undefined' && test(base.RegExp.beginsFunction, inputArg);
+            }
+
+            return val;
         };
     } else {
         isIENativeFunction = function () {
@@ -2478,7 +2498,7 @@
         testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
         base.RegExp.operaNative = new RegExp(testValue);
         isNativeFunction = function (inputArg) {
-            return test(base.RegExp.operaNative, inputArg);
+            return $.Object.isNotPrimitive(inputArg) && test(base.RegExp.operaNative, inputArg);
         };
     } catch (eINF1) {
         isNativeFunction = function (inputArg) {
@@ -2512,8 +2532,9 @@
      * @returns {boolean}
      */
     function isFunctionBasic(inputArg) {
-        return $.Object.ToClassString(inputArg) === base.classString.Function ||
-            (typeof inputArg === 'function' && inputArg.call && inputArg.apply);
+        return $.Object.isNotPrimitive(inputArg) &&
+            ($.Object.ToClassString(inputArg) === base.classString.Function ||
+             (typeof inputArg === 'function' && inputArg.call && inputArg.apply));
     }
 
     /**
@@ -2527,37 +2548,41 @@
         // it should be a function in any case
         // before we try to pass it to
         // Function.prototype.toString
-        return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
+        return $.Object.isNotPrimitive(inputArg) && isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
     }
 
     try {
         // native function cannot be passed
         // to native Function.prototype.toString
         // as scope to evaluate ... only IE, sure
-        if ($.Object.isTypeObject(window) && window.alert) {
+        if ($.Object.isNotPrimitive(window) && window.alert) {
             base.Function.toString.call(window.alert);
         }
 
         // this function is for every other browser
         isFunctionInternal = function (inputArg, n) {
-            var val;
+            var val = false;
 
-            if (!n) {
-                val = isFunctionBasic(inputArg);
-            } else {
-                val = isFunctionExtended(inputArg);
+            if ($.Object.isNotPrimitive(inputArg)) {
+                if (n) {
+                    val = isFunctionExtended(inputArg);
+                } else {
+                    val = isFunctionBasic(inputArg);
+                }
             }
 
             return val;
         };
     } catch (eIFI) {
         isFunctionInternal = function (inputArg, n) {
-            var val;
+            var val = false;
 
-            if (!n) {
-                val = isFunctionBasic(inputArg);
-            } else {
-                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+            if ($.Object.isNotPrimitive(inputArg)) {
+                if (n) {
+                    val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+                } else {
+                    val = isFunctionBasic(inputArg);
+                }
             }
 
             return val;
@@ -2574,7 +2599,8 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
     $.Function.isFunction = function (inputArg) {
-        return isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true);
+        return $.Object.isNotPrimitive(inputArg) &&
+                (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
     };
 
     /**
@@ -2586,7 +2612,8 @@
      * @returns {boolean}
      */
     $.Function.isNativeFunction = function (inputArg) {
-        return $.Function.isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+        return $.Object.isNotPrimitive(inputArg) && $.Function.isFunction(inputArg) &&
+                (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
     };
 
     /**
@@ -2598,7 +2625,8 @@
      * @returns {boolean}
      */
     $.Object.isObject = function (inputArg) {
-        return $.Object.ToClassString(inputArg) === base.classString.object && !$.Function.isFunction(inputArg);
+        return $.Object.isNotPrimitive(inputArg) && $.Object.ToClassString(inputArg) === base.classString.object &&
+                                !$.Function.isFunction(inputArg);
     };
 
     /**
@@ -2625,27 +2653,16 @@
     }
 
     /**
-     * Returns true if the operand inputArg is an object or function but not null.
-     * @private
-     * @function isTypeObjectOrIsFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isTypeObjectOrIsFunction(inputArg) {
-        return $.Object.isTypeObject(inputArg) || $.Function.isFunction(inputArg);
-    }
-
-    /**
      * Throws a TypeError if the operand inputArg is not an object or not a function,
      * otherise returns the object.
      * @private
-     * @function throwIfIsNotTypeObjectOrIsNotFunction
+     * @function throwIfIsPrimitive
      * @param {*} inputArg
      * @throws {TypeError} if inputArg is not an object or a function.
      * @returns {(Object|Function)}
      */
-    function throwIfIsNotTypeObjectOrIsNotFunction(inputArg) {
-        if (!isTypeObjectOrIsFunction(inputArg)) {
+    function throwIfIsPrimitive(inputArg) {
+        if ($.Object.isPrimitive(inputArg)) {
             throw new base.TypeError.Ctr('called on non-object');
         }
 
@@ -2761,7 +2778,7 @@
         $.Array.isArray = base.Array.isArray;
     } else {
         $.Array.isArray = function (inputArg) {
-            return $.Object.ToClassString(inputArg) === base.classString.array;
+            return $.Object.isNotPrimitive(inputArg) && $.Object.ToClassString(inputArg) === base.classString.array;
         };
     }
 
@@ -2801,7 +2818,7 @@
      * @returns {boolean}
      */
     $.Date.isDate = function (inputArg) {
-        return $.Object.ToClassString(inputArg) === base.classString.date;
+        return $.Object.isNotPrimitive(inputArg) && $.Object.ToClassString(inputArg) === base.classString.date;
     };
 
     /**
@@ -4185,11 +4202,11 @@
      */
     if (!testShims && $.Function.isNativeFunction(base.Object.getPrototypeOf)) {
         $.Object.getPrototypeOf = function (object) {
-            return base.Object.getPrototypeOf(throwIfIsNotTypeObjectOrIsNotFunction(object));
+            return base.Object.getPrototypeOf(throwIfIsPrimitive(object));
         };
     } else if (base.Object.proto[base.str.proto] === null) {
         $.Object.getPrototypeOf = function (object) {
-            return throwIfIsNotTypeObjectOrIsNotFunction(object)[base.str.proto];
+            return throwIfIsPrimitive(object)[base.str.proto];
         };
     } else {
         if ($.Function.returnArgs().constructor.prototype !== base.Object.proto) {
@@ -4197,7 +4214,7 @@
         }
 
         $.Object.getPrototypeOf = function (object) {
-            if (throwIfIsNotTypeObjectOrIsNotFunction(object) === base.Object.proto) {
+            if (throwIfIsPrimitive(object) === base.Object.proto) {
                 return null;
             }
 
@@ -4354,17 +4371,6 @@
     }
 
     /**
-     * Returns true if argument is null, not an object or is a function.
-     * @private
-     * @function isNotTypeObjectOrIsFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isNotTypeObjectOrIsFunction(inputArg) {
-        return !$.Object.isTypeObject(inputArg) || $.Function.isFunction(inputArg);
-    }
-
-    /**
      * Returns true if argument is an object that has own property of length which is a number of uint32
      * but is not a {@link Function function}.
      * @private
@@ -4379,14 +4385,14 @@
     }
 
     /**
-     * Throws TypeError if argument is null, not an object or is a function otherwise return the object.
+     * Throws TypeError if argument is a primitive or is a function otherwise return the object.
      * @private
-     * @function throwIfIsNotTypeObjectOrIsFunction
+     * @function throwIfIsPrimitiveOrIsFunction
      * @param {*} inputArg
      * @returns {*}
      */
-    function throwIfIsNotTypeObjectOrIsFunction(inputArg) {
-        if (isNotTypeObjectOrIsFunction(inputArg)) {
+    function throwIfIsPrimitiveOrIsFunction(inputArg) {
+        if ($.Object.isPrimitive(inputArg) || $.Function.isFunction(inputArg)) {
             throw new base.TypeError.Ctr('called on a invalid object');
         }
 
@@ -4433,7 +4439,7 @@
      */
     $.Array.isEmpty = function (inputArg) {
         if (!isArrayOrArguments(inputArg)) {
-            throwIfIsNotTypeObjectOrIsFunction(inputArg);
+            throwIfIsPrimitiveOrIsFunction(inputArg);
             throwIfIsNotHasValidLength(inputArg);
         }
 
@@ -4450,7 +4456,7 @@
      */
     $.Array.prototype.first = function () {
         if (!isArrayOrArguments(this)) {
-            throwIfIsNotTypeObjectOrIsFunction(this);
+            throwIfIsPrimitiveOrIsFunction(this);
             throwIfIsNotHasValidLength(this);
         }
 
@@ -4469,7 +4475,7 @@
      */
     $.Array.prototype.last = function () {
         if (!isArrayOrArguments(this)) {
-            throwIfIsNotTypeObjectOrIsFunction(this);
+            throwIfIsPrimitiveOrIsFunction(this);
             throwIfIsNotHasValidLength(this);
         }
 
@@ -4491,7 +4497,7 @@
      */
     $.Array.prototype.assign = function (index, value) {
         if (!isArrayOrArguments(this)) {
-            throwIfIsNotTypeObjectOrIsFunction(this);
+            throwIfIsPrimitiveOrIsFunction(this);
             throwIfIsNotHasValidLength(this);
         }
 
@@ -4624,7 +4630,7 @@
         }
     } else {
         $.Array.prototype.splice = function (start, deleteCount) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 removed = [],
                 relativeStart = mMin(mMax($.Number.toInteger(start), -$.Number.MAX_UINT32), $.Number.MAX_UINT32),
@@ -4775,7 +4781,7 @@
         }
     } catch (eForEach) {
         $.Array.prototype.forEach = function (fn, thisArg) {
-            var object = $.Object.ToObject(this);
+            var object = $.Object.ToObjectFixIndexedAccess(this);
 
             throwIfNotAFunction(fn);
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -4800,7 +4806,7 @@
      * @returns {undefined}
      */
     $.Array.prototype.forAll = function (fn, thisArg) {
-        var object = $.Object.ToObject(this),
+        var object = $.Object.ToObjectFixIndexedAccess(this),
             val;
 
         throwIfNotAFunction(fn);
@@ -4859,7 +4865,7 @@
         }
     } catch (eSome) {
         $.Array.prototype.some = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -4908,7 +4914,7 @@
         $.Array.find = $.Function.ToMethod(base.Array.find);
     } else {
         $.Array.prototype.find = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -4957,7 +4963,7 @@
         $.Array.findIndex = $.Function.ToMethod(base.Array.findIndex);
     } else {
         $.Array.prototype.findIndex = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 val = -1;
 
             throwIfNotAFunction(fn);
@@ -5018,7 +5024,7 @@
         $.Array.from = base.Array.from;
     } else {
         $.Array.from = function (arrayLike, mapfn, thisArg) {
-            var object = $.Object.ToObject(arrayLike),
+            var object = $.Object.ToObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
                 length,
                 mapping,
@@ -5100,7 +5106,7 @@
         }
     } catch (eEvery) {
         $.Array.prototype.every = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 val;
 
             throwIfNotAFunction(fn);
@@ -5160,7 +5166,7 @@
         }
     } catch (eMap) {
         $.Array.prototype.map = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 arr;
 
             throwIfNotAFunction(fn);
@@ -5196,7 +5202,7 @@
      * @returns {Array}
      */
     internalSlice = function (start, end) {
-        var object = $.Object.ToObject(this),
+        var object = $.Object.ToObjectFixIndexedAccess(this),
             length = fixLength(object),
             relativeStart = $.Number.toInteger(start),
             val = [],
@@ -5309,7 +5315,7 @@
         }
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 //next,
                 arr;
 
@@ -5361,7 +5367,7 @@
     } catch (eReduce) {
         reduceTypeErrorMessage = 'reduce of empty array with no initial value';
         $.Array.prototype.reduce = function (fn, initialValue) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5436,7 +5442,7 @@
     } catch (eReduceRight) {
         reduceRightTypeErrorMessage = 'reduceRight of empty array with no initial value';
         $.Array.prototype.reduceRight = function (fn, initialValue) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5616,7 +5622,7 @@
      * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
      */
     $.Array.prototype.stableSort = function (comparefn) {
-        var object = $.Object.ToObject(this),
+        var object = $.Object.ToObjectFixIndexedAccess(this),
             type = typeof comparefn,
             isTargetArrayOrArguments;
 
@@ -5975,7 +5981,7 @@
         $.Array.indexOf = $.Function.ToMethod(base.Array.indexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -6029,7 +6035,7 @@
         $.Array.lastIndexOf = $.Function.ToMethod(base.Array.lastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -6080,7 +6086,7 @@
         $.Array.fill = $.Function.ToMethod(base.Array.fill);
     } else {
         $.Array.prototype.fill = function (value, start, end) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 relativeStart = $.Number.toInteger(start),
                 type = typeof end,
@@ -6140,7 +6146,7 @@
         $.Array.copyWithin = $.Function.ToMethod(base.Array.copyWithin);
     } else {
         $.Array.prototype.copyWithin = function (target, start, end) {
-            var object = $.Object.ToObject(this),
+            var object = $.Object.ToObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 relativeTarget = $.Number.toInteger(target),
                 relativeStart = $.Number.toInteger(start),
@@ -6285,7 +6291,7 @@
         }
     } catch (eKeys) {
         $.Object.keys = function (object) {
-            throwIfIsNotTypeObjectOrIsNotFunction(object);
+            throwIfIsPrimitive(object);
 
             var skipProto = hasFuncProtoBug && $.Function.isFunction(object),
                 skipErrorProps = hasErrorProps && isErrorTypePrototype(object),
@@ -6316,6 +6322,48 @@
             return props;
         };
     }
+
+    /**
+     * forKeys executes the callback function once for each own property present in the object until it finds one
+     * where callback returns a true value.
+     * If a thisArg parameter is provided to some, it will be passed to callback when invoked,
+     * for use as its this value. Otherwise, the value undefined will be passed for use as its this value.
+     * @typedef {Function} forKeysCallback
+     * @param {*} element The current property being processed in the object.
+     * @param {prop} index The property name of the current property being processed in the object.
+     * @param {Object} object The object that some was called upon.
+     * @returns {boolean}
+     */
+
+    /**
+     * Executes a provided function once per object property and allows a some like break.
+     * @memberof utilx.Object
+     * @name forKeys
+     * @function
+     * @param {object} object
+     * @throws {TypeError} if object is {@link primitive}
+     * @param {forKeysCallback} fn
+     * @throws {TypeError} if fn is not a function
+     * @param {*} [thisArg]
+     * @returns {boolean}
+     */
+    $.Object.forKeys = function (object, fn, thisArg) {
+        var obj = $.Object.ToObjectFixIndexedAccess(object),
+            keys = $.Object.keys(obj),
+            val;
+
+        throwIfNotAFunction(fn);
+        val = false;
+        iter(keys, true, 0, fixLength(keys), false, function (it) {
+            if (this.call(thisArg, obj[it], it, obj)) {
+                val = true;
+            }
+
+            return val;
+        }, fn);
+
+        return val;
+    };
 
     /**
      * Check to see if an object is empty (contains no enumerable properties).
@@ -6493,8 +6541,8 @@
         }
     } catch (eDP) {
         $.Object.defineProperty = function (object, property, descriptor) {
-            throwIfIsNotTypeObjectOrIsNotFunction(object);
-            if (!isTypeObjectOrIsFunction(descriptor)) {
+            throwIfIsPrimitive(object);
+            if ($.Object.isPrimitive(descriptor)) {
                 throw new base.TypeError.Ctr('Property descriptor must be an object: ' + $.String.ToString(descriptor));
             }
 
@@ -6573,8 +6621,8 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties
      */
     $.Object.defineProperties = function (object, props) {
-        throwIfIsNotTypeObjectOrIsNotFunction(object);
-        if (!isTypeObjectOrIsFunction(props)) {
+        throwIfIsPrimitive(object);
+        if ($.Object.isPrimitive(props)) {
             throw new base.TypeError.Ctr('Property description must be an object');
         }
 
@@ -6601,7 +6649,7 @@
         $.Object.freeze = base.Object.freeze;
     } else {
         $.Object.freeze = function (object) {
-            return throwIfIsNotTypeObjectOrIsNotFunction(object);
+            return throwIfIsPrimitive(object);
         };
     }
 
@@ -6640,7 +6688,7 @@
         $.Object.isFrozen = base.Object.isFrozen;
     } else {
         $.Object.isFrozen = function (object) {
-            throwIfIsNotTypeObjectOrIsNotFunction(object);
+            throwIfIsPrimitive(object);
 
             return false;
         };
@@ -6660,7 +6708,7 @@
         $.Array.forEach($.Object.keys(object), function (propKey) {
             var prop = object[propKey];
 
-            if (isTypeObjectOrIsFunction(prop) && !this.isFrozen(prop)) {
+            if ($.Object.isNotPrimitive(prop) && !this.isFrozen(prop)) {
                 this.deepFreeze(prop);
             }
         }, $.Object);
@@ -6682,7 +6730,7 @@
         $.Object.instanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
-            return isTypeObjectOrIsFunction(object) &&
+            return $.Object.isNotPrimitive(object) &&
                 (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
         };
     } else {
@@ -6691,7 +6739,7 @@
 
             var val = false;
 
-            if (isTypeObjectOrIsFunction(object)) {
+            if ($.Object.isNotPrimitive(object)) {
                 val = object instanceof ctr;
                 if (!val) {
                     while (object) {
@@ -6723,12 +6771,12 @@
         $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
-            throwIfIsNotTypeObjectOrIsNotFunction(target);
+            throwIfIsPrimitive(target);
 
             var isTargetArrayOrArguments = isArrayOrArguments(target);
 
             $.Array.forEach(slice(arguments, 1), function (source) {
-                this.forEach($.Object.keys(throwIfIsNotTypeObjectOrIsNotFunction(source)), function (key) {
+                this.forEach($.Object.keys(throwIfIsPrimitive(source)), function (key) {
                     var value = source[key];
 
                     if (isTargetArrayOrArguments) {
@@ -6783,7 +6831,7 @@
         $.Object.create = base.Object.create;
     } catch (eCreate) {
         $.Object.create = function (prototype, propertiesObject) {
-            ObjectCreateFunc.prototype = throwIfIsNotTypeObjectOrIsNotFunction(prototype);
+            ObjectCreateFunc.prototype = throwIfIsPrimitive(prototype);
 
             var newObject = new ObjectCreateFunc();
 
@@ -7385,7 +7433,7 @@
                 setter,
                 type;
 
-            if ($.Object.hasOwn(throwIfIsNotTypeObjectOrIsNotFunction(object), property)) {
+            if ($.Object.hasOwn(throwIfIsPrimitive(object), property)) {
                 descriptor = {};
                 descriptor.configurable = true;
                 descriptor.enumerable = true;
@@ -7431,7 +7479,7 @@
      * @returns {Object}
      */
     $.Object.swapItems = function (object, prop1, prop2) {
-        throwIfIsNotTypeObjectOrIsNotFunction(object);
+        throwIfIsPrimitive(object);
         prop1 = $.String.ToString(prop1);
         prop2 = $.String.ToString(prop2);
 
@@ -7490,43 +7538,47 @@
      * @memberof utilx.Array
      * @name shuffle
      * @function
-     * @param {(ArrayLike|string)} array
+     * @param {ArrayLike} array
      * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {NumberLike} [rounds]
-     * @returns {(ArrayLike|string)} same type as supplied array argument.
+     * @returns {Array} same type as supplied array argument.
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     $.Array.prototype.shuffle = function (rounds) {
         var object = $.Object.ToObject(this),
-            isString,
-            length,
-            val;
+            isString = $.String.isStringObject(object),
+            array,
+            length;
 
-        if (object.length > 1) {
-            isString = $.String.isStringAny(object);
-            if (isString) {
-                object = split(object, '');
-            }
+        if (isString) {
+            array = split(object, '');
+        } else {
+            array = object;
+        }
 
-            length = fixLength(object);
+        length = fixLength(array);
+        if (length > 1) {
             iter(null, false, 0, mMin(mMax($.Number.toInteger(rounds), 1), $.Number.MAX_INTEGER), false, function () {
-                iter(object, false, 0, length, false, function (unused, idx, obj) {
+                iter(array, false, 0, length, false, function (unused, idx, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
                     this(obj, idx, $.Number.randomInt(0, idx));
                 }, this);
             }, $.Object.swapItems);
 
-            object.length = length;
+            array.length = length;
         }
 
         if (isString) {
-            val = join(object, '');
-        } else {
-            val = this;
+            object = join(array, '');
+            if ($.String.isStringObject(this)) {
+                object = $.Object.ToObject(object);
+            }
+        } else if ($.Object.isPrimitive(this)) {
+            object = this;
         }
 
-        return val;
+        return object;
     };
 
     $.Array.shuffle = $.Function.ToMethod($.Array.prototype.shuffle);
@@ -7664,7 +7716,7 @@
                 partial,
                 value = holder[key];
 
-            if (isTypeObjectOrIsFunction(value) && $.Function.isFunction(value.toJSON)) {
+            if ($.Object.isNotPrimitive(value) && $.Function.isFunction(value.toJSON)) {
                 value = value.toJSON(key);
             }
 
@@ -7912,7 +7964,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = function () {
-        var object = $.Object.ToObject(this),
+        var object = $.Object.ToObjectFixIndexedAccess(this),
             lastElement,
             val;
 
