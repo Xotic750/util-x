@@ -714,40 +714,26 @@
         proto: URIError.prototype
     };
 
-    /**
-     * Target function.
-     * @typedef {Function} bindTargetFunction
-     * @param {...*} [varArgs]
-     * @returns {*}
-     */
 
     /**
-     * Bound function.
-     * @typedef {Function} boundFunction
-     * @this thisArg
-     * @param {...*} [varArgs]
-     * @returns {*}
-     */
-
-    /**
-     * The proxy() function creates a new function (a bound function) with the same function body
-     * (internal call property in ECMAScript 5 terms) as the function it is being called on
-     * (the bound function's target function) with the this value bound to thisArg,
-     * which cannot be overridden.
+     * The abstract operation throws an error if its argument is a value that cannot be
+     * converted to an Object, otherwise returns the argument.
      * @private
-     * @name proxy
+     * @name checkObjectCoercible
      * @function
-     * @param {bindTargetFunction} fn
-     * @param {*} thisArg the this argument to be bound to the new function
-     * @param {...*} [varArgs] any arguments to be bound to the new function.
-     * @returns {boundFunction}.
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+     * @returns {*}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
      */
-    function proxy(fn, thisArg) {
-        var args = base.Array.slice.call(arguments, 2);
+    function checkObjectCoercible(inputArg) {
+        var type = typeof inputArg;
 
-        return function () {
-            return fn.apply(thisArg, base.Array.concat.call(args, base.Array.slice.call(arguments)));
-        };
+        if (type === 'undefined' || inputArg === null) {
+            throw new base.TypeError.Ctr('Cannot convert "' + inputArg + '" to object');
+        }
+
+        return inputArg;
     }
 
     /*jslint maxlen: 150 */
@@ -759,7 +745,6 @@
      * @returns {*}
      */
     /*jslint maxlen: 120 */
-
 
     /**
      * Stand alone function created from a {@link prototypalFunction prototypalFunction}.
@@ -778,7 +763,9 @@
      * @returns {boundPrototypalFunction}
      */
     function toMethod(protoFn) {
-        return proxy(base.Function.call, protoFn);
+        return function (thisArg) {
+            return protoFn.apply(thisArg, base.Array.slice.call(arguments, 1));
+        };
     }
 
     var testShims = true,
@@ -2041,15 +2028,7 @@
      * @returns {*}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
      */
-    $.Object.CheckObjectCoercible = function (inputArg) {
-        var type = typeof inputArg;
-
-        if (type === 'undefined' || inputArg === null) {
-            throw new base.TypeError.Ctr('Cannot convert "' + inputArg + '" to object');
-        }
-
-        return inputArg;
-    };
+    $.Object.CheckObjectCoercible = checkObjectCoercible;
 
     /**
      * Returns a string only if the arguments is coercible otherwise throws an error.
@@ -2060,7 +2039,7 @@
      * @returns {string}
      */
     function onlyCoercibleToString(inputArg) {
-        return $.String.ToString($.Object.CheckObjectCoercible(inputArg));
+        return $.String.ToString(checkObjectCoercible(inputArg));
     }
 
     /**
@@ -2194,7 +2173,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
     $.Object.ToObject = function (inputArg) {
-        return base.Object.Ctr($.Object.CheckObjectCoercible(inputArg));
+        return base.Object.Ctr(checkObjectCoercible(inputArg));
     };
 
     /**
@@ -2766,6 +2745,21 @@
     }
 
     /**
+     * Target function.
+     * @typedef {Function} bindTargetFunction
+     * @param {...*} [varArgs]
+     * @returns {*}
+     */
+
+    /**
+     * Bound function.
+     * @typedef {Function} boundFunction
+     * @this thisArg
+     * @param {...*} [varArgs]
+     * @returns {*}
+     */
+
+    /**
      * The bind() function creates a new function (a bound function) with the same function body
      * (internal call property in ECMAScript 5 terms) as the function it is being called on
      * (the bound function's target function) with the this value bound to thisArg,
@@ -2863,17 +2857,11 @@
      * @throws {TypeError} if protoFn is not a {@link Function function}.
      * @returns {boundPrototypalFunction}
      */
-    /*
-    $.Function.ToMethod = function (protoFn) {
-        return $.Function.bind(base.Function.call, throwIfNotAFunction(protoFn));
-    };
-    */
-
     $.Function.ToMethod = function (protoFn, checkThisArgFn) {
         throwIfNotAFunction(protoFn);
 
         if (!$.Function.isFunction(checkThisArgFn)) {
-            checkThisArgFn = $.Object.CheckObjectCoercible;
+            checkThisArgFn = checkObjectCoercible;
         }
 
         return function (thisArg) {
@@ -2913,7 +2901,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
      */
     $.Array.prototype.join = function (separator) {
-        $.Object.CheckObjectCoercible(this);
+        checkObjectCoercible(this);
 
         var type = typeof separator;
 
@@ -3266,10 +3254,12 @@
      * @returns {number}
      */
     $.Number.prototype.modulo = function (divisor) {
-        return $.Object.CheckObjectCoercible(this) - divisor * floor(this / divisor);
+        return this - divisor * floor(this / divisor);
     };
 
-    $.Number.modulo = $.Function.ToMethod($.Number.prototype.modulo);
+    $.Number.modulo = $.Function.ToMethod($.Number.prototype.modulo, function (dividend) {
+        return dividend;
+    });
 
     /**
      * The Number.isOdd returns true if the integer is odd otherwise false.
@@ -3542,7 +3532,7 @@
         $.Array.push = $.Function.ToMethod(base.Array.push);
     } else {
         $.Array.prototype.push = function () {
-            base.Array.push.apply($.Object.CheckObjectCoercible(this), slice(arguments));
+            base.Array.push.apply(checkObjectCoercible(this), slice(arguments));
 
             return this.length;
         };
@@ -3565,7 +3555,7 @@
         $.Array.unshift = $.Function.ToMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
-            base.Array.unshift.apply($.Object.CheckObjectCoercible(this), slice(arguments));
+            base.Array.unshift.apply(checkObjectCoercible(this), slice(arguments));
 
             return this.length;
         };
@@ -3596,7 +3586,7 @@
      * @returns {string} String with any duplicate characters removed.
      */
     $.String.clipDuplicates = function (str) {
-        return replace(str, base.RegExp.clipDuplicates, '');
+        return replace(onlyCoercibleToString(str), base.RegExp.clipDuplicates, '');
     };
 
     /**
@@ -4862,10 +4852,9 @@
         $.Array.prototype.forEach = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this);
 
-            throwIfNotAFunction(fn);
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
                 this.call(thisArg, it, idx, obj);
-            }, fn);
+            }, throwIfNotAFunction(fn));
         };
 
         $.Array.forEach = $.Function.ToMethod($.Array.prototype.forEach);
@@ -4886,17 +4875,13 @@
      */
     $.Array.prototype.forAll = function (fn, thisArg) {
         var object = $.Object.ToObjectFixIndexedAccess(this),
-            val;
+            val = false;
 
-        throwIfNotAFunction(fn);
-        val = false;
         iter(object, false, 0, fixLength(object), false, function (it, idx, obj) {
-            if (this.call(thisArg, it, idx, obj)) {
-                val = true;
-            }
+            val = !!this.call(thisArg, it, idx, obj);
 
             return val;
-        }, fn);
+        }, throwIfNotAFunction(fn));
 
         return val;
     };
@@ -4945,17 +4930,13 @@
     } catch (eSome) {
         $.Array.prototype.some = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this),
-                val;
+                val = false;
 
-            throwIfNotAFunction(fn);
-            val = false;
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
-                if (this.call(thisArg, it, idx, obj)) {
-                    val = true;
-                }
+                val = !!this.call(thisArg, it, idx, obj);
 
                 return val;
-            }, fn);
+            }, throwIfNotAFunction(fn));
 
             return val;
         };
@@ -4996,15 +4977,13 @@
             var object = $.Object.ToObjectFixIndexedAccess(this),
                 val;
 
-            throwIfNotAFunction(fn);
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     val = it;
-                    return true;
                 }
 
-                return false;
-            }, fn);
+                return val === it;
+            }, throwIfNotAFunction(fn));
 
             return val;
         };
@@ -5045,15 +5024,13 @@
             var object = $.Object.ToObjectFixIndexedAccess(this),
                 val = -1;
 
-            throwIfNotAFunction(fn);
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     val = idx;
-                    return true;
                 }
 
-                return false;
-            }, fn);
+                return val === idx;
+            }, throwIfNotAFunction(fn));
 
             return val;
         };
@@ -5105,19 +5082,15 @@
         $.Array.from = function (arrayLike, mapfn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
-                length,
-                mapping,
+                mapping = false,
+                length = fixLength(object),
                 array,
                 isTargetArrayOrArguments;
 
-            if (type === 'undefined') {
-                mapping = false;
-            } else {
-                throwIfNotAFunction(mapfn);
-                mapping = true;
+            if (type !== 'undefined') {
+                mapping = !!throwIfNotAFunction(mapfn);
             }
 
-            length = fixLength(object);
             if ($.Function.isFunction(this)) {
                 array = new this(length);
                 isTargetArrayOrArguments = isArrayOrArguments(array);
@@ -5186,17 +5159,13 @@
     } catch (eEvery) {
         $.Array.prototype.every = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this),
-                val;
+                val = true;
 
-            throwIfNotAFunction(fn);
-            val = true;
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
-                if (!this.call(thisArg, it, idx, obj)) {
-                    val = false;
-                }
+                val = !!this.call(thisArg, it, idx, obj);
 
                 return !val;
-            }, fn);
+            }, throwIfNotAFunction(fn));
 
             return val;
         };
@@ -5246,14 +5215,12 @@
     } catch (eMap) {
         $.Array.prototype.map = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this),
-                arr;
+                arr = [];
 
-            throwIfNotAFunction(fn);
-            arr = [];
             arr.length = fixLength(object);
             iter(object, true, 0, arr.length, false, function (it, idx, obj) {
-                this(arr, idx, fn.call(thisArg, it, idx, obj));
-            }, $.Array.assign);
+                $.Array.assign(arr, idx, this.call(thisArg, it, idx, obj));
+            }, throwIfNotAFunction(fn));
 
             return arr;
         };
@@ -5395,19 +5362,16 @@
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this),
-                //next,
-                arr;
+                //next = 0,
+                arr = [];
 
-            throwIfNotAFunction(fn);
-            arr = [];
-            //next = 0;
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
-                if (fn.call(thisArg, it, idx, obj)) {
-                    this(arr, it);
+                if (this.call(thisArg, it, idx, obj)) {
+                    $.Array.push(arr, it);
                     //$.Array.assign(arr, next, it);
                     //next += 1;
                 }
-            }, $.Array.push);
+            }, throwIfNotAFunction(fn));
 
             return arr;
         };
@@ -5741,17 +5705,13 @@
      */
     if (!testShims &amp;&amp; $.Function.isNativeFunction(sort)) {
         $.Array.prototype.sort = function (comparefn) {
-            $.Object.CheckObjectCoercible(this);
-
             var type = typeof comparefn;
 
             if (type === 'undefined') {
                 comparefn = defaultComparison;
             }
 
-            throwIfNotAFunction(comparefn);
-
-            return sort.call(this, comparefn);
+            return sort.call(checkObjectCoercible(this), throwIfNotAFunction(comparefn));
         };
     } else {
         $.Array.prototype.sort = $.Array.prototype.stableSort;
@@ -6041,7 +6001,9 @@
         $.Number.prototype.toFixed = base.Number.toFixed;
     }
 
-    $.Number.toFixed = $.Function.ToMethod($.Number.prototype.toFixed);
+    $.Number.toFixed = $.Function.ToMethod($.Number.prototype.toFixed, function (num) {
+        return num;
+    });
 
     /**
      * This {@link boundPrototypalFunction method} returns the first index at which a given element can
@@ -6429,17 +6391,15 @@
     $.Object.forKeys = function (object, fn, thisArg) {
         var obj = $.Object.ToObjectFixIndexedAccess(object),
             keys = $.Object.keys(obj),
-            val;
+            val = false;
 
-        throwIfNotAFunction(fn);
-        val = false;
         iter(keys, true, 0, fixLength(keys), false, function (it) {
             if (this.call(thisArg, obj[it], it, obj)) {
                 val = true;
             }
 
             return val;
-        }, fn);
+        }, throwIfNotAFunction(fn));
 
         return val;
     };
@@ -6845,6 +6805,7 @@
      * @param {Object} target
      * @param {...Object} source
      * @returns {Object}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
      */
     if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.assign)) {
         $.Object.assign = base.Object.assign;
@@ -8274,7 +8235,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat May 31 2014 02:30:48 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat May 31 2014 04:51:34 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

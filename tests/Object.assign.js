@@ -17,6 +17,12 @@
             expect(returned).to.equal(target);
         });
 
+        it('should return target if no sources', function () {
+            var target = {};
+
+            expect(utilx.Object.assign(target)).to.be(target);
+        });
+
         it('should merge two objects', function () {
             var target = {
                 a: 1
@@ -99,7 +105,37 @@
 
         it('throws when target is not an object', function () {
             expect(function () {
+                utilx.Object.assign();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
                 utilx.Object.assign(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign(true);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign(1);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign('a');
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -122,6 +158,18 @@
 
             expect(function () {
                 utilx.Object.assign(target, true);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign(target, 1);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.assign(target, 'a');
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
