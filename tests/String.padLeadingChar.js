@@ -8,6 +8,30 @@
         expect = required.expect;
 
     describe('String.padLeadingChar', function () {
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.String.padLeadingChar();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.String.padLeadingChar(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.String.padLeadingChar(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             expect(function () {
                 utilx.String.padLeadingChar();

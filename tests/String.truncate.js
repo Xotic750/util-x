@@ -8,11 +8,32 @@
         expect = required.expect;
 
     describe('String.truncate', function () {
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.String.truncate();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.String.truncate(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.String.truncate(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
-            expect(utilx.String.truncate()).to.be('undefined');
-            expect(utilx.String.truncate(undefined, 5)).to.be('undef');
             expect(utilx.String.truncate('null', -1)).to.be('null');
-            expect(utilx.String.truncate(null, 2)).to.be('nu');
             expect(utilx.String.truncate('-1', 1)).to.be('-');
             expect(utilx.String.truncate('0', 0)).to.be('');
             expect(utilx.String.truncate('1', 2)).to.be('1');
@@ -22,11 +43,6 @@
             expect(utilx.String.truncate('null', -Infinity)).to.be('null');
             expect(utilx.String.truncate('null', NaN)).to.be('null');
             expect(utilx.String.truncate('null', Infinity)).to.be('null');
-            expect(utilx.String.truncate(undefined, '5')).to.be('undef');
-            expect(utilx.String.truncate(undefined, '-Infinity')).to.be('undefined');
-            expect(utilx.String.truncate(undefined, 'NaN')).to.be('undefined');
-            expect(utilx.String.truncate(undefined, 'Infinity')).to.be('undefined');
-            expect(utilx.String.truncate(undefined, 'a')).to.be('undefined');
         });
     });
 }());

@@ -10,6 +10,30 @@
     describe('String.contains', function () {
         var str = 'The quick sly fox jumped over the lazy dog.';
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.String.contains();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.String.contains(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.String.contains(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             expect(utilx.String.contains(str, 'The')).to.be.ok();
             expect(utilx.String.contains(str, 'quick')).to.be.ok();

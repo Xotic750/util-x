@@ -10,6 +10,30 @@
     describe('String.match', function () {
         //var msg;
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.String.match();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.String.match(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.String.match(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         describe('with a global regex', function () {
             it('should return an array with all matches', function () {
                 expect(utilx.Array.slice(utilx.String.match('a bc', /(\w)/g))).to.eql(['a', 'b', 'c']);

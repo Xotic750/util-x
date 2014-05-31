@@ -10,6 +10,30 @@
     describe('String.replace', function () {
         var msg;
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.String.replace();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.String.replace(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.String.replace(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should replace the first match only when given a nonglobal regex', function () {
             expect(utilx.String.replace('aaa', /a/, 'b')).to.be('baa');
         });

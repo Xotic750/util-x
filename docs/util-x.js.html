@@ -715,99 +715,6 @@
     };
 
     /**
-     * @private
-     * @name iterBody
-     * @function
-     */
-    function iterBody(object, index, has, fn, thisArg) {
-        var item;
-
-        if (object) {
-            if (base.Object.toString.call(object) === base.classString.string) {
-                item = base.String.charAt.call(object, index);
-            } else {
-                item = object[index];
-            }
-        }
-
-        if (has) {
-            if (index in object) {
-                if (fn.call(thisArg, item, index, object) === true) {
-                    return true;
-                }
-            }
-        } else {
-            if (fn.call(thisArg, item, index, object) === true) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @private
-     * @name iter
-     * @function
-     */
-    function iter(object, has, start, length, reverse, fn, thisArg) {
-        var index;
-
-        if (reverse) {
-            for (index = start; index >= length; index -= 1) {
-                if (iterBody(object, index, has, fn, thisArg)) {
-                    break;
-                }
-            }
-        } else {
-            for (index = start; index &lt; length; index += 1) {
-                if (iterBody(object, index, has, fn, thisArg)) {
-                    break;
-                }
-            }
-        }
-
-        return thisArg;
-    }
-
-    /**
-     * @private
-     * @name enumer
-     * @function
-     */
-    function enumer(object, own, fn, thisArg) {
-        var prop,
-            item;
-
-        /*jslint forin: true */
-        for (prop in object) {
-            item = object[prop];
-            if (own) {
-                if (base.Object.hasOwn.call(object, prop)) {
-                    if (fn.call(thisArg, item, prop, object) === true) {
-                        break;
-                    }
-                }
-            } else {
-                if (fn.call(thisArg, item, prop, object) === true) {
-                    break;
-                }
-            }
-        }
-
-        return thisArg;
-    }
-
-    /**
-     * @private
-     * @name BindCtr
-     * @constructor
-     */
-    function BindCtr() {
-        return;
-    }
-
-    /**
      * Target function.
      * @typedef {Function} bindTargetFunction
      * @param {...*} [varArgs]
@@ -833,47 +740,14 @@
      * @param {bindTargetFunction} fn
      * @param {*} thisArg the this argument to be bound to the new function
      * @param {...*} [varArgs] any arguments to be bound to the new function.
-     * @returns {(boundFunction|undefined)}.
+     * @returns {boundFunction}.
      */
     function proxy(fn, thisArg) {
-        var args,
-            bound,
-            binder,
-            boundArgs;
+        var args = base.Array.slice.call(arguments, 2);
 
-        if (fn) {
-            args = base.Array.slice.call(arguments, 2);
-            boundArgs = iter(null, false, 0, base.Math.max(0, fn.length - args.length), false, function (it, idx) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                this[idx] = '$' + idx;
-            }, []);
-
-            binder = function () {
-                if (this instanceof bound) {
-                    var result = fn.apply(this, base.Array.concat.call(args, base.Array.slice.call(arguments)));
-
-                    if (base.Object.Ctr(result) === result) {
-                        return result;
-                    }
-
-                    return this;
-                }
-
-                return fn.apply(thisArg, base.Array.concat.call(args, base.Array.slice.call(arguments)));
-            };
-
-            bound = base.Function.Ctr('binder', 'return function(' + base.Array.join.call(boundArgs, ',') +
-                            '){return binder.apply(this,arguments)}')(binder);
-
-            if (fn.prototype) {
-                BindCtr.prototype = fn.prototype;
-                bound.prototype = new BindCtr();
-                BindCtr.prototype = base.Function.proto;
-            }
-        }
-
-        return bound;
+        return function () {
+            return fn.apply(thisArg, base.Array.concat.call(args, base.Array.slice.call(arguments)));
+        };
     }
 
     /*jslint maxlen: 150 */
@@ -1285,6 +1159,22 @@
         isStrictMode = (function () {
             return !this;
         }()),
+
+        /**
+         * @private
+         * @name BindCtr
+         * @constructor
+         */
+        BindCtr,
+
+        /**
+         * @private
+         * @name bindArgs
+         * @function
+         * @param {number} length
+         * @returns {string}
+         */
+        bindArgs,
 
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
@@ -2141,78 +2031,6 @@
     };
 
     /**
-     * Returns true if the operand inputArg is an empty string (ie '').
-     * @memberof utilx.String
-     * @name isEmpty
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isEmpty = function (inputArg) {
-        return inputArg === '';
-    };
-
-    /**
-     * Returns true if the operand inputArg is an empty string object (ie '').
-     * @memberof utilx.String
-     * @name isEmptyObject
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isEmptyObject = function (inputArg) {
-        return $.String.isStringObject(inputArg) &amp;&amp; base.String.valueOf.call(inputArg) === '';
-    };
-
-    /**
-     * Returns true if the operand inputArg is an empty string literal or object (ie '').
-     * @memberof utilx.String
-     * @name isEmptyAny
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isEmptyAny = function (inputArg) {
-        return $.String.isStringAny(inputArg) &amp;&amp; base.String.valueOf.call(inputArg) === '';
-    };
-
-    /**
-     * Returns true if the operand inputArg is a string and is not empty.
-     * @memberof utilx.String
-     * @name isNotEmpty
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isNotEmpty = function (inputArg) {
-        return typeof inputArg === 'string' &amp;&amp; inputArg !== '';
-    };
-
-    /**
-     * Returns true if the operand inputArg is a string object and is not empty.
-     * @memberof utilx.String
-     * @name isNotEmptyObject
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isNotEmptyObject = function (inputArg) {
-        return $.String.isStringObject(inputArg) &amp;&amp; base.String.valueOf.call(inputArg) !== '';
-    };
-
-    /**
-     * Returns true if the operand inputArg is a string literal or object and is not empty.
-     * @memberof utilx.String
-     * @name isNotEmptyAny
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.String.isNotEmptyAny = function (inputArg) {
-        return $.String.isStringAny(inputArg) &amp;&amp; base.String.valueOf.call(inputArg) !== '';
-    };
-
-    /**
      * The abstract operation throws an error if its argument is a value that cannot be
      * converted to an Object, otherwise returns the argument.
      * @memberof utilx.Object
@@ -2231,6 +2049,138 @@
         }
 
         return inputArg;
+    };
+
+    /**
+     * Returns a string only if the arguments is coercible otherwise throws an error.
+     * @private
+     * @function onlyCoercibleToString
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+     * @returns {string}
+     */
+    function onlyCoercibleToString(inputArg) {
+        return $.String.ToString($.Object.CheckObjectCoercible(inputArg));
+    }
+
+    /**
+     * Throws a TypeError if arguments is not a string literal otherwise returns the function.
+     * @private
+     * @function throwIfNotAStringAny
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is not a {@link Function function}.
+     * @returns {Function}
+     */
+    function throwIfNotAString(inputArg) {
+        if (!$.String.isString(inputArg)) {
+            throw new base.TypeError.Ctr(inputArg + ' is not a string literal');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Throws a TypeError if arguments is not a string object otherwise returns the function.
+     * @private
+     * @function throwIfNotAStringAny
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is not a {@link Function function}.
+     * @returns {Function}
+     */
+    function throwIfNotAStringObject(inputArg) {
+        if (!$.String.isStringObject(inputArg)) {
+            throw new base.TypeError.Ctr(inputArg + ' is not a string object');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Throws a TypeError if arguments is not any string otherwise returns the function.
+     * @private
+     * @function throwIfNotAStringAny
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is not a {@link Function function}.
+     * @returns {Function}
+     */
+    function throwIfNotAStringAny(inputArg) {
+        if (!$.String.isStringAny(inputArg)) {
+            throw new base.TypeError.Ctr(inputArg + ' is not a string');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Returns true if the operand inputArg is an empty string (ie '').
+     * @memberof utilx.String
+     * @name isEmpty
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isEmpty = function (inputArg) {
+        return throwIfNotAString(inputArg) === '';
+    };
+
+    /**
+     * Returns true if the operand inputArg is an empty string object (ie '').
+     * @memberof utilx.String
+     * @name isEmptyObject
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isEmptyObject = function (inputArg) {
+        return $.String.isStringObject(throwIfNotAStringObject(inputArg)) &amp;&amp; base.String.valueOf.call(inputArg) === '';
+    };
+
+    /**
+     * Returns true if the operand inputArg is an empty string literal or object (ie '').
+     * @memberof utilx.String
+     * @name isEmptyAny
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isEmptyAny = function (inputArg) {
+        return $.String.isStringAny(throwIfNotAStringAny(inputArg)) &amp;&amp; base.String.valueOf.call(inputArg) === '';
+    };
+
+    /**
+     * Returns true if the operand inputArg is a string and is not empty.
+     * @memberof utilx.String
+     * @name isNotEmpty
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isNotEmpty = function (inputArg) {
+        return typeof throwIfNotAStringAny(inputArg) === 'string' &amp;&amp; inputArg !== '';
+    };
+
+    /**
+     * Returns true if the operand inputArg is a string object and is not empty.
+     * @memberof utilx.String
+     * @name isNotEmptyObject
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isNotEmptyObject = function (inputArg) {
+        return $.String.isStringObject(throwIfNotAStringAny(inputArg)) &amp;&amp; base.String.valueOf.call(inputArg) !== '';
+    };
+
+    /**
+     * Returns true if the operand inputArg is a string literal or object and is not empty.
+     * @memberof utilx.String
+     * @name isNotEmptyAny
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.String.isNotEmptyAny = function (inputArg) {
+        return $.String.isStringAny(throwIfNotAStringAny(inputArg)) &amp;&amp; base.String.valueOf.call(inputArg) !== '';
     };
 
     /**
@@ -2713,6 +2663,109 @@
     }
 
     /**
+     * Throws a TypeError if the operand inputArg is the globalThis object,
+     * otherise returns the globalThis object.
+     * @private
+     * @function throwIfGlobalThis
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is the globalThis object.
+     * @returns {Object}
+     */
+    /*
+    function throwIfGlobalThis(inputArg) {
+        if (inputArg === globalThis) {
+            throw new base.TypeError.Ctr('called on the global execution context');
+        }
+
+        return inputArg;
+    }
+    */
+
+    /**
+     * @private
+     * @name iterBody
+     * @function
+     */
+    function iterBody(object, index, has, fn, thisArg) {
+        var item;
+
+        if (object) {
+            if (toClassStr(object) === base.classString.string) {
+                item = charAt(object, index);
+            } else {
+                item = object[index];
+            }
+        }
+
+        if (has) {
+            if (index in object) {
+                if (fn.call(thisArg, item, index, object)) {
+                    return true;
+                }
+            }
+        } else {
+            if (fn.call(thisArg, item, index, object)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @private
+     * @name iter
+     * @function
+     */
+    function iter(object, has, start, length, reverse, fn, thisArg) {
+        var index;
+
+        if (reverse) {
+            for (index = start; index >= length; index -= 1) {
+                if (iterBody(object, index, has, fn, thisArg)) {
+                    break;
+                }
+            }
+        } else {
+            for (index = start; index &lt; length; index += 1) {
+                if (iterBody(object, index, has, fn, thisArg)) {
+                    break;
+                }
+            }
+        }
+
+        return thisArg;
+    }
+
+    /**
+     * @private
+     * @name enumer
+     * @function
+     */
+    function enumer(object, own, fn, thisArg) {
+        var prop,
+            item;
+
+        /*jslint forin: true */
+        for (prop in object) {
+            item = object[prop];
+            if (own) {
+                if (hasOwn(object, prop)) {
+                    if (fn.call(thisArg, item, prop, object)) {
+                        break;
+                    }
+                }
+            } else {
+                if (fn.call(thisArg, item, prop, object)) {
+                    break;
+                }
+            }
+        }
+
+        return thisArg;
+    }
+
+    /**
      * The bind() function creates a new function (a bound function) with the same function body
      * (internal call property in ECMAScript 5 terms) as the function it is being called on
      * (the bound function's target function) with the this value bound to thisArg,
@@ -2754,16 +2807,30 @@
 
         $.Function.bind = base.Function.bind.call(base.Function.call, base.Function.bind);
     } catch (eBind) {
+        BindCtr = function () {
+            return;
+        };
+
+        bindArgs = function (length) {
+            return join(iter(null, false, 0, mMax(0, length), false, function (it, idx) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
+                this[idx] = '$' + idx;
+            }, []), ',');
+        };
+
         $.Function.prototype.bind = function (thisArg, varArgs) {
             /*jslint unparam:true */
             /*jshint unused:false */
             var fn = throwIfNotAFunction(this),
                 args = slice(arguments, 1),
-                bound,
-                binder = function () {
-                    if (this instanceof bound) {
-                        var result = fn.apply(this, concat(args, slice(arguments)));
+                bound = base.Function.Ctr('binder', 'return function(' + bindArgs(fn.length - args.length) +
+                    '){return binder.apply(this,arguments);}')(function () {
+                    var binderArgs = concat(args, slice(arguments)),
+                        result;
 
+                    if (this instanceof bound) {
+                        result = fn.apply(this, binderArgs);
                         if (base.Object.Ctr(result) === result) {
                             return result;
                         }
@@ -2771,18 +2838,11 @@
                         return this;
                     }
 
-                    return fn.apply(thisArg, concat(args, slice(arguments)));
-                },
-                boundArgs = iter(null, false, 0, mMax(0, fn.length - args.length), false, function (it, idx) {
-                    /*jslint unparam: true */
-                    /*jshint unused: false */
-                    this[idx] = '$' + idx;
-                }, []);
+                    return fn.apply(thisArg, binderArgs);
+                });
 
-            bound = base.Function.Ctr('binder', 'return function(' + join(boundArgs, ',') +
-                             '){return binder.apply(this,arguments)}')(binder);
 
-            if ($.Object.isObject(fn.prototype)) {
+            if ($.Object.isTypeObject(fn.prototype)) {
                 BindCtr.prototype = fn.prototype;
                 bound.prototype = new BindCtr();
                 BindCtr.prototype = base.Function.proto;
@@ -2803,8 +2863,22 @@
      * @throws {TypeError} if protoFn is not a {@link Function function}.
      * @returns {boundPrototypalFunction}
      */
+    /*
     $.Function.ToMethod = function (protoFn) {
         return $.Function.bind(base.Function.call, throwIfNotAFunction(protoFn));
+    };
+    */
+
+    $.Function.ToMethod = function (protoFn, checkThisArgFn) {
+        throwIfNotAFunction(protoFn);
+
+        if (!$.Function.isFunction(checkThisArgFn)) {
+            checkThisArgFn = $.Object.CheckObjectCoercible;
+        }
+
+        return function (thisArg) {
+            return protoFn.apply(checkThisArgFn(thisArg), slice(arguments, 1));
+        };
     };
 
     /**
@@ -3192,7 +3266,7 @@
      * @returns {number}
      */
     $.Number.prototype.modulo = function (divisor) {
-        return this - divisor * floor(this / divisor);
+        return $.Object.CheckObjectCoercible(this) - divisor * floor(this / divisor);
     };
 
     $.Number.modulo = $.Function.ToMethod($.Number.prototype.modulo);
@@ -3468,7 +3542,7 @@
         $.Array.push = $.Function.ToMethod(base.Array.push);
     } else {
         $.Array.prototype.push = function () {
-            base.Array.push.apply(this, slice(arguments));
+            base.Array.push.apply($.Object.CheckObjectCoercible(this), slice(arguments));
 
             return this.length;
         };
@@ -3491,24 +3565,12 @@
         $.Array.unshift = $.Function.ToMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
-            base.Array.unshift.apply(this, slice(arguments));
+            base.Array.unshift.apply($.Object.CheckObjectCoercible(this), slice(arguments));
 
             return this.length;
         };
 
         $.Array.unshift = $.Function.ToMethod($.Array.prototype.unshift);
-    }
-
-    /**
-     * Returns a string only if the arguments is coercible otherwise throws an error.
-     * @private
-     * @function onlyCoercibleToString
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-     * @returns {string}
-     */
-    function onlyCoercibleToString(inputArg) {
-        return $.String.ToString($.Object.CheckObjectCoercible(inputArg));
     }
 
     /**
@@ -3600,7 +3662,7 @@
     $.RegExp.prototype.exec = function (stringArg) {
         throwIfIsNotRegExp(this);
 
-        var str = onlyCoercibleToString(stringArg),
+        var str = $.String.ToString(stringArg),
             origLastIndex = this.lastIndex,
             match = base.RegExp.exec.apply(this, arguments),
             r2;
@@ -4021,13 +4083,14 @@
      * @returns {number}
      */
     $.String.prototype.countCharacter = function (character) {
-        var first = $.String.first(character),
+        var str = onlyCoercibleToString(this),
+            first = $.String.first(character),
             val;
 
         if (first === '') {
             val = $.Number.POSITIVE_INFINITY;
         } else {
-            val = mMin(mMax($.String.split(this, first).length - 1, 0), $.Number.POSITIVE_INFINITY);
+            val = mMin(mMax($.String.split(str, first).length - 1, 0), $.Number.POSITIVE_INFINITY);
         }
 
         return val;
@@ -4385,19 +4448,29 @@
      */
     if (hasDontEnumBug) {
         $.Object.prototype.hasOwn = function (property) {
-            return hasOwn(this, property) || ($.Array.contains(base.props.shadowed, property) &amp;&amp;
-                $.Object.has(this, property) &amp;&amp; !$.Object.is(this[property], $.Object.getPrototypeOf(this)[property]));
+            var prop = $.String.ToString(property),
+                val;
+
+            if (hasOwn(this, prop)) {
+                val = true;
+            } else {
+                val = $.Object.has(this, prop) &amp;&amp; $.Array.contains(base.props.shadowed, prop) &amp;&amp;
+                                        !$.Object.is(this[prop], $.Object.getPrototypeOf(this)[prop]);
+            }
+
+            return val;
         };
 
         $.Object.hasOwn = $.Function.ToMethod($.Object.prototype.hasOwn);
     } else if (hasFuncProtoBug) {
         $.Object.prototype.hasOwn = function (property) {
-            var val;
+            var prop = $.String.ToString(property),
+                val;
 
-            if ($.Function.isFunction(this) &amp;&amp; property === 'prototype') {
+            if ($.Function.isFunction(this) &amp;&amp; prop === 'prototype') {
                 val = true;
             } else {
-                val = hasOwn(this, property);
+                val = hasOwn(this, prop);
             }
 
             return val;
@@ -4473,7 +4546,7 @@
      * @returns {*}
      */
     $.Array.prototype.first = function () {
-        return throwIfIsNotHasValidLength(throwIfAFunction($.Object.ToObjectFixIndexedAccess(this)))[0];
+        return throwIfIsNotHasValidLength($.Object.ToObjectFixIndexedAccess(this))[0];
     };
 
     $.Array.first = $.Function.ToMethod($.Array.prototype.first);
@@ -4487,7 +4560,7 @@
      * @returns {*}
      */
     $.Array.prototype.last = function () {
-        var object = throwIfIsNotHasValidLength(throwIfAFunction($.Object.ToObjectFixIndexedAccess(this)));
+        var object = throwIfIsNotHasValidLength($.Object.ToObjectFixIndexedAccess(this));
 
         return object[object.length - 1];
     };
@@ -4506,7 +4579,7 @@
      * @returns {number}
      */
     $.Array.prototype.assign = function (index, value) {
-        var object = throwIfIsNotHasValidLength(throwIfAFunction(throwIfIsPrimitive(this))),
+        var object = throwIfIsNotHasValidLength(throwIfIsPrimitive(this)),
             numIndex;
 
         if (arguments.length >= 2) {
@@ -6406,7 +6479,7 @@
      * @returns {boolean}
      */
     $.String.prototype.isDigits = function () {
-        return typeof this === 'string' &amp;&amp; this !== '' &amp;&amp; $.RegExp.test(base.RegExp.notDigits, this);
+        return $.RegExp.test(base.RegExp.notDigits, onlyCoercibleToString(this));
     };
 
     $.String.isDigits = $.Function.ToMethod($.String.prototype.isDigits);
@@ -6862,7 +6935,11 @@
      * @returns {boolean}
      */
     $.Date.prototype.isValid = function () {
-        return $.Date.isDate(this) &amp;&amp; !$.Number.isNaN(base.Date.getTime.call(this));
+        if (!$.Date.isDate(this)) {
+            throw new base.TypeError.Ctr('this is not a Date object.');
+        }
+
+        return !$.Number.isNaN(base.Date.getTime.call(this));
     };
 
     $.Date.isValid = $.Function.ToMethod($.Date.prototype.isValid);
@@ -6917,7 +6994,7 @@
             characters = $.String.ToString(characters);
         }
 
-        return characters + $.String.ToString(this) + characters;
+        return characters + onlyCoercibleToString(this) + characters;
     };
 
     $.String.wrapInChars = $.Function.ToMethod($.String.prototype.wrapInChars);
@@ -7079,7 +7156,7 @@
      * @returns {string}
      */
     $.String.prototype.truncate = function (n) {
-        var s = $.String.ToString(this);
+        var s = onlyCoercibleToString(this);
 
         n = +n;
         if (!$.Number.isNaN(n) &amp;&amp; n >= 0) {
@@ -8197,7 +8274,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Fri May 30 2014 14:36:02 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat May 31 2014 02:30:48 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
