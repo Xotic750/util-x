@@ -711,6 +711,8 @@
         base.Array.canIterArgs = false;
     }
 
+    /*global console */
+    console.log('+++++++++ can iterate arguments: ' + base.Array.canIterArgs);
     /**
      * Creates a new array from arguments, starting at start and ending at end.
      * @private
