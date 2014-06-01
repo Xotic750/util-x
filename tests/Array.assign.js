@@ -32,28 +32,22 @@
             });
         });
 
-        it('should throw if argument is number', function () {
+        it('should not throw if argument is number', function () {
             expect(function () {
                 utilx.Array.assign(1);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
         });
 
-        it('should throw if argument is boolean', function () {
+        it('should not throw if argument is boolean', function () {
             expect(function () {
                 utilx.Array.assign(true);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
         });
 
-        it('should throw if argument is string', function () {
+        it('should not throw if argument is string', function () {
             expect(function () {
                 utilx.Array.assign('a');
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
         });
 
         it('should not throw if argument is function', function () {

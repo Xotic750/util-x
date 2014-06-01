@@ -25,19 +25,19 @@
         });
 
         it('should return undefined because the object does not own the property', function () {
-            var descr = utilx.Object.getOwnPropertyDescriptor(Object.create({name: 'Testing'}, {}), 'name');
+            var descr = utilx.Object.getOwnPropertyDescriptor(utilx.Object.create({name: 'Testing'}, {}), 'name');
 
             expect(descr).to.be(undefined);
         });
 
         it('test Object.create has', function () {
-            var obj = Object.create({name: 'Testing'}, {});
+            var obj = utilx.Object.create({name: 'Testing'}, {});
 
             expect(utilx.Object.has(obj, 'name')).to.be.ok();
         });
 
         it('test Object.create hasOwn', function () {
-            var obj = Object.create({name: 'Testing'}, {});
+            var obj = utilx.Object.create({name: 'Testing'}, {});
 
             expect(utilx.Object.hasOwn(obj, 'name')).to.not.be.ok();
         });

@@ -170,6 +170,22 @@
             expect(actual).to.eql(expected);
         });
 
+        it('should iterate arguments object', function () {
+            var actual = {};
+
+            utilx.Array.forEach(utilx.Function.returnArgs(1, undefined, null, 2, 3), function (obj, index) {
+                actual[index] = obj;
+            });
+
+            expect(actual).to.eql({
+                0: 1,
+                1: undefined,
+                2: null,
+                3: 2,
+                4: 3
+            });
+        });
+
         it('should iterate all in an array-like object', function () {
             var actual = {},
                 ts = createArrayLikeFromArray(testSubject);

@@ -379,6 +379,7 @@
         reverse: Array.prototype.reverse,
         shift: Array.prototype.shift,
         slice: Array.prototype.slice,
+        canIterArgs: true,
         some: Array.prototype.some,
         sort: Array.prototype.sort,
         splice: Array.prototype.splice,
@@ -706,7 +707,6 @@
         proto: URIError.prototype
     };
 
-
     /**
      * The abstract operation throws an error if its argument is a value that cannot be
      * converted to an Object, otherwise returns the argument.
@@ -726,6 +726,79 @@
         }
 
         return inputArg;
+    }
+
+    /**
+     * @private
+     * @memberof base.Array
+     * @name internalSlice
+     * @type {boolean}
+     */
+    if (!base.Object.hasOwn.call(base.Array.slice.call((function () { return arguments; }(1))), '0')) {
+        base.Array.canIterArgs = false;
+    }
+
+    /**
+     * Creates a new array from arguments, starting at start and ending at end.
+     * @private
+     * @memberof base.Array
+     * @name internalSlice
+     * @function
+     * @param {ArrayLike} array
+     * @param {NumberLike} [start]
+     * @param {NumberLike} [end]
+     * @returns {Array}
+     */
+    if (base.Array.canIterArgs) {
+        base.Array.internalSlice = base.Array.slice;
+    } else {
+        base.Array.internalSlice = function (start, end) {
+            /*jslint bitwise: true */
+            var obj = base.Object.Ctr(checkObjectCoercible(this)),
+                length = obj.length >>> 0,
+                relativeStart = start >> 0,
+                val = [],
+                next = 0,
+                type = typeof end,
+                isArgs = base.Object.toString.call(obj) === base.classString.arguments ||
+                                        (('callee' in obj) &amp;&amp; typeof obj.length === 'number'),
+                relativeEnd,
+                finalEnd,
+                k;
+
+            /*jslint bitwise: false */
+            if (relativeStart &lt; 0) {
+                k = base.Math.max(length + relativeStart, 0);
+            } else {
+                k = base.Math.min(relativeStart, length);
+            }
+
+            if (type === 'undefined') {
+                relativeEnd = length;
+            } else {
+                /*jslint bitwise: true */
+                relativeEnd = end >> 0;
+                /*jslint bitwise: false */
+            }
+
+            if (relativeEnd &lt; 0) {
+                finalEnd = base.Math.max(length + relativeEnd, 0);
+            } else {
+                finalEnd = base.Math.min(relativeEnd, length);
+            }
+
+            val.length = base.Math.max(finalEnd - k, 0);
+            while (k &lt; finalEnd) {
+                if ((!base.Array.canIterArgs &amp;&amp; isArgs) || (k in obj)) {
+                    val[next] = obj[k];
+                }
+
+                next += 1;
+                k += 1;
+            }
+
+            return val;
+        };
     }
 
     /*jslint maxlen: 150 */
@@ -756,7 +829,7 @@
      */
     function toMethod(protoFn) {
         return function (thisArg) {
-            return protoFn.apply(thisArg, base.Array.slice.call(arguments, 1));
+            return protoFn.apply(thisArg, base.Array.internalSlice.call(arguments, 1));
         };
     }
 
@@ -923,7 +996,7 @@
          * @param {NumberLike} [end]
          * @returns {Array}
          */
-        slice = toMethod(base.Array.slice),
+        slice = toMethod(base.Array.internalSlice),
 
         /**
          * @private
@@ -1162,6 +1235,7 @@
          */
         bindArgs,
 
+        internalSlice,
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
@@ -1190,7 +1264,6 @@
         reduceTypeErrorMessage,
         reduceRightTypeErrorMessage,
         isErrorTypePrototype,
-        internalSlice,
         unwantedErrorPropsFilter,
         keysWorksWithArguments,
         definePropertyInteger,
@@ -2698,6 +2771,10 @@
      */
     function iter(object, has, start, length, reverse, fn, thisArg) {
         var index;
+
+        if (!base.Array.canIterArgs &amp;&amp; $.Object.isArguments(object)) {
+            has = false;
+        }
 
         if (reverse) {
             for (index = start; index >= length; index -= 1) {
@@ -4621,7 +4698,7 @@
      * @returns {(number|undefined)}
      */
     $.Array.prototype.assign = function (index, value) {
-        var object = throwIfIsPrimitive(this),
+        var object = $.Object.ToObjectFixIndexedAccess(this),
             updateLen = hasValidLength(object) &amp;&amp; !$.Function.isFunction(object),
             numIndex,
             number,
@@ -4658,9 +4735,7 @@
         return object.length;
     };
 
-    $.Array.assign = $.Function.ToMethod($.Array.prototype.assign, function (thisArg) {
-        return throwIfIsPrimitive(thisArg);
-    });
+    $.Array.assign = $.Function.ToMethod($.Array.prototype.assign);
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -5148,10 +5223,9 @@
         $.Array.from = function (arrayLike, mapfn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
-                mapping = false,
                 length = fixLength(object),
                 array,
-                isTargetArrayOrArguments;
+                mapping;
 
             if (type !== 'undefined') {
                 mapping = !!throwIfNotAFunction(mapfn);
@@ -5159,10 +5233,8 @@
 
             if ($.Function.isFunction(this)) {
                 array = new this(length);
-                isTargetArrayOrArguments = isArrayOrArguments(array);
             } else {
                 array = [];
-                isTargetArrayOrArguments = true;
             }
 
             iter(object, false, 0, length, false, function (it, idx) {
@@ -5170,11 +5242,7 @@
                     it = mapfn.call(thisArg, it, idx);
                 }
 
-                if (isTargetArrayOrArguments) {
-                    this(array, idx, it);
-                } else {
-                    array[idx] = it;
-                }
+                this(array, idx, it);
             }, $.Array.assign);
 
             array.length = length;
@@ -5319,7 +5387,6 @@
             relativeStart = toInteger(start),
             val = [],
             next = 0,
-            isTargetArrayOrArguments = isArrayOrArguments(object),
             type = typeof end,
             relativeEnd,
             finalEnd,
@@ -5345,12 +5412,8 @@
 
         val.length = mMax(finalEnd - k, 0);
         while (k &lt; finalEnd) {
-            if ($.Object.has(object, k)) {
-                if (isTargetArrayOrArguments) {
-                    $.Array.assign(val, next, object[k]);
-                } else {
-                    val[next] = object[k];
-                }
+            if ((!base.Array.canIterArgs &amp;&amp; $.Object.isArguments(object)) || $.Object.has(object, k)) {
+                $.Array.assign(val, next, object[k]);
             }
 
             next += 1;
@@ -5372,7 +5435,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
     try {
-        if (testShims || !$.Function.isNativeFunction(base.Array.slice) ||
+        if (testShims || !base.Array.canIterArgs || !$.Function.isNativeFunction(base.Array.slice) ||
                 slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), -1).length !== 1 ||
@@ -5428,14 +5491,11 @@
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
             var object = $.Object.ToObjectFixIndexedAccess(this),
-                //next = 0,
                 arr = [];
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     $.Array.push(arr, it);
-                    //$.Array.assign(arr, next, it);
-                    //next += 1;
                 }
             }, throwIfNotAFunction(fn));
 
@@ -5732,8 +5792,7 @@
      */
     $.Array.prototype.stableSort = function (comparefn) {
         var object = $.Object.ToObjectFixIndexedAccess(this),
-            type = typeof comparefn,
-            isTargetArrayOrArguments;
+            type = typeof comparefn;
 
         if (type === 'undefined') {
             comparefn = defaultComparison;
@@ -5741,13 +5800,8 @@
 
         throwIfNotAFunction(comparefn);
         if (fixLength(object) > 1) {
-            isTargetArrayOrArguments = isArrayOrArguments(object);
             $.Array.forEach(mergeSort(object, comparefn), function (value, index) {
-                if (isTargetArrayOrArguments) {
-                    this(object, index, value);
-                } else {
-                    object[index] = value;
-                }
+                this(object, index, value);
             }, $.Array.assign);
         }
 
@@ -6196,8 +6250,7 @@
                 relativeStart = toInteger(start),
                 type = typeof end,
                 relativeEnd,
-                finalEnd,
-                isTargetArrayOrArguments;
+                finalEnd;
 
             if (start &lt; 0) {
                 relativeStart = mMax(length + relativeStart, 0);
@@ -6217,15 +6270,10 @@
                 finalEnd = mMin(relativeEnd, length);
             }
 
-            isTargetArrayOrArguments = isArrayOrArguments(object);
             iter(object, false, relativeStart, finalEnd, false, function (unused, idx, obj) {
                 /*jslint unparam: true */
                 /*jshint unused: false */
-                if (isTargetArrayOrArguments) {
-                    this(obj, idx, value);
-                } else {
-                    obj[idx] = value;
-                }
+                this(obj, idx, value);
             }, $.Array.assign);
 
             return object;
@@ -6261,8 +6309,7 @@
                 from,
                 finalEnd,
                 count,
-                direction,
-                isTargetArrayOrArguments;
+                direction;
 
             if (relativeTarget &lt; 0) {
                 to = mMax(length + relativeTarget, 0);
@@ -6297,16 +6344,11 @@
                 direction = 1;
             }
 
-            isTargetArrayOrArguments = isArrayOrArguments(object);
             iter(object, false, count, 1, true, function (unused1, unused2, obj) {
                 /*jslint unparam: true */
                 /*jshint unused: false */
                 if (hasOwn(obj, from)) {
-                    if (isTargetArrayOrArguments) {
-                        this(obj, to, obj[from]);
-                    } else {
-                        obj[to] = obj[from];
-                    }
+                    this(obj, to, obj[from]);
                 } else {
                     delete obj[to];
                 }
@@ -6400,7 +6442,7 @@
 
             var skipProto = hasFuncProtoBug &amp;&amp; $.Function.isFunction(object),
                 skipErrorProps = hasErrorProps &amp;&amp; isErrorTypePrototype(object),
-                props = enumer(object, false, function (unused, prop, obj) {
+                props = enumer(base.Array.canIterArgs ? object : slice(object), false, function (unused, prop, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
                     if (!(skipProto &amp;&amp; prop === 'prototype') &amp;&amp; !(skipErrorProps &amp;&amp;
@@ -6678,20 +6720,13 @@
                     if (isProtoSupported) {
                         prototype = object[base.str.proto];
                         object[base.str.proto] = base.Object.proto;
-                        if (typeof index === 'number') {
-                            $.Array.assign(object, index, descriptor.value);
-                        } else {
-                            try {
-                                delete object[index];
-                            } catch (eHasOwn) {
-                                if (!testShims) {
-                                    throw eHasOwn;
-                                }
-                            }
+                        /*
+                        try {
+                            delete object[index];
+                        } catch (ignore) {}
+                        */
 
-                            object[index] = descriptor.value;
-                        }
-
+                        $.Array.assign(object, index, descriptor.value);
                         type = typeof prototype;
                         if (type === 'undefined') {
                             delete object[base.str.proto];
@@ -6699,11 +6734,7 @@
                             object[base.str.proto] = prototype;
                         }
                     } else {
-                        if (typeof index === 'number') {
-                            $.Array.assign(object, index, descriptor.value);
-                        } else {
-                            object[index] = descriptor.value;
-                        }
+                        $.Array.assign(object, index, descriptor.value);
                     }
                 }
             } else {
@@ -6885,26 +6916,18 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
      */
     if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.assign)) {
-        $.Object.assign = base.Object.assign;
+        $.Object.assign = base.ToObjectFixIndexedAccess.assign;
     } else {
         $.Object.assign = function (target) {
-            throwIfIsPrimitive(target);
-
-            var isTargetArrayOrArguments = isArrayOrArguments(target);
+            var object = $.Object.ToObject(target);
 
             $.Array.forEach(slice(arguments, 1), function (source) {
-                this.forEach($.Object.keys(throwIfIsPrimitive(source)), function (key) {
-                    var value = source[key];
-
-                    if (isTargetArrayOrArguments) {
-                        this.assign(target, key, value);
-                    } else {
-                        target[key] = value;
-                    }
+                this.forEach($.Object.keys($.Object.ToObjectFixIndexedAccess(source)), function (key) {
+                    this.assign(object, key, source[key]);
                 }, this);
             }, $.Array);
 
-            return target;
+            return object;
         };
     }
 
@@ -8310,7 +8333,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sun Jun 01 2014 03:32:43 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sun Jun 01 2014 18:29:30 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

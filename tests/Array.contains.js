@@ -77,5 +77,15 @@
             expect(utilx.Array.contains(arr2, 9)).to.not.be.ok();
             expect(utilx.Array.contains(arr2, 10)).to.not.be.ok();
         });
+
+        it('should iterate arguments object', function () {
+            var args = utilx.Function.returnArgs(1, undefined, null, 2, 3);
+
+            expect(utilx.Array.contains(args, 1)).to.be.ok();
+            expect(utilx.Array.contains(args, undefined)).to.be.ok();
+            expect(utilx.Array.contains(args, null)).to.be.ok();
+            expect(utilx.Array.contains(args, 2)).to.be.ok();
+            expect(utilx.Array.contains(args, 3)).to.be.ok();
+        });
     });
 }());
