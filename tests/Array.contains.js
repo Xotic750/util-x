@@ -71,11 +71,11 @@
         });
 
         it('should not find the number in the array', function () {
-            expect(utilx.Array.contains(arr, 6)).to.not.be.ok();
-            expect(utilx.Array.contains(arr, 7)).to.not.be.ok();
-            expect(utilx.Array.contains(arr, 8)).to.not.be.ok();
-            expect(utilx.Array.contains(arr, 9)).to.not.be.ok();
-            expect(utilx.Array.contains(arr, 10)).to.not.be.ok();
+            expect(utilx.Array.contains(arr2, 6)).to.not.be.ok();
+            expect(utilx.Array.contains(arr2, 7)).to.not.be.ok();
+            expect(utilx.Array.contains(arr2, 8)).to.not.be.ok();
+            expect(utilx.Array.contains(arr2, 9)).to.not.be.ok();
+            expect(utilx.Array.contains(arr2, 10)).to.not.be.ok();
         });
     });
 }());

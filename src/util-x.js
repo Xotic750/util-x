@@ -191,17 +191,6 @@
 
     /**
      * @private
-     * @name eval
-     * @function
-     * @param {string} inputArg
-     * @returns {*}
-     */
-    /*jslint evil:true */
-    base.eval = eval;
-    /*jslint evil:false */
-
-    /**
-     * @private
      * @name isNaN
      * @function
      * @param {*} inputArg
@@ -2432,7 +2421,7 @@
      */
     try {
         /*jslint evil: true */
-        base.eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
+        eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
         /*jslint evil: false */
         // Opera 10 doesn't play ball so have to test the string
         testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
@@ -2453,7 +2442,7 @@
                 // that cannot be evaluated [native]
                 ownToString = inputArg.toString;
                 /*jslint evil: true */
-                base.eval('(' + ownToString.call(inputArg) + ')');
+                eval('(' + ownToString.call(inputArg) + ')');
                 /*jslint evil: false */
                 val = false;
             } catch (eINF2) {
@@ -4605,15 +4594,15 @@
      * @returns {(number|undefined)}
      */
     $.Array.prototype.assign = function (index, value) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
-            hasValidLen = hasValidLength(object),
+        var object = throwIfIsPrimitive(this),
+            updateLen = hasValidLength(object) && !$.Function.isFunction(object),
             numIndex,
             number,
             string,
             lastIndex;
 
         if (arguments.length >= 2) {
-            if (hasValidLen) {
+            if (updateLen) {
                 lastIndex = $.Number.MAX_UINT32 - 1;
                 if ($.Number.isNumberAny(index)) {
                     numIndex = +index;
@@ -4628,7 +4617,7 @@
                 }
             }
 
-            if (hasValidLen && $.Number.isInteger(numIndex) && numIndex >= 0 && numIndex <= lastIndex) {
+            if (updateLen && $.Number.isInteger(numIndex) && numIndex >= 0 && numIndex <= lastIndex) {
                 object[numIndex] = value;
                 numIndex += 1;
                 if (numIndex > object.length) {
@@ -4642,7 +4631,9 @@
         return object.length;
     };
 
-    $.Array.assign = $.Function.ToMethod($.Array.prototype.assign);
+    $.Array.assign = $.Function.ToMethod($.Array.prototype.assign, function (thisArg) {
+        return throwIfIsPrimitive(thisArg);
+    });
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -5884,9 +5875,9 @@
             function multiply(n, c) {
                 iter(data, false, 0, size, false, function (it, idx, obj) {
                     c += n * it;
-                    obj[idx] = c % this;
-                    c = floor(c / this);
-                }, baseNum);
+                    obj[idx] = c % baseNum;
+                    c = floor(c / baseNum);
+                });
             }
 
             function divide(n) {
@@ -5895,8 +5886,8 @@
                 iter(data, true, last, 0, true, function (it, idx, obj) {
                     c += it;
                     obj[idx] = floor(c / n);
-                    c = (c % n) * this;
-                }, baseNum);
+                    c = (c % n) * baseNum;
+                });
             }
 
             function numToString() {
@@ -6090,12 +6081,12 @@
                     }
 
                     iter(object, true, fromIndex, length, false, function (it, idx) {
-                        if (this === it) {
+                        if (searchElement === it) {
                             val = idx;
                         }
 
                         return val === idx;
-                    }, searchElement);
+                    });
                 }
             }
 
@@ -6140,13 +6131,13 @@
                 }
 
                 iter(object, true, fromIndex, 0, true, function (it, idx) {
-                    if (this === it) {
+                    if (searchElement === it) {
                         val = idx;
 
                     }
 
                     return val === idx;
-                }, searchElement);
+                });
             }
 
             return val;
@@ -8038,7 +8029,7 @@
                                 base.RegExp.parseProtect4, ''))) {
 
                 /*jslint evil: true */
-                j = base.eval('(' + text + ')');
+                j = eval('(' + text + ')');
                 /*jslint evil: false */
 
                 if ($.Function.isFunction(reviver)) {

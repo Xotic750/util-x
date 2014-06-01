@@ -32,20 +32,45 @@
             });
         });
 
-        it('should throw if argument is invalid', function () {
+        it('should throw if argument is number', function () {
             expect(function () {
-                utilx.Array.assign(1, 0, 'a');
-                utilx.Array.assign(true, 0, 'a');
-                utilx.Array.assign('', 0, 'a');
-                utilx.Array.assign(utilx.Function.noop, 0, 'a');
-                utilx.Array.assign({}, 0, 'a');
-                utilx.Array.assign(new utilx.Function.noop(), 0, 'a');
+                utilx.Array.assign(1);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
         });
 
-        it('should not throw an error in each case', function () {
+        it('should throw if argument is boolean', function () {
+            expect(function () {
+                utilx.Array.assign(true);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is string', function () {
+            expect(function () {
+                utilx.Array.assign('a');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should not throw if argument is function', function () {
+            expect(function () {
+                utilx.Array.assign(function () {
+                    return;
+                }, 0, 'a');
+            }).to.not.throwException();
+        });
+
+        it('should not throw if argument is complex object', function () {
+            expect(function () {
+                utilx.Array.assign(new utilx.Function.noop(), 0, 'a');
+            }).to.not.throwException();
+        });
+
+        it('should work on array', function () {
             var arrCmp = [
                     undefined,
                     null,

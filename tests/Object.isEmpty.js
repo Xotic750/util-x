@@ -66,7 +66,7 @@
         });
 
         it('should not be ok in each case', function () {
-            expect(utilx.Object.isEmpty({string: utilx.Function.noop})).to.not.be.ok();
+            expect(utilx.Object.isEmpty({toString: utilx.Function.noop})).to.not.be.ok();
             expect(utilx.Object.isEmpty({valueOf: utilx.Function.noop})).to.not.be.ok();
             expect(utilx.Object.isEmpty([1])).to.not.be.ok();
             expect(utilx.Object.isEmpty(F)).to.not.be.ok();
