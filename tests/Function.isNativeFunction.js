@@ -24,9 +24,13 @@
         });
 
         it('user functions should be not ok in each case', function () {
+            console.log(utilx.String.ToString(utilx.Function.noop));
             expect(utilx.Function.isNativeFunction(utilx.Function.noop)).to.not.be.ok();
+            console.log(utilx.String.ToString(describe));
             expect(utilx.Function.isNativeFunction(describe)).to.not.be.ok();
+            console.log(utilx.String.ToString(expect));
             expect(utilx.Function.isNativeFunction(expect)).to.not.be.ok();
+            console.log(utilx.String.ToString(it));
             expect(utilx.Function.isNativeFunction(it)).to.not.be.ok();
         });
 
@@ -95,9 +99,13 @@
         });
 
         it('only native functions should not be ok in each case', function () {
+            console.log(utilx.String.ToString(Error));
             expect(utilx.Function.isFunction(Error) && !utilx.Function.isNativeFunction(Error)).to.not.be.ok();
+            console.log(utilx.String.ToString(Date));
             expect(utilx.Function.isFunction(Date) && !utilx.Function.isNativeFunction(Date)).to.not.be.ok();
+            console.log(utilx.String.ToString(RegExp));
             expect(utilx.Function.isFunction(RegExp) && !utilx.Function.isNativeFunction(RegExp)).to.not.be.ok();
+            console.log(utilx.String.ToString(Function));
             expect(utilx.Function.isFunction(Function) && !utilx.Function.isNativeFunction(Function)).to.not.be.ok();
             if (typeof window === 'object' && window.alert) {
                 expect(utilx.Function.isFunction(window.alert) && !utilx.Function.isNativeFunction(window.alert)).to.not.be.ok();
