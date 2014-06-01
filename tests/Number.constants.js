@@ -28,8 +28,8 @@
             expect(utilx.Number.MAX_UINT8).to.be(255);
             expect(utilx.Number.MAX_INT8).to.be(127);
             expect(utilx.Number.MIN_INT8).to.be(-128);
-            expect(utilx.Number.MAX_INTEGER).to.be(9007199254740991);
-            expect(utilx.Number.MIN_INTEGER).to.be(-9007199254740991);
+            expect(utilx.Number.MAX_SAFE_INTEGER).to.be(9007199254740991);
+            expect(utilx.Number.MIN_SAFE_INTEGER).to.be(-9007199254740991);
             expect(utilx.Number.UNSAFE_INTEGER).to.be(9007199254740992);
             expect(utilx.Number.POSITIVE_INFINITY).to.be(Infinity);
             expect(utilx.Number.NEGATIVE_INFINITY).to.be(-Infinity);

@@ -46,5 +46,45 @@
             expect(utilx.Array.slice(arr, 0, 4)).to.eql([undefined, null, 1, 'a']);
             expect(utilx.Array.slice(arr, 3, 6)).to.eql(['a', 2, 'b']);
         });
+
+        it('should work with objects that have length', function () {
+            var obj = {
+                0: undefined,
+                1: null,
+                2: 1,
+                3: 'a',
+                4: 2,
+                5: 'b',
+                6: null,
+                7: undefined,
+                length: 8
+            };
+
+            expect(utilx.Array.slice(obj)).to.eql(arr);
+            expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
+            expect(utilx.Array.slice(obj, -1)).to.eql([undefined]);
+            expect(utilx.Array.slice(obj, -1).length).to.be(1);
+            expect(utilx.Array.slice(obj, 0)).to.eql(arr);
+            expect(utilx.Array.slice(obj, 3)).to.eql(['a', 2, 'b', null, undefined]);
+            expect(utilx.Array.slice(obj, -1, 4)).to.eql([]);
+            expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
+            expect(utilx.Array.slice(obj, 0, 4)).to.eql([undefined, null, 1, 'a']);
+            expect(utilx.Array.slice(obj, 3, 6)).to.eql(['a', 2, 'b']);
+        });
+
+        it('should work with arguments', function () {
+            var obj = utilx.Function.returnArgs(undefined, null, 1, 'a', 2, 'b', null, undefined);
+
+            expect(utilx.Array.slice(obj)).to.eql(arr);
+            expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
+            expect(utilx.Array.slice(obj, -1)).to.eql([undefined]);
+            expect(utilx.Array.slice(obj, -1).length).to.be(1);
+            expect(utilx.Array.slice(obj, 0)).to.eql(arr);
+            expect(utilx.Array.slice(obj, 3)).to.eql(['a', 2, 'b', null, undefined]);
+            expect(utilx.Array.slice(obj, -1, 4)).to.eql([]);
+            expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
+            expect(utilx.Array.slice(obj, 0, 4)).to.eql([undefined, null, 1, 'a']);
+            expect(utilx.Array.slice(obj, 3, 6)).to.eql(['a', 2, 'b']);
+        });
     });
 }());

@@ -30,6 +30,18 @@
             expect(descr).to.be(undefined);
         });
 
+        it('test Object.create has', function () {
+            var obj = Object.create({name: 'Testing'}, {});
+
+            expect(utilx.Object.has(obj, 'name')).to.be.ok();
+        });
+
+        it('test Object.create hasOwn', function () {
+            var obj = Object.create({name: 'Testing'}, {});
+
+            expect(utilx.Object.hasOwn(obj, 'name')).to.not.be.ok();
+        });
+
         it('should return a data descriptor', function () {
             var obj = utilx.Object.create({}, {
                     name: {

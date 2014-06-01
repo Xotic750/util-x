@@ -12,7 +12,7 @@
             expect(utilx.Number.isUint(4)).to.be.ok();
             expect(utilx.Number.isUint(4.0)).to.be.ok();
             expect(utilx.Number.isUint(0)).to.be.ok();
-            expect(utilx.Number.isUint(utilx.Number.MAX_INTEGER)).to.be.ok();
+            expect(utilx.Number.isUint(utilx.Number.MAX_SAFE_INTEGER)).to.be.ok();
         });
 
         it('should be falsy on non-integers', function () {

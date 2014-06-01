@@ -51,8 +51,8 @@
             expect(utilx.Number.toUint(' 10.123')).to.be(toUint(' 10.123'));
             expect(utilx.Number.toUint('10.123 ')).to.be(toUint('10.123 '));
             expect(utilx.Number.toUint(' 10.123 ')).to.be(toUint(' 10.123 '));
-            expect(utilx.Number.toUint(utilx.Number.MAX_INTEGER + 1)).to.be(0);
-            expect(utilx.Number.toUint(-1)).to.be(utilx.Number.MAX_INTEGER);
+            expect(utilx.Number.toUint(utilx.Number.MAX_SAFE_INTEGER + 1)).to.be(0);
+            expect(utilx.Number.toUint(-1)).to.be(utilx.Number.MAX_SAFE_INTEGER);
         });
     });
 }());

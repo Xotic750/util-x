@@ -11,8 +11,8 @@
         it('should be truthy on integers', function () {
             expect(utilx.Number.isInteger(4)).to.be.ok();
             expect(utilx.Number.isInteger(4.0)).to.be.ok();
-            expect(utilx.Number.isInteger(utilx.Number.MAX_INTEGER)).to.be.ok();
-            expect(utilx.Number.isInteger(utilx.Number.MIN_INTEGER)).to.be.ok();
+            expect(utilx.Number.isInteger(utilx.Number.MAX_SAFE_INTEGER)).to.be.ok();
+            expect(utilx.Number.isInteger(utilx.Number.MIN_SAFE_INTEGER)).to.be.ok();
         });
 
         it('should be falsy on non-integers', function () {
@@ -147,9 +147,9 @@
             expect(utilx.Number.isInteger(-3.4)).to.not.be.ok();
         });
 
-        it('should be false when abs(number) is 2^53 or larger', function () {
-            expect(utilx.Number.isInteger(Math.pow(2, 53))).to.not.be.ok();
-            expect(utilx.Number.isInteger(-Math.pow(2, 53))).to.not.be.ok();
+        it('should be true when abs(number) is 2^53 or larger', function () {
+            expect(utilx.Number.isInteger(Math.pow(2, 53))).to.be.ok();
+            expect(utilx.Number.isInteger(-Math.pow(2, 53))).to.be.ok();
         });
 
         it('should be true when abs(number) is less than 2^53', function () {

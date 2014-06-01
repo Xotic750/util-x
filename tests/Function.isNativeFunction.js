@@ -1,4 +1,4 @@
-/*global require, describe, it, window */
+/*global require, describe, it, window, console */
 
 (function () {
     'use strict';
@@ -84,9 +84,13 @@
         }
 
         it('only user functions should be ok in each case', function () {
+            console.log(utilx.String.ToString(utilx.Function.noop));
             expect(utilx.Function.isFunction(utilx.Function.noop) && !utilx.Function.isNativeFunction(utilx.Function.noop)).to.be.ok();
+            console.log(utilx.String.ToString(describe));
             expect(utilx.Function.isFunction(describe) && !utilx.Function.isNativeFunction(describe)).to.be.ok();
+            console.log(utilx.String.ToString(expect));
             expect(utilx.Function.isFunction(expect) && !utilx.Function.isNativeFunction(expect)).to.be.ok();
+            console.log(utilx.String.ToString(it));
             expect(utilx.Function.isFunction(it) && !utilx.Function.isNativeFunction(it)).to.be.ok();
         });
 

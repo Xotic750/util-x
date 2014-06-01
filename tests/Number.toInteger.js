@@ -8,6 +8,40 @@
         expect = required.expect;
 
     describe('Number.toInteger', function () {
+        it('should throw a TypeError in each case', function () {
+            expect(function () {
+                utilx.Number.toInteger({toString: ''});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Number.toInteger({toString: '1'});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Number.toInteger({toString: 1});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Number.toInteger({toString: 1.1});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            /*jshint -W047 */
+            expect(function () {
+                utilx.Number.toInteger({toString: 1.});
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+            /*jshint +W047 */
+        });
+
         it('should not throw an error in each case', function () {
             expect(utilx.Number.toInteger()).to.be(0);
             expect(utilx.Number.toInteger(undefined)).to.be(0);
@@ -82,38 +116,6 @@
             expect(utilx.Number.toInteger({valueOf: 1.1})).to.be(0);
             /*jshint -W047 */
             expect(utilx.Number.toInteger({valueOf: 1.})).to.be(0);
-            /*jshint +W047 */
-
-            expect(function () {
-                utilx.Number.toInteger({toString: ''});
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Number.toInteger({toString: '1'});
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Number.toInteger({toString: 1});
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Number.toInteger({toString: 1.1});
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            /*jshint -W047 */
-            expect(function () {
-                utilx.Number.toInteger({toString: 1.});
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
             /*jshint +W047 */
 
             expect(utilx.Number.toInteger(function () { return 1; })).to.be(0);

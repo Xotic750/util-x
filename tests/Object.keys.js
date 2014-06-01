@@ -63,6 +63,50 @@
             keys2 = utilx.Object.keys(obj2);
             /*jshint +W001 */
 
+        it('should throw if no arguments', function () {
+            expect(function () {
+                utilx.Object.keys();
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is undefined', function () {
+            expect(function () {
+                utilx.Object.keys(undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if argument is null', function () {
+            expect(function () {
+                utilx.Object.keys(null);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw an TypeError if argument is primitive', function () {
+            expect(function () {
+                utilx.Object.keys(42);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.keys(true);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+
+            expect(function () {
+                utilx.Object.keys('a');
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
         it('should not throw an error in each case', function () {
             expect(keys.length).to.be(14);
             expect(utilx.Array.isArray(keys)).to.be.ok();
@@ -75,12 +119,6 @@
                 expect(utilx.Array.indexOf(loopedValues, name)).not.to.be(-1);
             });
 
-            expect(function () {
-                utilx.Object.keys(42);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
             expect(keys2.length).to.be(7);
             expect(utilx.Array.isArray(keys2)).to.be.ok();
             utilx.Array.forEach(keys2, function (name) {
@@ -91,7 +129,9 @@
                 // should return names which are enumerable
                 expect(utilx.Array.indexOf(loopedValues2, name)).not.to.be(-1);
             });
+        });
 
+        it('should work with arguments object', function () {
             expect(utilx.Object.keys(utilx.Function.returnArgs(1, 2)).length).to.be(2);
         });
 

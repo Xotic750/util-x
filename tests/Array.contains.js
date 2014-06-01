@@ -16,7 +16,8 @@
                 'isPrototypeOf',
                 'propertyIsEnumerable',
                 'constructor'
-            ];
+            ],
+            arr2 = [0, 1, 2, 3, 4, 5];
 
         it('should throw if no arguments', function () {
             expect(function () {
@@ -42,7 +43,7 @@
             });
         });
 
-        it('should not throw an error in each case', function () {
+        it('should find the string in the array', function () {
             expect(utilx.Array.contains(arr, 'toString')).to.be.ok();
             expect(utilx.Array.contains(arr, 'toLocaleString')).to.be.ok();
             expect(utilx.Array.contains(arr, 'valueOf')).to.be.ok();
@@ -50,11 +51,31 @@
             expect(utilx.Array.contains(arr, 'isPrototypeOf')).to.be.ok();
             expect(utilx.Array.contains(arr, 'propertyIsEnumerable')).to.be.ok();
             expect(utilx.Array.contains(arr, 'constructor')).to.be.ok();
+        });
+
+        it('should not find the string in the array', function () {
             expect(utilx.Array.contains(arr, 'foo')).to.not.be.ok();
             expect(utilx.Array.contains(arr, 'bar')).to.not.be.ok();
             expect(utilx.Array.contains(arr, 'fuz')).to.not.be.ok();
             expect(utilx.Array.contains(arr, 'push')).to.not.be.ok();
             expect(utilx.Array.contains(arr, 'pop')).to.not.be.ok();
+        });
+
+        it('should find the number in the array', function () {
+            expect(utilx.Array.contains(arr2, 0)).to.be.ok();
+            expect(utilx.Array.contains(arr2, 1)).to.be.ok();
+            expect(utilx.Array.contains(arr2, 2)).to.be.ok();
+            expect(utilx.Array.contains(arr2, 3)).to.be.ok();
+            expect(utilx.Array.contains(arr2, 4)).to.be.ok();
+            expect(utilx.Array.contains(arr2, 5)).to.be.ok();
+        });
+
+        it('should not find the number in the array', function () {
+            expect(utilx.Array.contains(arr, 6)).to.not.be.ok();
+            expect(utilx.Array.contains(arr, 7)).to.not.be.ok();
+            expect(utilx.Array.contains(arr, 8)).to.not.be.ok();
+            expect(utilx.Array.contains(arr, 9)).to.not.be.ok();
+            expect(utilx.Array.contains(arr, 10)).to.not.be.ok();
         });
     });
 }());
