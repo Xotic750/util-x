@@ -5,7 +5,8 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.lastIndexOf', function () {
         var arr = [
@@ -17,12 +18,12 @@
                 'propertyIsEnumerable',
                 'constructor'
             ],
-            arr2 = [2, 3, undefined, true, 'hej', null, 2, false, 0, , 9],
+            arr2 = create(2, 3, undefined, true, 'hej', null, 2, false, 0, 8, 9),
             arr3 = [0, 1, 2, 3, 4, 5];
 
         delete arr2[1];
         delete arr2[7];
-
+        delete arr2[8];
         it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Array.lastIndexOf();

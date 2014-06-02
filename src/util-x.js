@@ -6891,7 +6891,7 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
      */
     if (!testShims && $.Function.isNativeFunction(base.Object.assign)) {
-        $.Object.assign = base.ToObjectFixIndexedAccess.assign;
+        $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
             var object = $.Object.ToObject(target);
@@ -8081,7 +8081,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = function () {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = slice($.Object.ToObjectFixIndexedAccess(this)),
             lastElement,
             val;
 
@@ -8107,6 +8107,27 @@
     };
 
     $.Array.powerSet = $.Function.ToMethod($.Array.prototype.powerSet);
+
+    /**
+     * Convert an array to a plain object representation.
+     * @memberof utilx.Array
+     * @name toObject
+     * @function
+     * @param {ArrayLike} array
+     * @returns {Object}
+     */
+    $.Array.prototype.toObject = function () {
+        var object = $.Object.ToObjectFixIndexedAccess(this);
+
+        return $.Array.reduce(object, function (acc, it, idx) {
+            acc[idx] = it;
+            acc.length = idx + 1;
+
+            return acc;
+        }, {});
+    };
+
+    $.Array.toObject = $.Function.ToMethod($.Array.prototype.toObject);
 
     /**
      * Creates an instance of utilx from the internal $ object.

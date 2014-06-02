@@ -5,7 +5,8 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.findIndex', function () {
         var list = [5, 10, 15, 20];
@@ -91,9 +92,9 @@
 
         it('should work with an array-like object', function () {
             var obj = {
-                    '0': 1,
-                    '1': 2,
-                    '2': 3,
+                    0: 1,
+                    1: 2,
+                    2: 3,
                     length: 3
                 },
                 foundIndex = utilx.Array.findIndex(obj, function (item) {
@@ -105,9 +106,9 @@
 
         it('should work with an array-like object with negative length', function () {
             var obj = {
-                    '0': 1,
-                    '1': 2,
-                    '2': 3,
+                    0: 1,
+                    1: 2,
+                    2: 3,
                     length: -3
                 },
                 foundIndex = utilx.Array.findIndex(obj, function () {
@@ -118,38 +119,39 @@
         });
 
         it('should work with a sparse array', function () {
-            var obj = [1, , undefined],
+            var obj = create('[1, , undefined]'),
                 seen = [],
                 foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                    seen.push([idx, item]);
+                    utilx.Array.assign(seen, idx, [idx, item]);
 
                     return utilx.Object.isUndefined(item);
-                });
+                }),
+                expected = [];
 
+            utilx.Array.assign(expected, 0, [0, 1]);
+            utilx.Array.assign(expected, 2, create(2, undefined));
             expect(foundIndex).to.equal(2);
-            expect(seen).to.eql([
-                [0, 1],
-                [2, undefined]
-            ]);
+            expect(seen).to.eql(expected);
         });
 
         it('should work with a sparse array-like object', function () {
             var obj = {
-                    '0': 1,
-                    '2': undefined,
+                    0: 1,
+                    2: undefined,
                     length: 3.2
                 },
                 seen = [],
                 foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                    seen.push([idx, item]);
-                    return false;
-                });
+                    utilx.Array.assign(seen, idx, [idx, item]);
 
+                    return false;
+                }),
+                expected = [];
+
+            utilx.Array.assign(expected, 0, [0, 1]);
+            utilx.Array.assign(expected, 2, create(2, undefined));
             expect(foundIndex).to.equal(-1);
-            expect(seen).to.eql([
-                [0, 1],
-                [2, undefined]
-            ]);
+            expect(seen).to.eql(expected);
         });
 
         it('does not autobox the content in strict mode', function () {

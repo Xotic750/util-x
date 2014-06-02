@@ -223,5 +223,34 @@
             arr3 = utilx.Array.shuffle(arr3, '5');
             expect(arr3).to.be(arr3);
         });
+
+        it('should work with arguments', function () {
+            var arr1 = utilx.Function.returnArgs(1, 2, 3),
+                arr2 = utilx.Function.returnArgs(1, 2, 3),
+                arr3 = utilx.Function.returnArgs();
+
+            utilx.Array.assign(arr3, 1, 2);
+            utilx.Array.assign(arr3, 2, 3);
+            utilx.Array.assign(arr3, 3, 1);
+
+            utilx.Array.shuffle(arr1);
+            expect(arr1.length).to.be(3);
+            utilx.Array.shuffle(arr1);
+            expect(arr1.length).to.be(3);
+
+            utilx.Array.shuffle(arr2, 5);
+            expect(arr2.length).to.be(3);
+            utilx.Array.shuffle(arr2, 5);
+            expect(arr2.length).to.be(3);
+            utilx.Array.shuffle(arr2, '5');
+            expect(arr2.length).to.be(3);
+            utilx.Array.shuffle(arr2, '5');
+            expect(arr2.length).to.be(3);
+
+            utilx.Array.shuffle(arr3);
+            expect(arr3.length).to.be(4);
+            utilx.Array.shuffle(arr3, '5');
+            expect(arr3.length).to.be(4);
+        });
     });
 }());

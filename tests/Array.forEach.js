@@ -5,47 +5,26 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.forEach', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            forEachArray = [
-                0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
-                true, false, undefined,
-                null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
-            ],
+            forEachArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+                                  new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
-            expected = {
-                0: 2,
-                2: undefined,
-                3: true,
-                4: 'hej',
-                5: null,
-                6: false,
-                7: 0,
-                9: 9
-            },
+            expected,
             str = 'Hello, World!',
             testIndex;
 
-        forEachArray[24] = NaN;
-        forEachArray[25] = 'end';
-
-        function createArrayLikeFromArray(arr) {
-            var o = {};
-
-            utilx.Array.forEach(arr, function (e, i) {
-                o[i] = e;
-            });
-
-            o.length = arr.length;
-
-            return o;
-        }
+        utilx.Array.assign(forEachArray, 24, NaN);
+        utilx.Array.assign(forEachArray, 25, 'end');
 
         beforeEach(function () {
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
+            delete testSubject[8];
+            expected = utilx.Array.toObject(testSubject);
         });
 
         it('should throw if no arguments', function () {
@@ -99,7 +78,8 @@
                 expect(utilx.Object.gte(index, 0)).to.be.ok();
                 expect(utilx.Object.lte(index, lastIndex)).to.be.ok();
                 if (utilx.Number.isNumber(element) && utilx.Number.isNaN(element)) {
-                    expect(utilx.Number.isNumber(forEachArray[index]) && utilx.Number.isNaN(forEachArray[index])).to.be(true);
+                    expect(utilx.Number.isNumber(forEachArray[index]) &&
+                           utilx.Number.isNaN(forEachArray[index])).to.be(true);
                 } else {
                     expect(element).to.be(forEachArray[index]);
                 }
@@ -152,6 +132,7 @@
 
             utilx.Array.forEach(testSubject, function (obj, index) {
                 actual[index] = obj;
+                actual.length = index + 1;
             });
 
             expect(actual).to.eql(expected);
@@ -165,6 +146,7 @@
 
             utilx.Array.forEach(testSubject, function (obj, index) {
                 this.a[index] = obj;
+                this.a.length = index + 1;
             }, o);
 
             expect(actual).to.eql(expected);
@@ -188,10 +170,11 @@
 
         it('should iterate all in an array-like object', function () {
             var actual = {},
-                ts = createArrayLikeFromArray(testSubject);
+                ts = utilx.Array.toObject(testSubject);
 
             utilx.Array.forEach(ts, function (obj, index) {
                 actual[index] = obj;
+                actual.length = index + 1;
             });
 
             expect(actual).to.eql(expected);
@@ -199,13 +182,14 @@
 
         it('should iterate all in an array-like object using a context', function () {
             var actual = {},
-                ts = createArrayLikeFromArray(testSubject),
+                ts = utilx.Array.toObject(testSubject),
                 o = {
                     a: actual
                 };
 
             utilx.Array.forEach(ts, function (obj, index) {
                 this.a[index] = obj;
+                this.a.length = index + 1;
             }, o);
 
             expect(actual).to.eql(expected);

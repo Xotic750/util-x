@@ -32,9 +32,8 @@
             });
         });
 
-        it('should not throw an error in each case', function () {
-            var list = [1, 2, 1, 3, 1, 4],
-                result;
+        it('array', function () {
+            var list = [1, 2, 1, 3, 1, 4];
 
             expect(utilx.Array.unique(list)).to.eql([1, 2, 3, 4]);
 
@@ -63,13 +62,16 @@
             list = [1, 2, 2, NaN, 3, 4, NaN, 4];
             expect(utilx.Array.unique(list, utilx.Object.is).join(',')).to.be([1, 2, NaN, 3, 4].join(','));
 
-            result = (function () {
-                return utilx.Array.unique(arguments);
-            }(1, 2, 1, 3, 1, 4));
+            expect(utilx.Array.unique([])).to.eql([]);
+        });
 
-            expect(result).to.eql([1, 2, 3, 4]);
+        it('arguments', function () {
+            expect(utilx.Array.unique(utilx.Function.returnArgs(1, 2, 1, 3, 1, 4))).to.eql([1, 2, 3, 4]);
+            expect(utilx.Array.unique(utilx.Function.returnArgs())).to.eql([]);
+        });
 
-            list = {
+        it('object with length', function () {
+            var list = {
                 0: 1,
                 1: 2,
                 2: 2,
@@ -80,8 +82,21 @@
             };
 
             expect(utilx.Array.unique(list)).to.eql([1, 2, 3, 4]);
+            expect(utilx.Array.unique({length: 0})).to.eql([]);
+        });
+
+        it('object without length', function () {
+            var list = {
+                0: 1,
+                1: 2,
+                2: 2,
+                3: 3,
+                4: 4,
+                5: 4
+            };
+
+            expect(utilx.Array.unique(list)).to.eql([]);
             expect(utilx.Array.unique({})).to.eql([]);
-            expect(utilx.Array.unique([])).to.eql([]);
         });
     });
 }());

@@ -5,27 +5,26 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.map', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            mapArray = [
-                0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
-                true, false, undefined,
-                null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
-            ],
+            mapArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+                                  new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
             testIndex,
             callback;
 
-        mapArray[24] = NaN;
-        mapArray[25] = 'end';
+        utilx.Array.assign(mapArray, 24, NaN);
+        utilx.Array.assign(mapArray, 25, 'end');
 
         beforeEach(function () {
             var i = -1;
 
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
+            delete testSubject[8];
             callback = function () {
                 i += 1;
 
@@ -139,7 +138,7 @@
         });
 
         it('should only run for the number of objects in the array when it started', function () {
-            var arr = [1, 2, 3, , 5],
+            var arr = create('[1, 2, 3, , 5]'),
                 i = 0;
 
             utilx.Array.map(arr, function (o) {
@@ -149,20 +148,20 @@
                 return o;
             });
 
-            expect(arr).to.eql([1, 2, 3, , 5, 4, 5, 6, 8]);
+            expect(arr).to.eql(create('[1, 2, 3, , 5, 4, 5, 6, 8]'));
             expect(i).to.be(4);
         });
 
         it('should properly translate the values as according to the callback', function () {
             var result = utilx.Array.map(testSubject, callback),
-                expected = [0, 0, 1, 2, 3, 4, 5, 6, , 7];
+                expected = create('[0, 0, 1, 2, 3, 4, 5, 6, , 7]');
 
             delete expected[1];
             expect(result).to.eql(expected);
         });
 
         it('should skip non-existing values', function () {
-            var array = [1, 2, 3, 4, , 6],
+            var array = create('[1, 2, 3, 4, , 6]'),
                 i = 0;
 
             delete array[2];

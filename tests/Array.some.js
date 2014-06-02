@@ -5,35 +5,22 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.some', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            someArray = [
-                0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
-                true, false, undefined,
-                null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
-            ],
+            someArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+                                  new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
             testIndex,
             expected,
             numberOfRuns;
 
-        function createArrayLikeFromArray(arr) {
-            var o = {};
-
-            utilx.Array.forEach(arr, function (e, i) {
-                o[i] = e;
-            });
-
-            o.length = arr.length;
-
-            return o;
-        }
-
         beforeEach(function () {
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
+            delete testSubject[8];
             numberOfRuns = 0;
             expected = {
                 0: 2,
@@ -42,9 +29,8 @@
             };
         });
 
-        someArray[24] = NaN;
-        someArray[25] = 'end';
-
+        utilx.Array.assign(someArray, 24, NaN);
+        utilx.Array.assign(someArray, 25, 'end');
         it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Array.some();
@@ -211,7 +197,7 @@
         });
 
         it('should stop after 3 elements in an array-like object', function () {
-            var ts = createArrayLikeFromArray(testSubject),
+            var ts = utilx.Array.toObject(testSubject),
                 actual = {};
 
             utilx.Array.some(ts, function (obj, index) {
@@ -228,7 +214,7 @@
         });
 
         it('should stop after 3 elements in an array-like object using a context', function () {
-            var ts = createArrayLikeFromArray(testSubject),
+            var ts = utilx.Array.toObject(testSubject),
                 actual = {},
                 o = {
                     a: actual

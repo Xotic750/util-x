@@ -8,24 +8,12 @@
         expect = required.expect;
 
     describe('Array.reduceRight', function () {
-        function createArrayLikeFromArray(arr) {
-            var o = {};
-
-            utilx.Array.forEach(arr, function (e, i) {
-                o[i] = e;
-            });
-
-            o.length = arr.length;
-
-            return o;
-        }
-
         var testSubject,
             testSubject2;
 
         beforeEach(function () {
             testSubject = [1, 2, 3];
-            testSubject2 = createArrayLikeFromArray(testSubject);
+            testSubject2 = utilx.Array.toObject(testSubject);
         });
 
         it('should throw if no arguments', function () {
@@ -254,7 +242,7 @@
         });
 
         it('should not directly affect the passed array', function () {
-            var copy = createArrayLikeFromArray(testSubject);
+            var copy = utilx.Array.toObject(testSubject);
 
             utilx.Array.reduceRight(testSubject2, function (a, b) {
                 return a + b;

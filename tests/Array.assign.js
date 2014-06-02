@@ -5,9 +5,25 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.assign', function () {
+        var testSubject = create(
+                undefined,
+                null,
+                -1,
+                0,
+                1,
+                false,
+                true,
+                undefined,
+                '',
+                'abc',
+                null,
+                undefined
+            );
+
         it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Array.assign();
@@ -65,20 +81,7 @@
         });
 
         it('should work on array', function () {
-            var arrCmp = [
-                    undefined,
-                    null,
-                    -1,
-                    0,
-                    1,
-                    false,
-                    true,
-                    undefined,
-                    '',
-                    'abc',
-                    null,
-                    undefined
-                ],
+            var arrCmp = utilx.Array.slice(testSubject),
                 arr = [],
                 i;
 
@@ -268,21 +271,7 @@
         });
 
         it('should work on objects with length', function () {
-            var arrCmp = {
-                    0: undefined,
-                    1: null,
-                    2: -1,
-                    3: 0,
-                    4: 1,
-                    5: false,
-                    6: true,
-                    7: undefined,
-                    8: '',
-                    9: 'abc',
-                    10: null,
-                    11: undefined,
-                    length: 12
-                },
+            var arrCmp = utilx.Array.toObject(testSubject),
                 arr = {
                     length: 0
                 },
@@ -313,23 +302,11 @@
         });
 
         it('should work on objects without length', function () {
-            var arrCmp = {
-                    0: undefined,
-                    1: null,
-                    2: -1,
-                    3: 0,
-                    4: 1,
-                    5: false,
-                    6: true,
-                    7: undefined,
-                    8: '',
-                    9: 'abc',
-                    10: null,
-                    11: undefined
-                },
+            var arrCmp = utilx.Array.toObject(testSubject),
                 arr = {},
                 i;
 
+            delete arrCmp.length;
             expect(utilx.Array.assign(arr, 0, undefined)).to.be(undefined);
             expect(utilx.Array.assign(arr, 1, null)).to.be(undefined);
             expect(utilx.Array.assign(arr, 2, -1)).to.be(undefined);
@@ -355,20 +332,7 @@
         });
 
         it('should work on arguments', function () {
-            var arrCmp = [
-                    undefined,
-                    null,
-                    -1,
-                    0,
-                    1,
-                    false,
-                    true,
-                    undefined,
-                    '',
-                    'abc',
-                    null,
-                    undefined
-                ],
+            var arrCmp = utilx.Array.slice(testSubject),
                 arr = utilx.Function.returnArgs(),
                 i;
 

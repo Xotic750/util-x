@@ -5,22 +5,20 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.filter', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            filterArray = [
-                0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {},
-                true, false, undefined,
-                null, new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity
-            ],
+            filterArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+                                  new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
             testIndex,
             filteredArray,
             callback;
 
-        filterArray[24] = NaN;
-        filterArray[25] = 'end';
+        utilx.Array.assign(filterArray, 24, NaN);
+        utilx.Array.assign(filterArray, 25, 'end');
         callback = function callback(o, i) {
             /*jslint unparam: true */
             /*jshint unused: false */
@@ -28,9 +26,10 @@
         };
 
         beforeEach(function () {
-            testSubject = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
-            filteredArray = [2, undefined, 'hej', false, 0, 9];
+            delete testSubject[8];
+            filteredArray = create(2, undefined, 'hej', false, 0, 9);
         });
 
         it('should throw if no arguments', function () {
@@ -84,7 +83,8 @@
                 expect(utilx.Object.gte(index, 0)).to.be.ok();
                 expect(utilx.Object.lte(index, lastIndex)).to.be.ok();
                 if (utilx.Number.isNumber(element) && utilx.Number.isNaN(element)) {
-                    expect(utilx.Number.isNumber(filterArray[index]) && utilx.Number.isNaN(filterArray[index])).to.be.ok();
+                    expect(utilx.Number.isNumber(filterArray[index]) &&
+                            utilx.Number.isNaN(filterArray[index])).to.be.ok();
                 } else {
                     expect(element).to.be(filterArray[index]);
                 }

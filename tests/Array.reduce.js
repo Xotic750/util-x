@@ -141,8 +141,8 @@
             });
 
             expect(visited).to.eql({
-                '1': true,
-                '3': true
+                1: true,
+                3: true
             });
         });
 
