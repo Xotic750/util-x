@@ -114,7 +114,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Array.slice(arr)).to.eql(arrCmp);
+            expect(Array.prototype.slice.call(arr)).to.eql(arrCmp);
         });
 
         it('object with length', function () {

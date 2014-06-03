@@ -136,7 +136,7 @@
                 filled;
 
             utilx.Array.assign(original, 5, 6);
-            filled = utilx.Array.slice(original);
+            filled = Array.prototype.slice.call(original);
             utilx.Array.assign(filled, 1, -1);
             utilx.Array.assign(filled, 2, -1);
             expect(utilx.Array.fill(original, -1, 1, 3)).to.eql(filled);

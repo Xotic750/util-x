@@ -31,7 +31,7 @@
         });
 
         it('test utilx slice on arguments', function () {
-            var arr = utilx.Array.slice(utilx.Function.returnArgs(1, null, undefined));
+            var arr = Array.prototype.slice.call(utilx.Function.returnArgs(1, null, undefined));
 
             expect(arr.length).to.be(3);
             expect(arr).to.eql(test);

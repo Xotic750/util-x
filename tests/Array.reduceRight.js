@@ -135,7 +135,7 @@
         });
 
         it('should not directly affect the passed array', function () {
-            var copy = utilx.Array.slice(testSubject);
+            var copy = Array.prototype.slice.call(testSubject);
 
             utilx.Array.reduceRight(testSubject, function (a, b) {
                 return a + b;

@@ -53,12 +53,12 @@
         });
 
         it('basic implementation test 1', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
             expect(utilx.Array.splice(test, 0)).to.eql(a);
         });
 
         it('basic implementation test 2', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
             utilx.Array.splice(test, 0, 2);
             expect(test).to.eql([b]);
         });
@@ -148,28 +148,28 @@
         });
 
         it('should do nothing if method called with no arguments', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
             expect(utilx.Array.splice(test)).to.eql([]);
             expect(test).to.eql(a);
         });
 
         it('should set first argument to 0 if first argument is set but undefined', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
 
-            var test2 = utilx.Array.slice(test, 0);
+            var test2 = Array.prototype.slice.call(test, 0);
 
             expect(utilx.Array.splice(test, undefined, 2)).to.eql(test2.splice(0, 2));
             expect(test).to.eql(test2);
         });
 
         it('should deleted and return all items after "start" when second argument is undefined', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
             expect(utilx.Array.splice(test, 0)).to.eql(a);
             expect(test).to.eql([]);
         });
 
         it('should deleted and return all items after "start" when second argument is undefined', function () {
-            test = utilx.Array.slice(a, 0);
+            test = Array.prototype.slice.call(a, 0);
             expect(utilx.Array.splice(test, 2)).to.eql([b]);
             expect(test).to.eql([1, 'a']);
         });

@@ -9,7 +9,15 @@
         create = required.Array.create;
 
     describe('Array.assign', function () {
-        var testSubject = create(
+        var overflow = Math.pow(2, 32),
+            maxLength = overflow - 1,
+            maxLast = maxLength - 1,
+            overflowHex = 0xFFFFFFFF,
+            minHex = 0x0,
+            maxLastHex = 0xFFFFFFFE,
+            minHexStr = '0x0',
+            maxLastHexStr = '0x' + maxLast.toString(16),
+            testSubject = create(
                 undefined,
                 null,
                 -1,
@@ -81,7 +89,7 @@
         });
 
         it('should work on array', function () {
-            var arrCmp = utilx.Array.slice(testSubject),
+            var arrCmp = Array.prototype.slice.call(testSubject),
                 arr = [],
                 i;
 
@@ -112,142 +120,142 @@
         it('string number in range', function () {
             var a = [],
                 b = [],
-                max = (utilx.Number.MAX_UINT32 - 1).toString();
+                max = maxLast.toString();
 
             expect(utilx.Array.assign(a, '0', '1')).to.be(1);
             b['0'] = '1';
             expect(b.length).to.be(1);
-            expect(utilx.Array.assign(a, max, '1')).to.be(utilx.Number.MAX_UINT32);
+            expect(utilx.Array.assign(a, max, '1')).to.be(maxLength);
             b[max] = '1';
-            expect(b.length).to.be(utilx.Number.MAX_UINT32);
+            expect(b.length).to.be(maxLength);
         });
 
         it('string number out of range', function () {
             var a = [],
                 b = [],
-                max = (utilx.Number.MAX_UINT32).toString();
+                over = overflow.toString();
 
             expect(utilx.Array.assign(a, '-1', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '-1')).to.be.ok();
+            expect(a.hasOwnProperty('-1')).to.be.ok();
             b['-1'] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '-1')).to.be.ok();
-            expect(utilx.Array.assign(a, max, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, max)).to.be.ok();
-            b[max] = '1';
+            expect(b.hasOwnProperty('-1')).to.be.ok();
+            expect(utilx.Array.assign(a, over, '1')).to.be(0);
+            expect(a.hasOwnProperty(over)).to.be.ok();
+            b[over] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, max)).to.be.ok();
+            expect(b.hasOwnProperty(over)).to.be.ok();
         });
 
         it('hex number in range', function () {
             var a = [],
                 b = [];
 
-            expect(utilx.Array.assign(a, 0x0, '1')).to.be(1);
-            expect(utilx.Object.hasOwn(a, 0x0)).to.be.ok();
-            b[0x0] = '1';
+            expect(utilx.Array.assign(a, minHex, '1')).to.be(1);
+            expect(a.hasOwnProperty(minHex)).to.be.ok();
+            b[minHex] = '1';
             expect(b.length).to.be(1);
-            expect(utilx.Object.hasOwn(b, 0x0)).to.be.ok();
-            expect(utilx.Array.assign(a, 0xFFFFFFFE, '1')).to.be(utilx.Number.MAX_UINT32);
-            expect(utilx.Object.hasOwn(a, 0xFFFFFFFE)).to.be.ok();
-            b[0xFFFFFFFE] = '1';
-            expect(b.length).to.be(utilx.Number.MAX_UINT32);
-            expect(utilx.Object.hasOwn(b, 0xFFFFFFFE)).to.be.ok();
+            expect(b.hasOwnProperty(minHex)).to.be.ok();
+            expect(utilx.Array.assign(a, maxLastHex, '1')).to.be(maxLength);
+            expect(a.hasOwnProperty(maxLastHex)).to.be.ok();
+            b[maxLastHex] = '1';
+            expect(b.length).to.be(maxLength);
+            expect(b.hasOwnProperty(maxLastHex)).to.be.ok();
         });
 
         it('hex number out of range', function () {
             var a = [],
                 b = [];
 
-            expect(utilx.Array.assign(a, 0xFFFFFFFF, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, 0xFFFFFFFF)).to.be.ok();
-            b[0xFFFFFFFF] = '1';
+            expect(utilx.Array.assign(a, overflowHex, '1')).to.be(0);
+            expect(a.hasOwnProperty(overflowHex)).to.be.ok();
+            b[overflowHex] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, 0xFFFFFFFF)).to.be.ok();
+            expect(b.hasOwnProperty(overflowHex)).to.be.ok();
         });
 
         it('hex string in range', function () {
             var a = [],
                 b = [];
 
-            expect(utilx.Array.assign(a, '0x0', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '0x0')).to.be.ok();
-            b['0x0'] = '1';
+            expect(utilx.Array.assign(a, minHexStr, '1')).to.be(0);
+            expect(a.hasOwnProperty(minHexStr)).to.be.ok();
+            b[minHexStr] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '0x0')).to.be.ok();
-            expect(utilx.Array.assign(a, '0xFFFFFFFE', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '0xFFFFFFFE')).to.be.ok();
-            b['0xFFFFFFFE'] = '1';
+            expect(b.hasOwnProperty(minHexStr)).to.be.ok();
+            expect(utilx.Array.assign(a, maxLastHexStr, '1')).to.be(0);
+            expect(a.hasOwnProperty(maxLastHexStr)).to.be.ok();
+            b[maxLastHexStr] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '0xFFFFFFFE')).to.be.ok();
+            expect(b.hasOwnProperty(maxLastHexStr)).to.be.ok();
         });
 
         it('string number leading space', function () {
             var a = [],
                 b = [],
-                max = ' ' + (utilx.Number.MAX_UINT32 - 1).toString();
+                max = ' ' + maxLast.toString();
 
             expect(utilx.Array.assign(a, ' 0', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, ' 0')).to.be.ok();
+            expect(a.hasOwnProperty(' 0')).to.be.ok();
             b[' 0'] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, ' 0')).to.be.ok();
+            expect(b.hasOwnProperty(' 0')).to.be.ok();
             expect(utilx.Array.assign(a, max, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, max)).to.be.ok();
+            expect(a.hasOwnProperty(max)).to.be.ok();
             b[max] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, max)).to.be.ok();
+            expect(b.hasOwnProperty(max)).to.be.ok();
         });
 
         it('string number trailing space', function () {
             var a = [],
                 b = [],
-                max = (utilx.Number.MAX_UINT32 - 1).toString() + ' ';
+                max = maxLast.toString() + ' ';
 
             expect(utilx.Array.assign(a, '0 ', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '0 ')).to.be.ok();
+            expect(a.hasOwnProperty('0 ')).to.be.ok();
             b['0 '] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '0 ')).to.be.ok();
+            expect(b.hasOwnProperty('0 ')).to.be.ok();
             expect(utilx.Array.assign(a, max, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, max)).to.be.ok();
+            expect(a.hasOwnProperty(max)).to.be.ok();
             b[max] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, max)).to.be.ok();
+            expect(b.hasOwnProperty(max)).to.be.ok();
         });
 
         it('string number leading point', function () {
             var a = [],
                 b = [],
-                max = '.' + (utilx.Number.MAX_UINT32 - 1).toString();
+                max = '.' + maxLast.toString();
 
             expect(utilx.Array.assign(a, '.0', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '.0')).to.be.ok();
+            expect(a.hasOwnProperty('.0')).to.be.ok();
             b['.0'] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '.0')).to.be.ok();
+            expect(b.hasOwnProperty('.0')).to.be.ok();
             expect(utilx.Array.assign(a, max, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, max)).to.be.ok();
+            expect(a.hasOwnProperty(max)).to.be.ok();
             b[max] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, max)).to.be.ok();
+            expect(b.hasOwnProperty(max)).to.be.ok();
         });
 
         it('string number trailing point', function () {
             var a = [],
                 b = [],
-                max = (utilx.Number.MAX_UINT32 - 1).toString() + '.';
+                max = maxLast.toString() + '.';
 
             expect(utilx.Array.assign(a, '0.', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '0.')).to.be.ok();
+            expect(a.hasOwnProperty('0.')).to.be.ok();
             b['0.'] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '0.')).to.be.ok();
+            expect(b.hasOwnProperty('0.')).to.be.ok();
             expect(utilx.Array.assign(a, max, '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, max)).to.be.ok();
+            expect(a.hasOwnProperty(max)).to.be.ok();
             b[max] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, max)).to.be.ok();
+            expect(b.hasOwnProperty(max)).to.be.ok();
         });
 
         it('floating point number', function () {
@@ -264,10 +272,10 @@
                 b = [];
 
             expect(utilx.Array.assign(a, '1.1', '1')).to.be(0);
-            expect(utilx.Object.hasOwn(a, '1.1')).to.be.ok();
+            expect(a.hasOwnProperty('1.1')).to.be.ok();
             b['1.1'] = '1';
             expect(b.length).to.be(0);
-            expect(utilx.Object.hasOwn(b, '1.1')).to.be.ok();
+            expect(b.hasOwnProperty('1.1')).to.be.ok();
         });
 
         it('should work on objects with length', function () {
@@ -332,7 +340,7 @@
         });
 
         it('should work on arguments', function () {
-            var arrCmp = utilx.Array.slice(testSubject),
+            var arrCmp = Array.prototype.slice.call(testSubject),
                 arr = utilx.Function.returnArgs(),
                 i;
 
@@ -357,7 +365,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Array.slice(arr)).to.eql(arrCmp);
+            expect(Array.prototype.slice.call(arr)).to.eql(arrCmp);
         });
     });
 }());
