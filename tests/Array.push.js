@@ -72,11 +72,11 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be(true);
+            expect(arr).to.eql(arrCmp);
         });
 
         it('arguments', function () {
-            var arrCmp = utilx.Function.returnArgs(
+            var arrCmp = create(
                     undefined,
                     null,
                     -1,
@@ -114,7 +114,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be(true);
+            expect(utilx.Array.slice(arr)).to.eql(arrCmp);
         });
 
         it('object with length', function () {
@@ -159,7 +159,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be(true);
+            expect(arr).to.eql(arrCmp);
         });
 
         it('object without length', function () {
@@ -202,7 +202,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be(true);
+            expect(arr).to.eql(arrCmp);
         });
     });
 }());

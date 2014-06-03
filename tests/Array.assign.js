@@ -106,7 +106,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be.ok();
+            expect(arr).to.eql(arrCmp);
         });
 
         it('string number in range', function () {
@@ -298,7 +298,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be.ok();
+            expect(arr).to.eql(arrCmp);
         });
 
         it('should work on objects without length', function () {
@@ -328,7 +328,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(arr, arrCmp)).to.be.ok();
+            expect(arr).to.eql(arrCmp);
         });
 
         it('should work on arguments', function () {
@@ -357,7 +357,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(utilx.Object.deepEqual(utilx.Array.slice(arr), arrCmp)).to.be.ok();
+            expect(utilx.Array.slice(arr)).to.eql(arrCmp);
         });
     });
 }());
