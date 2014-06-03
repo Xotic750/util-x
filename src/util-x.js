@@ -352,7 +352,8 @@
         reverse: Array.prototype.reverse,
         shift: Array.prototype.shift,
         slice: Array.prototype.slice,
-        canIterArgs: true,
+        canEnumerArgs: true,
+        canSliceArgs: true,
         some: Array.prototype.some,
         sort: Array.prototype.sort,
         splice: Array.prototype.splice,
@@ -702,17 +703,79 @@
     }
 
     /**
+     * Returns an arguments object of the arguments supplied.
      * @private
-     * @memberof base.Array
-     * @name canIterArgs
-     * @type {boolean}
+     * @name returnArgs
+     * @function
+     * @argument {...*} [varArgs]
+     * @returns {Arguments}
      */
-    if (!('0' in base.Array.slice.call((function () { return arguments; }(1))))) {
-        base.Array.canIterArgs = false;
+    function returnArgs(varArgs) {
+        /*jslint unparam:true */
+        /*jshint unused:false */
+        return arguments;
     }
 
+    /**
+     * @private
+     * @mermberpf base.Array
+     * @name canEnumerArgs
+     * @type {boolean}
+     */
+    (function () {
+        var args = returnArgs(1, 2, 3, 4, 5, 6, 7, 8, 9, 0),
+            count = 0,
+            prop;
+
+        try {
+            for (prop in args) {
+                /*jslint forin: false */
+                count += 1;
+                /*jslint forin: true */
+            }
+        } catch (eCEA) {
+            count = prop;
+        }
+
+        if (typeof count === 'string' || count < 10) {
+            base.Array.canEnumerArgs = false;
+        }
+    }());
+
+    /**
+     * @private
+     * @mermberpf base.Array
+     * @name canSliceArgs
+     * @type {boolean}
+     */
+    (function () {
+        var args = returnArgs(1, 2, 3, 4, 5, 6, 7, 8, 9, 0),
+            arr,
+            length,
+            index;
+
+        try {
+            arr = base.Array.slice.call(args);
+        } catch (e) {
+            base.Array.canSliceArgs = false;
+        }
+
+        length = arr.length;
+        if (length === 10) {
+            for (index = 0, length = arr.length; index < length; index += 1) {
+                if (typeof arr[index] !== 'number') {
+                    base.Array.canSliceArgs = false;
+                    break;
+                }
+            }
+        } else {
+            base.Array.canSliceArgs = false;
+        }
+    }());
+
     /*global console */
-    console.log('+++++++++ can iterate arguments: ' + base.Array.canIterArgs);
+    console.log('+++++++++ can enumerate arguments: ' + base.Array.canEnumerArgs);
+    console.log('+++++++++ can slice arguments: ' + base.Array.canSliceArgs);
     /**
      * Creates a new array from arguments, starting at start and ending at end.
      * @private
@@ -724,7 +787,7 @@
      * @param {NumberLike} [end]
      * @returns {Array}
      */
-    if (base.Array.canIterArgs) {
+    if (base.Array.canSliceArgs) {
         base.Array.internalSlice = base.Array.slice;
     } else {
         base.Array.internalSlice = function (start, end) {
@@ -764,7 +827,7 @@
 
             val.length = base.Math.max(finalEnd - k, 0);
             while (k < finalEnd) {
-                if ((!base.Array.canIterArgs && isArgs) || (k in obj)) {
+                if ((!base.Array.canEnumerArgs && isArgs) || (k in obj)) {
                     val[next] = obj[k];
                 }
 
@@ -1243,7 +1306,6 @@
          */
         TestConstructor,
         previousIEErrorToString,
-        isArgsInt,
         fixOpera10GetPrototypeOf,
         testValue,
         shouldSplitString,
@@ -1593,11 +1655,7 @@
      * @argument {...*} [varArgs]
      * @returns {Arguments}
      */
-    $.Function.returnArgs = function (varArgs) {
-        /*jslint unparam:true */
-        /*jshint unused:false */
-        return arguments;
-    };
+    $.Function.returnArgs = returnArgs;
 
     /**
      * The abstract operation ToNumber converts its argument to a value of type Number.
@@ -2349,6 +2407,13 @@
             return toClassStr(inputArg) === base.classString.arguments;
         };
     } else {
+        $.Object.isArguments = isArguments = function (inputArg) {
+            return isTypeObject(inputArg) && !hasOwn(inputArg, 'arguments') &&
+                    hasOwn(inputArg, 'callee') && !isEnumerable(inputArg, 'callee') &&
+                    hasOwn(inputArg, 'length') && !isEnumerable(inputArg, 'length') &&
+                    typeof inputArg.length === 'number';
+        };
+        /*
         isArgsInt = function (inputArg) {
             return isTypeObject(inputArg) && !hasOwn(inputArg, 'arguments') &&
                 hasOwn(inputArg, 'callee') && hasOwn(inputArg, 'length') && typeof inputArg.length === 'number';
@@ -2361,6 +2426,7 @@
         } else {
             $.Object.isArguments = isArguments = isArgsInt;
         }
+        */
     }
 
     /**
@@ -2773,7 +2839,7 @@
     function iter(object, has, start, length, reverse, fn, thisArg) {
         var index;
 
-        if (!base.Array.canIterArgs && isArguments(object)) {
+        if (!base.Array.canEnumerArgs && isArguments(object)) {
             has = false;
         }
 
@@ -5362,7 +5428,7 @@
 
         val.length = mMax(finalEnd - k, 0);
         while (k < finalEnd) {
-            if ((!base.Array.canIterArgs && isArguments(object)) || k in object) {
+            if ((!base.Array.canEnumerArgs && isArguments(object)) || k in object) {
                 put(val, next, object[k]);
             }
 
@@ -5385,7 +5451,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
     try {
-        if (testShims || !base.Array.canIterArgs || !isNative(base.Array.slice) ||
+        if (testShims || !base.Array.canSliceArgs || !isNative(base.Array.slice) ||
                 slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), -1).length !== 1 ||
@@ -6380,7 +6446,7 @@
 
             var skipProto = hasFuncProtoBug && isFunction(object),
                 skipErrorProps = hasErrorProps && isErrorTypePrototype(object),
-                props = enumer(base.Array.canIterArgs ? object : slice(object), false, function (unused, prop, obj) {
+                props = enumer(object, false, function (unused, prop, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
                     if (!(skipProto && prop === 'prototype') && !(skipErrorProps &&
@@ -6391,7 +6457,19 @@
                 }, []),
                 ctor,
                 isProto,
-                nonEnum;
+                nonEnum,
+                arr,
+                length;
+
+            if (!base.Array.canEnumerArgs) {
+                arr = slice(object);
+                length = arr.length;
+                iter(arr, true, length, false, function (unused, idx, obj) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    push(this, idx);
+                }, props);
+            }
 
             if (hasDontEnumBug && object !== base.Object.proto) {
                 ctor = object.constructor;
