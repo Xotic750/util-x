@@ -8,25 +8,31 @@
         expect = required.expect;
 
     describe('Object.ToObjectFixIndexedAccess', function () {
-        it('should not throw an error in each case', function () {
+        it('should throw if no arguments', function () {
             expect(function () {
                 utilx.Object.ToObjectFixIndexedAccess();
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is undefined', function () {
             expect(function () {
                 utilx.Object.ToObjectFixIndexedAccess(undefined);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if argument is null', function () {
             expect(function () {
                 utilx.Object.ToObjectFixIndexedAccess(null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should not throw an error in each case', function () {
             expect(typeof utilx.Object.ToObjectFixIndexedAccess(1)).to.be('object');
             expect(typeof utilx.Object.ToObjectFixIndexedAccess(true)).to.be('object');
             expect(typeof utilx.Object.ToObjectFixIndexedAccess('')).to.be('object');

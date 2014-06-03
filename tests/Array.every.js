@@ -252,21 +252,6 @@
             expect(actual[0]).to.be('f');
         });
 
-        it('should have a boxed object as list argument of callback', function () {
-            var actual;
-
-            utilx.Array.every('foo', function (item, index, list) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                actual = list;
-            });
-
-            expect(typeof actual).to.be('object');
-            expect(utilx.Object.ToClassString(actual)).to.be('[object String]');
-            expect(actual.toString()).to.be('foo');
-            expect(actual[0]).to.be('f');
-        });
-
         it('does not autobox the content in strict mode', function () {
             var isStrictMode = (function () {
                     return !this;

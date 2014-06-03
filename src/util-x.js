@@ -4143,7 +4143,7 @@
      */
     $.String.prototype.countCharacter = function (character) {
         var str = onlyCoercibleToString(this),
-            first = charAt(character, 0),
+            first = charAt(onlyCoercibleToString(character), 0),
             val;
 
         if (first === '') {
@@ -4171,7 +4171,7 @@
      */
     $.String.prototype.padLeadingChar = function (character, size) {
         var string = onlyCoercibleToString(this),
-            singleChar = charAt(character, 0),
+            singleChar = charAt(onlyCoercibleToString(character), 0),
             count = toInteger(size) - string.length;
 
         if (count < 0 || count === Infinity) {
@@ -4648,7 +4648,7 @@
             updateLen,
             numIndex,
             number,
-            //string,
+            string,
             lastIndex,
             isInt;
 
@@ -4660,9 +4660,9 @@
                     numIndex = +index;
                     isInt = isInteger(numIndex);
                 } else {
-                    //string = toString(index);
-                    if (test(base.RegExp.assignInteger, index)) {
-                        number = +index;
+                    string = toString(index);
+                    if (test(base.RegExp.assignInteger, string)) {
+                        number = +string;
                         if (number >= 0 && number <= lastIndex && isInteger(number)) {
                             numIndex = number;
                             isInt = true;
@@ -4736,7 +4736,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
     boxedString = toObject('g');
-    shouldSplitString = boxedString[0] !== 'g' || '0' in boxedString;
+    shouldSplitString = boxedString[0] !== 'g' || !('0' in boxedString);
     $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = function (inputArg) {
         var object = toObject(inputArg);
 

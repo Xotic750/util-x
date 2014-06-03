@@ -1,20 +1,20 @@
-/*global require, describe, it, console */
+/*global require, describe, it */
 
 (function () {
     'use strict';
 
     var required = require('../scripts/'),
-        utilx = required.utilx,
         expect = required.expect,
         create = required.Array.create;
 
-
-    describe('Test native array environment for most serious bugs', function () {
+    describe('Native array', function () {
         var A = Array,
+            overflow = Math.pow(2, 32),
+            maxLength = overflow - 1,
+            maxLast = maxLength - 1,
             testSubject1,
             testSubject2,
             testSubject3;
-
 
         it('should not throw error when creating array using new Array(...*)', function () {
             expect(function () {
@@ -22,7 +22,6 @@
                 testSubject2 = new A(5);
                 testSubject3 = new A(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             }).to.not.throwException();
-
         });
 
         it('should not throw error when creating array using the literal form [...*]', function () {
@@ -42,15 +41,26 @@
         it('should have a correct length between 0 and 2^32', function () {
             var max = [];
 
-            max.length = Math.pow(2, 32) - 1;
+            expect(function () {
+                max[maxLast] = 'ok';
+            }).to.not.throwException();
+
+            expect(max.length).to.be(maxLength);
+
+            max = [];
+            expect(function () {
+                max.length = maxLength;
+            }).to.not.throwException();
+
+            expect(max.length).to.be(maxLength);
 
             expect(testSubject1.length).to.be(10);
             expect(testSubject2.length).to.be(0);
             expect(testSubject3.length).to.be(3);
-            expect(max.length).to.be(Math.pow(2, 32) - 1);
+
         });
 
-        it('should throw RangeError if length is set to -1', function () {
+        it('should throw RangeError if length is set to < 0', function () {
             expect(function () {
                 var max = [];
 
@@ -60,17 +70,17 @@
             });
         });
 
-        it('should throw RangeError if length is set to 2^32', function () {
+        it('should throw RangeError if length is set to >= 2^32', function () {
             expect(function () {
                 var max = [];
 
-                max.length = Math.pow(2, 32);
+                max.length = overflow;
             }).to.throwException(function (e) {
                 expect(e).to.be.a(RangeError);
             });
         });
 
-        it('should not throw RangeError if property < 0 is set', function () {
+        it('should not throw RangeError if property index < 0 is set', function () {
             expect(function () {
                 var max = [];
 
@@ -78,11 +88,11 @@
             }).to.not.throwException();
         });
 
-        it('should not throw RangeError if property > 2^32 is set', function () {
+        it('should not throw RangeError if property >= 2^32 is set', function () {
             expect(function () {
                 var max = [];
 
-                max[Math.pow(2, 32)] = 'ok';
+                max[overflow] = 'ok';
             }).to.not.throwException();
         });
 
@@ -100,9 +110,54 @@
             expect(testSubject1).to.eql([]);
             testSubject2 = [ , , , , , ];
             expect(testSubject2).to.eql(create('[ , , , , , ]'));
-            testSubject3 = [2, 3, undefined, true, 'hej', null, false, 0, 8, 9];
-            expect(testSubject3).to.eql(create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9));
+            testSubject3 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            expect(testSubject3).to.eql(create('[2, 3, undefined, true, "hej", null, false, 0, , 9]'));
+        });
 
+        it('using delete on an element should not throw an error', function () {
+            expect(function () {
+                delete testSubject3[1];
+                delete testSubject3[8];
+            }).to.not.throwException();
+        });
+
+        it('elements should give correct values when index accessed', function () {
+            expect(testSubject3[0]).to.be(2);
+            expect(testSubject3[1]).to.be(undefined);
+            expect(testSubject3[2]).to.be(undefined);
+            expect(testSubject3[3]).to.be(true);
+            expect(testSubject3[4]).to.be('hej');
+            expect(testSubject3[5]).to.be(null);
+            expect(testSubject3[6]).to.be(false);
+            expect(testSubject3[7]).to.be(0);
+            expect(testSubject3[8]).to.be(undefined);
+            expect(testSubject3[9]).to.be(9);
+        });
+
+        it('elements should show correctly with in', function () {
+            expect(0 in testSubject3).to.be.ok();
+            expect(1 in testSubject3).to.not.be.ok();
+            expect(2 in testSubject3).to.be.ok();
+            expect(3 in testSubject3).to.be.ok();
+            expect(4 in testSubject3).to.be.ok();
+            expect(5 in testSubject3).to.be.ok();
+            expect(6 in testSubject3).to.be.ok();
+            expect(7 in testSubject3).to.be.ok();
+            expect(8 in testSubject3).to.not.be.ok();
+            expect(9 in testSubject3).to.be.ok();
+        });
+
+        it('elements should show correctly with hasownProperty', function () {
+            expect(testSubject3.hasOwnProperty(0)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(1)).to.not.be.ok();
+            expect(testSubject3.hasOwnProperty(2)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(3)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(4)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(5)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(6)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(7)).to.be.ok();
+            expect(testSubject3.hasOwnProperty(8)).to.not.be.ok();
+            expect(testSubject3.hasOwnProperty(9)).to.be.ok();
         });
 
         it('assigning undefined element should create the element', function () {
@@ -139,60 +194,6 @@
             testSubject1 = [];
             testSubject1.push(undefined);
             expect(testSubject1.length).to.be(1);
-        });
-
-        it('using delete on an element should not throw an error', function () {
-            expect(function () {
-                testSubject1 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
-                testSubject2 = [];
-                testSubject3 = [ , , , ];
-                delete testSubject1[1];
-                delete testSubject1[8];
-            }).to.not.throwException();
-        });
-
-        it('Array objects behave well in this environment', function () {
-            if (testSubject1.length !== 10 ||
-                    testSubject2.length !== 0 ||
-                    testSubject3.length !== 3 ||
-                    testSubject1[0] !== 2 ||
-                    testSubject1[1] !== undefined ||
-                    testSubject1[2] !== undefined ||
-                    testSubject1[3] !== true ||
-                    testSubject1[4] !== 'hej' ||
-                    testSubject1[5] !== null ||
-                    testSubject1[6] !== false ||
-                    testSubject1[7] !== 0 ||
-                    testSubject1[8] !== undefined ||
-                    testSubject1[9] !== 9 ||
-
-                    utilx.Object.hasOwn(testSubject1, 0) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 1) !== false ||
-                    utilx.Object.hasOwn(testSubject1, 2) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 3) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 4) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 5) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 6) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 7) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 8) !== false ||
-                    utilx.Object.hasOwn(testSubject1, 9) !== true ||
-
-                    utilx.Object.hasOwn(testSubject1, 0) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 1) !== false ||
-                    utilx.Object.hasOwn(testSubject1, 2) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 3) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 4) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 5) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 6) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 7) !== true ||
-                    utilx.Object.hasOwn(testSubject1, 8) !== false ||
-                    utilx.Object.hasOwn(testSubject1, 9) !== true) {
-
-                console.log('#####################################################');
-                console.log('# A object has serious bugs in this environment #');
-                console.log('#####################################################');
-                expect().fail();
-            }
         });
     });
 }());

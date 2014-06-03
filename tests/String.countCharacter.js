@@ -32,22 +32,35 @@
             });
         });
 
-        it('should not throw an error in each case', function () {
-            expect(utilx.String.countCharacter('abacadaeafa', 'a')).to.be(6);
-            expect(utilx.String.countCharacter('abacadaeafa', 'z')).to.be(0);
-            expect(utilx.String.countCharacter('abacadaeafa', '')).to.be(Infinity);
-
+        it('should throw if no character argument', function () {
             expect(function () {
                 utilx.String.countCharacter('abacadaeafa');
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
 
+        it('should throw if character argument is undefined', function () {
+            expect(function () {
+                utilx.String.countCharacter('abacadaeafa', undefined);
+            }).to.throwException(function (e) {
+                expect(e).to.be.a(TypeError);
+            });
+        });
+
+        it('should throw if character argument is null', function () {
             expect(function () {
                 utilx.String.countCharacter('abacadaeafa', null);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
+        });
+
+        it('should not throw an error in each case', function () {
+            expect(utilx.String.countCharacter('abacadaeafa', 'a')).to.be(6);
+            expect(utilx.String.countCharacter('abacadaeafa', 'z')).to.be(0);
+            expect(utilx.String.countCharacter('abacadaeafa', '')).to.be(Infinity);
+
         });
     });
 }());
