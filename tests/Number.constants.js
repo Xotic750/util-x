@@ -35,7 +35,7 @@
             expect(utilx.Number.NEGATIVE_INFINITY).to.be(-Infinity);
             expect(utilx.Number.MAX_VALUE).to.be(1.7976931348623157e+308);
             expect(utilx.Number.MIN_VALUE).to.be(5e-324);
-            expect(utilx.Number.isNaN(utilx.Number.NaN)).to.be.ok();
+            expect(utilx.Number.NaN !== utilx.Number.NaN).to.be.ok();
             expect(utilx.Number.EPSILON).to.be(2.220446049250313e-16);
         });
     });

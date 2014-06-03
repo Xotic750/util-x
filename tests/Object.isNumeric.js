@@ -83,10 +83,8 @@
             expect(utilx.Object.isNumeric(NaN)).to.not.be.ok();
             // Infinity primitive
             expect(utilx.Object.isNumeric(Infinity)).to.not.be.ok();
-            // Positive Infinity
-            expect(utilx.Object.isNumeric(Number.POSITIVE_INFINITY)).to.not.be.ok();
             // Negative Infinity
-            expect(utilx.Object.isNumeric(Number.NEGATIVE_INFINITY)).to.not.be.ok();
+            expect(utilx.Object.isNumeric(-Infinity)).to.not.be.ok();
             // Date object
             expect(utilx.Object.isNumeric(new Date(2009, 1, 1))).to.not.be.ok();
             // Empty object

@@ -26,27 +26,12 @@
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
-
-            expect(function () {
-                utilx.Object.getPrototypeOf(1);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Object.getPrototypeOf(true);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-
-            expect(function () {
-                utilx.Object.getPrototypeOf('x');
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
         });
 
         it('native objects should return their own prototype', function () {
+            expect(utilx.Object.getPrototypeOf(1)).to.be(Number.prototype);
+            expect(utilx.Object.getPrototypeOf(true)).to.be(Boolean.prototype);
+            expect(utilx.Object.getPrototypeOf('')).to.be(String.prototype);
             expect(utilx.Object.getPrototypeOf([])).to.be(Array.prototype);
             expect(utilx.Object.getPrototypeOf({})).to.be(Object.prototype);
             expect(utilx.Object.getPrototypeOf(utilx.Function.noop)).to.be(Function.prototype);

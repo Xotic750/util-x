@@ -34,5 +34,17 @@
             regex.lastIndex = '4';
             expect(utilx.RegExp.test(regex, '123x5')).to.not.be.ok();
         });
+
+        it('should type subject to string', function () {
+            var regex = /x/g;
+
+            expect(utilx.RegExp.test(regex)).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, undefined)).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, null)).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, 1)).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, true)).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, {})).to.not.be.ok();
+            expect(utilx.RegExp.test(regex, [])).to.not.be.ok();
+        });
     });
 }());

@@ -65,7 +65,7 @@
  */
 
 /**
- * Type consisting of the primitive values.
+ * Type consisting of the primitive values.isFunction
  * @typedef {(null|undefined|boolean|string|number)} primitive
  * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
  */
@@ -489,9 +489,9 @@
         EPSILON: Number.EPSILON,
         MAX_VALUE: Number.MAX_VALUE,
         MIN_VALUE: Number.MIN_VALUE,
-        NEGATIVE_INFINITY: Number.NEGATIVE_INFINITY,
         NaN: Number.NaN,
         POSITIVE_INFINITY: Number.POSITIVE_INFINITY,
+        NEGATIVE_INFINITY: Number.NEGATIVE_INFINITY,
         isFinite: Number.isFinite,
         isInteger: Number.isInteger,
         isSafeInteger: Number.isSafeInteger,
@@ -821,21 +821,21 @@
      * @returns {*}
      */
 
-    /**
-     * The function takes one argument protoFn, and returns the bound function as a stand alone method.
-     * @private
-     * @name ToMethod
-     * @function
-     * @param {prototypalFunction} protoFn
-     * @returns {boundPrototypalFunction}
-     */
-    function toMethod(protoFn) {
-        return function (thisArg) {
-            return protoFn.apply(thisArg, base.Array.internalSlice.call(arguments, 1));
-        };
-    }
-
     var testShims = true,
+
+        /**
+         * The function takes one argument protoFn, and returns the bound function as a stand alone method.
+         * @private
+         * @name ToMethod
+         * @function
+         * @param {prototypalFunction} protoFn
+         * @returns {boundPrototypalFunction}
+         */
+        toMethod = function (protoFn) {
+            return function (thisArg) {
+                return protoFn.apply(thisArg, base.Array.internalSlice.call(arguments, 1));
+            };
+        },
 
         /**
          * @private
@@ -1219,8 +1219,6 @@
             return !this;
         }()),
 
-        toInteger,
-
         /**
          * @private
          * @name BindCtr
@@ -1237,7 +1235,27 @@
          */
         bindArgs,
 
+        toClass,
+        toString,
+        toObject,
+        toObjectFixIndexedAccess,
+        toInteger,
+        isPrimitive,
+        isNotPrimitive,
+        isFunction,
+        isNative,
         internalSlice,
+        isArguments,
+        isTypeOfObject,
+        isTypeObject,
+        isRegExp,
+        isArray,
+        isInteger,
+        isSafeInteger,
+        isObject,
+        getPrototypeOf,
+        modulo,
+        put,
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
@@ -1252,7 +1270,7 @@
          */
         TestConstructor,
         previousIEErrorToString,
-        isArgs,
+        isArgsInt,
         fixOpera10GetPrototypeOf,
         testValue,
         shouldSplitString,
@@ -1285,6 +1303,31 @@
         threwSynatxError,
 
         publicUtil,
+
+        // constants
+        POSITIVE_ZERO = +0,
+        NEGATIVE_ZERO = -0,
+        WORD8 = 128,
+        UWORD8 = 256,
+        WORD16 = 32768,
+        UWORD16 = 65536,
+        WORD32 = 2147483648,
+        UWORD32 = 4294967296,
+        MAX_UINT32 = 4294967295,
+        MAX_INT32 = 2147483647,
+        MIN_INT32 = -2147483648,
+        MAX_UINT16 = 65535,
+        MAX_INT16 = 32767,
+        MIN_INT16 = -32768,
+        MAX_UINT8 = 255,
+        MAX_INT8 = 127,
+        MIN_INT8 = -128,
+        MAX_SAFE_INTEGER = 9007199254740991,
+        MIN_SAFE_INTEGER = -9007199254740991,
+        UNSAFE_INTEGER = 9007199254740992,
+        MAX_VALUE = 1.7976931348623157e+308,
+        MIN_VALUE = 5e-324,
+        EPSILON = 2.220446049250313e-16,
 
         /** @namespace {Object} utilx */
         $ = {
@@ -1355,7 +1398,7 @@
      * @name POSITIVE_ZERO
      * @type {number}
      */
-    $.Number.POSITIVE_ZERO = +0;
+    $.Number.POSITIVE_ZERO = POSITIVE_ZERO;
 
     /**
      * -0
@@ -1363,7 +1406,7 @@
      * @name NEGATIVE_ZERO
      * @type {number}
      */
-    $.Number.NEGATIVE_ZERO = -0;
+    $.Number.NEGATIVE_ZERO = NEGATIVE_ZERO;
 
     /**
      * 128
@@ -1371,7 +1414,7 @@
      * @name WORD8
      * @type {number}
      */
-    $.Number.WORD8 = 128;
+    $.Number.WORD8 = WORD8;
 
     /**
      * 256
@@ -1379,7 +1422,7 @@
      * @name UWORD8
      * @type {number}
      */
-    $.Number.UWORD8 = 256;
+    $.Number.UWORD8 = UWORD8;
 
     /**
      * 65536
@@ -1387,7 +1430,7 @@
      * @name WORD16
      * @type {number}
      */
-    $.Number.WORD16 = 32768;
+    $.Number.WORD16 = WORD16;
 
     /**
      * 32768
@@ -1395,7 +1438,7 @@
      * @name UWORD16
      * @type {number}
      */
-    $.Number.UWORD16 = 65536;
+    $.Number.UWORD16 = UWORD16;
 
     /**
      * 2147483648
@@ -1403,7 +1446,7 @@
      * @name WORD32
      * @type {number}
      */
-    $.Number.WORD32 = 2147483648;
+    $.Number.WORD32 = WORD32;
 
     /**
      * 4294967296
@@ -1411,7 +1454,7 @@
      * @name MAX_UINT32
      * @type {number}
      */
-    $.Number.UWORD32 = 4294967296;
+    $.Number.UWORD32 = UWORD32;
 
     /**
      * 4294967295
@@ -1419,7 +1462,7 @@
      * @name MAX_UINT32
      * @type {number}
      */
-    $.Number.MAX_UINT32 = 4294967295;
+    $.Number.MAX_UINT32 = MAX_UINT32;
 
     /**
      * 2147483647
@@ -1427,7 +1470,7 @@
      * @name MAX_INT32
      * @type {number}
      */
-    $.Number.MAX_INT32 = 2147483647;
+    $.Number.MAX_INT32 = MAX_INT32;
 
     /**
      * -2147483648
@@ -1435,7 +1478,7 @@
      * @name MIN_INT32
      * @type {number}
      */
-    $.Number.MIN_INT32 = -2147483648;
+    $.Number.MIN_INT32 = MIN_INT32;
 
     /**
      * 65535
@@ -1443,7 +1486,7 @@
      * @name MAX_UINT16
      * @type {number}
      */
-    $.Number.MAX_UINT16 = 65535;
+    $.Number.MAX_UINT16 = MAX_UINT16;
 
     /**
      * 32767
@@ -1451,7 +1494,7 @@
      * @name MAX_INT16
      * @type {number}
      */
-    $.Number.MAX_INT16 = 32767;
+    $.Number.MAX_INT16 = MAX_INT16;
 
     /**
      * -32768
@@ -1459,7 +1502,7 @@
      * @name MIN_INT16
      * @type {number}
      */
-    $.Number.MIN_INT16 = -32768;
+    $.Number.MIN_INT16 = MIN_INT16;
 
     /**
      * 255
@@ -1467,7 +1510,7 @@
      * @name MAX_UINT8
      * @type {number}
      */
-    $.Number.MAX_UINT8 = 255;
+    $.Number.MAX_UINT8 = MAX_UINT8;
 
     /**
      * 127
@@ -1475,7 +1518,7 @@
      * @name MAX_INT8
      * @type {number}
      */
-    $.Number.MAX_INT8 = 127;
+    $.Number.MAX_INT8 = MAX_INT8;
 
     /**
      * -128
@@ -1483,7 +1526,7 @@
      * @name MIN_INT8
      * @type {number}
      */
-    $.Number.MIN_INT8 = -128;
+    $.Number.MIN_INT8 = MIN_INT8;
 
     /**
      * 9007199254740991
@@ -1491,7 +1534,7 @@
      * @name MAX_SAFE_INTEGER
      * @type {number}
      */
-    $.Number.MAX_SAFE_INTEGER = 9007199254740991;
+    $.Number.MAX_SAFE_INTEGER = MAX_SAFE_INTEGER;
 
     /**
      * -9007199254740991
@@ -1499,7 +1542,7 @@
      * @name MIN_SAFE_INTEGER
      * @type {number}
      */
-    $.Number.MIN_SAFE_INTEGER = -9007199254740991;
+    $.Number.MIN_SAFE_INTEGER = MIN_SAFE_INTEGER;
 
     /**
      * 9007199254740992
@@ -1507,23 +1550,7 @@
      * @name UNSAFE_INTEGER
      * @type {number}
      */
-    $.Number.UNSAFE_INTEGER = 9007199254740992;
-
-    /**
-     * Infinity
-     * @memberof utilx.Number
-     * @name POSITIVE_INFINITY
-     * @type {number}
-     */
-    $.Number.POSITIVE_INFINITY = 1 / $.Number.POSITIVE_ZERO;
-
-    /**
-     * -Infinity
-     * @memberof utilx.Number
-     * @name NEGATIVE_INFINITY
-     * @type {number}
-     */
-    $.Number.NEGATIVE_INFINITY = 1 / $.Number.NEGATIVE_ZERO;
+    $.Number.UNSAFE_INTEGER = UNSAFE_INTEGER;
 
     /**
      * 1.7976931348623157e+308
@@ -1531,7 +1558,7 @@
      * @name MAX_VALUE
      * @type {number}
      */
-    $.Number.MAX_VALUE = 1.7976931348623157e+308;
+    $.Number.MAX_VALUE = MAX_VALUE;
 
     /**
      * 5e-324
@@ -1539,7 +1566,7 @@
      * @name MIN_VALUE
      * @type {number}
      */
-    $.Number.MIN_VALUE = 5e-324;
+    $.Number.MIN_VALUE = MIN_VALUE;
 
     /**
      * NaN
@@ -1547,7 +1574,23 @@
      * @name NaN
      * @type {number}
      */
-    $.Number.NaN = $.Number.POSITIVE_ZERO / $.Number.POSITIVE_ZERO;
+    $.Number.NaN = NaN;
+
+    /**
+     * Infinity
+     * @memberof utilx.Number
+     * @name POSITIVE_INFINITY
+     * @type {number}
+     */
+    $.Number.POSITIVE_INFINITY = Infinity;
+
+    /**
+     * -Infinity
+     * @memberof utilx.Number
+     * @name NEGATIVE_INFINITY
+     * @type {number}
+     */
+    $.Number.NEGATIVE_INFINITY = -Infinity;
 
     /**
      * 2.220446049250313e-16
@@ -1555,7 +1598,7 @@
      * @name EPSILON
      * @type {number}
      */
-    $.Number.EPSILON = 2.220446049250313e-16;
+    $.Number.EPSILON = EPSILON;
 
     /**
      * Returns the {@link http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2 primitive} value
@@ -1881,7 +1924,7 @@
      * @returns {boolean}
      */
     $.Number.isPositiveZero = function (inputArg) {
-        return inputArg === 0 &amp;&amp; (1 / inputArg) === $.Number.POSITIVE_INFINITY;
+        return inputArg === 0 &amp;&amp; (1 / inputArg) === Infinity;
     };
 
     /**
@@ -1893,7 +1936,7 @@
      * @returns {boolean}
      */
     $.Number.isNegativeZero = function (inputArg) {
-        return inputArg === 0 &amp;&amp; (1 / inputArg) === $.Number.NEGATIVE_INFINITY;
+        return inputArg === 0 &amp;&amp; (1 / inputArg) === -Infinity;
     };
 
     /**
@@ -1918,7 +1961,7 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
      */
-    $.Object.isPrimitive = function (inputArg) {
+    $.Object.isPrimitive = isPrimitive = function (inputArg) {
         var type = typeof inputArg;
 
         return inputArg === null || type === 'undefined' || inputArg === true || inputArg === false ||
@@ -1935,7 +1978,7 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
      */
-    $.Object.isNotPrimitive = function (inputArg) {
+    $.Object.isNotPrimitive = isNotPrimitive = function (inputArg) {
         var type = typeof inputArg;
 
         return inputArg !== null &amp;&amp; type !== 'undefined' &amp;&amp; inputArg !== true &amp;&amp; inputArg !== false &amp;&amp;
@@ -1951,12 +1994,12 @@
      * @returns {boolean}
      */
     if (typeof base.RegExp.testStr === 'object') {
-        $.Object.isTypeOfObject = function (inputArg) {
+        $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
             return typeof inputArg === 'object';
         };
     } else {
-        $.Object.isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object' || $.RegExp.isRegExp(inputArg);
+        $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
+            return typeof inputArg === 'object' || isRegExp(inputArg);
         };
     }
 
@@ -1968,8 +2011,8 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isTypeObject = function (inputArg) {
-        return inputArg !== null &amp;&amp; $.Object.isTypeOfObject(inputArg);
+    $.Object.isTypeObject = isTypeObject = function (inputArg) {
+        return inputArg !== null &amp;&amp; isTypeOfObject(inputArg);
     };
 
     /**
@@ -1981,7 +2024,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanObject = function (inputArg) {
-        return $.Object.isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.Boolean;
+        return isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -2017,7 +2060,7 @@
      * @returns {boolean}
      */
     $.String.isStringObject = function (inputArg) {
-        return $.Object.isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.string;
+        return isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.string;
     };
 
     /**
@@ -2029,7 +2072,7 @@
      * @returns {boolean}
      */
     $.Number.isNumberObject = function (inputArg) {
-        return $.Object.isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.number;
+        return isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.number;
     };
 
     /**
@@ -2114,7 +2157,7 @@
      * @returns {string}
      */
     function onlyCoercibleToString(inputArg) {
-        return $.String.ToString(checkObjectCoercible(inputArg));
+        return toString(checkObjectCoercible(inputArg));
     }
 
     /**
@@ -2247,7 +2290,7 @@
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
-    $.Object.ToObject = function (inputArg) {
+    $.Object.ToObject = toObject = function (inputArg) {
         return base.Object.Ctr(checkObjectCoercible(inputArg));
     };
 
@@ -2260,7 +2303,7 @@
      * @returns {string}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
      */
-    $.String.ToString = function (inputArg) {
+    $.String.ToString = toString = function (inputArg) {
         var type = typeof inputArg,
             val;
 
@@ -2309,9 +2352,9 @@
     function canUse(object, property) {
         var method;
 
-        if ($.Object.isNotPrimitive(object) &amp;&amp; $.Object.has(object, property)) {
+        if (isNotPrimitive(object) &amp;&amp; property in object) {
             method = object[property];
-            if ($.Object.isNotPrimitive(method.call) &amp;&amp; $.Object.isNotPrimitive(method.apply)) {
+            if (isNotPrimitive(method.call) &amp;&amp; isNotPrimitive(method.apply)) {
                 return !isEnumerable(method);
             }
         }
@@ -2328,22 +2371,22 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    if (toClassStr($.Function.returnArgs()) === base.classString.arguments) {
-        $.Object.isArguments = function (inputArg) {
+    if (!testShims &amp;&amp; toClassStr($.Function.returnArgs()) === base.classString.arguments) {
+        $.Object.isArguments = isArguments = function (inputArg) {
             return toClassStr(inputArg) === base.classString.arguments;
         };
     } else {
-        isArgs = function (inputArg) {
-            return $.Object.isTypeObject(inputArg) &amp;&amp; toClassStr(inputArg) === base.classString.object &amp;&amp;
+        isArgsInt = function (inputArg) {
+            return isTypeObject(inputArg) &amp;&amp; !hasOwn(inputArg, 'arguments') &amp;&amp;
                 hasOwn(inputArg, 'callee') &amp;&amp; hasOwn(inputArg, 'length') &amp;&amp; typeof inputArg.length === 'number';
         };
 
         if (toClassStr(isEnumerable) === base.classString.Function) {
-            $.Object.isArguments = function (inputArg) {
-                return isArgs(inputArg) &amp;&amp; !isEnumerable(inputArg, 'callee') &amp;&amp; !isEnumerable(inputArg, 'length');
+            $.Object.isArguments = isArguments = function (inputArg) {
+                return isArgsInt(inputArg) &amp;&amp; !isEnumerable(inputArg, 'callee') &amp;&amp; !isEnumerable(inputArg, 'length');
             };
         } else {
-            $.Object.isArguments = isArgs;
+            $.Object.isArguments = isArguments = isArgsInt;
         }
     }
 
@@ -2401,11 +2444,9 @@
             throw new Error();
         }
 
-        $.Object.ToClassString = function (inputArg) {
-            return toClassStr(inputArg);
-        };
+        $.Object.ToClassString = toClass = toClassStr;
     } catch (eClass) {
-        $.Object.ToClassString = function (inputArg) {
+        $.Object.ToClassString = toClass = function (inputArg) {
             var type = typeof inputArg,
                 val;
 
@@ -2413,7 +2454,7 @@
                 val = base.classString.Undefined;
             } else if (inputArg === null) {
                 val = base.classString.Null;
-            } else if ($.Object.isArguments(inputArg)) {
+            } else if (isArguments(inputArg)) {
                 val = base.classString.arguments;
             } else if (inputArg === base.Number.proto) {
                 val = base.classString.number;
@@ -2448,8 +2489,7 @@
      * @returns {boolean}
      */
     $.Error.isError = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; ($.Object.ToClassString(inputArg) === base.classString.error ||
-                                                   $.Object.instanceOf(inputArg, base.Error.Ctr));
+        return toClass(inputArg) === base.classString.error || $.Object.instanceOf(inputArg, base.Error.Ctr);
     };
 
     /**
@@ -2460,8 +2500,8 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.RegExp.isRegExp = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; $.Object.ToClassString(inputArg) === base.classString.regexp &amp;&amp;
+    $.RegExp.isRegExp = isRegExp = function (inputArg) {
+        return toClass(inputArg) === base.classString.regexp &amp;&amp;
                     typeof inputArg.source === 'string' &amp;&amp; (inputArg.global === true || inputArg.global === false);
     };
 
@@ -2473,7 +2513,7 @@
      * @returns {boolean}
      */
     testValue = null;
-    if ($.Object.isNotPrimitive(window) &amp;&amp; $.Object.isNotPrimitive(window.alert)) {
+    if (isNotPrimitive(window) &amp;&amp; isNotPrimitive(window.alert)) {
         testValue = typeof window.alert.toString;
     }
 
@@ -2497,15 +2537,9 @@
             // there could be a space
             // (never happened, it does not hurt anyway)
 
-            var val = false,
-                type;
+            var type = typeof inputArg.toString;
 
-            if ($.Object.isNotPrimitive(inputArg)) {
-                type = typeof inputArg.toString;
-                val = type === 'undefined' &amp;&amp; test(base.RegExp.beginsFunction, inputArg);
-            }
-
-            return val;
+            return type === 'undefined' &amp;&amp; test(base.RegExp.beginsFunction, inputArg);
         };
     } else {
         isIENativeFunction = function () {
@@ -2529,7 +2563,7 @@
         testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
         base.RegExp.operaNative = new RegExp(testValue);
         isNativeFunction = function (inputArg) {
-            return $.Object.isNotPrimitive(inputArg) &amp;&amp; test(base.RegExp.operaNative, inputArg);
+            return test(base.RegExp.operaNative, inputArg);
         };
     } catch (eINF1) {
         isNativeFunction = function (inputArg) {
@@ -2563,8 +2597,7 @@
      * @returns {boolean}
      */
     function isFunctionBasic(inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp;
-            ($.Object.ToClassString(inputArg) === base.classString.Function ||
+        return (toClass(inputArg) === base.classString.Function ||
              (typeof inputArg === 'function' &amp;&amp; inputArg.call &amp;&amp; inputArg.apply));
     }
 
@@ -2579,14 +2612,14 @@
         // it should be a function in any case
         // before we try to pass it to
         // Function.prototype.toString
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; isFunctionInternal(inputArg, false) &amp;&amp; isNativeFunction(inputArg);
+        return isFunctionInternal(inputArg, false) &amp;&amp; isNativeFunction(inputArg);
     }
 
     try {
         // native function cannot be passed
         // to native Function.prototype.toString
         // as scope to evaluate ... only IE, sure
-        if ($.Object.isNotPrimitive(window) &amp;&amp; window.alert) {
+        if (isNotPrimitive(window) &amp;&amp; window.alert) {
             base.Function.toString.call(window.alert);
         }
 
@@ -2594,12 +2627,10 @@
         isFunctionInternal = function (inputArg, n) {
             var val = false;
 
-            if ($.Object.isNotPrimitive(inputArg)) {
-                if (n) {
-                    val = isFunctionExtended(inputArg);
-                } else {
-                    val = isFunctionBasic(inputArg);
-                }
+            if (n) {
+                val = isFunctionExtended(inputArg);
+            } else {
+                val = isFunctionBasic(inputArg);
             }
 
             return val;
@@ -2608,12 +2639,10 @@
         isFunctionInternal = function (inputArg, n) {
             var val = false;
 
-            if ($.Object.isNotPrimitive(inputArg)) {
-                if (n) {
-                    val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
-                } else {
-                    val = isFunctionBasic(inputArg);
-                }
+            if (n) {
+                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+            } else {
+                val = isFunctionBasic(inputArg);
             }
 
             return val;
@@ -2629,9 +2658,8 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
-    $.Function.isFunction = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp;
-                (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
+    $.Function.isFunction = isFunction = function (inputArg) {
+        return isNotPrimitive(inputArg) &amp;&amp; (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
     };
 
     /**
@@ -2642,9 +2670,9 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Function.isNativeFunction = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; $.Function.isFunction(inputArg) &amp;&amp;
-                (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+    $.Function.isNativeFunction = isNative = function (inputArg) {
+        return isNotPrimitive(inputArg) &amp;&amp;
+                (isFunction(inputArg) &amp;&amp; (isNativeFunction(inputArg) || isIENativeFunction(inputArg)));
     };
 
     /**
@@ -2655,17 +2683,15 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isObject = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; $.Object.ToClassString(inputArg) === base.classString.object &amp;&amp;
-                                !$.Function.isFunction(inputArg);
+    $.Object.isObject = isObject = function (inputArg) {
+        return isNotPrimitive(inputArg) &amp;&amp; toClass(inputArg) === base.classString.object &amp;&amp; !isFunction(inputArg);
     };
 
     /**
      * Indicates if __defineGetter__ and __lookupSetter__ are supported.
      * @private
      */
-    areGetSetSupported = $.Function.isFunction(base.Object.lookupGetter) &amp;&amp;
-                                        $.Function.isFunction(base.Object.lookupSetter);
+    areGetSetSupported = isFunction(base.Object.lookupGetter) &amp;&amp; isFunction(base.Object.lookupSetter);
 
     /**
      * Throws a TypeError if arguments is not a function otherwise returns the function.
@@ -2676,7 +2702,7 @@
      * @returns {Function}
      */
     function throwIfNotAFunction(inputArg) {
-        if (!$.Function.isFunction(inputArg)) {
+        if (!isFunction(inputArg)) {
             throw new base.TypeError.Ctr(inputArg + ' is not a function');
         }
 
@@ -2692,7 +2718,7 @@
      * @returns {Function}
      */
     function throwIfAFunction(inputArg) {
-        if ($.Function.isFunction(inputArg)) {
+        if (isFunction(inputArg)) {
             throw new base.TypeError.Ctr(inputArg + ' is a function');
         }
 
@@ -2709,7 +2735,7 @@
      * @returns {(Object|Function)}
      */
     function throwIfIsPrimitive(inputArg) {
-        if ($.Object.isPrimitive(inputArg)) {
+        if (isPrimitive(inputArg)) {
             throw new base.TypeError.Ctr('called on non-object');
         }
 
@@ -2774,7 +2800,7 @@
     function iter(object, has, start, length, reverse, fn, thisArg) {
         var index;
 
-        if (!base.Array.canIterArgs &amp;&amp; $.Object.isArguments(object)) {
+        if (!base.Array.canIterArgs &amp;&amp; isArguments(object)) {
             has = false;
         }
 
@@ -2854,7 +2880,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
      */
     try {
-        if (testShims || !$.Function.isNativeFunction(base.Function.bind)) {
+        if (testShims || !isNative(base.Function.bind)) {
             throw new Error();
         }
 
@@ -2915,7 +2941,7 @@
                 });
 
 
-            if ($.Object.isTypeObject(fn.prototype)) {
+            if (isTypeObject(fn.prototype)) {
                 BindCtr.prototype = fn.prototype;
                 bound.prototype = new BindCtr();
                 BindCtr.prototype = base.Function.proto;
@@ -2936,10 +2962,10 @@
      * @throws {TypeError} if protoFn is not a {@link Function function}.
      * @returns {boundPrototypalFunction}
      */
-    $.Function.ToMethod = function (protoFn, checkThisArgFn) {
+    $.Function.ToMethod = toMethod = function (protoFn, checkThisArgFn) {
         throwIfNotAFunction(protoFn);
 
-        if (!$.Function.isFunction(checkThisArgFn)) {
+        if (!isFunction(checkThisArgFn)) {
             checkThisArgFn = checkObjectCoercible;
         }
 
@@ -2958,11 +2984,11 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.isArray)) {
-        $.Array.isArray = base.Array.isArray;
+    if (!testShims &amp;&amp; isNative(base.Array.isArray)) {
+        $.Array.isArray = isArray = base.Array.isArray;
     } else {
-        $.Array.isArray = function (inputArg) {
-            return $.Object.isNotPrimitive(inputArg) &amp;&amp; $.Object.ToClassString(inputArg) === base.classString.array;
+        $.Array.isArray = isArray = function (inputArg) {
+            return toClass(inputArg) === base.classString.array;
         };
     }
 
@@ -2991,7 +3017,7 @@
         return join(this, separator);
     };
 
-    $.Array.join = $.Function.ToMethod($.Array.prototype.join);
+    $.Array.join = toMethod($.Array.prototype.join);
 
     /**
      * Returns true if the operand inputArg is a Date object.
@@ -3002,7 +3028,7 @@
      * @returns {boolean}
      */
     $.Date.isDate = function (inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; $.Object.ToClassString(inputArg) === base.classString.date;
+        return toClass(inputArg) === base.classString.date;
     };
 
     /**
@@ -3015,20 +3041,16 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.is)) {
+    if (!testShims &amp;&amp; isNative(base.Object.is)) {
         $.Object.is = base.Object.is;
     } else {
         $.Object.is = function (x, y) {
             var val;
 
             if (x === y) {
-                if (x === 0) {
-                    val = (1 / x) === (1 / y);
-                } else {
-                    val = true;
-                }
+                val = x !== 0 || (1 / x) === (1 / y);
             } else {
-                val = $.Object.notStrictEqual(x, x) &amp;&amp; $.Object.notStrictEqual(y, y);
+                val = (x !== x) &amp;&amp; (y !== y);
             }
 
             return val;
@@ -3092,11 +3114,11 @@
             throw new base.SyntaxError.Ctr('must supply at least 2 arguments');
         }
 
-        var classA = $.Object.ToClassString(a);
+        var classA = toClass(a);
 
         return !$.Array.some(arguments, function (arg) {
             return classA !== this(arg);
-        }, $.Object.ToClassString);
+        }, toClass);
     };
 
     /**
@@ -3110,11 +3132,11 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isNaN
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Number.isNaN)) {
+    if (!testShims &amp;&amp; isNative(base.Number.isNaN)) {
         $.Number.isNaN = base.Number.isNaN;
     } else {
         $.Number.isNaN = function (inputArg) {
-            return $.Object.notStrictEqual(inputArg, inputArg);
+            return inputArg !== inputArg;
         };
     }
 
@@ -3137,7 +3159,7 @@
             throw new base.TypeError.Ctr('arguments must be of the same type');
         }
 
-        if (min === max || $.Number.isNaN(min) || $.Number.isNaN(max)) {
+        if (min === max || min !== min || max !== max) {
             throw new base.RangeError.Ctr('min and max do not define a range');
         }
 
@@ -3163,7 +3185,7 @@
             throw new base.TypeError.Ctr('arguments must be of the same type');
         }
 
-        if (min === max || $.Number.isNaN(min) || $.Number.isNaN(max)) {
+        if (min === max || min !== min || max !== max) {
             throw new base.RangeError.Ctr('min and max do not define a range');
         }
 
@@ -3180,11 +3202,11 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isFinite
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Number.isFinite)) {
+    if (!testShims &amp;&amp; isNative(base.Number.isFinite)) {
         $.Number.isFinite = base.Number.isFinite;
     } else {
         $.Number.isFinite = function (number) {
-            return typeof number === 'number' &amp;&amp; base.isFinite(number);
+            return typeof number === 'number' &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity;
         };
     }
 
@@ -3198,22 +3220,11 @@
      * @param {*} value
      * @returns {number}
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Math.sign)) {
+    if (!testShims &amp;&amp; isNative(base.Math.sign)) {
         $.Math.sign = base.Math.sign;
     } else {
         $.Math.sign = function (value) {
-            var number = +value,
-                val;
-
-            if (number === 0 || $.Number.isNaN(number)) {
-                val = number;
-            } else if (number &lt; 0) {
-                val = -1;
-            } else {
-                val = 1;
-            }
-
-            return val;
+            return +value &amp;&amp; (+(value >= 0) || -1);
         };
     }
 
@@ -3226,33 +3237,24 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toInteger
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Number.toInteger)) {
-        $.Number.toInteger = base.Number.toInteger;
+    if (!testShims &amp;&amp; isNative(base.Number.toInteger)) {
+        $.Number.toInteger = toInteger = base.Number.toInteger;
     } else {
-        $.Number.toInteger = function (inputArg) {
+        $.Number.toInteger = toInteger = function (inputArg) {
             var number = +inputArg,
-                val;
-
-            if ($.Number.isNaN(number)) {
                 val = 0;
-            } else if (number === 0 || !$.Number.isFinite(number)) {
-                val = number;
-            } else {
-                val = $.Math.sign(number) * floor(abs(number));
+
+            if (number === number) {
+                if (!number || number === Infinity || number === -Infinity) {
+                    val = number;
+                } else {
+                    val = (number > 0 || -1) * floor(abs(number));
+                }
             }
 
             return val;
         };
     }
-
-    /**
-     * @private
-     * @name toInteger
-     * @function
-     * @param {*} inputArg
-     * @returns {number}
-     */
-    toInteger = $.Number.toInteger;
 
     /**
      * The isInteger method determines whether the passed value is an integer.
@@ -3267,24 +3269,15 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
      */
     try {
-        if (testShims || !$.Function.isNativeFunction(base.Number.isInteger)) {
+        if (testShims || !isNative(base.Number.isInteger)) {
             throw new Error();
         }
 
-        $.Number.isInteger = base.Number.isInteger;
+        $.Number.isInteger = isInteger = base.Number.isInteger;
     } catch (eIsInt) {
-        $.Number.isInteger = function (inputArg) {
-            var isInt = true;
-
-            if (typeof inputArg !== 'number') {
-                isInt = false;
-            } else if ($.Object.notStrictEqual(inputArg, inputArg) || !base.isFinite(inputArg)) {
-                isInt = false;
-            } else if (toInteger(inputArg) !== inputArg) {
-                isInt = false;
-            }
-
-            return isInt;
+        $.Number.isInteger = isInteger = function (inputArg) {
+            return typeof inputArg === 'number' &amp;&amp; inputArg !== Infinity &amp;&amp; inputArg !== -Infinity &amp;&amp;
+                    toInteger(inputArg) === inputArg;
         };
     }
 
@@ -3300,34 +3293,19 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.issafeinteger
      */
     try {
-        if (testShims || !$.Function.isNativeFunction(base.Number.isSafeInteger)) {
+        if (testShims || !isNative(base.Number.isSafeInteger)) {
             throw new Error();
         }
 
-        if (base.Number.isSafeInteger($.Number.UNSAFE_INTEGER) || base.Number.isSafeInteger(-$.Number.UNSAFE_INTEGER)) {
+        if (base.Number.isSafeInteger(UNSAFE_INTEGER) || base.Number.isSafeInteger(-UNSAFE_INTEGER)) {
             throw new Error('Failed unsafe integer check');
         }
 
-        $.Number.isSafeInteger = base.Number.isSafeInteger;
+        $.Number.isSafeInteger = isSafeInteger = base.Number.isSafeInteger;
     } catch (eIsInt) {
-        $.Number.isSafeInteger = function (inputArg) {
-            var isInt = true,
-                integer;
-
-            if (typeof inputArg !== 'number') {
-                isInt = false;
-            } else if ($.Object.notStrictEqual(inputArg, inputArg) || !base.isFinite(inputArg)) {
-                isInt = false;
-            } else {
-                integer = toInteger(inputArg);
-                if (integer !== inputArg) {
-                    isInt = false;
-                } else if (integer &lt; $.Number.MIN_SAFE_INTEGER || integer > $.Number.MAX_SAFE_INTEGER) {
-                    isInt = false;
-                }
-            }
-
-            return isInt;
+        $.Number.isSafeInteger = isSafeInteger = function (inputArg) {
+            return typeof inputArg === 'number' &amp;&amp; inputArg !== Infinity &amp;&amp; inputArg !== -Infinity &amp;&amp;
+                    toInteger(inputArg) === inputArg &amp;&amp; inputArg >= MIN_SAFE_INTEGER &amp;&amp; inputArg &lt;= MAX_SAFE_INTEGER;
         };
     }
 
@@ -3342,16 +3320,14 @@
      */
     $.Number.toInt32 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = ($.Math.sign(number) * floor(abs(number))) % $.Number.UWORD32;
-            if (val > $.Number.MAX_INT32) {
-                val -= $.Number.UWORD32;
-            } else if (val &lt; $.Number.MIN_INT32) {
-                val += $.Number.UWORD32;
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = ((number > 0 || -1) * floor(abs(number))) % UWORD32;
+            if (val > MAX_INT32) {
+                val -= UWORD32;
+            } else if (val &lt; MIN_INT32) {
+                val += UWORD32;
             }
         }
 
@@ -3370,7 +3346,7 @@
      * @returns {boolean}
      */
     $.Number.isInt32 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= $.Number.MIN_INT32 &amp;&amp; inputArg &lt;= $.Number.MAX_INT32;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= MIN_INT32 &amp;&amp; inputArg &lt;= MAX_INT32;
     };
 
     /**
@@ -3389,7 +3365,7 @@
         return this - divisor * floor(this / divisor);
     };
 
-    $.Number.modulo = $.Function.ToMethod($.Number.prototype.modulo, function (dividend) {
+    $.Number.modulo = modulo = toMethod($.Number.prototype.modulo, function (dividend) {
         return dividend;
     });
 
@@ -3402,7 +3378,7 @@
      * @returns {boolean}
      */
     $.Number.isOdd = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; (inputArg % 2) !== 0;
+        return isSafeInteger(inputArg) &amp;&amp; (inputArg % 2) !== 0;
     };
 
     /**
@@ -3414,7 +3390,7 @@
      * @returns {boolean}
      */
     $.Number.isEven = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; (inputArg % 2) === 0;
+        return isSafeInteger(inputArg) &amp;&amp; (inputArg % 2) === 0;
     };
 
     /**
@@ -3428,12 +3404,10 @@
      */
     $.Number.toUint = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = $.Number.modulo(toInteger(number), $.Number.UNSAFE_INTEGER);
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = modulo(toInteger(number), UNSAFE_INTEGER);
         }
 
         return val;
@@ -3451,7 +3425,7 @@
      * @returns {boolean}
      */
     $.Number.isUint = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= $.Number.MAX_SAFE_INTEGER;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= MAX_SAFE_INTEGER;
     };
 
     /**
@@ -3465,12 +3439,10 @@
      */
     $.Number.toUint32 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = $.Number.modulo(toInteger(number), $.Number.UWORD32);
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = modulo(toInteger(number), UWORD32);
         }
 
         return val;
@@ -3488,7 +3460,7 @@
      * @returns {boolean}
      */
     $.Number.isUint32 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= $.Number.MAX_UINT32;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= MAX_UINT32;
     };
 
     /**
@@ -3502,16 +3474,14 @@
      */
     $.Number.toInt16 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = ($.Math.sign(number) * floor(abs(number))) % $.Number.UWORD16;
-            if (val > $.Number.MAX_INT16) {
-                val -= $.Number.UWORD16;
-            } else if (val &lt; $.Number.MIN_INT16) {
-                val += $.Number.UWORD16;
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = ((number > 0 || -1) * floor(abs(number))) % UWORD16;
+            if (val > MAX_INT16) {
+                val -= UWORD16;
+            } else if (val &lt; MIN_INT16) {
+                val += UWORD16;
             }
         }
 
@@ -3530,7 +3500,7 @@
      * @returns {boolean}
      */
     $.Number.isInt16 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= $.Number.MIN_INT16 &amp;&amp; inputArg &lt;= $.Number.MAX_INT16;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= MIN_INT16 &amp;&amp; inputArg &lt;= MAX_INT16;
     };
 
     /**
@@ -3544,12 +3514,10 @@
      */
     $.Number.toUint16 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = $.Number.modulo(toInteger(number), $.Number.UWORD16);
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = modulo(toInteger(number), UWORD16);
         }
 
         return val;
@@ -3567,7 +3535,7 @@
      * @returns {boolean}
      */
     $.Number.isUint16 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= $.Number.MAX_UINT16;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= MAX_UINT16;
     };
 
     /**
@@ -3581,16 +3549,14 @@
      */
     $.Number.toInt8 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val  = ($.Math.sign(number) * floor(abs(number))) % $.Number.UWORD8;
-            if (val > $.Number.MAX_INT8) {
-                val -= $.Number.UWORD8;
-            } else if (val &lt; $.Number.MIN_INT8) {
-                val += $.Number.UWORD8;
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val  = ((number > 0 || -1) * floor(abs(number))) % UWORD8;
+            if (val > MAX_INT8) {
+                val -= UWORD8;
+            } else if (val &lt; MIN_INT8) {
+                val += UWORD8;
             }
         }
 
@@ -3609,7 +3575,7 @@
      * @returns {boolean}
      */
     $.Number.isInt8 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= $.Number.MIN_INT8 &amp;&amp; inputArg &lt;= $.Number.MAX_INT8;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= MIN_INT8 &amp;&amp; inputArg &lt;= MAX_INT8;
     };
 
     /**
@@ -3623,12 +3589,10 @@
      */
     $.Number.toUint8 = function (inputArg) {
         var number = +inputArg,
-            val;
-
-        if (number === 0 || !$.Number.isFinite(number)) {
             val = 0;
-        } else {
-            val = $.Number.modulo(toInteger(number), $.Number.UWORD8);
+
+        if (number &amp;&amp; number === number &amp;&amp; number !== Infinity &amp;&amp; number !== -Infinity) {
+            val = modulo(toInteger(number), UWORD8);
         }
 
         return val;
@@ -3646,7 +3610,7 @@
      * @returns {boolean}
      */
     $.Number.isUint8 = function (inputArg) {
-        return $.Number.isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= $.Number.MAX_UINT8;
+        return isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= MAX_UINT8;
     };
 
     /**
@@ -3661,7 +3625,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
     if (!testShims &amp;&amp; push([], 0) === 1) {
-        $.Array.push = $.Function.ToMethod(base.Array.push);
+        $.Array.push = toMethod(base.Array.push);
     } else {
         $.Array.prototype.push = function () {
             base.Array.push.apply(checkObjectCoercible(this), slice(arguments));
@@ -3669,7 +3633,7 @@
             return this.length;
         };
 
-        $.Array.push = $.Function.ToMethod($.Array.prototype.push);
+        $.Array.push = toMethod($.Array.prototype.push);
     }
 
     /**
@@ -3684,7 +3648,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
     if (!testShims &amp;&amp; unshift([], 0) === 1) {
-        $.Array.unshift = $.Function.ToMethod(base.Array.unshift);
+        $.Array.unshift = toMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
             base.Array.unshift.apply(checkObjectCoercible(this), slice(arguments));
@@ -3692,7 +3656,7 @@
             return this.length;
         };
 
-        $.Array.unshift = $.Function.ToMethod($.Array.prototype.unshift);
+        $.Array.unshift = toMethod($.Array.prototype.unshift);
     }
 
     /**
@@ -3730,7 +3694,7 @@
      * @returns {RegExp}
      */
     function throwIfIsNotRegExp(inputArg) {
-        if (!$.RegExp.isRegExp(inputArg)) {
+        if (!isRegExp(inputArg)) {
             throw new base.TypeError.Ctr('Type RegExp expected');
         }
 
@@ -3753,7 +3717,7 @@
         }
 
         // Get native flags in use
-        var flags = exec(base.RegExp.getNativeFlags, $.String.ToString(regExpArg))[1];
+        var flags = exec(base.RegExp.getNativeFlags, toString(regExpArg))[1];
 
         if (options.add) {
             flags = $.String.clipDuplicates(flags + options.add);
@@ -3784,12 +3748,12 @@
     $.RegExp.prototype.exec = function (stringArg) {
         throwIfIsNotRegExp(this);
 
-        var str = $.String.ToString(stringArg),
+        var str = toString(stringArg),
             origLastIndex = this.lastIndex,
             match = base.RegExp.exec.apply(this, arguments),
             r2;
 
-        if ($.Array.isArray(match)) {
+        if (isArray(match)) {
             // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
             // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
             // older IEs. IE 9 in standards mode follows the spec
@@ -3797,15 +3761,15 @@
                 r2 = copyRegExp(this, {remove: 'g'});
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
-                replace(strSlice($.String.ToString(str), match.index), r2, function () {
+                replace(strSlice(toString(str), match.index), r2, function () {
                     // Skip index 0 and the last 2
                     iter(arguments, false, 1, arguments.length - 2, false, function (it, idx) {
                         var type = typeof it;
 
                         if (type === 'undefined') {
-                            this(match, idx, it);
+                            put(match, idx, it);
                         }
-                    }, $.Array.assign);
+                    });
                 });
             }
 
@@ -3823,7 +3787,7 @@
         return match;
     };
 
-    $.RegExp.exec = $.Function.ToMethod($.RegExp.prototype.exec);
+    $.RegExp.exec = toMethod($.RegExp.prototype.exec);
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.test`.
@@ -3840,7 +3804,7 @@
         return !!$.RegExp.exec(this, stringArg);
     };
 
-    $.RegExp.test = $.Function.ToMethod($.RegExp.prototype.test);
+    $.RegExp.test = toMethod($.RegExp.prototype.test);
 
     /**
      * Executes a regex search in a specified string. Returns a match array or `null`.
@@ -3865,10 +3829,10 @@
             }),
             match;
 
-        r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), $.Number.MAX_SAFE_INTEGER);
+        r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
         match = $.RegExp.exec(r2, str);
         if (regExpArg.global) {
-            if ($.Array.isArray(match)) {
+            if (isArray(match)) {
                 regExpArg.lastIndex = r2.lastIndex;
             } else {
                 regExpArg.lastIndex = 0;
@@ -3900,7 +3864,7 @@
             index = 0,
             match = regExpForEachExec(str, regExpArg, pos);
 
-        while ($.Array.isArray(match)) {
+        while (isArray(match)) {
             // Because `regex` is provided to `callback`, the function can use the deprecated/
             // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
             // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
@@ -3908,7 +3872,7 @@
             // globalized versions of regexes, mutating the regex will not have any effect on the
             // iteration or matched strings, which is a nice side effect that brings extra safety
             callback.call(context, match, index, str, regExpArg);
-            pos = match.index + mMin(mMax(match[0].length, 1), $.Number.UWORD32);
+            pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
             match = regExpForEachExec(str, regExpArg, pos);
             index += 1;
         }
@@ -3944,7 +3908,7 @@
             // "0".split(undefined, 0) -> []
             if (type === 'undefined' &amp;&amp; limit === 0) {
                 output = [];
-            } else if (!$.RegExp.isRegExp(separator)) {
+            } else if (!isRegExp(separator)) {
                 // Browsers handle nonregex split correctly, so use the faster native method
                 output = base.String.split.apply(str, arguments);
             } else {
@@ -3960,7 +3924,7 @@
                  */
                 type = typeof limit;
                 if (type === 'undefined') {
-                    limit = $.Number.MAX_UINT32;
+                    limit = MAX_UINT32;
                 } else {
                     limit = $.Number.toUint32(limit);
                 }
@@ -4011,7 +3975,7 @@
         };
     }
 
-    $.String.split = $.Function.ToMethod($.String.prototype.split);
+    $.String.split = toMethod($.String.prototype.split);
 
     /**
      * Fixes browser bugs in replacement text syntax when performing a replacement using a nonregex search
@@ -4028,7 +3992,7 @@
      */
     $.String.prototype.replace = function (search, replacement) {
         var str = onlyCoercibleToString(this),
-            isRegex = $.RegExp.isRegExp(search),
+            isRegex = isRegExp(search),
             origLastIndex,
             result;
 
@@ -4037,11 +4001,11 @@
             origLastIndex = search.lastIndex;
         } else {
             // Type-convert
-            search = $.String.ToString(search);
+            search = toString(search);
         }
 
         // Don't use `typeof`; some older browsers return 'function' for regex objects
-        if ($.Function.isFunction(replacement)) {
+        if (isFunction(replacement)) {
             // Stringifying `this` fixes a bug in IE &lt; 9 where the last argument in replacement
             // functions isn't type-converted to a string
             result = replace(str, search, function () {
@@ -4065,7 +4029,7 @@
                 var args = slice(arguments),
                     length = args.length;
 
-                return replace($.String.ToString(replacement), base.RegExp.replacementToken, function () {
+                return replace(toString(replacement), base.RegExp.replacementToken, function () {
                     var argTokens = slice(arguments),
                         $0 = argTokens[0],
                         $2 = argTokens[2];
@@ -4102,7 +4066,7 @@
                      * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
                      * - `$0` is a literal `$0`.
                      */
-                    if (!$.Number.isNaN($2)) {
+                    if ($2 === $2) {
                         if ($2 > (length - 3)) {
                             throw new base.SyntaxError.Ctr('Backreference to undefined group ' + $0);
                         }
@@ -4128,7 +4092,7 @@
         return result;
     };
 
-    $.String.replace = $.Function.ToMethod($.String.prototype.replace);
+    $.String.replace = toMethod($.String.prototype.replace);
 
     /**
      * Fixes browser bugs in the native `String.prototype.match`.
@@ -4145,7 +4109,7 @@
         var str = onlyCoercibleToString(this),
             result;
 
-        if (!$.RegExp.isRegExp(regExpArg)) {
+        if (!isRegExp(regExpArg)) {
             regExpArg = new base.RegExp.Ctr(regExpArg);
         } else if (regExpArg.global) {
             result = base.String.match.apply(str, arguments);
@@ -4158,7 +4122,7 @@
         return $.RegExp.exec(regExpArg, str);
     };
 
-    $.String.match = $.Function.ToMethod($.String.prototype.match);
+    $.String.match = toMethod($.String.prototype.match);
 
     /**
      * Coerces its argument to a string and returns the first character of that string.
@@ -4174,7 +4138,7 @@
         return charAt(onlyCoercibleToString(this), 0);
     };
 
-    $.String.first = $.Function.ToMethod($.String.prototype.first);
+    $.String.first = toMethod($.String.prototype.first);
 
     /**
      * Coerces its argument to a string and returns the last character of that string.
@@ -4192,7 +4156,7 @@
         return charAt(str, str.length - 1);
     };
 
-    $.String.last = $.Function.ToMethod($.String.prototype.last);
+    $.String.last = toMethod($.String.prototype.last);
 
     /**
      * Coerces inputArg to a string and counts the occurences of the argument character.
@@ -4206,30 +4170,19 @@
      */
     $.String.prototype.countCharacter = function (character) {
         var str = onlyCoercibleToString(this),
-            first = $.String.first(character),
+            first = charAt(character, 0),
             val;
 
         if (first === '') {
-            val = $.Number.POSITIVE_INFINITY;
+            val = Infinity;
         } else {
-            val = mMin(mMax($.String.split(str, first).length - 1, 0), $.Number.POSITIVE_INFINITY);
+            val = mMin(mMax($.String.split(str, first).length - 1, 0), Infinity);
         }
 
         return val;
     };
 
-    $.String.countCharacter = $.Function.ToMethod($.String.prototype.countCharacter);
-
-    /**
-     * Returns true if arguments is less than zero or is Object.equal to positive infinity
-     * @private
-     * @function isLtZeroOrPositiveInfinity
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isLtZeroOrPositiveInfinity(inputArg) {
-        return inputArg &lt; 0 || inputArg === $.Number.POSITIVE_INFINITY;
-    }
+    $.String.countCharacter = toMethod($.String.prototype.countCharacter);
 
     /**
      * Coerces inputArg to a string and repeatedly adds the argument character to the beginning until
@@ -4245,17 +4198,17 @@
      */
     $.String.prototype.padLeadingChar = function (character, size) {
         var string = onlyCoercibleToString(this),
-            singleChar = $.String.first(character),
+            singleChar = charAt(character, 0),
             count = toInteger(size) - string.length;
 
-        if (isLtZeroOrPositiveInfinity(count)) {
+        if (count &lt; 0 || count === Infinity) {
             count = 0;
         }
 
         return $.String.repeat(singleChar, count) + string;
     };
 
-    $.String.padLeadingChar = $.Function.ToMethod($.String.prototype.padLeadingChar);
+    $.String.padLeadingChar = toMethod($.String.prototype.padLeadingChar);
 
     /**
      * Repeat the current string several times, return the new string. Used by String.repeat
@@ -4291,21 +4244,21 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.String.repeat)) {
-        $.String.repeat = $.Function.ToMethod(base.String.repeat);
+    if (!testShims &amp;&amp; isNative(base.String.repeat)) {
+        $.String.repeat = toMethod(base.String.repeat);
     } else {
         $.String.prototype.repeat = function (times) {
             var thisString = onlyCoercibleToString(this),
                 count = toInteger(times);
 
-            if (isLtZeroOrPositiveInfinity(count)) {
+            if (count &lt; 0 || count === Infinity) {
                 throw new base.RangeError.Ctr();
             }
 
             return stringRepeatRep(thisString, count);
         };
 
-        $.String.repeat = $.Function.ToMethod($.String.prototype.repeat);
+        $.String.repeat = toMethod($.String.prototype.repeat);
     }
 
     /**
@@ -4320,18 +4273,18 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.String.startsWith)) {
-        $.String.startsWith = $.Function.ToMethod(base.String.startsWith);
+    if (!testShims &amp;&amp; isNative(base.String.startsWith)) {
+        $.String.startsWith = toMethod(base.String.startsWith);
     } else {
         $.String.prototype.startsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
-                searchStr = $.String.ToString(searchString),
+                searchStr = toString(searchString),
                 start = mMin(mMax(toInteger(position), 0), thisStr.length);
 
             return strSlice(thisStr, start, start + searchStr.length) === searchStr;
         };
 
-        $.String.startsWith = $.Function.ToMethod($.String.prototype.startsWith);
+        $.String.startsWith = toMethod($.String.prototype.startsWith);
     }
 
     /**
@@ -4346,12 +4299,12 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.String.endsWith)) {
-        $.String.endsWith = $.Function.ToMethod(base.String.endsWith);
+    if (!testShims &amp;&amp; isNative(base.String.endsWith)) {
+        $.String.endsWith = toMethod(base.String.endsWith);
     } else {
         $.String.prototype.endsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
-                searchStr = $.String.ToString(searchString),
+                searchStr = toString(searchString),
                 thisLen = thisStr.length,
                 type = typeof position,
                 end,
@@ -4369,7 +4322,7 @@
             return start >= 0 &amp;&amp; strSlice(thisStr, start, end) === searchStr;
         };
 
-        $.String.endsWith = $.Function.ToMethod($.String.prototype.endsWith);
+        $.String.endsWith = toMethod($.String.prototype.endsWith);
     }
 
     /**
@@ -4384,12 +4337,12 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/contains
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.String.contains)) {
-        $.String.contains = $.Function.ToMethod(base.String.contains);
+    if (!testShims &amp;&amp; isNative(base.String.contains)) {
+        $.String.contains = toMethod(base.String.contains);
     } else {
         $.String.prototype.contains = function (searchString, position) {
             var str = onlyCoercibleToString(this),
-                searchStr = $.String.ToString(searchString),
+                searchStr = toString(searchString),
                 length = str.length,
                 type = typeof position;
 
@@ -4402,7 +4355,7 @@
             return base.String.indexOf.call(str, searchStr, mMin(mMax(position, 0), length)) !== -1;
         };
 
-        $.String.contains = $.Function.ToMethod($.String.prototype.contains);
+        $.String.contains = toMethod($.String.prototype.contains);
     }
 
     /**
@@ -4417,46 +4370,60 @@
 
     /**
      * Return the value of the [[Prototype]] internal property of object.
+     * Actually based on the ECMA6 draft, which only throws on undefined or null.
      * @memberof utilx.Object
      * @name getPrototypeOf
      * @function
      * @param {Object} object
      * @returns {Prototype}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tointeger
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.getPrototypeOf)) {
-        $.Object.getPrototypeOf = function (object) {
-            return base.Object.getPrototypeOf(throwIfIsPrimitive(object));
-        };
+    if (!testShims &amp;&amp; isNative(base.Object.getPrototypeOf)) {
+        try {
+            if (base.Object.getPrototypeOf(1) === base.Number.proto &amp;&amp;
+                    base.Object.getPrototypeOf(true) === base.Number.proto &amp;&amp;
+                    base.Object.getPrototypeOf('') === base.Number.proto) {
+
+                $.Object.getPrototypeOf = getPrototypeOf = base.Object.getPrototypeOf;
+            } else {
+                throw new Error();
+            }
+        } catch (eGPO) {
+            $.Object.getPrototypeOf = getPrototypeOf = function (object) {
+                return base.Object.getPrototypeOf(toObject(object));
+            };
+        }
     } else if (base.Object.proto[base.str.proto] === null) {
-        $.Object.getPrototypeOf = function (object) {
-            return throwIfIsPrimitive(object)[base.str.proto];
+        $.Object.getPrototypeOf = getPrototypeOf = function (object) {
+            return toObject(object)[base.str.proto];
         };
     } else {
         if ($.Function.returnArgs().constructor.prototype !== base.Object.proto) {
             fixOpera10GetPrototypeOf = true;
         }
 
-        $.Object.getPrototypeOf = function (object) {
-            if (throwIfIsPrimitive(object) === base.Object.proto) {
+        $.Object.getPrototypeOf = getPrototypeOf = function (object) {
+            var obj = toObject(object),
+                ctrProto;
+
+            if (obj === base.Object.proto) {
                 return null;
             }
 
-            var ctrProto;
-
-            if ($.Function.isFunction(object.constructor)) {
-                if (fixOpera10GetPrototypeOf &amp;&amp; $.Object.isArguments(object)) {
+            if (isFunction(obj.constructor)) {
+                if (fixOpera10GetPrototypeOf &amp;&amp; isArguments(obj)) {
                     ctrProto = base.Object.proto;
                 } else {
-                    ctrProto = object.constructor.prototype;
+                    ctrProto = obj.constructor.prototype;
                 }
-            } else if ($.Object.isObject(object[base.str.proto])) {
-                ctrProto = object[base.str.proto];
+            } else if (isObject(obj[base.str.proto])) {
+                ctrProto = obj[base.str.proto];
             } else {
                 ctrProto = base.Object.proto;
             }
 
-            if (object === ctrProto) {
+            if (obj === ctrProto) {
                 return base.Object.proto;
             }
 
@@ -4474,7 +4441,7 @@
      * @returns {boolean}
      */
     $.Object.isPlainObject = function (object) {
-        return $.Object.isObject(object) &amp;&amp; $.Object.getPrototypeOf(object) === base.Object.proto;
+        return isObject(object) &amp;&amp; getPrototypeOf(object) === base.Object.proto;
     };
 
     /**
@@ -4491,7 +4458,7 @@
         return $.Array.indexOf(this, searchElement) !== -1;
     };
 
-    $.Array.contains = $.Function.ToMethod($.Array.prototype.contains);
+    $.Array.contains = toMethod($.Array.prototype.contains);
 
     //Test for hasDontEnumBug and hasFuncProtoBug.
     enumer({toString: null}, false, function (it, prop) {
@@ -4570,37 +4537,40 @@
      */
     if (hasDontEnumBug) {
         $.Object.prototype.hasOwn = function (property) {
-            var prop = $.String.ToString(property),
-                val;
+            var prop = toString(property);
 
+            /*
             if (hasOwn(this, prop)) {
                 val = true;
             } else {
-                val = $.Object.has(this, prop) &amp;&amp; $.Array.contains(base.props.shadowed, prop) &amp;&amp;
-                                        !$.Object.is(this[prop], $.Object.getPrototypeOf(this)[prop]);
+                val = (prop in this) &amp;&amp; $.Array.contains(base.props.shadowed, prop) &amp;&amp;
+                                        !$.Object.is(this[prop], getPrototypeOf(this)[prop]);
             }
+            */
 
-            return val;
+            return hasOwn(this, prop) || ((prop in this) &amp;&amp; $.Array.contains(base.props.shadowed, prop) &amp;&amp;
+                                          !$.Object.is(this[prop], getPrototypeOf(this)[prop]));
         };
 
-        $.Object.hasOwn = $.Function.ToMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
     } else if (hasFuncProtoBug) {
         $.Object.prototype.hasOwn = function (property) {
-            var prop = $.String.ToString(property),
-                val;
+            var prop = toString(property);
 
-            if ($.Function.isFunction(this) &amp;&amp; prop === 'prototype') {
+            /*
+            if (prop === 'prototype' &amp;&amp; isFunction(this)) {
                 val = true;
             } else {
                 val = hasOwn(this, prop);
             }
+            */
 
-            return val;
+            return (prop === 'prototype' &amp;&amp; isFunction(this)) || hasOwn(this, prop);
         };
 
-        $.Object.hasOwn = $.Function.ToMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
     } else {
-        $.Object.hasOwn = $.Function.ToMethod(base.Object.hasOwn);
+        $.Object.hasOwn = toMethod(base.Object.hasOwn);
     }
 
     /**
@@ -4613,7 +4583,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
     function hasValidLength(inputArg) {
-        return $.Object.isNotPrimitive(inputArg) &amp;&amp; hasOwn(inputArg, 'length') &amp;&amp; $.Number.isUint32(inputArg.length);
+        return isNotPrimitive(inputArg) &amp;&amp; hasOwn(inputArg, 'length') &amp;&amp; $.Number.isUint32(inputArg.length);
     }
 
     /**
@@ -4633,17 +4603,6 @@
     }
 
     /**
-     * Returns true if arguments is an array or an arguments object.
-     * @private
-     * @function isArrayOrArguments
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isArrayOrArguments(inputArg) {
-        return $.Array.isArray(inputArg) || $.Object.isArguments(inputArg);
-    }
-
-    /**
      * The function takes one argument inputArg, if the argument is an object whose class internal
      * property is "Array" or is an Object whose class internal property is "Arguments";
      * returns true if length is zero otherwise it returns false.
@@ -4655,7 +4614,7 @@
      * @returns {(boolean|null)}
      */
     $.Array.isEmpty = function (inputArg) {
-        return !throwIfIsNotHasValidLength(throwIfAFunction($.Object.ToObject(inputArg))).length;
+        return !throwIfIsNotHasValidLength(throwIfAFunction(toObject(inputArg))).length;
     };
 
     /**
@@ -4667,10 +4626,10 @@
      * @returns {*}
      */
     $.Array.prototype.first = function () {
-        return throwIfIsNotHasValidLength($.Object.ToObjectFixIndexedAccess(this))[0];
+        return throwIfIsNotHasValidLength(toObjectFixIndexedAccess(this))[0];
     };
 
-    $.Array.first = $.Function.ToMethod($.Array.prototype.first);
+    $.Array.first = toMethod($.Array.prototype.first);
 
     /**
      * Returns the last element of an array; otherwise returns undefined.
@@ -4681,12 +4640,24 @@
      * @returns {*}
      */
     $.Array.prototype.last = function () {
-        var object = throwIfIsNotHasValidLength($.Object.ToObjectFixIndexedAccess(this));
+        var object = throwIfIsNotHasValidLength(toObjectFixIndexedAccess(this));
 
         return object[object.length - 1];
     };
 
-    $.Array.last = $.Function.ToMethod($.Array.prototype.last);
+    $.Array.last = toMethod($.Array.prototype.last);
+
+    /**
+     * The put method assigns a value to a specific element of an array and
+     * returns the new length of the array.
+     * @private
+     * @name put
+     * @function
+     * @param {ArrayLike} array
+     * @param {NumberLike} index
+     * @param {*} value
+     * @returns {(number|undefined)}
+     */
 
     /**
      * The Array.assign() method assigns a value to a specific element of an array and
@@ -4700,44 +4671,48 @@
      * @returns {(number|undefined)}
      */
     $.Array.prototype.assign = function (index, value) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
-            updateLen = hasValidLength(object) &amp;&amp; !$.Function.isFunction(object),
+        var object = toObjectFixIndexedAccess(this),
+            updateLen,
             numIndex,
             number,
-            string,
-            lastIndex;
+            //string,
+            lastIndex,
+            isInt;
 
         if (arguments.length >= 2) {
+            updateLen = hasValidLength(object) &amp;&amp; !isFunction(object);
             if (updateLen) {
                 lastIndex = $.Number.MAX_UINT32 - 1;
-                if ($.Number.isNumberAny(index)) {
+                if (toClassStr(index) === base.classString.number) {
                     numIndex = +index;
+                    isInt = isInteger(numIndex);
                 } else {
-                    string = $.String.ToString(index);
-                    if (test(base.RegExp.assignInteger, string)) {
-                        number = +string;
-                        if ($.Number.isInteger(number) &amp;&amp; number >= 0 &amp;&amp; number &lt;= lastIndex) {
-                            numIndex = $.Number.toInteger(index);
+                    //string = toString(index);
+                    if (test(base.RegExp.assignInteger, index)) {
+                        number = +index;
+                        if (number >= 0 &amp;&amp; number &lt;= lastIndex &amp;&amp; isInteger(number)) {
+                            numIndex = number;
+                            isInt = true;
                         }
                     }
                 }
             }
 
-            if (updateLen &amp;&amp; $.Number.isInteger(numIndex) &amp;&amp; numIndex >= 0 &amp;&amp; numIndex &lt;= lastIndex) {
+            if (updateLen &amp;&amp; isInt &amp;&amp; numIndex >= 0 &amp;&amp; numIndex &lt;= lastIndex) {
                 object[numIndex] = value;
                 numIndex += 1;
                 if (numIndex > object.length) {
                     object.length = numIndex;
                 }
             } else {
-                object[$.String.ToString(index)] = value;
+                object[index] = value;
             }
         }
 
         return object.length;
     };
 
-    $.Array.assign = $.Function.ToMethod($.Array.prototype.assign);
+    $.Array.assign = put = toMethod($.Array.prototype.assign);
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -4776,7 +4751,7 @@
         }, $.Array.some);
     };
 
-    $.Array.unique = $.Function.ToMethod($.Array.prototype.unique);
+    $.Array.unique = toMethod($.Array.prototype.unique);
 
     /**
      * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
@@ -4787,12 +4762,12 @@
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
-    boxedString = $.Object.ToObject('g');
-    shouldSplitString = boxedString[0] !== 'g' || !$.Object.has(boxedString, 0);
-    $.Object.ToObjectFixIndexedAccess = function (inputArg) {
-        var object = $.Object.ToObject(inputArg);
+    boxedString = toObject('g');
+    shouldSplitString = boxedString[0] !== 'g' || '0' in boxedString;
+    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = function (inputArg) {
+        var object = toObject(inputArg);
 
-        if (shouldSplitString &amp;&amp; $.String.isStringObject(object)) {
+        if (shouldSplitString &amp;&amp; toClassStr(object) === base.classString.string) {
             iter(object, false, 0, object.length, false, function (it, idx, obj) {
                 obj[idx] = it;
             });
@@ -4802,7 +4777,7 @@
     };
 
     function fixLength(inputArg) {
-        return mMin(mMax(toInteger(inputArg.length), 0), $.Number.MAX_UINT32);
+        return mMin(mMax(toInteger(inputArg.length), 0), MAX_UINT32);
     }
 
     /**
@@ -4818,10 +4793,10 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.splice) &amp;&amp; splice([1, 2], 0).length === 2) {
+    if (!testShims &amp;&amp; isNative(base.Array.splice) &amp;&amp; splice([1, 2], 0).length === 2) {
         try {
             if (!splice([1, 2]).length) {
-                $.Array.splice = $.Function.ToMethod(base.Array.splice);
+                $.Array.splice = toMethod(base.Array.splice);
             } else {
                 throw new Error();
             }
@@ -4838,14 +4813,14 @@
                 return val;
             };
 
-            $.Array.splice = $.Function.ToMethod($.Array.prototype.splice);
+            $.Array.splice = toMethod($.Array.prototype.splice);
         }
     } else {
         $.Array.prototype.splice = function (start, deleteCount) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 removed = [],
-                relativeStart = mMin(mMax(toInteger(start), -$.Number.MAX_UINT32), $.Number.MAX_UINT32),
+                relativeStart = mMin(mMax(toInteger(start), -MAX_UINT32), MAX_UINT32),
                 actualStart,
                 actualDeleteCount,
                 k = 0,
@@ -4861,7 +4836,7 @@
                 return removed;
             }
 
-            if ($.Math.sign(relativeStart) &lt; 0) {
+            if (relativeStart &lt; 0) {
                 actualStart = mMax(length + relativeStart, 0);
             } else {
                 actualStart = mMin(relativeStart, length);
@@ -4871,7 +4846,7 @@
                 deleteCount = length - actualStart;
             }
 
-            actualDeleteCount = mMin(mMax(toInteger(deleteCount), 0), $.Number.MAX_UINT32);
+            actualDeleteCount = mMin(mMax(toInteger(deleteCount), 0), MAX_UINT32);
             actualDeleteCount = mMin(mMax(actualDeleteCount, 0), length - actualStart);
             while (k &lt; actualDeleteCount) {
                 from = actualStart + k;
@@ -4930,7 +4905,7 @@
             return removed;
         };
 
-        $.Array.splice = $.Function.ToMethod($.Array.prototype.splice);
+        $.Array.splice = toMethod($.Array.prototype.splice);
     }
 
     /**
@@ -4945,7 +4920,7 @@
 
         if (isStrictMode) {
             fn.call([1], function () {
-                hasV8StrictBug = $.String.isStringObject(this);
+                hasV8StrictBug = typeof this === 'object';
             }, 'foo');
         }
 
@@ -4984,23 +4959,23 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.forEach) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.forEach) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1) &amp;&amp; !checkV8StrictBug(base.Array.forEach)) {
 
-            $.Array.forEach = $.Function.ToMethod(base.Array.forEach);
+            $.Array.forEach = toMethod(base.Array.forEach);
         } else {
             throw new Error();
         }
     } catch (eForEach) {
         $.Array.prototype.forEach = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this);
+            var object = toObjectFixIndexedAccess(this);
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
                 this.call(thisArg, it, idx, obj);
             }, throwIfNotAFunction(fn));
         };
 
-        $.Array.forEach = $.Function.ToMethod($.Array.prototype.forEach);
+        $.Array.forEach = toMethod($.Array.prototype.forEach);
     }
 
     /**
@@ -5017,7 +4992,7 @@
      * @returns {undefined}
      */
     $.Array.prototype.forAll = function (fn, thisArg) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = toObjectFixIndexedAccess(this),
             val = false;
 
         iter(object, false, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5029,7 +5004,7 @@
         return val;
     };
 
-    $.Array.forAll = $.Function.ToMethod($.Array.prototype.forAll);
+    $.Array.forAll = toMethod($.Array.prototype.forAll);
 
     /**
      * some executes the callback function once for each element present in the array until it finds one
@@ -5063,16 +5038,16 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.some) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.some) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1) &amp;&amp; !checkV8StrictBug(base.Array.some)) {
 
-            $.Array.some = $.Function.ToMethod(base.Array.some);
+            $.Array.some = toMethod(base.Array.some);
         } else {
             throw new Error();
         }
     } catch (eSome) {
         $.Array.prototype.some = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 val = false;
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5084,7 +5059,7 @@
             return val;
         };
 
-        $.Array.some = $.Function.ToMethod($.Array.prototype.some);
+        $.Array.some = toMethod($.Array.prototype.some);
     }
 
     /**
@@ -5113,11 +5088,11 @@
      * @returns {*}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.find) &amp;&amp; !checkV8StrictBug(base.Array.find)) {
-        $.Array.find = $.Function.ToMethod(base.Array.find);
+    if (!testShims &amp;&amp; isNative(base.Array.find) &amp;&amp; !checkV8StrictBug(base.Array.find)) {
+        $.Array.find = toMethod(base.Array.find);
     } else {
         $.Array.prototype.find = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 val;
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5131,7 +5106,7 @@
             return val;
         };
 
-        $.Array.find = $.Function.ToMethod($.Array.prototype.find);
+        $.Array.find = toMethod($.Array.prototype.find);
     }
 
     /**
@@ -5160,11 +5135,11 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.findIndex) &amp;&amp; !checkV8StrictBug(base.Array.findIndex)) {
-        $.Array.findIndex = $.Function.ToMethod(base.Array.findIndex);
+    if (!testShims &amp;&amp; isNative(base.Array.findIndex) &amp;&amp; !checkV8StrictBug(base.Array.findIndex)) {
+        $.Array.findIndex = toMethod(base.Array.findIndex);
     } else {
         $.Array.prototype.findIndex = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 val = -1;
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5178,7 +5153,7 @@
             return val;
         };
 
-        $.Array.findIndex = $.Function.ToMethod($.Array.prototype.findIndex);
+        $.Array.findIndex = toMethod($.Array.prototype.findIndex);
     }
 
     /**
@@ -5191,7 +5166,7 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/of
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.of)) {
+    if (!testShims &amp;&amp; isNative(base.Array.of)) {
         $.Array.of = base.Array.of;
     } else {
         $.Array.of = function () {
@@ -5219,11 +5194,11 @@
      * @param {*} [thisArg]
      * @returns {Array}
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.from) &amp;&amp; !checkV8StrictBug(base.Array.from)) {
+    if (!testShims &amp;&amp; isNative(base.Array.from) &amp;&amp; !checkV8StrictBug(base.Array.from)) {
         $.Array.from = base.Array.from;
     } else {
         $.Array.from = function (arrayLike, mapfn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(arrayLike),
+            var object = toObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
                 length = fixLength(object),
                 array,
@@ -5233,7 +5208,7 @@
                 mapping = !!throwIfNotAFunction(mapfn);
             }
 
-            if ($.Function.isFunction(this)) {
+            if (isFunction(this)) {
                 array = new this(length);
             } else {
                 array = [];
@@ -5244,8 +5219,8 @@
                     it = mapfn.call(thisArg, it, idx);
                 }
 
-                this(array, idx, it);
-            }, $.Array.assign);
+                put(array, idx, it);
+            });
 
             array.length = length;
 
@@ -5285,16 +5260,16 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.every) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.every) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1) &amp;&amp; !checkV8StrictBug(base.Array.every)) {
 
-            $.Array.every = $.Function.ToMethod(base.Array.every);
+            $.Array.every = toMethod(base.Array.every);
         } else {
             throw new Error();
         }
     } catch (eEvery) {
         $.Array.prototype.every = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 val = true;
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5306,7 +5281,7 @@
             return val;
         };
 
-        $.Array.every = $.Function.ToMethod($.Array.prototype.every);
+        $.Array.every = toMethod($.Array.prototype.every);
     }
 
     /**
@@ -5341,27 +5316,27 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.map) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.map) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1) &amp;&amp; !checkV8StrictBug(base.Array.map)) {
 
-            $.Array.map = $.Function.ToMethod(base.Array.map);
+            $.Array.map = toMethod(base.Array.map);
         } else {
             throw new Error();
         }
     } catch (eMap) {
         $.Array.prototype.map = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 arr = [];
 
             arr.length = fixLength(object);
             iter(object, true, 0, arr.length, false, function (it, idx, obj) {
-                $.Array.assign(arr, idx, this.call(thisArg, it, idx, obj));
+                put(arr, idx, this.call(thisArg, it, idx, obj));
             }, throwIfNotAFunction(fn));
 
             return arr;
         };
 
-        $.Array.map = $.Function.ToMethod($.Array.prototype.map);
+        $.Array.map = toMethod($.Array.prototype.map);
     }
 
     /**
@@ -5384,7 +5359,7 @@
      * @returns {Array}
      */
     internalSlice = function (start, end) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = toObjectFixIndexedAccess(this),
             length = fixLength(object),
             relativeStart = toInteger(start),
             val = [],
@@ -5394,7 +5369,7 @@
             finalEnd,
             k;
 
-        if ($.Math.sign(relativeStart) &lt; 0) {
+        if (relativeStart &lt; 0) {
             k = mMax(length + relativeStart, 0);
         } else {
             k = mMin(relativeStart, length);
@@ -5406,7 +5381,7 @@
             relativeEnd = toInteger(end);
         }
 
-        if ($.Math.sign(relativeEnd) &lt; 0) {
+        if (relativeEnd &lt; 0) {
             finalEnd = mMax(length + relativeEnd, 0);
         } else {
             finalEnd = mMin(relativeEnd, length);
@@ -5414,8 +5389,8 @@
 
         val.length = mMax(finalEnd - k, 0);
         while (k &lt; finalEnd) {
-            if ((!base.Array.canIterArgs &amp;&amp; $.Object.isArguments(object)) || $.Object.has(object, k)) {
-                $.Array.assign(val, next, object[k]);
+            if ((!base.Array.canIterArgs &amp;&amp; isArguments(object)) || k in object) {
+                put(val, next, object[k]);
             }
 
             next += 1;
@@ -5437,7 +5412,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
     try {
-        if (testShims || !base.Array.canIterArgs || !$.Function.isNativeFunction(base.Array.slice) ||
+        if (testShims || !base.Array.canIterArgs || !isNative(base.Array.slice) ||
                 slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), -1).length !== 1 ||
@@ -5461,7 +5436,7 @@
         $.Array.prototype.slice = internalSlice;
     }
 
-    $.Array.slice = $.Function.ToMethod($.Array.prototype.slice);
+    $.Array.slice = toMethod($.Array.prototype.slice);
 
     /**
      * Creates a new array with all elements that pass the test implemented by the provided function.
@@ -5483,16 +5458,16 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.filter) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.filter) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1) &amp;&amp; !checkV8StrictBug(base.Array.filter)) {
 
-            $.Array.filter = $.Function.ToMethod(base.Array.filter);
+            $.Array.filter = toMethod(base.Array.filter);
         } else {
             throw new Error();
         }
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 arr = [];
 
             iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
@@ -5504,7 +5479,7 @@
             return arr;
         };
 
-        $.Array.filter = $.Function.ToMethod($.Array.prototype.filter);
+        $.Array.filter = toMethod($.Array.prototype.filter);
     }
 
     /**
@@ -5528,17 +5503,17 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.reduce) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.reduce) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1)) {
 
-            $.Array.reduce = $.Function.ToMethod(base.Array.reduce);
+            $.Array.reduce = toMethod(base.Array.reduce);
         } else {
             throw new Error();
         }
     } catch (eReduce) {
         reduceTypeErrorMessage = 'reduce of empty array with no initial value';
         $.Array.prototype.reduce = function (fn, initialValue) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5556,7 +5531,7 @@
             } else {
                 kPresent = false;
                 while (!kPresent &amp;&amp; index &lt; length) {
-                    kPresent = $.Object.has(object, index);
+                    kPresent = index in object;
                     if (kPresent) {
                         accumulator = object[index];
                         index += 1;
@@ -5569,7 +5544,7 @@
             }
 
             while (index &lt; length) {
-                if ($.Object.has(object, index)) {
+                if (index in object) {
                     accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
@@ -5579,7 +5554,7 @@
             return accumulator;
         };
 
-        $.Array.reduce = $.Function.ToMethod($.Array.prototype.reduce);
+        $.Array.reduce = toMethod($.Array.prototype.reduce);
     }
 
     /**
@@ -5603,17 +5578,17 @@
             testObject1 = list;
         });
 
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.reduceRight) &amp;&amp; $.Object.isTypeObject(testObject1) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.Array.reduceRight) &amp;&amp; isTypeObject(testObject1) &amp;&amp;
                 $.String.isStringAny(testObject1)) {
 
-            $.Array.reduceRight = $.Function.ToMethod(base.Array.reduceRight);
+            $.Array.reduceRight = toMethod(base.Array.reduceRight);
         } else {
             throw new Error();
         }
     } catch (eReduceRight) {
         reduceRightTypeErrorMessage = 'reduceRight of empty array with no initial value';
         $.Array.prototype.reduceRight = function (fn, initialValue) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 accumulator,
                 length,
                 kPresent,
@@ -5631,7 +5606,7 @@
             } else {
                 kPresent = false;
                 while (!kPresent &amp;&amp; index >= 0) {
-                    kPresent = $.Object.has(object, index);
+                    kPresent = index in object;
                     if (kPresent) {
                         accumulator = object[index];
                         index -= 1;
@@ -5644,7 +5619,7 @@
             }
 
             while (index >= 0) {
-                if ($.Object.has(object, index)) {
+                if (index in object) {
                     accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
@@ -5654,7 +5629,7 @@
             return accumulator;
         };
 
-        $.Array.reduceRight = $.Function.ToMethod($.Array.prototype.reduceRight);
+        $.Array.reduceRight = toMethod($.Array.prototype.reduceRight);
     }
 
     /**
@@ -5677,21 +5652,15 @@
 
         min = toInteger(min);
         max = toInteger(max);
-        if ($.Object.is(min, max)) {
+        if (min === max) {
             max = 1;
             min = 0;
         }
 
-        var mult,
-            val;
+        var val;
 
-        if (min &lt; 0 &amp;&amp; max > 0 &amp;&amp; (max - min + 1) > $.Number.MAX_SAFE_INTEGER) {
-            mult = floor(random() * 2);
-            if (mult === 0) {
-                mult = -1;
-            }
-
-            val = floor(random() * $.Number.UNSAFE_INTEGER) * mult;
+        if (min &lt; 0 &amp;&amp; max > 0 &amp;&amp; (max - min + 1) > MAX_SAFE_INTEGER) {
+            val = floor(random() * UNSAFE_INTEGER) * (floor(random() * 2) || -1);
         } else {
             val = floor(random() * (max - min + 1) + min);
         }
@@ -5708,16 +5677,14 @@
      * @returns {number}
      */
     function defaultComparison(left, right) {
-        var leftS = $.String.ToString(left),
-            rightS = $.String.ToString(right),
-            val;
+        var leftS = toString(left),
+            rightS = toString(right),
+            val = 1;
 
         if (leftS === rightS) {
             val = 0;
         } else if (leftS &lt; rightS) {
             val = -1;
-        } else {
-            val = 1;
         }
 
         return val;
@@ -5793,7 +5760,7 @@
      * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
      */
     $.Array.prototype.stableSort = function (comparefn) {
-        var object = $.Object.ToObjectFixIndexedAccess(this),
+        var object = toObjectFixIndexedAccess(this),
             type = typeof comparefn;
 
         if (type === 'undefined') {
@@ -5803,14 +5770,14 @@
         throwIfNotAFunction(comparefn);
         if (fixLength(object) > 1) {
             $.Array.forEach(mergeSort(object, comparefn), function (value, index) {
-                this(object, index, value);
-            }, $.Array.assign);
+                put(object, index, value);
+            });
         }
 
         return object;
     };
 
-    $.Array.stableSort = $.Function.ToMethod($.Array.prototype.stableSort);
+    $.Array.stableSort = toMethod($.Array.prototype.stableSort);
 
     /**
      * This {@link boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
@@ -5825,7 +5792,7 @@
      * @returns {ArrayLike} same type as supplied array argument.
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(sort)) {
+    if (!testShims &amp;&amp; isNative(sort)) {
         $.Array.prototype.sort = function (comparefn) {
             var type = typeof comparefn;
 
@@ -5839,7 +5806,7 @@
         $.Array.prototype.sort = $.Array.prototype.stableSort;
     }
 
-    $.Array.sort = $.Function.ToMethod($.Array.prototype.sort);
+    $.Array.sort = toMethod($.Array.prototype.sort);
 
     /**
      * Builds the test string used to determine if native trim is ES5.
@@ -5867,10 +5834,10 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
      */
     try {
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.String.trim) &amp;&amp;
+        if (!testShims &amp;&amp; isNative(base.String.trim) &amp;&amp;
                 !trim($.Array.reduce(base.String.whiteSpaces, buildTestString, '')).length) {
 
-            $.String.trim = $.Function.ToMethod(base.String.trim);
+            $.String.trim = toMethod(base.String.trim);
         } else {
             throw new Error();
         }
@@ -5880,7 +5847,7 @@
             return $.String.replace(onlyCoercibleToString(this), base.RegExp.wsTrim, '');
         };
 
-        $.String.trim = $.Function.ToMethod($.String.prototype.trim);
+        $.String.trim = toMethod($.String.prototype.trim);
     }
 
     /**
@@ -5893,7 +5860,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseInt
      */
-    if (testShims || !$.Function.isNativeFunction(base.Number.parseInt) ||
+    if (testShims || !isNative(base.Number.parseInt) ||
             base.Number.parseInt(base.String.wsStr + '08') !== 8 ||
             base.Number.parseInt(base.String.wsStr + '0x16') !== 22) {
 
@@ -5927,7 +5894,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Number.parseFloat)) {
+    if (!testShims &amp;&amp; isNative(base.Number.parseFloat)) {
         $.Number.parseFloat = base.Number.parseFloat;
     } else {
         $.Number.parseFloat = base.parseFloat;
@@ -5942,7 +5909,7 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
-    if (testShims || !$.Function.isNativeFunction(base.Number.toFixed) ||
+    if (testShims || !isNative(base.Number.toFixed) ||
             base.Number.toFixed.call(0.00008, 3) !== '0.000' ||
             base.Number.toFixed.call(0.9, 0) === '0' ||
             base.Number.toFixed.call(1.255, 2) !== '1.25' ||
@@ -5985,25 +5952,21 @@
                             s += strSlice('0000000', 0, 7 - it.length) + it;
                         }
                     }
-                }, $.String.ToString);
+                }, toString);
 
                 return s;
             }
 
             function pow(x, n, acc) {
-                var val;
-
-                if (!n) {
-                    val = acc;
-                } else if ($.Number.isOdd(n)) {
-                    val = pow(x, n - 1, acc * x);
-                } else if ($.Number.isEven(n)) {
-                    val = pow(x * x, n / 2, acc);
-                } else {
-                    throw new base.Error.Ctr();
+                if (n) {
+                    if (n % 2) {
+                        acc = pow(x, n - 1, acc * x);
+                    } else {
+                        acc = pow(x * x, n / 2, acc);
+                    }
                 }
 
-                return val;
+                return acc;
             }
 
             function log(x) {
@@ -6034,7 +5997,7 @@
 
                 f = +fractionDigits;
                 // Test for NaN and round fractionDigits down
-                if ($.Number.isNaN(f)) {
+                if (f !== f) {
                     f = 0;
                 } else {
                     f = floor(f);
@@ -6046,8 +6009,8 @@
 
                 x = +this;
                 // Test for NaN or if it is too big or small, return the string value of the number.
-                if ($.Number.isNaN(x) || x &lt;= -1e21 || x >= 1e21) {
-                    return $.String.ToString(x);
+                if (x !== x || x &lt;= -1e21 || x >= 1e21) {
+                    return toString(x);
                 }
 
                 s = '';
@@ -6123,7 +6086,7 @@
         $.Number.prototype.toFixed = base.Number.toFixed;
     }
 
-    $.Number.toFixed = $.Function.ToMethod($.Number.prototype.toFixed, function (num) {
+    $.Number.toFixed = toMethod($.Number.prototype.toFixed, function (num) {
         return num;
     });
 
@@ -6140,11 +6103,11 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.indexOf) &amp;&amp; indexOf([0, 1], 1, 2) === -1) {
-        $.Array.indexOf = $.Function.ToMethod(base.Array.indexOf);
+    if (!testShims &amp;&amp; isNative(base.Array.indexOf) &amp;&amp; indexOf([0, 1], 1, 2) === -1) {
+        $.Array.indexOf = toMethod(base.Array.indexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -6176,7 +6139,7 @@
             return val;
         };
 
-        $.Array.indexOf = $.Function.ToMethod($.Array.prototype.indexOf);
+        $.Array.indexOf = toMethod($.Array.prototype.indexOf);
     }
 
     /**
@@ -6192,11 +6155,11 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.lastIndexOf) &amp;&amp; lastIndexOf([0, 1], 0, -3) === -1) {
-        $.Array.lastIndexOf = $.Function.ToMethod(base.Array.lastIndexOf);
+    if (!testShims &amp;&amp; isNative(base.Array.lastIndexOf) &amp;&amp; lastIndexOf([0, 1], 0, -3) === -1) {
+        $.Array.lastIndexOf = toMethod(base.Array.lastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 val = -1;
 
@@ -6226,7 +6189,7 @@
             return val;
         };
 
-        $.Array.lastIndexOf = $.Function.ToMethod($.Array.prototype.lastIndexOf);
+        $.Array.lastIndexOf = toMethod($.Array.prototype.lastIndexOf);
     }
 
     /**
@@ -6243,11 +6206,11 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fill
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.fill)) {
-        $.Array.fill = $.Function.ToMethod(base.Array.fill);
+    if (!testShims &amp;&amp; isNative(base.Array.fill)) {
+        $.Array.fill = toMethod(base.Array.fill);
     } else {
         $.Array.prototype.fill = function (value, start, end) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 relativeStart = toInteger(start),
                 type = typeof end,
@@ -6275,13 +6238,13 @@
             iter(object, false, relativeStart, finalEnd, false, function (unused, idx, obj) {
                 /*jslint unparam: true */
                 /*jshint unused: false */
-                this(obj, idx, value);
-            }, $.Array.assign);
+                put(obj, idx, value);
+            });
 
             return object;
         };
 
-        $.Array.fill = $.Function.ToMethod($.Array.prototype.fill);
+        $.Array.fill = toMethod($.Array.prototype.fill);
     }
 
     /**
@@ -6297,11 +6260,11 @@
      * @param {number} [end]
      * @returns {Array}
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Array.copyWithin)) {
-        $.Array.copyWithin = $.Function.ToMethod(base.Array.copyWithin);
+    if (!testShims &amp;&amp; isNative(base.Array.copyWithin)) {
+        $.Array.copyWithin = toMethod(base.Array.copyWithin);
     } else {
         $.Array.prototype.copyWithin = function (target, start, end) {
-            var object = $.Object.ToObjectFixIndexedAccess(this),
+            var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object),
                 relativeTarget = toInteger(target),
                 relativeStart = toInteger(start),
@@ -6350,19 +6313,19 @@
                 /*jslint unparam: true */
                 /*jshint unused: false */
                 if (hasOwn(obj, from)) {
-                    this(obj, to, obj[from]);
+                    put(obj, to, obj[from]);
                 } else {
                     delete obj[to];
                 }
 
                 from += direction;
                 to += direction;
-            }, $.Array.assign);
+            });
 
             return object;
         };
 
-        $.Array.copyWithin = $.Function.ToMethod($.Array.prototype.copyWithin);
+        $.Array.copyWithin = toMethod($.Array.prototype.copyWithin);
     }
 
     /**
@@ -6410,11 +6373,11 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
      */
     try {
-        if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.keys)) {
+        if (!testShims &amp;&amp; isNative(base.Object.keys)) {
             keysWorksWithArguments = base.Object.keys($.Function.returnArgs(1, 2)).length === 2;
             if (hasErrorProps) {
                 $.Object.keys = function (object) {
-                    if (!keysWorksWithArguments &amp;&amp; $.Object.isArguments(object)) {
+                    if (!keysWorksWithArguments &amp;&amp; isArguments(object)) {
                         object = slice(object);
                     }
 
@@ -6442,7 +6405,7 @@
         $.Object.keys = function (object) {
             throwIfIsPrimitive(object);
 
-            var skipProto = hasFuncProtoBug &amp;&amp; $.Function.isFunction(object),
+            var skipProto = hasFuncProtoBug &amp;&amp; isFunction(object),
                 skipErrorProps = hasErrorProps &amp;&amp; isErrorTypePrototype(object),
                 props = enumer(base.Array.canIterArgs ? object : slice(object), false, function (unused, prop, obj) {
                     /*jslint unparam: true */
@@ -6459,8 +6422,8 @@
 
             if (hasDontEnumBug &amp;&amp; object !== base.Object.proto) {
                 ctor = object.constructor;
-                isProto = ($.Function.isFunction(ctor) &amp;&amp; ctor.prototype === object);
-                nonEnum = nonEnumProps[$.Object.ToClassString(object)];
+                isProto = (isFunction(ctor) &amp;&amp; ctor.prototype === object);
+                nonEnum = nonEnumProps[toClass(object)];
                 $.Array.forEach(base.props.shadowed, function (property) {
                     if (!(isProto &amp;&amp; nonEnum[property]) &amp;&amp; this(object, property)) {
                         push(props, property);
@@ -6497,7 +6460,7 @@
      * @returns {boolean}
      */
     $.Object.forKeys = function (object, fn, thisArg) {
-        var obj = $.Object.ToObjectFixIndexedAccess(object),
+        var obj = toObjectFixIndexedAccess(object),
             keys = $.Object.keys(obj),
             val = false;
 
@@ -6550,7 +6513,7 @@
         return $.RegExp.test(base.RegExp.notDigits, onlyCoercibleToString(this));
     };
 
-    $.String.isDigits = $.Function.ToMethod($.String.prototype.isDigits);
+    $.String.isDigits = toMethod($.String.prototype.isDigits);
 
     /**
      * Returns true if the operand inputArg is deemed numeric.
@@ -6562,13 +6525,13 @@
      */
     $.Object.isNumeric = function (inputArg) {
         var val = false,
-            string;
+            string,
+            number;
 
         if ($.Number.isNumberAny(inputArg) || $.String.isStringAny(inputArg)) {
-            string = $.String.replace($.String.ToString(inputArg), base.RegExp.plusMinus, '');
-            if (!base.isNaN(base.parseFloat(string)) &amp;&amp; base.isFinite(string)) {
-                val = true;
-            }
+            string = $.String.replace(inputArg, base.RegExp.plusMinus, '');
+            number = base.parseFloat(string);
+            val = number === number &amp;&amp; base.isFinite(string);
         }
 
         return val;
@@ -6580,7 +6543,7 @@
         if ($.Number.isNumberAny(index)) {
             val = +index;
         } else {
-            val = $.String.ToString(index);
+            val = toString(index);
             if (test(base.RegExp.definePropertyInteger, val)) {
                 val = +val;
             }
@@ -6652,7 +6615,8 @@
 
         if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
             $.Object.defineProperty = function (object, property, descriptor) {
-                var isA = isArrayOrArguments(object) &amp;&amp; $.Object.isNumeric(property) &amp;&amp; $.Number.isUint32(+property),
+                var isA = (isArray(object) || isArguments(object)) &amp;&amp;
+                            $.Object.isNumeric(property) &amp;&amp; $.Number.isUint32(+property),
                     isB = (definePropertyPatch1 || definePropertyPatch2) &amp;&amp; hasOwn(descriptor, 'value');
 
                 if (definePropertyPatch1 &amp;&amp; isA) {
@@ -6660,7 +6624,7 @@
                 }
 
                 if (definePropertyPatch2 &amp;&amp; isA &amp;&amp; (isB || !$.Object.hasOwn(object, property))) {
-                    $.Array.assign(object, property, descriptor.value);
+                    put(object, property, descriptor.value);
                 }
 
                 if (definePropertyPatch3 &amp;&amp; isA &amp;&amp; !isB) {
@@ -6704,8 +6668,8 @@
     } catch (eDP) {
         $.Object.defineProperty = function (object, property, descriptor) {
             throwIfIsPrimitive(object);
-            if ($.Object.isPrimitive(descriptor)) {
-                throw new base.TypeError.Ctr('Property descriptor must be an object: ' + $.String.ToString(descriptor));
+            if (isPrimitive(descriptor)) {
+                throw new base.TypeError.Ctr('Property descriptor must be an object: ' + toString(descriptor));
             }
 
             if (hasOwn(descriptor, 'value') &amp;&amp; (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
@@ -6728,7 +6692,7 @@
                         } catch (ignore) {}
                         */
 
-                        $.Array.assign(object, index, descriptor.value);
+                        put(object, index, descriptor.value);
                         type = typeof prototype;
                         if (type === 'undefined') {
                             delete object[base.str.proto];
@@ -6736,21 +6700,21 @@
                             object[base.str.proto] = prototype;
                         }
                     } else {
-                        $.Array.assign(object, index, descriptor.value);
+                        put(object, index, descriptor.value);
                     }
                 }
             } else {
-                if (!$.Function.isNativeFunction(base.Object.defineGetter) ||
-                        !$.Function.isNativeFunction(base.Object.defineSetter)) {
+                if (!isNative(base.Object.defineGetter) ||
+                        !isNative(base.Object.defineSetter)) {
 
                     throw new base.TypeError.Ctr('getters &amp; setters can not be defined on this javascript engine');
                 }
 
-                if ($.Function.isFunction(descriptor.get)) {
+                if (isFunction(descriptor.get)) {
                     base.Object.defineGetter.call(object, property, descriptor.get);
                 }
 
-                if ($.Function.isFunction(descriptor.set)) {
+                if (isFunction(descriptor.set)) {
                     base.Object.defineSetter.call(object, property, descriptor.set);
                 }
             }
@@ -6771,7 +6735,7 @@
      */
     $.Object.defineProperties = function (object, props) {
         throwIfIsPrimitive(object);
-        if ($.Object.isPrimitive(props)) {
+        if (isPrimitive(props)) {
             throw new base.TypeError.Ctr('Property description must be an object');
         }
 
@@ -6794,7 +6758,7 @@
      * @returns {Object}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.freeze)) {
+    if (!testShims &amp;&amp; isNative(base.Object.freeze)) {
         $.Object.freeze = base.Object.freeze;
     } else {
         $.Object.freeze = function (object) {
@@ -6814,7 +6778,7 @@
         $.Object.freeze = function (object) {
             var val;
 
-            if ($.Function.isFunction(object)) {
+            if (isFunction(object)) {
                 val = object;
             } else {
                 val = freezeObject(object);
@@ -6833,7 +6797,7 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isFrozen
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.isFrozen)) {
+    if (!testShims &amp;&amp; isNative(base.Object.isFrozen)) {
         $.Object.isFrozen = base.Object.isFrozen;
     } else {
         $.Object.isFrozen = function (object) {
@@ -6857,7 +6821,7 @@
         $.Array.forEach($.Object.keys(object), function (propKey) {
             var prop = object[propKey];
 
-            if ($.Object.isNotPrimitive(prop) &amp;&amp; !this.isFrozen(prop)) {
+            if (isNotPrimitive(prop) &amp;&amp; !this.isFrozen(prop)) {
                 this.deepFreeze(prop);
             }
         }, $.Object);
@@ -6875,11 +6839,11 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.isPrototypeOf)) {
+    if (!testShims &amp;&amp; isNative(base.Object.isPrototypeOf)) {
         $.Object.instanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
-            return $.Object.isNotPrimitive(object) &amp;&amp;
+            return isNotPrimitive(object) &amp;&amp;
                 (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
         };
     } else {
@@ -6888,7 +6852,7 @@
 
             var val = false;
 
-            if ($.Object.isNotPrimitive(object)) {
+            if (isNotPrimitive(object)) {
                 val = object instanceof ctr;
                 if (!val) {
                     while (object) {
@@ -6897,7 +6861,7 @@
                             break;
                         }
 
-                        object = $.Object.getPrototypeOf(object);
+                        object = getPrototypeOf(object);
                     }
                 }
             }
@@ -6917,14 +6881,14 @@
      * @returns {Object}
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Object.assign)) {
+    if (!testShims &amp;&amp; isNative(base.Object.assign)) {
         $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
-            var object = $.Object.ToObject(target);
+            var object = toObject(target);
 
             $.Array.forEach(slice(arguments, 1), function (source) {
-                this.forEach($.Object.keys($.Object.ToObjectFixIndexedAccess(source)), function (key) {
+                this.forEach($.Object.keys(toObjectFixIndexedAccess(source)), function (key) {
                     this.assign(object, key, source[key]);
                 }, this);
             }, $.Array);
@@ -7002,10 +6966,12 @@
             throw new base.TypeError.Ctr('this is not a Date object.');
         }
 
-        return !$.Number.isNaN(base.Date.getTime.call(this));
+        var ms = base.Date.getTime.call(this);
+
+        return ms === ms;
     };
 
-    $.Date.isValid = $.Function.ToMethod($.Date.prototype.isValid);
+    $.Date.isValid = toMethod($.Date.prototype.isValid);
 
     /**
      * This method returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
@@ -7015,7 +6981,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.Date.now)) {
+    if (!testShims &amp;&amp; isNative(base.Date.now)) {
         $.Date.now = base.Date.now;
     } else {
         $.Date.now = function now() {
@@ -7039,7 +7005,7 @@
         return $.String.replace(onlyCoercibleToString(this), base.RegExp.escapeThese, '\\$&amp;');
     };
 
-    $.String.escapeRegex = $.Function.ToMethod($.String.prototype.escapeRegex);
+    $.String.escapeRegex = toMethod($.String.prototype.escapeRegex);
 
     /**
      * This {@link boundPrototypalFunction method} wraps a string within the given character.
@@ -7054,13 +7020,13 @@
         if (!$.String.isStringAny(characters) &amp;&amp; !$.Number.isNumberAny(characters)) {
             characters = '';
         } else {
-            characters = $.String.ToString(characters);
+            characters = toString(characters);
         }
 
         return characters + onlyCoercibleToString(this) + characters;
     };
 
-    $.String.wrapInChars = $.Function.ToMethod($.String.prototype.wrapInChars);
+    $.String.wrapInChars = toMethod($.String.prototype.wrapInChars);
 
     /**
      * This {@link boundPrototypalFunction method} replaces all occurences of a string pattern within
@@ -7077,7 +7043,7 @@
     $.String.prototype.replaceAll = function (pattern, characters) {
         if ($.String.isStringAny(pattern)) {
             pattern = new base.RegExp.Ctr($.String.escapeRegex(pattern), 'g');
-        } else if ($.RegExp.isRegExp(pattern)) {
+        } else if (isRegExp(pattern)) {
             pattern = copyRegExp(pattern, {
                 add: 'g'
             });
@@ -7086,13 +7052,13 @@
         if (!$.String.isStringAny(characters) &amp;&amp; !$.Number.isNumberAny(characters)) {
             characters = '';
         } else {
-            characters = $.String.ToString(characters);
+            characters = toString(characters);
         }
 
         return $.String.replace(onlyCoercibleToString(this), pattern, characters);
     };
 
-    $.String.replaceAll = $.Function.ToMethod($.String.prototype.replaceAll);
+    $.String.replaceAll = toMethod($.String.prototype.replaceAll);
 
     /**
      * Tests a deep equality relation.. set opts {strict: true} for Object.deepStrictEqual.
@@ -7118,7 +7084,7 @@
             return $.Object.is(a.getTime(), b.getTime());
         }
 
-        if ($.RegExp.isRegExp(a) &amp;&amp; $.RegExp.isRegExp(b)) {
+        if (isRegExp(a) &amp;&amp; isRegExp(b)) {
             return a.source === b.source &amp;&amp;
                 a.global === b.global &amp;&amp;
                 a.multiline === b.multiline &amp;&amp;
@@ -7127,13 +7093,13 @@
                 a.sticky === b.sticky;
         }
 
-        if (!$.Object.isTypeObject(a) &amp;&amp; !$.Object.isTypeObject(b)) {
+        if (!isTypeObject(a) &amp;&amp; !isTypeObject(b)) {
             return opts.strict ? $.Object.is(a, b) : $.Object.equal(a, b);
         }
 
         if (opts.strict) {
-            if (!$.Object.is($.Object.getPrototypeOf($.Object.ToObject(a)),
-                                $.Object.getPrototypeOf($.Object.ToObject(b)))) {
+            if (!$.Object.is(getPrototypeOf(toObject(a)),
+                                getPrototypeOf(toObject(b)))) {
 
                 return false;
             }
@@ -7143,8 +7109,8 @@
             }
         }
 
-        if ($.Object.isArguments(a)) {
-            if (!$.Object.isArguments(b)) {
+        if (isArguments(a)) {
+            if (!isArguments(b)) {
                 return false;
             }
 
@@ -7163,7 +7129,7 @@
         }
 
         if (ka.length !== kb.length) {
-            if ($.Array.isArray(a) &amp;&amp; $.Array.isArray(b)) {
+            if (isArray(a) &amp;&amp; isArray(b)) {
                 if (a.length !== b.length) {
                     return false;
                 }
@@ -7222,7 +7188,7 @@
         var s = onlyCoercibleToString(this);
 
         n = +n;
-        if (!$.Number.isNaN(n) &amp;&amp; n >= 0) {
+        if (n === n &amp;&amp; n >= 0) {
             if (s.length > n) {
                 s = strSlice(s, 0, n);
             }
@@ -7231,7 +7197,7 @@
         return s;
     };
 
-    $.String.truncate = $.Function.ToMethod($.String.prototype.truncate);
+    $.String.truncate = toMethod($.String.prototype.truncate);
 
     /**
      * This {@link boundPrototypalFunction method} inherits the prototype methods from one constructor into another.
@@ -7252,7 +7218,7 @@
         }, base.properties.notEnumerable));
     };
 
-    $.Function.inherits = $.Function.ToMethod($.Function.prototype.inherits);
+    $.Function.inherits = toMethod($.Function.prototype.inherits);
 
     /**
      * Tests to see if the argument is one of the seven standard Error type constructors.
@@ -7304,10 +7270,10 @@
 
         if (type === 'string') {
             result = value;
-        } else if (type === 'undefined' || $.Function.isFunction(value) ||
-                        $.RegExp.isRegExp(value) || !$.Number.isFinite(value)) {
+        } else if (type === 'undefined' || value === Infinity || value === -Infinity ||
+                            isFunction(value) || isRegExp(value)) {
 
-            result = $.String.ToString(value);
+            result = toString(value);
         } else {
             result = value;
         }
@@ -7399,7 +7365,7 @@
         }
 
         maxMessageLength = +maxMessageLength;
-        if ($.Number.isNaN(maxMessageLength) || maxMessageLength &lt; 64) {
+        if (maxMessageLength !== maxMessageLength || maxMessageLength &lt; 64) {
             maxMessageLength = 128;
         }
 
@@ -7419,12 +7385,12 @@
                 value: message
             }, base.properties.notEnumerable));
 
-            if (!$.Function.isFunction(stackStartFunction)) {
+            if (!isFunction(stackStartFunction)) {
                 stackStartFunction = CustomError;
             }
 
             this.stackStartFunction = stackStartFunction;
-            if ($.Function.isFunction(ErrorConstructor.captureStackTrace)) {
+            if (isFunction(ErrorConstructor.captureStackTrace)) {
                 ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
             } else {
                 err = ErrorConstructor.call(this);
@@ -7543,7 +7509,7 @@
 
         testObject2 = [10, 20, 30];
         testObject2[4] = Undefined;
-        if (testShims || !$.Function.isNativeFunction(base.Object.getOwnPropertyDescriptor) ||
+        if (testShims || !isNative(base.Object.getOwnPropertyDescriptor) ||
                 base.Object.getOwnPropertyDescriptor(testObject1, 'sentinel').value !== null ||
                 base.Object.getOwnPropertyDescriptor(testObject2, 3).value !== 30 ||
                 base.Object.getOwnPropertyDescriptor(testObject2, '3').value !== 30 ||
@@ -7564,7 +7530,7 @@
             $.Object.getOwnPropertyDescriptor = function (object, property) {
                 var descriptor = base.Object.getOwnPropertyDescriptor(object, property);
 
-                if ($.Function.isFunction(object) &amp;&amp; property === 'length' &amp;&amp; descriptor.writable) {
+                if (isFunction(object) &amp;&amp; property === 'length' &amp;&amp; descriptor.writable) {
                     descriptor.writable = false;
                 }
 
@@ -7595,12 +7561,12 @@
                         object[base.str.proto] = prototype;
                     }
 
-                    if ($.Function.isNativeFunction(getter) || $.Function.isNativeFunction(setter)) {
-                        if ($.Function.isNativeFunction(getter)) {
+                    if (isNative(getter) || isNative(setter)) {
+                        if (isNative(getter)) {
                             descriptor.get = getter;
                         }
 
-                        if ($.Function.isNativeFunction(setter)) {
+                        if (isNative(setter)) {
                             descriptor.set = setter;
                         }
                     }
@@ -7626,8 +7592,8 @@
      */
     $.Object.swapItems = function (object, prop1, prop2) {
         throwIfIsPrimitive(object);
-        prop1 = $.String.ToString(prop1);
-        prop2 = $.String.ToString(prop2);
+        prop1 = toString(prop1);
+        prop2 = toString(prop2);
 
         var temp1,
             temp2,
@@ -7640,8 +7606,8 @@
             temp1 = $.Object.getOwnPropertyDescriptor(object, prop1);
             temp2 = $.Object.getOwnPropertyDescriptor(object, prop2);
             num = $.Number.toUint32(prop2);
-            notFunc = !$.Function.isFunction(object);
-            cond1 =  notFunc &amp;&amp; hasValidLength(object) &amp;&amp; $.String.ToString(num) === prop2;
+            notFunc = !isFunction(object);
+            cond1 =  notFunc &amp;&amp; hasValidLength(object) &amp;&amp; toString(num) === prop2;
             if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
                 if (cond1 &amp;&amp; num === object.length - 1) {
                     object.length -= 1;
@@ -7657,7 +7623,7 @@
             }
 
             num = $.Number.toUint32(prop1);
-            cond2 = notFunc &amp;&amp; hasValidLength(object) &amp;&amp; $.String.ToString(num) === prop1;
+            cond2 = notFunc &amp;&amp; hasValidLength(object) &amp;&amp; toString(num) === prop1;
             if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if (cond2 &amp;&amp; num === object.length - 1) {
                     object.length -= 1;
@@ -7689,7 +7655,7 @@
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     $.Array.prototype.shuffle = function (rounds) {
-        var object = $.Object.ToObject(this),
+        var object = toObject(this),
             isString = $.String.isStringObject(object),
             array,
             length;
@@ -7702,7 +7668,7 @@
 
         length = fixLength(array);
         if (length > 1) {
-            iter(null, false, 0, mMin(mMax(toInteger(rounds), 1), $.Number.MAX_SAFE_INTEGER), false, function () {
+            iter(null, false, 0, mMin(mMax(toInteger(rounds), 1), MAX_SAFE_INTEGER), false, function () {
                 iter(array, false, 0, length, false, function (unused, idx, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
@@ -7716,16 +7682,16 @@
         if (isString) {
             object = join(array, '');
             if ($.String.isStringObject(this)) {
-                object = $.Object.ToObject(object);
+                object = toObject(object);
             }
-        } else if ($.Object.isPrimitive(this)) {
+        } else if (isPrimitive(this)) {
             object = this;
         }
 
         return object;
     };
 
-    $.Array.shuffle = $.Function.ToMethod($.Array.prototype.shuffle);
+    $.Array.shuffle = toMethod($.Array.prototype.shuffle);
 
     /**
      * Return a JSON string corresponding to the specified value, optionally including only certain properties
@@ -7739,7 +7705,7 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
      */
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.JSON.stringify)) {
+    if (!testShims &amp;&amp; isNative(base.JSON.stringify)) {
         // A test function object with a custom `toJSON` method.
         (function () {
             stringifiedValue = function () {
@@ -7860,11 +7826,11 @@
                 partial,
                 value = holder[key];
 
-            if ($.Object.isNotPrimitive(value) &amp;&amp; $.Function.isFunction(value.toJSON)) {
+            if (isNotPrimitive(value) &amp;&amp; isFunction(value.toJSON)) {
                 value = value.toJSON(key);
             }
 
-            if ($.Function.isFunction(stringifyReplacer)) {
+            if (isFunction(stringifyReplacer)) {
                 value = stringifyReplacer.call(holder, key, value);
             }
 
@@ -7872,21 +7838,21 @@
             case 'string':
                 return stringifyQuote(value);
             case 'number':
-                if (base.isFinite(value)) {
-                    return $.String.ToString(value);
+                if (value !== Infinity &amp;&amp; value !== -Infinity) {
+                    return toString(value);
                 }
 
                 return 'null';
             case 'boolean':
             case 'null':
-                return $.String.ToString(value);
+                return toString(value);
             case 'object':
                 if (value === null) {
-                    return $.String.ToString(value);
+                    return toString(value);
                 }
 
                 stringifyGap += stringifyIndent;
-                if ($.Array.isArray(value)) {
+                if (isArray(value)) {
                     partial = $.Array.map(value, function (unused, idx, obj) {
                         /*jslint unparam: true */
                         /*jshint unused : false */
@@ -7906,7 +7872,7 @@
                     return member;
                 }
 
-                if ($.Array.isArray(stringifyReplacer)) {
+                if (isArray(stringifyReplacer)) {
                     partial = $.Array.reduce(stringifyReplacer, function (prev, element) {
                         var v;
 
@@ -7960,8 +7926,8 @@
             }
 
             stringifyReplacer = replacer;
-            if (!$.Object.isUndefinedOrNull(replacer) &amp;&amp; !$.Function.isFunction(replacer) &amp;&amp;
-                                                                    !$.Array.isArray(replacer)) {
+            if (!$.Object.isUndefinedOrNull(replacer) &amp;&amp; !isFunction(replacer) &amp;&amp;
+                                                                    !isArray(replacer)) {
 
                 throw new base.Error.Ctr('JSON.stringify');
             }
@@ -7984,7 +7950,7 @@
      */
     // Determines whether the (possibly native) `JSON.stringify` and `parse`
     // implementations are spec-compliant. Based on work by Ken Snyder.
-    if (!testShims &amp;&amp; $.Function.isNativeFunction(base.JSON.parse)) {
+    if (!testShims &amp;&amp; isNative(base.JSON.parse)) {
         try {
             // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
             // Conforming implementations should also coerce the initial argument to
@@ -8051,7 +8017,7 @@
             function walk(holder, key) {
                 var value = holder[key];
 
-                if ($.Object.isTypeObject(value)) {
+                if (isTypeObject(value)) {
                     $.Array.forEach($.Object.keys(value), function (k) {
                         var v = this(value, k),
                             type = typeof v;
@@ -8067,7 +8033,7 @@
                 return reviver.call(holder, key, value);
             }
 
-            text = $.String.ToString(text);
+            text = toString(text);
             base.RegExp.parseCharacterTest.lastIndex = 0;
             if ($.RegExp.test(base.RegExp.parseCharacterTest, text)) {
                 text = $.String.replace(text, base.RegExp.parseCharacterTest, function (a) {
@@ -8084,7 +8050,7 @@
                 j = eval('(' + text + ')');
                 /*jslint evil: false */
 
-                if ($.Function.isFunction(reviver)) {
+                if (isFunction(reviver)) {
                     return walk({
                         '': j
                     }, '');
@@ -8108,7 +8074,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = function () {
-        var object = slice($.Object.ToObjectFixIndexedAccess(this)),
+        var object = slice(toObjectFixIndexedAccess(this)),
             lastElement,
             val;
 
@@ -8133,7 +8099,7 @@
         return val;
     };
 
-    $.Array.powerSet = $.Function.ToMethod($.Array.prototype.powerSet);
+    $.Array.powerSet = toMethod($.Array.prototype.powerSet);
 
     /**
      * Convert an array to a plain object representation.
@@ -8144,7 +8110,7 @@
      * @returns {Object}
      */
     $.Array.prototype.toObject = function () {
-        var object = $.Object.ToObjectFixIndexedAccess(this);
+        var object = toObjectFixIndexedAccess(this);
 
         return $.Array.reduce(object, function (acc, it, idx) {
             acc[idx] = it;
@@ -8154,7 +8120,7 @@
         }, {});
     };
 
-    $.Array.toObject = $.Function.ToMethod($.Array.prototype.toObject);
+    $.Array.toObject = toMethod($.Array.prototype.toObject);
 
     /**
      * Creates an instance of utilx from the internal $ object.
@@ -8253,17 +8219,17 @@
 
             MIN_SAFE_INTEGER: base.properties.constant,
 
-            POSITIVE_INFINITY: base.properties.constant,
-
-            NEGATIVE_INFINITY: base.properties.constant,
-
             MAX_VALUE: base.properties.constant,
 
             MIN_VALUE: base.properties.constant,
 
-            NAN: base.properties.constant,
+            EPSILON: base.properties.constant,
 
-            EPSILON: base.properties.constant
+            NaN: base.properties.constant,
+
+            POSITIVE_INFINITY: base.properties.constant,
+
+            NEGATIVE_INFINITY: base.properties.constant
         });
 
         return utilx;
@@ -8275,7 +8241,7 @@
      *
      */
 
-    if (!$.Object.isTypeObject(globalThis)) {
+    if (!isTypeObject(globalThis)) {
         throw new TypeError('Invalid global context');
     }
 
@@ -8308,11 +8274,11 @@
      * @see http://requirejs.org/docs/api.html#define
      */
 
-    if ($.Object.isTypeObject(module) &amp;&amp; $.Object.isTypeObject(module.exports)) {
+    if (isTypeObject(module) &amp;&amp; isTypeObject(module.exports)) {
         $.Object.defineProperty(module, 'exports', $.Object.assign({
             value: publicUtil
         }, base.properties.notEnumerable));
-    } else if ($.Function.isFunction(define) &amp;&amp; $.Object.isTypeObject(define.amd)) {
+    } else if (isFunction(define) &amp;&amp; isTypeObject(define.amd)) {
         define(function () {
             return publicUtil;
         });
@@ -8356,7 +8322,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Mon Jun 02 2014 13:59:14 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Tue Jun 03 2014 05:55:41 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
