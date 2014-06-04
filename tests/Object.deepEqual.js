@@ -95,11 +95,8 @@
         });
 
         it('arguments class', function () {
-            expect(utilx.Object.deepEqual((function () {
-                return arguments;
-            }(1, 2, 3)), (function () {
-                return arguments;
-            }(1, 2, 3)))).to.be.ok();
+            expect(utilx.Object.deepEqual(utilx.Function.returnArgs(1, 2, 3),
+                                          utilx.Function.returnArgs(1, 2, 3))).to.be.ok();
 
             expect(utilx.Object.deepEqual((function () {
                 return arguments;
@@ -107,15 +104,11 @@
         });
 
         it('test the arguments shim', function () {
-            expect(utilx.Object.isArguments((function () {
-                return arguments;
-            }()))).to.be.ok();
+            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be.ok();
 
             expect(utilx.Object.isArguments([1, 2, 3])).to.not.be.ok();
 
-            expect(utilx.Object.isArguments((function () {
-                return arguments;
-            }()))).to.be.ok();
+            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be.ok();
 
             expect(utilx.Object.isArguments([1, 2, 3])).to.not.be.ok();
         });

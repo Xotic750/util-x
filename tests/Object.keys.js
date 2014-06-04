@@ -5,7 +5,8 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        log = required.log;
 
     describe('Object.keys', function () {
         /*jshint -W001 */
@@ -132,7 +133,11 @@
         });
 
         it('should work with arguments object', function () {
-            expect(utilx.Object.keys(utilx.Function.returnArgs(1, 2)).length).to.be(2);
+            var argKeys = utilx.Object.keys(utilx.Function.returnArgs(1, 2)),
+                testValue = [0, 1];
+
+            expect(log.toBe(argKeys.length, 2)).to.be(2);
+            expect(log.toEql(argKeys, testValue)).to.eql(testValue);
         });
 
         it('should not list prototype or constructor', function () {

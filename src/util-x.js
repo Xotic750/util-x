@@ -1935,7 +1935,9 @@
         };
     } else {
         $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object' || isRegExp(inputArg);
+            return typeof inputArg === 'object' ||
+                (toClass(inputArg) === base.classString.regexp && typeof inputArg.source === 'string' &&
+                    (inputArg.global === true || inputArg.global === false));
         };
     }
 
@@ -1947,9 +1949,17 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isTypeObject = isTypeObject = function (inputArg) {
-        return inputArg !== null && isTypeOfObject(inputArg);
-    };
+    if (typeof base.RegExp.testStr === 'object') {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return inputArg !== null && typeof inputArg === 'object';
+        };
+    } else {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return (inputArg !== null && typeof inputArg === 'object') ||
+                (toClass(inputArg) === base.classString.regexp && typeof inputArg.source === 'string' &&
+                    (inputArg.global === true || inputArg.global === false));
+        };
+    }
 
     /**
      * Returns true if the operand inputArg is a boolean object.

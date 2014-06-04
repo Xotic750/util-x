@@ -5,7 +5,8 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        log = required.log;
 
     describe('Number.parseInt', function () {
         var ws = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
@@ -18,15 +19,15 @@
             for (i = 2; i <= 36; i += 1) {
                 expect(utilx.Number.parseInt('10', i)).to.be(i);
                 if (i === 16) {
-                    expect(utilx.Number.parseInt('0x16', i)).to.be(22);
+                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 22)).to.be(22);
                 } else if (i === 34) {
-                    expect(utilx.Number.parseInt('0x16', i)).to.be(38188);
+                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 38188)).to.be(38188);
                 } else if (i === 35) {
-                    expect(utilx.Number.parseInt('0x16', i)).to.be(40466);
+                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 40466)).to.be(40466);
                 } else if (i === 36) {
-                    expect(utilx.Number.parseInt('0x16', i)).to.be(42810);
+                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 42810)).to.be(42810);
                 } else {
-                    expect(utilx.Number.parseInt('0x16', i)).to.be(0);
+                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 0)).to.be(0);
                 }
             }
         });

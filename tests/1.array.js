@@ -9,8 +9,6 @@
         create = required.Array.create,
         log = required.log;
 
-
-
     describe('Native array', function () {
         var A = Array,
             overflow = Math.pow(2, 32),
