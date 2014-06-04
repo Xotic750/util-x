@@ -17,17 +17,17 @@
             var i;
 
             for (i = 2; i <= 36; i += 1) {
-                expect(utilx.Number.parseInt('10', i)).to.be(i);
+                expect(log.toBeRef(i, utilx.Number.parseInt('10', i), i)).to.be(i);
                 if (i === 16) {
-                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 22)).to.be(22);
+                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 22)).to.be(22);
                 } else if (i === 34) {
-                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 38188)).to.be(38188);
+                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 38188)).to.be(38188);
                 } else if (i === 35) {
-                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 40466)).to.be(40466);
+                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 40466)).to.be(40466);
                 } else if (i === 36) {
-                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 42810)).to.be(42810);
+                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 42810)).to.be(42810);
                 } else {
-                    expect(log.toBe(utilx.Number.parseInt('0x16', i), 0)).to.be(0);
+                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 0)).to.be(0);
                 }
             }
         });

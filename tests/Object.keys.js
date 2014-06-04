@@ -133,8 +133,8 @@
         });
 
         it('should work with arguments object', function () {
-            var argKeys = utilx.Object.keys(utilx.Function.returnArgs(1, 2)),
-                testValue = [0, 1];
+            var argKeys = utilx.Array.sort(utilx.Object.keys(utilx.Function.returnArgs(1, 2))),
+                testValue = ['0', '1'];
 
             expect(log.toBe(argKeys.length, 2)).to.be(2);
             expect(log.toEql(argKeys, testValue)).to.eql(testValue);

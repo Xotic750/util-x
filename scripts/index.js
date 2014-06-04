@@ -243,5 +243,15 @@
         return x;
     };
 
+    required.log.toBeRef = function (r, x, y) {
+        if (x !== y) {
+            console.log('Reference: ');
+            console.log(r);
+            required.log.toBe(x, y);
+        }
+
+        return x;
+    };
+
     module.exports = required;
 }());
