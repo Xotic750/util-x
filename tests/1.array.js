@@ -147,7 +147,7 @@
             expect(9 in testSubject3).to.be.ok();
         });
 
-        it('elements should show correctly with hasownProperty', function () {
+        it('elements should show correctly with hasOwnProperty', function () {
             expect(testSubject3.hasOwnProperty(0)).to.be.ok();
             expect(testSubject3.hasOwnProperty(1)).to.not.be.ok();
             expect(testSubject3.hasOwnProperty(2)).to.be.ok();
@@ -234,7 +234,7 @@
             expect(Array.prototype.slice.call(testSubject1)).to.eql(testSubject2);
         });
 
-        it('unshifting undefined element should create the element', function () {
+        it('unshift undefined element should create the element', function () {
             testSubject1 = [];
             Array.prototype.unshift.call(testSubject1, undefined);
             expect(testSubject1).to.eql(create(undefined));
@@ -273,7 +273,7 @@
             expect(testSubject1).to.eql(testSubject2);
         });
 
-        it('unshifti should work with object without length', function () {
+        it('unshift should work with object without length', function () {
             testSubject1 = {};
             testSubject2 = {};
             Array.prototype.push.call(testSubject1, 2);

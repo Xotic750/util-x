@@ -31,7 +31,6 @@
                 result.length = varArgs >>> 0;
                 /*jslint bitwise: false */
             } else if (Object.prototype.toString.call(varArgs) === '[object String]') {
-                console.log(typeof varArgs, varArgs);
                 sliced = varArgs.slice(1, -1).replace(/^\s+|\s+$/g, '');
                 if (sliced[sliced.length - 1] === ',') {
                     sliced = sliced.slice(0, -1);

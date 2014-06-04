@@ -89,7 +89,7 @@
         });
 
         it('should work on array', function () {
-            var arrCmp = Array.prototype.slice.call(testSubject),
+            var arrCmp = utilx.Array.slice(testSubject),
                 arr = [],
                 i;
 
@@ -340,7 +340,7 @@
         });
 
         it('should work on arguments', function () {
-            var arrCmp = Array.prototype.slice.call(testSubject),
+            var arrCmp = utilx.Array.slice(testSubject),
                 arr = utilx.Function.returnArgs(),
                 i;
 
@@ -365,7 +365,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(Array.prototype.slice.call(arr)).to.eql(arrCmp);
+            expect(utilx.Array.slice(arr)).to.eql(arrCmp);
         });
     });
 }());

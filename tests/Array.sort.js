@@ -18,7 +18,7 @@
             utilx.Array.push(testArray1, utilx.String.padLeadingChar(utilx.Number.randomInt(n), '0', 3));
         }
 
-        testArray2 = Array.prototype.slice.call(testArray1);
+        testArray2 = utilx.Array.slice(testArray1);
 
         function descending(left, right) {
             var leftS = utilx.String.ToString(left),

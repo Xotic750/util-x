@@ -70,7 +70,7 @@
                 context;
 
             testSubject.func = utilx.Function.bind(function () {
-                a = Array.prototype.slice.call(arguments);
+                a = utilx.Array.slice(arguments);
                 context = this;
             }, undefined, 1, 2, 3);
 
@@ -112,7 +112,7 @@
             testSubject.func = utilx.Function.bind(function () {
                 context = this;
 
-                return Array.prototype.slice.call(arguments);
+                return utilx.Array.slice(arguments);
             }, undefined, 1, 2, 3);
 
             actual = testSubject.func(1, 2, 3);

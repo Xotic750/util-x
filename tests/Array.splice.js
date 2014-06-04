@@ -53,12 +53,12 @@
         });
 
         it('basic implementation test 1', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
             expect(utilx.Array.splice(test, 0)).to.eql(a);
         });
 
         it('basic implementation test 2', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
             utilx.Array.splice(test, 0, 2);
             expect(test).to.eql([b]);
         });
@@ -148,28 +148,28 @@
         });
 
         it('should do nothing if method called with no arguments', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
             expect(utilx.Array.splice(test)).to.eql([]);
             expect(test).to.eql(a);
         });
 
         it('should set first argument to 0 if first argument is set but undefined', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
 
-            var test2 = Array.prototype.slice.call(test, 0);
+            var test2 = utilx.Array.slice(test, 0);
 
             expect(utilx.Array.splice(test, undefined, 2)).to.eql(test2.splice(0, 2));
             expect(test).to.eql(test2);
         });
 
         it('should deleted and return all items after "start" when second argument is undefined', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
             expect(utilx.Array.splice(test, 0)).to.eql(a);
             expect(test).to.eql([]);
         });
 
         it('should deleted and return all items after "start" when second argument is undefined', function () {
-            test = Array.prototype.slice.call(a, 0);
+            test = utilx.Array.slice(a, 0);
             expect(utilx.Array.splice(test, 2)).to.eql([b]);
             expect(test).to.eql([1, 'a']);
         });
@@ -208,6 +208,36 @@
                 0: 99,
                 length: 1
             };
+
+            utilx.Array.splice(obj, 0, 1, 1, 2, 3);
+            expect(obj.length).to.eql(3);
+            expect(obj[0]).to.eql(1);
+        });
+
+
+        it('should work with arguments - adding 1', function () {
+            var obj = utilx.Function.returnArgs();
+
+            utilx.Array.splice(obj, 0, 0, 1, 2, 3);
+            expect(obj.length).to.eql(3);
+        });
+
+        it('should work with arguments - adding 2', function () {
+            var obj = utilx.Function.returnArgs(1);
+
+            utilx.Array.splice(obj, 1, 0, 2, 3);
+            expect(obj.length).to.eql(3);
+        });
+
+        it('should work with arguments - removing', function () {
+            var obj = utilx.Function.returnArgs(1, 2, 3);
+
+            utilx.Array.splice(obj, 0, 3);
+            expect(obj.length).to.eql(0);
+        });
+
+        it('should work with arguments - replacing', function () {
+            var obj = utilx.Function.returnArgs(99);
 
             utilx.Array.splice(obj, 0, 1, 1, 2, 3);
             expect(obj.length).to.eql(3);

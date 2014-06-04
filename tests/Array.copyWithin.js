@@ -39,24 +39,24 @@
         });
 
         it('works with 2 args', function () {
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 0, 3)).to.eql([4, 5, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 1, 3)).to.eql([1, 4, 5, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 1, 2)).to.eql([1, 3, 4, 5, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 2, 2)).to.eql([1, 2, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 0, 3)).to.eql([4, 5, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 1, 3)).to.eql([1, 4, 5, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 1, 2)).to.eql([1, 3, 4, 5, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 2, 2)).to.eql([1, 2, 3, 4, 5]);
         });
 
         it('works with 3 args', function () {
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 0, 3, 4)).to.eql([4, 2, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 1, 3, 4)).to.eql([1, 4, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 1, 2, 4)).to.eql([1, 3, 4, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 0, 3, 4)).to.eql([4, 2, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 1, 3, 4)).to.eql([1, 4, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 1, 2, 4)).to.eql([1, 3, 4, 4, 5]);
         });
 
         it('works with negative args', function () {
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 0, -2)).to.eql([4, 5, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), 0, -2, -1)).to.eql([4, 2, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), -4, -3, -2)).to.eql([1, 3, 3, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), -4, -3, -1)).to.eql([1, 3, 4, 4, 5]);
-            expect(utilx.Array.copyWithin(Array.prototype.slice.call(testSubject), -4, -3)).to.eql([1, 3, 4, 5, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 0, -2)).to.eql([4, 5, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), 0, -2, -1)).to.eql([4, 2, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), -4, -3, -2)).to.eql([1, 3, 3, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), -4, -3, -1)).to.eql([1, 3, 4, 4, 5]);
+            expect(utilx.Array.copyWithin(utilx.Array.slice(testSubject), -4, -3)).to.eql([1, 3, 4, 5, 5]);
         });
 
         it('works with arraylike objects', function () {
@@ -65,9 +65,9 @@
                 exp2 = utilx.Array.toObject(exp1);
 
             expect(utilx.Object.isPlainObject(args)).to.be.ok();
-            expect(Array.prototype.slice.call(args)).to.eql(testSubject);
+            expect(utilx.Array.slice(args)).to.eql(testSubject);
             utilx.Array.copyWithin(args, -2, 0);
-            expect(Array.prototype.slice.call(args)).to.eql(exp1);
+            expect(utilx.Array.slice(args)).to.eql(exp1);
             expect(args).to.eql(exp2);
             expect(utilx.Object.isPlainObject(args)).to.be.ok();
         });
@@ -78,9 +78,9 @@
                 exp2 = utilx.Array.toObject(exp1);
 
             expect(utilx.Object.isArguments(args)).to.be.ok();
-            expect(Array.prototype.slice.call(args)).to.eql(testSubject);
+            expect(utilx.Array.slice(args)).to.eql(testSubject);
             utilx.Array.copyWithin(args, -2, 0);
-            expect(Array.prototype.slice.call(args)).to.eql(exp1);
+            expect(utilx.Array.slice(args)).to.eql(exp1);
             expect(utilx.Array.toObject(args)).to.eql(exp2);
             expect(utilx.Object.isArguments(args)).to.be.ok();
         });

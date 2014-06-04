@@ -184,7 +184,7 @@
         });
 
         it('should leave the original array untouched', function () {
-            var copy = Array.prototype.slice.call(testSubject);
+            var copy = utilx.Array.slice(testSubject);
 
             utilx.Array.filter(testSubject, callback);
             expect(testSubject).to.eql(copy);

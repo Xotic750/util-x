@@ -3557,6 +3557,10 @@
         return isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_UINT8;
     };
 
+    function fixLength(inputArg) {
+        return mMin(mMax(toInteger(inputArg.length), 0), MAX_UINT32);
+    }
+
     /**
      * The Array.push() {@link boundPrototypalFunction method} adds one or more elements to the end of an array and
      * returns the new length of the array.
@@ -3568,13 +3572,28 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
-    if (!testShims && push([], 0) === 1) {
+    testObject1 = [];
+    testObject2 = {};
+    if (!testShims && push(testObject1, 0) === 1 && testObject1[0] === 0 &&
+                        push(testObject2, 0) === 1 && testObject2[0] === 0) {
+
         $.Array.push = toMethod(base.Array.push);
     } else {
         $.Array.prototype.push = function () {
-            base.Array.push.apply(checkObjectCoercible(this), slice(arguments));
+            var object = toObjectFixIndexedAccess(this),
+                length = fixLength(object);
 
-            return this.length;
+            iter(arguments, false, 0, arguments.length, false, function (it) {
+                object[length] = it;
+                length += 1;
+                if (!$.Number.isUint32(length)) {
+                    throw new base.RangeError.Ctr('Invalid array length');
+                }
+            });
+
+            object.length = length;
+
+            return length;
         };
 
         $.Array.push = toMethod($.Array.prototype.push);
@@ -3591,13 +3610,24 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
-    if (!testShims && unshift([], 0) === 1) {
+    testObject1 = [];
+    testObject2 = {};
+    if (!testShims && unshift(testObject1, 0) === 1 && testObject1[0] === 0 &&
+                        unshift(testObject2, 0) === 1 && testObject2[0] === 0) {
+
         $.Array.unshift = toMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
-            base.Array.unshift.apply(checkObjectCoercible(this), slice(arguments));
+            var object = toObjectFixIndexedAccess(this);
 
-            return this.length;
+            iter(arguments, false, arguments.length - 1, 0, true, function (it) {
+                $.Array.splice(object, 0, 0, it);
+                if (!$.Number.isUint32(object.length)) {
+                    throw new base.RangeError.Ctr('Invalid array length');
+                }
+            });
+
+            return object.length;
         };
 
         $.Array.unshift = toMethod($.Array.prototype.unshift);
@@ -3876,9 +3906,8 @@
                 regExpForEach(str, separator, function (match) {
                     // This condition is not the same as `if (match[0].length)`
                     if ((match.index + match[0].length) > lastLastIndex) {
-                        push(output, strSlice(str, lastLastIndex, match.index));
+                        $.Array.push(output, strSlice(str, lastLastIndex, match.index));
                         if (match.length > 1 && match.index < str.length) {
-                            //$.Array.push.apply(Undefined, concat([output], slice(match, 1)));
                             output = concat(output, slice(match, 1));
                         }
 
@@ -3889,10 +3918,10 @@
 
                 if (lastLastIndex === str.length) {
                     if (!test(separator, '') || lastLength) {
-                        push(output, '');
+                        $.Array.push(output, '');
                     }
                 } else {
-                    push(output, strSlice(str, lastLastIndex));
+                    $.Array.push(output, strSlice(str, lastLastIndex));
                 }
 
                 separator.lastIndex = origLastIndex;
@@ -4720,10 +4749,6 @@
         return object;
     };
 
-    function fixLength(inputArg) {
-        return mMin(mMax(toInteger(inputArg.length), 0), MAX_UINT32);
-    }
-
     /**
      * The $.Array.splice() method changes the content of an array,
      * adding new elements while removing old elements.
@@ -4795,7 +4820,7 @@
             while (k < actualDeleteCount) {
                 from = actualStart + k;
                 if (hasOwn(object, from)) {
-                    push(removed, object[from]);
+                    $.Array.push(removed, object[from]);
                 }
 
                 k += 1;
@@ -5648,18 +5673,18 @@
 
         while (left.length && right.length) {
             if (comparison(left[0], right[0]) <= 0) {
-                push(result, shift(left));
+                $.Array.push(result, shift(left));
             } else {
-                push(result, shift(right));
+                $.Array.push(result, shift(right));
             }
         }
 
         while (left.length) {
-            push(result, shift(left));
+            $.Array.push(result, shift(left));
         }
 
         while (right.length) {
-            push(result, shift(right));
+            $.Array.push(result, shift(right));
         }
 
         return result;
@@ -6357,7 +6382,7 @@
                     if (!(skipProto && prop === 'prototype') && !(skipErrorProps &&
                             $.Array.contains(base.props.unwantedError, prop)) && $.Object.hasOwn(obj, prop)) {
 
-                        push(this, prop);
+                        $.Array.push(this, prop);
                     }
                 }, []),
                 ctor,
@@ -6372,7 +6397,7 @@
                 iter(arr, true, length, false, function (unused, idx, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
-                    push(this, idx);
+                    $.Array.push(this, idx);
                 }, props);
             }
 
@@ -6382,7 +6407,7 @@
                 nonEnum = nonEnumProps[toClass(object)];
                 $.Array.forEach(base.props.shadowed, function (property) {
                     if (!(isProto && nonEnum[property]) && this(object, property)) {
-                        push(props, property);
+                        $.Array.push(props, property);
                     }
                 }, $.Object.hasOwn);
             }
@@ -7835,7 +7860,7 @@
                         if (typeof element === 'string') {
                             v = stringifyToString(element, value);
                             if (v !== Undefined) {
-                                push(prev, stringifyQuote(element) +
+                                $.Array.push(prev, stringifyQuote(element) +
                                         (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
                             }
                         }
@@ -7847,7 +7872,7 @@
                         var v = stringifyToString(k, value);
 
                         if (v !== Undefined) {
-                            push(prev, stringifyQuote(k) +
+                            $.Array.push(prev, stringifyQuote(k) +
                                         (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
                         }
 
@@ -8043,10 +8068,10 @@
         } else {
             lastElement = pop(object);
             val = $.Array.reduce($.Array.powerSet(object), function (previous, element) {
-                push(previous, element);
+                $.Array.push(previous, element);
                 element = slice(element);
-                push(element, lastElement);
-                push(previous, element);
+                $.Array.push(element, lastElement);
+                $.Array.push(previous, element);
 
                 return previous;
             }, []);
@@ -8123,14 +8148,14 @@
                                 value: $[key1][key2][key3]
                             }, base.properties.notEnumerable));
 
-                            push(utilx[key1][key2].methods, key3);
+                            $.Array.push(utilx[key1][key2].methods, key3);
                         }, this);
                     } else {
-                        push(utilx[key1].methods, key2);
+                        $.Array.push(utilx[key1].methods, key2);
                     }
                 }, this);
             } else {
-                push(utilx.methods, key1);
+                $.Array.push(utilx.methods, key1);
             }
         }, $.Object);
 

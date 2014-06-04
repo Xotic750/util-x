@@ -36,7 +36,7 @@
 
         describe('with a global regex', function () {
             it('should return an array with all matches', function () {
-                expect(Array.prototype.slice.call(utilx.String.match('a bc', /(\w)/g))).to.eql(['a', 'b', 'c']);
+                expect(utilx.Array.slice(utilx.String.match('a bc', /(\w)/g))).to.eql(['a', 'b', 'c']);
             });
 
             it('should return null if no match is found', function () {
@@ -67,7 +67,7 @@
             });
 
             it('should convert any nonstring context to a string (except null and undefined)', function () {
-                expect(Array.prototype.slice.call(utilx.String.match(11, /1/g))).to.eql(['1', '1']);
+                expect(utilx.Array.slice(utilx.String.match(11, /1/g))).to.eql(['1', '1']);
             });
 
             /*
@@ -119,7 +119,7 @@
                 ];
 
                 utilx.Array.forEach(tests, function (test) {
-                    expect(Array.prototype.slice.call(utilx.String.match(test.str, test.regex))).to.eql(test.result);
+                    expect(utilx.Array.slice(utilx.String.match(test.str, test.regex))).to.eql(test.result);
                 });
             });
 
