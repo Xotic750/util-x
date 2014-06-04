@@ -3562,6 +3562,35 @@
     }
 
     /**
+     * Returns true if argument is an object that has own property of length which is a number of uint32
+     * but is not a {@link Function function}.
+     * @private
+     * @function hasValidLength
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
+     */
+    function hasValidLength(inputArg) {
+        return isNotPrimitive(inputArg) && hasOwn(inputArg, 'length') && $.Number.isUint32(inputArg.length);
+    }
+
+    /**
+     * Throws TypeError if argument has not got a valid length otherwise return the object.
+     * @private
+     * @function throwIfIsNotHasValidLength
+     * @param {*} inputArg
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
+     */
+    function throwIfIsNotHasValidLength(inputArg) {
+        if (!hasValidLength(inputArg)) {
+            throw new base.TypeError.Ctr('invalid length property');
+        }
+
+        return inputArg;
+    }
+
+    /**
      * The Array.push() {@link boundPrototypalFunction method} adds one or more elements to the end of an array and
      * returns the new length of the array.
      * @memberof utilx.Array
@@ -3583,15 +3612,18 @@
             var object = toObjectFixIndexedAccess(this),
                 length = fixLength(object);
 
-            iter(arguments, false, 0, arguments.length, false, function (it) {
-                object[length] = it;
-                length += 1;
-                if (!$.Number.isUint32(length)) {
-                    throw new base.RangeError.Ctr('Invalid array length');
-                }
-            });
+            if (hasValidLength(object)) {
+                base.Array.push.apply(object, arguments);
 
-            object.length = length;
+                length = object.length;
+            } else {
+                iter(arguments, false, 0, arguments.length, false, function (it) {
+                    object[length] = it;
+                    length += 1;
+                });
+
+                object.length = length;
+            }
 
             return length;
         };
@@ -3612,20 +3644,14 @@
      */
     testObject1 = [];
     testObject2 = {};
-    if (!testShims && unshift(testObject1, 0) === 1 && testObject1[0] === 0 &&
-                        unshift(testObject2, 0) === 1 && testObject2[0] === 0) {
+    if (!testShims && unshift(testObject1, 0) === 1 && testObject1[0] === 0) {
 
         $.Array.unshift = toMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
             var object = toObjectFixIndexedAccess(this);
 
-            iter(arguments, false, arguments.length - 1, 0, true, function (it) {
-                $.Array.splice(object, 0, 0, it);
-                if (!$.Number.isUint32(object.length)) {
-                    throw new base.RangeError.Ctr('Invalid array length');
-                }
-            });
+            base.Array.unshift.apply(object, arguments);
 
             return object.length;
         };
@@ -4547,35 +4573,6 @@
     }
 
     /**
-     * Returns true if argument is an object that has own property of length which is a number of uint32
-     * but is not a {@link Function function}.
-     * @private
-     * @function hasValidLength
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function hasValidLength(inputArg) {
-        return isNotPrimitive(inputArg) && hasOwn(inputArg, 'length') && $.Number.isUint32(inputArg.length);
-    }
-
-    /**
-     * Throws TypeError if argument has not got a valid length otherwise return the object.
-     * @private
-     * @function throwIfIsNotHasValidLength
-     * @param {*} inputArg
-     * @returns {*}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function throwIfIsNotHasValidLength(inputArg) {
-        if (!hasValidLength(inputArg)) {
-            throw new base.TypeError.Ctr('invalid length property');
-        }
-
-        return inputArg;
-    }
-
-    /**
      * The function takes one argument inputArg, if the argument is an object whose class internal
      * property is "Array" or is an Object whose class internal property is "Arguments";
      * returns true if length is zero otherwise it returns false.
@@ -5395,11 +5392,16 @@
         }
 
         $.Array.prototype.slice = function () {
+            var args = slice(arguments),
+                section;
+
             try {
-                return base.Array.slice.apply(this, arguments);
+                section = base.Array.slice.apply(this, args);
             } catch (eSliceFB) {
-                return internalSlice.apply(this, arguments);
+                section = internalSlice.apply(this, args);
             }
+
+            return section;
         };
     } catch (eSlice) {
         $.Array.prototype.slice = internalSlice;

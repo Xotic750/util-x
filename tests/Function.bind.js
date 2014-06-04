@@ -13,7 +13,7 @@
 
         testSubject = {
             push: function (o) {
-                this.a.push(o);
+                utilx.Array.push(this.a, o);
             }
         };
 

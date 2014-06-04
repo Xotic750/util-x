@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -6,7 +6,10 @@
     var required = require('../scripts/'),
         expect = required.expect,
         utilx = required.utilx,
-        create = required.Array.create;
+        create = required.Array.create,
+        log = required.log;
+
+
 
     describe('Native array', function () {
         var A = Array,
@@ -15,7 +18,8 @@
             maxLast = maxLength - 1,
             testSubject1,
             testSubject2,
-            testSubject3;
+            testSubject3,
+            testValue;
 
         it('should not throw error when creating array using new Array(...*)', function () {
             expect(function () {
@@ -43,20 +47,36 @@
             var max = [];
 
             expect(function () {
-                max[maxLast] = 'ok';
+                try {
+                    max[maxLast] = 'ok';
+                } catch (e) {
+                    console.log('setting value of index at ' + maxLast);
+                    throw e;
+                }
             }).to.not.throwException();
 
-            expect(max.length).to.be(maxLength);
+            expect(log.toBe(max.length, maxLength)).to.be(maxLength);
 
             max = [];
             expect(function () {
-                max.length = maxLength;
+                try {
+                    max.length = maxLength;
+                } catch (e) {
+                    console.log('setting length to ' + maxLength);
+                    throw e;
+                }
             }).to.not.throwException();
 
-            expect(max.length).to.be(maxLength);
-            expect(testSubject1.length).to.be(10);
-            expect(testSubject2.length).to.be(0);
-            expect(testSubject3.length).to.be(2);
+            expect(log.toBe(max.length, maxLength)).to.be(maxLength);
+
+            testValue = 10;
+            expect(log.toBe(testSubject1.length, testValue)).to.be(testValue);
+
+            testValue = 0;
+            expect(log.toBe(testSubject2.length, testValue)).to.be(testValue);
+
+            testValue = 2;
+            expect(log.toBe(testSubject3.length, testValue)).to.be(testValue);
 
         });
 
@@ -107,11 +127,16 @@
 
         it('[...*] should have correct elements', function () {
             testSubject1 = [];
-            expect(testSubject1).to.eql([]);
-            testSubject2 = [ , , , , ];
-            expect(testSubject2).to.eql(create('[ , , , , , ]'));
-            testSubject3 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
-            expect(testSubject3).to.eql(create('[2, 3, undefined, true, "hej", null, false, 0, , 9]'));
+            testSubject2 = [];
+            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+
+            testSubject1 = [ , , , , ];
+            testSubject2 = create('[ , , , , , ]');
+            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+
+            testSubject1 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
+            testSubject2 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
+            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
         });
 
         it('using delete on an element should not throw an error', function () {
@@ -163,6 +188,7 @@
         it('assigning undefined element should create the element', function () {
             testSubject1 = [];
             testSubject1[0] = undefined;
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(testSubject1).to.eql(create(undefined));
         });
 
@@ -175,6 +201,7 @@
         it('assigning null element should create the element', function () {
             testSubject1 = [];
             testSubject1[0] = null;
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(testSubject1).to.eql(create(null));
         });
 
@@ -187,6 +214,7 @@
         it('push undefined element should create the element', function () {
             testSubject1 = [];
             Array.prototype.push.call(testSubject1, undefined);
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(testSubject1).to.eql(create(undefined));
         });
 
@@ -223,7 +251,7 @@
             };
 
             Array.prototype.push.call(testSubject1, 2);
-            expect(testSubject1).to.eql(testSubject2);
+            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
         });
 
         it('push should work with arguments', function () {
@@ -231,12 +259,14 @@
 
             testSubject2 = [2];
             Array.prototype.push.call(testSubject1, 2);
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(Array.prototype.slice.call(testSubject1)).to.eql(testSubject2);
         });
 
         it('unshift undefined element should create the element', function () {
             testSubject1 = [];
             Array.prototype.unshift.call(testSubject1, undefined);
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(testSubject1).to.eql(create(undefined));
         });
 
@@ -248,7 +278,7 @@
 
         it('unshift element should return the length', function () {
             testSubject1 = [];
-            expect(Array.prototype.unshift.call(testSubject1, 2)).to.be(1);
+            expect(log.toBe(Array.prototype.unshift.call(testSubject1, 2), 1)).to.be(1);
         });
 
         it('unshift should work with arguments', function () {
@@ -256,6 +286,7 @@
 
             testSubject2 = [2];
             Array.prototype.unshift.call(testSubject1, 2);
+            expect(testSubject1.hasOwnProperty(0)).to.be.ok();
             expect(Array.prototype.slice.call(testSubject1)).to.eql(testSubject2);
         });
 
@@ -283,7 +314,7 @@
         it('slice should work on array', function () {
             testSubject1 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
             testSubject2 = Array.prototype.slice.call(testSubject1);
-            expect(testSubject1).to.eql(testSubject2);
+            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
         });
 
         it('slice should work on object with length', function () {
@@ -302,7 +333,7 @@
 
             testSubject2 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
             testSubject3 = Array.prototype.slice.call(testSubject1);
-            expect(testSubject3).to.eql(testSubject2);
+            expect(log.toEql(testSubject3, testSubject2)).to.eql(testSubject2);
         });
 
         it('slice should work on object without length', function () {
@@ -320,7 +351,7 @@
 
             testSubject2 = [];
             testSubject3 = Array.prototype.slice.call(testSubject1);
-            expect(testSubject3).to.eql(testSubject2);
+            expect(log.toEql(testSubject3, testSubject2)).to.eql(testSubject2);
         });
 
         it('slice should work on arguments', function () {

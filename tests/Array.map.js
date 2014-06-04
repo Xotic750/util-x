@@ -142,7 +142,7 @@
                 i = 0;
 
             utilx.Array.map(arr, function (o) {
-                arr.push(o + 3);
+                utilx.Array.push(arr, o + 3);
                 i += 1;
 
                 return o;

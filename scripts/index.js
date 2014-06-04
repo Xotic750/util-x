@@ -5,7 +5,8 @@
 
     var required = {
             expect: require('expect.js'),
-            Array: {}
+            Array: {},
+            log: {}
         };
 
     if ('1' === process.env.UTILX_WHICH) {
@@ -13,6 +14,28 @@
     } else {
         required.utilx = require('../lib/util-x');
     }
+
+    required.log.toBe = function (x, y) {
+        if (x !== y) {
+            console.log('Expected: ');
+            console.log(required.utilx.JSON.stringify(x));
+            console.log('To be: ');
+            console.log(required.utilx.JSON.stringify(y));
+        }
+
+        return x;
+    };
+
+    required.log.toEql = function (x, y) {
+        if (!required.utilx.Object.deepEqual(x, y)) {
+            console.log('Expected: ');
+            console.log(required.utilx.JSON.stringify(x));
+            console.log('To sort of equal: ');
+            console.log(required.utilx.JSON.stringify(y));
+        }
+
+        return x;
+    };
 
     required.Array.create = function (varArgs) {
         var result,
