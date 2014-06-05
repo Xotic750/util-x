@@ -1224,6 +1224,7 @@
         getPrototypeOf,
         modulo,
         put,
+        runIENativeFunction,
         patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
@@ -1962,7 +1963,9 @@
         };
     } else {
         $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object' || isRegExp(inputArg);
+            return typeof inputArg === 'object' ||
+                (toClass(inputArg) === base.classString.regexp &amp;&amp; typeof inputArg.source === 'string' &amp;&amp;
+                    (inputArg.global === true || inputArg.global === false));
         };
     }
 
@@ -1974,9 +1977,17 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isTypeObject = isTypeObject = function (inputArg) {
-        return inputArg !== null &amp;&amp; isTypeOfObject(inputArg);
-    };
+    if (typeof base.RegExp.testStr === 'object') {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return inputArg !== null &amp;&amp; typeof inputArg === 'object';
+        };
+    } else {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return (inputArg !== null &amp;&amp; typeof inputArg === 'object') ||
+                (toClass(inputArg) === base.classString.regexp &amp;&amp; typeof inputArg.source === 'string' &amp;&amp;
+                    (inputArg.global === true || inputArg.global === false));
+        };
+    }
 
     /**
      * Returns true if the operand inputArg is a boolean object.
@@ -2483,11 +2494,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    testValue = null;
-    if (isNotPrimitive(window) &amp;&amp; isNotPrimitive(window.alert)) {
-        testValue = typeof window.alert.toString;
-    }
-
+    testValue = isNotPrimitive(window) &amp;&amp; isNotPrimitive(window.alert) &amp;&amp; typeof window.alert.toString;
     if (testValue === 'undefined' &amp;&amp; test(base.RegExp.beginsFunction, window.alert)) {
         isIENativeFunction = function (inputArg) {
             // inputArg
@@ -2593,25 +2600,29 @@
         if (isNotPrimitive(window) &amp;&amp; window.alert) {
             base.Function.toString.call(window.alert);
         }
+    } catch (eRunIENativeFunction) {
+        runIENativeFunction = true;
+    }
 
-        // this function is for every other browser
+    if (runIENativeFunction) {
         isFunctionInternal = function (inputArg, n) {
             var val = false;
 
             if (n) {
-                val = isFunctionExtended(inputArg);
+                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
             } else {
                 val = isFunctionBasic(inputArg);
             }
 
             return val;
         };
-    } catch (eIFI) {
+    } else {
+        // this function is for every other browser
         isFunctionInternal = function (inputArg, n) {
             var val = false;
 
             if (n) {
-                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+                val = isFunctionExtended(inputArg);
             } else {
                 val = isFunctionBasic(inputArg);
             }
@@ -2641,10 +2652,15 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Function.isNativeFunction = isNative = function (inputArg) {
-        return isNotPrimitive(inputArg) &amp;&amp;
-                (isFunction(inputArg) &amp;&amp; (isNativeFunction(inputArg) || isIENativeFunction(inputArg)));
-    };
+    if (runIENativeFunction) {
+        $.Function.isNativeFunction = isNative = function (inputArg) {
+            return isFunction(inputArg) &amp;&amp; (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+        };
+    } else {
+        $.Function.isNativeFunction = isNative = function (inputArg) {
+            return isFunction(inputArg) &amp;&amp; isNativeFunction(inputArg);
+        };
+    }
 
     /**
      * Returns true if the operand inputArg is an Object.
@@ -2655,7 +2671,7 @@
      * @returns {boolean}
      */
     $.Object.isObject = isObject = function (inputArg) {
-        return isNotPrimitive(inputArg) &amp;&amp; toClass(inputArg) === base.classString.object &amp;&amp; !isFunction(inputArg);
+        return toClass(inputArg) === base.classString.object &amp;&amp; !isFunction(inputArg);
     };
 
     /**
@@ -5860,10 +5876,12 @@
      */
     if (testShims || !isNative(base.Number.parseInt) ||
             base.Number.parseInt(base.String.wsStr + '08') !== 8 ||
-            base.Number.parseInt(base.String.wsStr + '0x16') !== 22) {
+            base.Number.parseInt(base.String.wsStr + '0x16') !== 22 ||
+            base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
 
         if (testShims || base.parseInt(base.String.wsStr + '08') !== 8 ||
-                base.parseInt(base.String.wsStr + '0x16') !== 22) {
+                base.parseInt(base.String.wsStr + '0x16') !== 22 ||
+                base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
 
             base.RegExp.hex = new RegExp('^0[xX]');
             $.Number.parseInt = function (str, radix) {
@@ -5872,6 +5890,10 @@
                 str = $.String.trim(str);
                 if (type === 'undefined' || !$.Number.toInt32(radix)) {
                     radix = test(base.RegExp.hex, str) ? 16 : 10;
+                }
+
+                if (radix === 10 &amp;&amp; test(base.RegExp.hex, str)) {
+                    return 0;
                 }
 
                 return base.parseInt(str, radix);
@@ -8332,7 +8354,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Wed Jun 04 2014 18:46:27 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu Jun 05 2014 02:28:50 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
