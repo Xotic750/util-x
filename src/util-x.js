@@ -246,7 +246,8 @@
         floor: Math.floor,
         ceil: Math.ceil,
         abs: Math.abs,
-        random: Math.random
+        random: Math.random,
+        pow: Math.pow
     };
 
     /**
@@ -541,12 +542,10 @@
         notDigits: new RegExp('^\\d+$'),
         testStr: new RegExp('test'),
         escapeThese: new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
-        beginsFunction: new RegExp('^\\s*\\bfunction\\b'),
         replacementToken: new RegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', 'g'),
         getNativeFlags: new RegExp('\\/([a-z]*)$', 'i'),
         clipDuplicates: new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', 'g'),
-        assignInteger: new RegExp('^[1-9]\\d*$'),
-        definePropertyInteger: new RegExp('^[1-9]\\d*.?$')
+        assignInteger: new RegExp('^[1-9]\\d*$')
     };
 
     /**
@@ -681,27 +680,6 @@
     };
 
     /**
-     * The abstract operation throws an error if its argument is a value that cannot be
-     * converted to an Object, otherwise returns the argument.
-     * @private
-     * @name checkObjectCoercible
-     * @function
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-     * @returns {*}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
-     */
-    function checkObjectCoercible(inputArg) {
-        var type = typeof inputArg;
-
-        if (type === 'undefined' || inputArg === null) {
-            throw new base.TypeError.Ctr('Cannot convert "' + inputArg + '" to object');
-        }
-
-        return inputArg;
-    }
-
-    /**
      * Returns an arguments object of the arguments supplied.
      * @private
      * @name returnArgs
@@ -713,6 +691,38 @@
         /*jslint unparam:true */
         /*jshint unused:false */
         return arguments;
+    }
+
+    /**
+     * Tests to see if the argument is one of the seven standard Error type prototypes.
+     * @private
+     * @function isErrorTypePrototype
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    function isErrorTypePrototype(inputArg) {
+        var result = true;
+
+        switch (inputArg) {
+        case base.Error.proto:
+            /* falls through */
+        case base.TypeError.proto:
+            /* falls through */
+        case base.SyntaxError.proto:
+            /* falls through */
+        case base.RangeError.proto:
+            /* falls through */
+        case base.EvalError.proto:
+            /* falls through */
+        case base.ReferenceError.proto:
+            /* falls through */
+        case base.URIError.proto:
+            break;
+        default:
+            result = false;
+        }
+
+        return result;
     }
 
     /**
@@ -772,20 +782,30 @@
          * @param {prototypalFunction} protoFn
          * @returns {boundPrototypalFunction}
          */
-        toMethod = function (protoFn) {
+        toMethod = function (protoFn, checkThisArgFn) {
+            var type = typeof protoFn;
+
+            if (type !== 'function' && base.Object.toString.call(protoFn) !== base.classString.Function) {
+                throw new base.TypeError.Ctr(type + ' is not a function');
+            }
+
+            type = typeof checkThisArgFn;
+            if (type !== 'function' && base.Object.toString.call(checkThisArgFn) !== base.classString.Function) {
+                checkThisArgFn = function (inputArg) {
+                    var itype = typeof inputArg;
+
+                    if (itype === 'undefined' || inputArg === null) {
+                        throw new base.TypeError.Ctr('Cannot convert "' + itype + '" to object');
+                    }
+
+                    return inputArg;
+                };
+            }
+
             return function (thisArg) {
-                return protoFn.apply(thisArg, base.Array.slice.call(arguments, 1));
+                return protoFn.apply(checkThisArgFn(thisArg), base.Array.slice.call(arguments, 1));
             };
         },
-
-        /**
-         * @private
-         * @name toClassStr
-         * @function
-         * @param {*} inputArg
-         * @returns {string}
-         */
-        toClassStr = toMethod(base.Object.toString),
 
         /**
          * @private
@@ -806,6 +826,71 @@
          * @returns {boolean}
          */
         isEnumerable = toMethod(base.Object.propertyIsEnumerable),
+
+        /**
+         * @private
+         * @name toClassStr
+         * @function
+         * @param {*} inputArg
+         * @returns {string}
+         */
+        toClassStr = (function (ts, classString, hasOwn, isEnumerable, isErrorTypePrototype) {
+            try {
+                if (testShims ||
+                        ts.call() !== classString.Undefined ||
+                        ts.call(null) !== classString.Null ||
+                        ts.call(base.RegExp.proto) !== classString.regexp ||
+                        ts.call(base.String.proto) !== classString.string ||
+                        ts.call(base.Error.proto) !== classString.error ||
+                        ts.call(returnArgs()) !== classString.arguments) {
+
+                    throw new Error();
+                }
+
+                return toMethod(ts);
+            } catch (eClass) {
+                return function (inputArg) {
+                    var type = typeof inputArg,
+                        val;
+
+                    if (type === 'undefined') {
+                        val = classString.Undefined;
+                    } else if (inputArg === null) {
+                        val = classString.Null;
+                    } else if (type === 'object' &&
+                            !hasOwn(inputArg, 'arguments') &&
+                            hasOwn(inputArg, 'callee') &&
+                            !isEnumerable(inputArg, 'callee') &&
+                            hasOwn(inputArg, 'length') &&
+                            !isEnumerable(inputArg, 'length') &&
+                            typeof inputArg.length === 'number') {
+
+                        val = classString.arguments;
+                    } else if (inputArg === base.Number.proto) {
+                        val = classString.number;
+                    } else if (inputArg === base.Boolean.proto) {
+                        val = classString.Boolean;
+                    } else if (inputArg === base.Object.proto) {
+                        val = classString.object;
+                    } else if (inputArg === base.Function.proto) {
+                        val = classString.Function;
+                    } else if (inputArg === base.String.proto) {
+                        val = classString.string;
+                    } else if (inputArg === base.Date.proto) {
+                        val = classString.date;
+                    } else if (inputArg === base.RegExp.proto) {
+                        val = classString.regexp;
+                    } else if (isErrorTypePrototype(inputArg)) {
+                        val = classString.error;
+                    } else {
+                        val = ts.call(inputArg);
+                    }
+
+                    return val;
+                };
+            }
+        }(base.Object.toString, base.classString, hasOwn, isEnumerable, isErrorTypePrototype)),
+
         definePropertyPatch1,
         definePropertyPatch2,
         definePropertyPatch3,
@@ -1176,72 +1261,47 @@
          */
         bindArgs,
 
-        toClass,
+        hasOwnProp,
+        checkObjectCoercible,
         toString,
         toObject,
         toObjectFixIndexedAccess,
         toInteger,
+        toLength,
         isPrimitive,
         isNotPrimitive,
         isFunction,
         isNative,
         internalSlice,
         isArguments,
-        isTypeOfObject,
         isTypeObject,
         isRegExp,
         isArray,
         isInteger,
         isSafeInteger,
-        isObject,
+        isNumeric,
         getPrototypeOf,
         modulo,
         put,
-        runIENativeFunction,
-        patchedIEErrorToString = false,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
         hasErrorProps,
         nonEnumProps,
-        testObject1,
-        testObject2,
+        testingTemp = {},
+
         /**
+         * Indicates if __proto__ is supported.
          * @private
-         * @name TestConstructor
-         * @constructor
+         * @type {boolean}
          */
-        TestConstructor,
-        previousIEErrorToString,
-        fixOpera10GetPrototypeOf,
-        testValue,
-        shouldSplitString,
-        isOkToUseOtherErrors,
-        isFunctionInternal,
-        isIENativeFunction,
-        isNativeFunction,
-        isProtoSupported,
+        isProtoSupported = base.Object.proto[base.str.proto] === null,
+
         areGetSetSupported,
-        boxedString,
         reduceTypeErrorMessage,
         reduceRightTypeErrorMessage,
-        isErrorTypePrototype,
         unwantedErrorPropsFilter,
         keysWorksWithArguments,
         definePropertyInteger,
-        // JSON compliance result
-        isSupportedResult,
-
-        // JSON stringify variables
-        stringifiedValue,
-        stringifyGap,
-        stringifyIndent,
-        stringifyMeta,
-        stringifyReplacer,
-        stringifyQuote,
-        stringifyToString,
-
-        // JSON parse variables
-        threwSynatxError,
 
         publicUtil,
 
@@ -1332,6 +1392,12 @@
             /** @namespace {Object} utilx.JSON */
             JSON: {}
         };
+
+    /*
+     *
+     * EXPORTABLE CONSTANTS
+     *
+     */
 
     /**
      * +0
@@ -1541,6 +1607,12 @@
      */
     $.Number.EPSILON = EPSILON;
 
+    /*
+     *
+     * EXPORTABLES THAT DO NOT RELY ON ANY OF OUR FUNCTIONS
+     *
+     */
+
     /**
      * Returns the {@link http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2 primitive} value
      * {@link undefined}.
@@ -1749,12 +1821,6 @@
     };
 
     /**
-     * Indicates if __proto__ is supported.
-     * @private
-     */
-    isProtoSupported = base.Object.proto[base.str.proto] === null;
-
-    /**
      * Returns true if the operand inputArg is undefined or null.
      * @memberof utilx.Object
      * @name isUndefinedOrNull
@@ -1801,7 +1867,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBoolean = function (inputArg) {
-        return inputArg === true || inputArg === false;
+        return typeof inputArg === 'boolean';
     };
 
     /**
@@ -1849,7 +1915,14 @@
      * @returns {boolean}
      */
     $.Number.isZero = function (inputArg) {
-        return inputArg === 0;
+        var isNum = typeof inputArg === 'number',
+            isZe;
+
+        if (isNum) {
+            isZe = inputArg === 0;
+        }
+
+        return isZe;
     };
 
     /**
@@ -1861,7 +1934,14 @@
      * @returns {boolean}
      */
     $.Number.isPositiveZero = function (inputArg) {
-        return inputArg === 0 && (1 / inputArg) === Infinity;
+        var isNum = typeof inputArg === 'number',
+            isZe;
+
+        if (isNum) {
+            isZe = (1 / inputArg) === Infinity;
+        }
+
+        return isZe;
     };
 
     /**
@@ -1873,7 +1953,14 @@
      * @returns {boolean}
      */
     $.Number.isNegativeZero = function (inputArg) {
-        return inputArg === 0 && (1 / inputArg) === -Infinity;
+        var isNum = typeof inputArg === 'number',
+            isZe;
+
+        if (isNum) {
+            isZe = (1 / inputArg) === -Infinity;
+        }
+
+        return isZe;
     };
 
     /**
@@ -1901,9 +1988,29 @@
     $.Object.isPrimitive = isPrimitive = function (inputArg) {
         var type = typeof inputArg;
 
-        return inputArg === null || type === 'undefined' || inputArg === true || inputArg === false ||
-                type === 'string' || type === 'number';
+        return inputArg === null ||
+                type === 'boolean' ||
+                type === 'undefined' ||
+                type === 'string' ||
+                type === 'number';
     };
+
+    /**
+     * Throws a TypeError if the operand inputArg is not an object or not a function,
+     * otherise returns the object.
+     * @private
+     * @function throwIfIsPrimitive
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is not an object or a function.
+     * @returns {(Object|Function)}
+     */
+    function throwIfIsPrimitive(inputArg) {
+        if (isPrimitive(inputArg)) {
+            throw new base.TypeError.Ctr('called on non-object: ' + typeof inputArg);
+        }
+
+        return inputArg;
+    }
 
     /**
      * Returns true if the operand inputArg is not a
@@ -1918,49 +2025,12 @@
     $.Object.isNotPrimitive = isNotPrimitive = function (inputArg) {
         var type = typeof inputArg;
 
-        return inputArg !== null && type !== 'undefined' && inputArg !== true && inputArg !== false &&
-                type !== 'string' && type !== 'number';
+        return inputArg !== null &&
+                type !== 'boolean' &&
+                type !== 'undefined' &&
+                type !== 'string' &&
+                type !== 'number';
     };
-
-    /**
-     * Returns true if the operand inputArg is typeof Object.
-     * @memberof utilx.Object
-     * @name isTypeOfObject
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    if (typeof base.RegExp.testStr === 'object') {
-        $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object';
-        };
-    } else {
-        $.Object.isTypeOfObject = isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object' ||
-                (toClass(inputArg) === base.classString.regexp && typeof inputArg.source === 'string' &&
-                    (inputArg.global === true || inputArg.global === false));
-        };
-    }
-
-    /**
-     * Returns true if the operand inputArg is of type Object but not if null.
-     * @memberof utilx.Object
-     * @name isTypeObject
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    if (typeof base.RegExp.testStr === 'object') {
-        $.Object.isTypeObject = isTypeObject = function (inputArg) {
-            return inputArg !== null && typeof inputArg === 'object';
-        };
-    } else {
-        $.Object.isTypeObject = isTypeObject = function (inputArg) {
-            return (inputArg !== null && typeof inputArg === 'object') ||
-                (toClass(inputArg) === base.classString.regexp && typeof inputArg.source === 'string' &&
-                    (inputArg.global === true || inputArg.global === false));
-        };
-    }
 
     /**
      * Returns true if the operand inputArg is a boolean object.
@@ -1971,7 +2041,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanObject = function (inputArg) {
-        return isTypeObject(inputArg) && toClassStr(inputArg) === base.classString.Boolean;
+        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -1983,7 +2053,9 @@
      * @returns {boolean}
      */
     $.Boolean.isTrueObject = function (inputArg) {
-        return $.Boolean.isBooleanObject(inputArg) && base.Boolean.valueOf.call(inputArg) === true;
+        return typeof inputArg === 'object' &&
+                toClassStr(inputArg) === base.classString.Boolean &&
+                base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -1995,7 +2067,9 @@
      * @returns {boolean}
      */
     $.Boolean.isFalseObject = function (inputArg) {
-        return $.Boolean.isBooleanObject(inputArg) && base.Boolean.valueOf.call(inputArg) === false;
+        return typeof inputArg === 'object' &&
+                toClassStr(inputArg) === base.classString.Boolean &&
+                !base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2007,7 +2081,7 @@
      * @returns {boolean}
      */
     $.String.isStringObject = function (inputArg) {
-        return isTypeObject(inputArg) && toClassStr(inputArg) === base.classString.string;
+        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string;
     };
 
     /**
@@ -2019,7 +2093,7 @@
      * @returns {boolean}
      */
     $.Number.isNumberObject = function (inputArg) {
-        return isTypeObject(inputArg) && toClassStr(inputArg) === base.classString.number;
+        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.number;
     };
 
     /**
@@ -2031,7 +2105,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanAny = function (inputArg) {
-        return inputArg === true || inputArg === false || toClassStr(inputArg) === base.classString.Boolean;
+        return toClassStr(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -2043,7 +2117,7 @@
      * @returns {boolean}
      */
     $.Boolean.isTrueAny = function (inputArg) {
-        return inputArg === true || $.Boolean.isTrueObject(inputArg);
+        return toClassStr(inputArg) === base.classString.Boolean && base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2055,7 +2129,7 @@
      * @returns {boolean}
      */
     $.Boolean.isFalseAny = function (inputArg) {
-        return inputArg === false || $.Boolean.isFalseObject(inputArg);
+        return toClassStr(inputArg) === base.classString.Boolean && !base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2067,7 +2141,7 @@
      * @returns {boolean}
      */
     $.String.isStringAny = function (inputArg) {
-        return typeof inputArg === 'string' || toClassStr(inputArg) === base.classString.string;
+        return toClassStr(inputArg) === base.classString.string;
     };
 
     /**
@@ -2079,81 +2153,8 @@
      * @returns {boolean}
      */
     $.Number.isNumberAny = function (inputArg) {
-        return typeof inputArg === 'number' || toClassStr(inputArg) === base.classString.number;
+        return toClassStr(inputArg) === base.classString.number;
     };
-
-    /**
-     * The abstract operation throws an error if its argument is a value that cannot be
-     * converted to an Object, otherwise returns the argument.
-     * @memberof utilx.Object
-     * @name CheckObjectCoercible
-     * @function
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-     * @returns {*}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
-     */
-    $.Object.CheckObjectCoercible = checkObjectCoercible;
-
-    /**
-     * Returns a string only if the arguments is coercible otherwise throws an error.
-     * @private
-     * @function onlyCoercibleToString
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-     * @returns {string}
-     */
-    function onlyCoercibleToString(inputArg) {
-        return toString(checkObjectCoercible(inputArg));
-    }
-
-    /**
-     * Throws a TypeError if arguments is not a string literal otherwise returns the function.
-     * @private
-     * @function throwIfNotAStringAny
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a {@link Function function}.
-     * @returns {Function}
-     */
-    function throwIfNotAString(inputArg) {
-        if (!$.String.isString(inputArg)) {
-            throw new base.TypeError.Ctr(inputArg + ' is not a string literal');
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Throws a TypeError if arguments is not a string object otherwise returns the function.
-     * @private
-     * @function throwIfNotAStringAny
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a {@link Function function}.
-     * @returns {Function}
-     */
-    function throwIfNotAStringObject(inputArg) {
-        if (!$.String.isStringObject(inputArg)) {
-            throw new base.TypeError.Ctr(inputArg + ' is not a string object');
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Throws a TypeError if arguments is not any string otherwise returns the function.
-     * @private
-     * @function throwIfNotAStringAny
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a {@link Function function}.
-     * @returns {Function}
-     */
-    function throwIfNotAStringAny(inputArg) {
-        if (!$.String.isStringAny(inputArg)) {
-            throw new base.TypeError.Ctr(inputArg + ' is not a string');
-        }
-
-        return inputArg;
-    }
 
     /**
      * Returns true if the operand inputArg is an empty string (ie '').
@@ -2164,7 +2165,14 @@
      * @returns {boolean}
      */
     $.String.isEmpty = function (inputArg) {
-        return throwIfNotAString(inputArg) === '';
+        var isStr = typeof inputArg === 'string',
+            isEm;
+
+        if (isStr) {
+            isEm = !inputArg;
+        }
+
+        return isEm;
     };
 
     /**
@@ -2176,7 +2184,14 @@
      * @returns {boolean}
      */
     $.String.isEmptyObject = function (inputArg) {
-        return $.String.isStringObject(throwIfNotAStringObject(inputArg)) && base.String.valueOf.call(inputArg) === '';
+        var isStr = typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string,
+            isEm;
+
+        if (isStr) {
+            isEm = !base.String.valueOf.call(inputArg);
+        }
+
+        return isEm;
     };
 
     /**
@@ -2188,7 +2203,14 @@
      * @returns {boolean}
      */
     $.String.isEmptyAny = function (inputArg) {
-        return $.String.isStringAny(throwIfNotAStringAny(inputArg)) && base.String.valueOf.call(inputArg) === '';
+        var isStr = toClassStr(inputArg) === base.classString.string,
+            isEm;
+
+        if (isStr) {
+            isEm = !base.String.valueOf.call(inputArg);
+        }
+
+        return isEm;
     };
 
     /**
@@ -2200,7 +2222,14 @@
      * @returns {boolean}
      */
     $.String.isNotEmpty = function (inputArg) {
-        return typeof throwIfNotAStringAny(inputArg) === 'string' && inputArg !== '';
+        var isStr = typeof inputArg === 'string',
+            isEm;
+
+        if (isStr) {
+            isEm = !!inputArg;
+        }
+
+        return isEm;
     };
 
     /**
@@ -2212,7 +2241,14 @@
      * @returns {boolean}
      */
     $.String.isNotEmptyObject = function (inputArg) {
-        return $.String.isStringObject(throwIfNotAStringAny(inputArg)) && base.String.valueOf.call(inputArg) !== '';
+        var isStr = typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string,
+            isEm;
+
+        if (isStr) {
+            isEm = !!base.String.valueOf.call(inputArg);
+        }
+
+        return isEm;
     };
 
     /**
@@ -2224,91 +2260,15 @@
      * @returns {boolean}
      */
     $.String.isNotEmptyAny = function (inputArg) {
-        return $.String.isStringAny(throwIfNotAStringAny(inputArg)) && base.String.valueOf.call(inputArg) !== '';
-    };
+        var isStr = toClassStr(inputArg) === base.classString.string,
+            isEm;
 
-    /**
-     * The abstract operation converts its argument to a value of type Object
-     * @memberof utilx.Object
-     * @name ToObject
-     * @function
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-     * @returns {Object}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
-     */
-    $.Object.ToObject = toObject = function (inputArg) {
-        return base.Object.Ctr(checkObjectCoercible(inputArg));
-    };
-
-    /**
-     * The abstract operation converts its argument to a value of type string
-     * @memberof utilx.String
-     * @name ToString
-     * @function
-     * @param {*} inputArg
-     * @returns {string}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
-     */
-    $.String.ToString = toString = function (inputArg) {
-        var type = typeof inputArg,
-            val;
-
-        if (type === 'undefined') {
-            val = type;
-        } else if (inputArg === null) {
-            val = 'null';
-        } else {
-            val = base.String.Ctr(inputArg);
+        if (isStr) {
+            isEm = !!base.String.valueOf.call(inputArg);
         }
 
-        return val;
+        return isEm;
     };
-
-    /**
-     * Returns true if the specified property is in the specified object.
-     * @memberof utilx.Object
-     * @name has
-     * @function
-     * @param {Object} object The object that has was called upon.
-     * @throws {TypeError} if object is a {@link http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2 primitive}.
-     * @param {StringLike} property A string or numeric expression representing a property name or array index.
-     * @throws {TypeError} if property is not a string or a number.
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
-     */
-    $.Object.has = function (object, property) {
-        if (!$.String.isStringAny(property) && !$.Number.isNumberAny(property)) {
-            throw new base.TypeError.Ctr('Cannot use \'has\' operator to search for \'' + property + '\' in ' + object);
-        }
-
-        return property in object;
-    };
-
-    /**
-     * Returns true if the object exists and appears unaltered.
-     * @private
-     * @name canUse
-     * @function
-     * @param {Object} object The object that canUse was called upon.
-     * @param {StringLike} property A string or numeric expression representing a property name or array index.
-     * @throws {TypeError} if property is not a string or a number.
-     * @returns {boolean}
-     */
-    /*
-    function canUse(object, property) {
-        var method;
-
-        if (isNotPrimitive(object) && property in object) {
-            method = object[property];
-            if (isNotPrimitive(method.call) && isNotPrimitive(method.apply)) {
-                return !isEnumerable(method);
-            }
-        }
-
-        return false;
-    }
-    */
 
     /**
      * Returns true if the operand inputArg is an {@link Arguments arguments} object.
@@ -2318,133 +2278,8 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    if (!testShims && toClassStr($.Function.returnArgs()) === base.classString.arguments) {
-        $.Object.isArguments = isArguments = function (inputArg) {
-            return toClassStr(inputArg) === base.classString.arguments;
-        };
-    } else {
-        $.Object.isArguments = isArguments = function (inputArg) {
-            return isTypeObject(inputArg) && !hasOwn(inputArg, 'arguments') &&
-                    hasOwn(inputArg, 'callee') && !isEnumerable(inputArg, 'callee') &&
-                    hasOwn(inputArg, 'length') && !isEnumerable(inputArg, 'length') &&
-                    typeof inputArg.length === 'number';
-        };
-        /*
-        isArgsInt = function (inputArg) {
-            return isTypeObject(inputArg) && !hasOwn(inputArg, 'arguments') &&
-                hasOwn(inputArg, 'callee') && hasOwn(inputArg, 'length') && typeof inputArg.length === 'number';
-        };
-
-        if (toClassStr(isEnumerable) === base.classString.Function) {
-            $.Object.isArguments = isArguments = function (inputArg) {
-                return isArgsInt(inputArg) && !isEnumerable(inputArg, 'callee') && !isEnumerable(inputArg, 'length');
-            };
-        } else {
-            $.Object.isArguments = isArguments = isArgsInt;
-        }
-        */
-    }
-
-    /**
-     * Tests to see if the argument is one of the seven standard Error type prototypes.
-     * @private
-     * @function isErrorTypePrototype
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    isErrorTypePrototype = function (inputArg) {
-        var result;
-
-        switch (inputArg) {
-        case base.Error.proto:
-            /* falls through */
-        case base.TypeError.proto:
-            /* falls through */
-        case base.SyntaxError.proto:
-            /* falls through */
-        case base.RangeError.proto:
-            /* falls through */
-        case base.EvalError.proto:
-            /* falls through */
-        case base.ReferenceError.proto:
-            /* falls through */
-        case base.URIError.proto:
-            result = true;
-            break;
-        default:
-            result = false;
-        }
-
-        return result;
-    };
-
-    /**
-     * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
-     * I.e. [[Class]] A String value indicating a specification defined classification of objects.
-     * @memberof utilx.Object
-     * @name ToClassString
-     * @function
-     * @param {*} inputArg
-     * @returns {string}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
-     */
-    try {
-        if (testShims || toClassStr() !== base.classString.Undefined ||
-                toClassStr(null) !== base.classString.Null ||
-                toClassStr(base.RegExp.proto) !== base.classString.regexp ||
-                toClassStr(base.String.proto) !== base.classString.string ||
-                toClassStr(base.Error.proto) !== base.classString.error ||
-                toClassStr($.Function.returnArgs()) !== base.classString.arguments) {
-
-            throw new Error();
-        }
-
-        $.Object.ToClassString = toClass = toClassStr;
-    } catch (eClass) {
-        $.Object.ToClassString = toClass = function (inputArg) {
-            var type = typeof inputArg,
-                val;
-
-            if (type === 'undefined') {
-                val = base.classString.Undefined;
-            } else if (inputArg === null) {
-                val = base.classString.Null;
-            } else if (isArguments(inputArg)) {
-                val = base.classString.arguments;
-            } else if (inputArg === base.Number.proto) {
-                val = base.classString.number;
-            } else if (inputArg === base.Boolean.proto) {
-                val = base.classString.Boolean;
-            } else if (inputArg === base.Object.proto) {
-                val = base.classString.object;
-            } else if (inputArg === base.Function.proto) {
-                val = base.classString.Function;
-            } else if (inputArg === base.String.proto) {
-                val = base.classString.string;
-            } else if (inputArg === base.Date.proto) {
-                val = base.classString.date;
-            } else if (inputArg === base.RegExp.proto) {
-                val = base.classString.regexp;
-            } else if (isErrorTypePrototype(inputArg)) {
-                val = base.classString.error;
-            } else {
-                val = toClassStr(inputArg);
-            }
-
-            return val;
-        };
-    }
-
-    /**
-     * Returns true if the operand inputArg is an error.
-     * @memberof utilx.Error
-     * @name isError
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.Error.isError = function (inputArg) {
-        return toClass(inputArg) === base.classString.error || $.Object.instanceOf(inputArg, base.Error.Ctr);
+    $.Object.isArguments = isArguments = function (inputArg) {
+        return toClassStr(inputArg) === base.classString.arguments;
     };
 
     /**
@@ -2456,270 +2291,116 @@
      * @returns {boolean}
      */
     $.RegExp.isRegExp = isRegExp = function (inputArg) {
-        return toClass(inputArg) === base.classString.regexp &&
-                    typeof inputArg.source === 'string' && (inputArg.global === true || inputArg.global === false);
+        return toClassStr(inputArg) === base.classString.regexp;
     };
 
     /**
-     * Returns true if the operand inputArg is a native Function in IE. Used by Function.isFunction.
-     * @private
-     * @function isIENativeFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    testValue = isNotPrimitive(window) && isNotPrimitive(window.alert) && typeof window.alert.toString;
-    if (testValue === 'undefined' && test(base.RegExp.beginsFunction, window.alert)) {
-        isIENativeFunction = function (inputArg) {
-            // inputArg
-            // we want return true or false
-
-            // inputArg.toString === undefined
-            // native functions do not
-            // contain a toString callback
-            // as is for every user defined
-            // function or object, even if deleted
-            // so next step is a "safe" destructuration
-            // assumption
-
-            // test(base.RegExp.beginsFunction, inputArg)
-            // we are looking for a function
-            // and IE shows them with function
-            // as first word. Eventually
-            // there could be a space
-            // (never happened, it does not hurt anyway)
-
-            var type = typeof inputArg.toString;
-
-            return type === 'undefined' && test(base.RegExp.beginsFunction, inputArg);
-        };
-    } else {
-        isIENativeFunction = function () {
-            return false;
-        };
-    }
-
-    /**
-     * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
-     * Used by Function.isFunction.
-     * @private
-     * @function isNativeFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    try {
-        /*jslint evil: true */
-        eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
-        /*jslint evil: false */
-        // Opera 10 doesn't play ball so have to test the string
-        testValue = '^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$';
-        base.RegExp.operaNative = new RegExp(testValue);
-        isNativeFunction = function (inputArg) {
-            return test(base.RegExp.operaNative, inputArg);
-        };
-    } catch (eINF1) {
-        isNativeFunction = function (inputArg) {
-            var val,
-                ownToString;
-
-            try {
-                // no execution
-                // just an error if it is native
-                // every browser manifest native
-                // functions with some weird char
-                // that cannot be evaluated [native]
-                ownToString = inputArg.toString;
-                /*jslint evil: true */
-                eval('(' + ownToString.call(inputArg) + ')');
-                /*jslint evil: false */
-                val = false;
-            } catch (eINF2) {
-                val = true;
-            }
-
-            return val;
-        };
-    }
-
-    /**
-     * Returns true if the operand inputArg is a Function. Used by Function.isFunction.
-     * @private
-     * @function isFunctionBasic
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isFunctionBasic(inputArg) {
-        return (toClass(inputArg) === base.classString.Function ||
-             (typeof inputArg === 'function' && inputArg.call && inputArg.apply));
-    }
-
-    /**
-     * Returns true if the operand inputArg is a Function. Used by Function.isFunction.
-     * @private
-     * @function isFunctionExtended
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isFunctionExtended(inputArg) {
-        // it should be a function in any case
-        // before we try to pass it to
-        // Function.prototype.toString
-        return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
-    }
-
-    try {
-        // native function cannot be passed
-        // to native Function.prototype.toString
-        // as scope to evaluate ... only IE, sure
-        if (isNotPrimitive(window) && window.alert) {
-            base.Function.toString.call(window.alert);
-        }
-    } catch (eRunIENativeFunction) {
-        runIENativeFunction = true;
-    }
-
-    if (runIENativeFunction) {
-        isFunctionInternal = function (inputArg, n) {
-            var val = false;
-
-            if (n) {
-                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
-            } else {
-                val = isFunctionBasic(inputArg);
-            }
-
-            return val;
-        };
-    } else {
-        // this function is for every other browser
-        isFunctionInternal = function (inputArg, n) {
-            var val = false;
-
-            if (n) {
-                val = isFunctionExtended(inputArg);
-            } else {
-                val = isFunctionBasic(inputArg);
-            }
-
-            return val;
-        };
-    }
-
-    /**
-     * Returns true if the operand inputArg is a Function.
-     * @memberof utilx.Function
-     * @name isFunction
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $.Function.isFunction = isFunction = function (inputArg) {
-        return isNotPrimitive(inputArg) && (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
-    };
-
-    /**
-     * Returns true if the operand inputArg is a native Function.
-     * @memberof utilx.Function
-     * @name isNativeFunction
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    if (runIENativeFunction) {
-        $.Function.isNativeFunction = isNative = function (inputArg) {
-            return isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
-        };
-    } else {
-        $.Function.isNativeFunction = isNative = function (inputArg) {
-            return isFunction(inputArg) && isNativeFunction(inputArg);
-        };
-    }
-
-    /**
-     * Returns true if the operand inputArg is an Object.
+     * Returns true if the operand inputArg is typeof Object.
      * @memberof utilx.Object
-     * @name isObject
+     * @name isTypeOfObject
      * @function
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isObject = isObject = function (inputArg) {
-        return toClass(inputArg) === base.classString.object && !isFunction(inputArg);
+    if (!testShims && typeof base.RegExp.testStr === 'object') {
+        $.Object.isTypeOfObject = function (inputArg) {
+            return typeof inputArg === 'object';
+        };
+    } else {
+        $.Object.isTypeOfObject = function (inputArg) {
+            return typeof inputArg === 'object' || toClassStr(inputArg) === base.classString.regexp;
+        };
+    }
+
+    /**
+     * Returns true if the operand inputArg is of type Object but not if null.
+     * @memberof utilx.Object
+     * @name isTypeObject
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    if (!testShims && typeof base.RegExp.testStr === 'object') {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return inputArg !== null && typeof inputArg === 'object';
+        };
+    } else {
+        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+            return inputArg !== null &&
+                (typeof inputArg === 'object' || toClassStr(inputArg) === base.classString.regexp);
+        };
+    }
+
+    /**
+     * The abstract operation converts its argument to a value of type string
+     * @memberof utilx.String
+     * @name ToString
+     * @function
+     * @param {*} inputArg
+     * @returns {string}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
+     */
+    try {
+        testingTemp.a = base.String.Ctr();
+        testingTemp.b = base.String.Ctr(Undefined);
+        testingTemp.c = base.String.Ctr(null);
+        if (testShims || testingTemp.a !== 'undefined' || testingTemp.b !== 'undefined' || testingTemp.c === 'null') {
+            throw new Error();
+        }
+
+        $.String.ToString = toString = base.String.Ctr;
+    } catch (eToString) {
+        $.String.ToString = toString = function (inputArg) {
+            var type = typeof inputArg,
+                val;
+
+            if (type === 'undefined') {
+                val = type;
+            } else if (inputArg === null) {
+                val = 'null';
+            } else {
+                val = base.String.Ctr(inputArg);
+            }
+
+            return val;
+        };
+    }
+
+    /**
+     * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
+     * I.e. [[Class]] A String value indicating a specification defined classification of objects.
+     * @memberof utilx.Object
+     * @name ToClassString
+     * @function
+     * @param {*} inputArg
+     * @returns {string}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
+     */
+    $.Object.ToClassString = toClassStr;
+
+    /**
+     * Returns true if the operand inputArg is an error.
+     * @memberof utilx.Error
+     * @name isError
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.Error.isError = function (inputArg) {
+        return toClassStr(inputArg) === base.classString.error;
     };
 
     /**
-     * Indicates if __defineGetter__ and __lookupSetter__ are supported.
-     * @private
-     */
-    areGetSetSupported = isFunction(base.Object.lookupGetter) && isFunction(base.Object.lookupSetter);
-
-    /**
-     * Throws a TypeError if arguments is not a function otherwise returns the function.
-     * @private
-     * @function throwIfNotAFunction
+     * Returns true if the operand inputArg is a Date object.
+     * @memberof utilx.Date
+     * @name isDate
+     * @function
      * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a {@link Function function}.
-     * @returns {Function}
+     * @returns {boolean}
      */
-    function throwIfNotAFunction(inputArg) {
-        if (!isFunction(inputArg)) {
-            throw new base.TypeError.Ctr(inputArg + ' is not a function');
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Throws a TypeError if arguments is a function otherwise returns the function.
-     * @private
-     * @function throwIfAFunction
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is a {@link Function function}.
-     * @returns {Function}
-     */
-    function throwIfAFunction(inputArg) {
-        if (isFunction(inputArg)) {
-            throw new base.TypeError.Ctr(inputArg + ' is a function');
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Throws a TypeError if the operand inputArg is not an object or not a function,
-     * otherise returns the object.
-     * @private
-     * @function throwIfIsPrimitive
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not an object or a function.
-     * @returns {(Object|Function)}
-     */
-    function throwIfIsPrimitive(inputArg) {
-        if (isPrimitive(inputArg)) {
-            throw new base.TypeError.Ctr('called on non-object');
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Throws a TypeError if the operand inputArg is the globalThis object,
-     * otherise returns the globalThis object.
-     * @private
-     * @function throwIfGlobalThis
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is the globalThis object.
-     * @returns {Object}
-     */
-    /*
-    function throwIfGlobalThis(inputArg) {
-        if (inputArg === globalThis) {
-            throw new base.TypeError.Ctr('called on the global execution context');
-        }
-
-        return inputArg;
-    }
-    */
+    $.Date.isDate = function (inputArg) {
+        return toClassStr(inputArg) === base.classString.date;
+    };
 
     /**
      * @private
@@ -2760,7 +2441,7 @@
     function iter(object, has, start, length, reverse, fn, thisArg) {
         var index;
 
-        if (!base.Array.canEnumerArgs && isArguments(object)) {
+        if (!base.Array.canEnumerArgs && toClassStr(object) === base.classString.arguments) {
             has = false;
         }
 
@@ -2810,6 +2491,461 @@
     }
 
     /**
+     * Returns true if the operands are of the same typeof.
+     * @memberof utilx.Object
+     * @name areSameTypeOf
+     * @function
+     * @param {*} a
+     * @param {...*} [b]
+     * @returns {boolean}
+     */
+    $.Object.areSameTypeOf = function (a, b) {
+        var typeA = typeof a,
+            typeB = typeof b;
+
+        return typeA === typeB && !iter(arguments, false, 2, arguments.length, false, function (arg) {
+            var type = typeof arg;
+
+            this.same = typeA !== type;
+
+            return this.same;
+        }, {}).same;
+    };
+
+    /**
+     * Returns true if the operands are of the same object class.
+     * @memberof utilx.Object
+     * @name areSameClass
+     * @function
+     * @param {*} a
+     * @param {...*} [b]
+     * @returns {boolean}
+     */
+    $.Object.areSameClass = function (a, b) {
+        var classA = toClassStr(a);
+
+        return classA === toClassStr(b) && !iter(arguments, false, 2, arguments.length, false, function (arg) {
+            this.same = classA !== toClassStr(arg);
+
+            return this.same;
+        }, {}).same;
+    };
+
+    /**
+     * Returns true if the operand inputArg is deemed numeric.
+     * @memberof utilx.Object
+     * @name isNumeric
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.Object.isNumeric = isNumeric = function (inputArg) {
+        var val = false,
+            string,
+            number;
+
+        if (toClassStr(inputArg) === base.classString.number || toClassStr(inputArg) === base.classString.string) {
+            string = $.String.replace(inputArg, base.RegExp.plusMinus, '');
+            number = base.parseFloat(string);
+            val = number === number && base.isFinite(string);
+        }
+
+        return val;
+    };
+
+    /**
+     * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
+     * @memberof utilx.Number
+     * @name inRange
+     * @function
+     * @param {NumberLike} value
+     * @param {NumberLike} min
+     * @param {NumberLike} max
+     * @returns {boolean}
+     */
+    $.Number.inRange = function (value, min, max) {
+        if (toClassStr(min) === base.classString.number || isNumeric(min)) {
+            min = +min;
+        } else {
+            min = NaN;
+        }
+
+        if (toClassStr(max) === base.classString.number || isNumeric(max)) {
+            max = +max;
+        } else {
+            max = NaN;
+        }
+
+        return value >= min && value <= max;
+    };
+
+    /**
+     * Returns true if the operand value is less than or equal to min or is greater than or equal to max.
+     * @memberof utilx.Number
+     * @name outRange
+     * @function
+     * @param {NumberLike} value
+     * @param {NumberLike} min
+     * @param {NumberLike} max
+     * @returns {boolean}
+     */
+    $.Number.outRange = function (value, min, max) {
+        if ((toClassStr(value) === base.classString.number && !base.isNaN(value)) || isNumeric(value)) {
+            value = +value;
+        } else {
+            return true;
+        }
+
+        if ((toClassStr(min) === base.classString.number && !base.isNaN(min)) || isNumeric(min)) {
+            min = +min;
+        } else {
+            return true;
+        }
+
+        if ((toClassStr(max) === base.classString.number && !base.isNaN(min)) || isNumeric(max)) {
+            max = +max;
+        } else {
+            return true;
+        }
+
+        return value <= min || value >= max;
+    };
+
+    /*
+     *
+     * EXPORTABLES THAT DO RELY ON ANY OF OUR FUNCTIONS
+     *
+     */
+
+    /**
+     * The abstract operation throws an error if its argument is a value that cannot be
+     * converted to an Object, otherwise returns the argument.
+     * @memberof utilx.Object
+     * @name CheckObjectCoercible
+     * @function
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+     * @returns {*}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
+     */
+    $.Object.CheckObjectCoercible = checkObjectCoercible = function (inputArg) {
+        var type = typeof inputArg;
+
+        if (type === 'undefined' || inputArg === null) {
+            throw new base.TypeError.Ctr('Cannot convert "' + toString(inputArg) + '" to object');
+        }
+
+        return inputArg;
+    };
+
+    /**
+     * Returns a string only if the arguments is coercible otherwise throws an error.
+     * @private
+     * @function onlyCoercibleToString
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+     * @returns {string}
+     */
+    function onlyCoercibleToString(inputArg) {
+        return toString(checkObjectCoercible(inputArg));
+    }
+
+    /**
+     * The abstract operation converts its argument to a value of type Object
+     * @memberof utilx.Object
+     * @name ToObject
+     * @function
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+     * @returns {Object}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     */
+    $.Object.ToObject = toObject = function (inputArg) {
+        return base.Object.Ctr(checkObjectCoercible(inputArg));
+    };
+
+    /**
+     * Returns true if the specified property is in the specified object.
+     * @memberof utilx.Object
+     * @name has
+     * @function
+     * @param {Object} object The object that has was called upon.
+     * @param {StringLike} property A string or numeric expression representing a property name or array index.
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
+     */
+    $.Object.has = function (object, property) {
+        return toString(property) in toObject(object);
+    };
+
+    (function (toClassStr, classString, test) {
+        var beginsFunction = new RegExp('^\\s*\\bfunction\\b'),
+            runIENativeFunction,
+            isIENativeFunction,
+            isNativeFunction,
+            isFunctionInternal,
+            operaNative,
+            tmp;
+
+        /**
+         * Returns true if the operand inputArg is a Function. Used by Function.isFunction.
+         * @private
+         * @function isFunctionBasic
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        function isFunctionBasic(inputArg) {
+            return toClassStr(inputArg) === classString ||
+                    (typeof inputArg === 'function' && inputArg.call && inputArg.apply);
+        }
+
+        try {
+            // native function cannot be passed
+            // to native Function.prototype.toString
+            // as scope to evaluate ... only IE, sure
+            if (isNotPrimitive(window) && window.alert) {
+                base.Function.toString.call(window.alert);
+            }
+        } catch (eRunIENativeFunction) {
+            runIENativeFunction = true;
+        }
+
+        /**
+         * Returns true if the operand inputArg is a native Function in IE. Used by Function.isFunction.
+         * @private
+         * @function isIENativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        tmp = runIENativeFunction &&
+                            isNotPrimitive(window) &&
+                            isNotPrimitive(window.alert) &&
+                            typeof window.alert.toString;
+
+        if (tmp === 'undefined' && test(beginsFunction, window.alert)) {
+            isIENativeFunction = function (inputArg) {
+                // inputArg
+                // we want return true or false
+
+                // inputArg.toString === undefined
+                // native functions do not
+                // contain a toString callback
+                // as is for every user defined
+                // function or object, even if deleted
+                // so next step is a "safe" destructuration
+                // assumption
+
+                // test(beginsFunction, inputArg)
+                // we are looking for a function
+                // and IE shows them with function
+                // as first word. Eventually
+                // there could be a space
+                // (never happened, it does not hurt anyway)
+
+                var type = typeof inputArg.toString;
+
+                return type === 'undefined' && test(beginsFunction, inputArg);
+            };
+        } else {
+            isIENativeFunction = function () {
+                return false;
+            };
+        }
+
+        /**
+         * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
+         * Used by Function.isFunction.
+         * @private
+         * @function isNativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        try {
+            /*jslint evil: true */
+            eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
+            /*jslint evil: false */
+            // Opera 10 doesn't play ball so have to test the string
+            operaNative = new RegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|' +
+                                     '\\/\\* source code not available \\*\\/) \\}$');
+
+            isNativeFunction = function (inputArg) {
+                return test(operaNative, inputArg);
+            };
+        } catch (eINF1) {
+            isNativeFunction = function (inputArg) {
+                var val = true,
+                    ownToString;
+
+                try {
+                    // no execution
+                    // just an error if it is native
+                    // every browser manifest native
+                    // functions with some weird char
+                    // that cannot be evaluated [native]
+                    ownToString = inputArg.toString;
+                    /*jslint evil: true */
+                    eval('(' + ownToString.call(inputArg) + ')');
+                    /*jslint evil: false */
+                    val = false;
+                } catch (ignore) {}
+
+                return val;
+            };
+        }
+
+        /**
+         * Returns true if the operand inputArg is a Function. Used by Function.isFunction.
+         * @private
+         * @function isFunctionExtended
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        function isFunctionExtended(inputArg) {
+            // it should be a function in any case
+            // before we try to pass it to
+            // Function.prototype.toString
+            return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
+        }
+
+        if (runIENativeFunction) {
+            isFunctionInternal = function (inputArg, n) {
+                var val = false;
+
+                if (n) {
+                    val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+                } else {
+                    val = isFunctionBasic(inputArg);
+                }
+
+                return val;
+            };
+        } else {
+            // this function is for every other browser
+            isFunctionInternal = function (inputArg, n) {
+                var val = false;
+
+                if (n) {
+                    val = isFunctionExtended(inputArg);
+                } else {
+                    val = isFunctionBasic(inputArg);
+                }
+
+                return val;
+            };
+        }
+
+        /**
+         * Returns true if the operand inputArg is a native Function.
+         * @memberof utilx.Function
+         * @name isNativeFunction
+         * @function
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        if (runIENativeFunction) {
+            $.Function.isNativeFunction = isNative = function (inputArg) {
+                return isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+            };
+        } else {
+            $.Function.isNativeFunction = isNative = function (inputArg) {
+                return isFunction(inputArg) && isNativeFunction(inputArg);
+            };
+        }
+
+        /**
+         * Returns true if the operand inputArg is a Function.
+         * @memberof utilx.Function
+         * @name isFunction
+         * @function
+         * @param {*} inputArg
+         * @returns {boolean}
+         * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+         */
+        $.Function.isFunction = isFunction = function (inputArg) {
+            var type = typeof inputArg;
+
+            return inputArg !== null &&
+                    type !== 'boolean' &&
+                    type !== 'undefined' &&
+                    type !== 'string' &&
+                    type !== 'number' &&
+                    (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
+        };
+    }(toClassStr, base.classString.Function, test));
+
+    /**
+     * Throws a TypeError if arguments is not a function otherwise returns the function.
+     * @private
+     * @function throwIfNotAFunction
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is not a {@link Function function}.
+     * @returns {Function}
+     */
+    function throwIfNotAFunction(inputArg) {
+        if (!isFunction(inputArg)) {
+            throw new base.TypeError.Ctr(toClassStr(inputArg) + ' is not a function');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * The function takes one argument protoFn, and returns the bound function as a stand alone method.
+     * @memberof utilx.Function
+     * @name ToMethod
+     * @function
+     * @param {prototypalFunction} protoFn
+     * @throws {TypeError} if protoFn is not a {@link Function function}.
+     * @returns {boundPrototypalFunction}
+     */
+    $.Function.ToMethod = toMethod = function (protoFn, checkThisArgFn) {
+        throwIfNotAFunction(protoFn);
+
+        if (!isFunction(checkThisArgFn)) {
+            checkThisArgFn = checkObjectCoercible;
+        }
+
+        return function (thisArg) {
+            return protoFn.apply(checkThisArgFn(thisArg), slice(arguments, 1));
+        };
+    };
+
+    /**
+     * Throws a TypeError if arguments is a function otherwise returns the function.
+     * @private
+     * @function throwIfAFunction
+     * @param {*} inputArg
+     * @throws {TypeError} if inputArg is a {@link Function function}.
+     * @returns {Function}
+     */
+    function throwIfAFunction(inputArg) {
+        if (isFunction(inputArg)) {
+            throw new base.TypeError.Ctr(toClassStr(inputArg) + ' is a function');
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Indicates if __defineGetter__ and __lookupSetter__ are supported.
+     * @private
+     * @type {boolean}
+     */
+    areGetSetSupported = isFunction(base.Object.lookupGetter) && isFunction(base.Object.lookupSetter);
+
+    /**
+     * Returns true if the operand inputArg is an Object.
+     * @memberof utilx.Object
+     * @name isObject
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $.Object.isObject = function (inputArg) {
+        return toClassStr(inputArg) === base.classString.object && !isFunction(inputArg);
+    };
+
+    /**
      * Target function.
      * @typedef {Function} bindTargetFunction
      * @param {...*} [varArgs]
@@ -2844,27 +2980,27 @@
             throw new Error();
         }
 
-        testObject1 = [1, 2, 3];
-        TestConstructor = base.Function.bind.call(function () {
-            return testObject1;
+        testingTemp.a = [1, 2, 3];
+        testingTemp.c = base.Function.bind.call(function () {
+            return testingTemp.a;
         }, null);
 
-        testObject2 = new TestConstructor();
-        if (testObject1 !== testObject2) {
+        testingTemp.b = new testingTemp.c();
+        if (testingTemp.a !== testingTemp.b) {
             throw new Error();
         }
 
-        testObject1 = function (x) {
+        testingTemp.a = function (x) {
             this.name = x || 'A';
         };
 
-        TestConstructor = base.Function.bind.call(testObject1, null, 'B');
-        testObject2 = new TestConstructor();
-        if (!(testObject2 instanceof testObject1) || !(testObject2 instanceof TestConstructor)) {
+        testingTemp.c = base.Function.bind.call(testingTemp.a, null, 'B');
+        testingTemp.b = new testingTemp.c();
+        if (!(testingTemp.b instanceof testingTemp.a) || !(testingTemp.b instanceof testingTemp.c)) {
             throw new Error();
         }
 
-        $.Function.bind = base.Function.bind.call(base.Function.call, base.Function.bind);
+        $.Function.bind = toMethod(base.Function.bind);
     } catch (eBind) {
         BindCtr = function () {
             return;
@@ -2900,8 +3036,7 @@
                     return fn.apply(thisArg, binderArgs);
                 });
 
-
-            if (isTypeObject(fn.prototype)) {
+            if (base.Object.Ctr(fn.prototype) === fn.prototype) {
                 BindCtr.prototype = fn.prototype;
                 bound.prototype = new BindCtr();
                 BindCtr.prototype = base.Function.proto;
@@ -2910,29 +3045,8 @@
             return bound;
         };
 
-        $.Function.bind = $.Function.prototype.bind.call(base.Function.call, $.Function.prototype.bind);
+        $.Function.bind = toMethod($.Function.prototype.bind);
     }
-
-    /**
-     * The function takes one argument protoFn, and returns the bound function as a stand alone method.
-     * @memberof utilx.Function
-     * @name ToMethod
-     * @function
-     * @param {prototypalFunction} protoFn
-     * @throws {TypeError} if protoFn is not a {@link Function function}.
-     * @returns {boundPrototypalFunction}
-     */
-    $.Function.ToMethod = toMethod = function (protoFn, checkThisArgFn) {
-        throwIfNotAFunction(protoFn);
-
-        if (!isFunction(checkThisArgFn)) {
-            checkThisArgFn = checkObjectCoercible;
-        }
-
-        return function (thisArg) {
-            return protoFn.apply(checkThisArgFn(thisArg), slice(arguments, 1));
-        };
-    };
 
     /**
      * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
@@ -2948,7 +3062,7 @@
         $.Array.isArray = isArray = base.Array.isArray;
     } else {
         $.Array.isArray = isArray = function (inputArg) {
-            return toClass(inputArg) === base.classString.array;
+            return toClassStr(inputArg) === base.classString.array;
         };
     }
 
@@ -2978,18 +3092,6 @@
     };
 
     $.Array.join = toMethod($.Array.prototype.join);
-
-    /**
-     * Returns true if the operand inputArg is a Date object.
-     * @memberof utilx.Date
-     * @name isDate
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.Date.isDate = function (inputArg) {
-        return toClass(inputArg) === base.classString.date;
-    };
 
     /**
      * Determines whether two values are the same value.
@@ -3032,56 +3134,6 @@
     };
 
     /**
-     * Returns true if the operands are of the same typeof.
-     * @memberof utilx.Object
-     * @name areSameTypeOf
-     * @function
-     * @param {*} a
-     * @param {...*} b
-     * @throws {SyntaxError} if not supplied with both arguments a and b.
-     * @returns {boolean}
-     */
-    $.Object.areSameTypeOf = function (a, b) {
-        /*jslint unparam:true */
-        /*jshint unused:false */
-        if (arguments.length < 2) {
-            throw new base.SyntaxError.Ctr('must supply at least 2 arguments');
-        }
-
-        var typeA = typeof a;
-
-        return !$.Array.some(arguments, function (arg) {
-            var type = typeof arg;
-
-            return typeA !== type;
-        });
-    };
-
-    /**
-     * Returns true if the operands are of the same object class.
-     * @memberof utilx.Object
-     * @name areSameClass
-     * @function
-     * @param {*} a
-     * @param {...*} b
-     * @throws {SyntaxError} if not supplied with both arguments a and b.
-     * @returns {boolean}
-     */
-    $.Object.areSameClass = function (a, b) {
-        /*jslint unparam:true */
-        /*jshint unused:false */
-        if (arguments.length < 2) {
-            throw new base.SyntaxError.Ctr('must supply at least 2 arguments');
-        }
-
-        var classA = toClass(a);
-
-        return !$.Array.some(arguments, function (arg) {
-            return classA !== this(arg);
-        }, toClass);
-    };
-
-    /**
      * The function determines whether the passed value is NaN. More robust version of the original global isNaN.
      * NOTE This function differs from the global isNaN function (18.2.3) is that it does not convert its argument
      * to a Number before determining whether it is NaN.
@@ -3099,58 +3151,6 @@
             return inputArg !== inputArg;
         };
     }
-
-    /**
-     * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
-     * @memberof utilx.Number
-     * @name inRange
-     * @function
-     * @param {NumberLike} value
-     * @param {NumberLike} min
-     * @param {NumberLike} max
-     * @returns {boolean}
-     */
-    $.Number.inRange = function (value, min, max) {
-        if (!$.Number.isNumberAny(value) && !$.String.isStringAny(value)) {
-            throw new base.TypeError.Ctr('arguments must be either numbers or strings');
-        }
-
-        if (!$.Object.areSameTypeOf(value, min, max)) {
-            throw new base.TypeError.Ctr('arguments must be of the same type');
-        }
-
-        if (min === max || min !== min || max !== max) {
-            throw new base.RangeError.Ctr('min and max do not define a range');
-        }
-
-        return value >= min && value <= max;
-    };
-
-    /**
-     * Returns true if the operand value is less than or equal to min or is greater than or equal to max.
-     * @memberof utilx.Number
-     * @name outRange
-     * @function
-     * @param {NumberLike} value
-     * @param {NumberLike} min
-     * @param {NumberLike} max
-     * @returns {boolean}
-     */
-    $.Number.outRange = function (value, min, max) {
-        if (!$.Number.isNumberAny(value) && !$.String.isStringAny(value)) {
-            throw new base.TypeError.Ctr('arguments must be either numbers or strings');
-        }
-
-        if (!$.Object.areSameTypeOf(value, min, max)) {
-            throw new base.TypeError.Ctr('arguments must be of the same type');
-        }
-
-        if (min === max || min !== min || max !== max) {
-            throw new base.RangeError.Ctr('min and max do not define a range');
-        }
-
-        return value <= min || value >= max;
-    };
 
     /**
      * The function determines whether the passed value is finite.
@@ -3236,7 +3236,9 @@
         $.Number.isInteger = isInteger = base.Number.isInteger;
     } catch (eIsInt) {
         $.Number.isInteger = isInteger = function (inputArg) {
-            return typeof inputArg === 'number' && inputArg !== Infinity && inputArg !== -Infinity &&
+            return typeof inputArg === 'number' &&
+                    inputArg !== Infinity &&
+                    inputArg !== -Infinity &&
                     toInteger(inputArg) === inputArg;
         };
     }
@@ -3264,8 +3266,12 @@
         $.Number.isSafeInteger = isSafeInteger = base.Number.isSafeInteger;
     } catch (eIsInt) {
         $.Number.isSafeInteger = isSafeInteger = function (inputArg) {
-            return typeof inputArg === 'number' && inputArg !== Infinity && inputArg !== -Infinity &&
-                    toInteger(inputArg) === inputArg && inputArg >= MIN_SAFE_INTEGER && inputArg <= MAX_SAFE_INTEGER;
+            return typeof inputArg === 'number' &&
+                    inputArg !== Infinity &&
+                    inputArg !== -Infinity &&
+                    toInteger(inputArg) === inputArg &&
+                    inputArg >= MIN_SAFE_INTEGER &&
+                    inputArg <= MAX_SAFE_INTEGER;
         };
     }
 
@@ -3386,6 +3392,26 @@
      */
     $.Number.isUint = function (inputArg) {
         return isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_SAFE_INTEGER;
+    };
+
+    /**
+     * The abstract operation ToLength converts its argument to an integer suitable for use as the length
+     * of an array-like object.
+     * @memberof utilx.Number
+     * @name toLength
+     * @function
+     * @param {*} inputArg
+     * @returns {number}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+     */
+    $.Number.toLength = toLength = function (inputArg) {
+        var length = toInteger(inputArg);
+
+        if (length <= 0) {
+            length = 0;
+        }
+
+        return mMin(length, MAX_SAFE_INTEGER);
     };
 
     /**
@@ -3573,10 +3599,6 @@
         return isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_UINT8;
     };
 
-    function fixLength(inputArg) {
-        return mMin(mMax(toInteger(inputArg.length), 0), MAX_UINT32);
-    }
-
     /**
      * Returns true if argument is an object that has own property of length which is a number of uint32
      * but is not a {@link Function function}.
@@ -3587,7 +3609,24 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
     function hasValidLength(inputArg) {
-        return isNotPrimitive(inputArg) && hasOwn(inputArg, 'length') && $.Number.isUint32(inputArg.length);
+        var valid = false,
+            type = typeof inputArg,
+            length;
+
+        if (inputArg !== null &&
+                type !== 'boolean' &&
+                type !== 'undefined' &&
+                type !== 'string' &&
+                type !== 'number' &&
+                hasOwn(inputArg, 'length')) {
+
+            length = inputArg.length;
+            if (isInteger(length) && length >= 0) {
+                valid = true;
+            }
+        }
+
+        return valid;
     }
 
     /**
@@ -3600,7 +3639,7 @@
      */
     function throwIfIsNotHasValidLength(inputArg) {
         if (!hasValidLength(inputArg)) {
-            throw new base.TypeError.Ctr('invalid length property');
+            throw new base.TypeError.Ctr('invalid length property: ' + toString(inputArg));
         }
 
         return inputArg;
@@ -3617,16 +3656,19 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
-    testObject1 = [];
-    testObject2 = {};
-    if (!testShims && push(testObject1, 0) === 1 && testObject1[0] === 0 &&
-                        push(testObject2, 0) === 1 && testObject2[0] === 0) {
+    testingTemp.a = [];
+    testingTemp.b = {};
+    if (!testShims &&
+            push(testingTemp.a, 0) === 1 &&
+            testingTemp.a[0] === 0 &&
+            push(testingTemp.b, 0) === 1 &&
+            testingTemp.b[0] === 0) {
 
         $.Array.push = toMethod(base.Array.push);
     } else {
         $.Array.prototype.push = function () {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object);
+                length = toLength(object.length);
 
             if (hasValidLength(object)) {
                 base.Array.push.apply(object, arguments);
@@ -3658,10 +3700,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
-    testObject1 = [];
-    testObject2 = {};
-    if (!testShims && unshift(testObject1, 0) === 1 && testObject1[0] === 0) {
-
+    testingTemp.a = [];
+    if (!testShims && unshift(testingTemp.a, 0) === 1 && testingTemp.a[0] === 0) {
         $.Array.unshift = toMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
@@ -3711,7 +3751,7 @@
      */
     function throwIfIsNotRegExp(inputArg) {
         if (!isRegExp(inputArg)) {
-            throw new base.TypeError.Ctr('Type RegExp expected');
+            throw new base.TypeError.Ctr('Type RegExp expected: ' + toString(inputArg));
         }
 
         return inputArg;
@@ -3748,8 +3788,8 @@
     }
 
     // Check for correct `exec` handling of nonparticipating capturing groups
-    testValue = typeof exec(new RegExp('()??'), '')[1];
-    correctExecNpcg = testValue === 'undefined';
+    testingTemp.a = typeof exec(new RegExp('()??'), '')[1];
+    correctExecNpcg = testingTemp.a === 'undefined';
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -3907,88 +3947,108 @@
      * @returns {Array.<string>}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
      */
-    if (testShims || split('test', new RegExp('(?:test)*')).length !== 2 ||
-            split('.', new RegExp('(.?)(.?)')).length !== 4 ||
-            split('tesst', new RegExp('(s)*'))[1] === 't' ||
-            split('', new RegExp('.?')).length > 0 ||
-            split('.', new RegExp('()()')).length > 1) {
+    (function (split, onlyCoercibleToString, toLength, strSlice, mMin, concat, isRegExp, test, push) {
+        var es5limit = join(split('test', /(?:)/, -1), '') === 'test' &&
+                        join(split('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
+                        join(split('a b c d', / /, UWORD32 + 1), '') === 'a' &&
+                        join(split('a b c d', / /, Infinity), '') === '';
 
-        $.String.prototype.split = function (separator, limit) {
-            var str = onlyCoercibleToString(this),
-                type = typeof separator,
-                output,
-                origLastIndex,
-                lastLastIndex,
-                lastLength;
+        if (testShims ||
+                split('test', new RegExp('(?:test)*')).length !== 2 ||
+                split('.', new RegExp('(.?)(.?)')).length !== 4 ||
+                split('tesst', new RegExp('(s)*'))[1] === 't' ||
+                split('', new RegExp('.?')).length > 0 ||
+                split('.', new RegExp('()()')).length > 1) {
 
-            // "0".split(undefined, 0) -> []
-            if (type === 'undefined' && limit === 0) {
-                output = [];
-            } else if (!isRegExp(separator)) {
-                // Browsers handle nonregex split correctly, so use the faster native method
-                output = base.String.split.apply(str, arguments);
-            } else {
-                output = [];
-                origLastIndex = separator.lastIndex;
-                lastLastIndex = 0;
-                /* Values for `limit`, per the spec:
-                 * If undefined: pow(2,32) - 1
-                 * If 0, Infinity, or NaN: 0
-                 * If positive number: limit = floor(limit); if (limit >= pow(2,32)) limit -= pow(2,32);
-                 * If negative number: pow(2,32) - floor(abs(limit))
-                 * If other: Type-convert, then use the above rules
-                 */
-                type = typeof limit;
-                if (type === 'undefined') {
-                    limit = MAX_UINT32;
+            $.String.prototype.split = function (separator, limit) {
+                var str = onlyCoercibleToString(this),
+                    type = typeof separator,
+                    output,
+                    origLastIndex,
+                    lastLastIndex,
+                    lastLength;
+
+                // "0".split(undefined, 0) -> []
+                if (type === 'undefined' && limit === 0) {
+                    output = [];
                 } else {
-                    limit = $.Number.toUint32(limit);
-                }
-
-                regExpForEach(str, separator, function (match) {
-                    // This condition is not the same as `if (match[0].length)`
-                    if ((match.index + match[0].length) > lastLastIndex) {
-                        $.Array.push(output, strSlice(str, lastLastIndex, match.index));
-                        if (match.length > 1 && match.index < str.length) {
-                            output = concat(output, slice(match, 1));
+                    if (!isRegExp(separator)) {
+                        if (es5limit) {
+                            type = typeof limit;
+                            if (type === 'undefined') {
+                                limit = MAX_UINT32;
+                            } else {
+                                limit = mMin(toLength(limit), MAX_UINT32);
+                            }
                         }
 
-                        lastLength = match[0].length;
-                        lastLastIndex = match.index + lastLength;
-                    }
-                });
+                        // Browsers handle nonregex split correctly, so use the faster native method
+                        output = split(str, separator, limit);
+                    } else {
+                        output = [];
+                        origLastIndex = separator.lastIndex;
+                        lastLastIndex = 0;
+                        type = typeof limit;
+                        if (type === 'undefined') {
+                            limit = MAX_SAFE_INTEGER;
+                        } else {
+                            limit = toLength(limit);
+                        }
 
-                if (lastLastIndex === str.length) {
-                    if (!test(separator, '') || lastLength) {
-                        $.Array.push(output, '');
+                        regExpForEach(str, separator, function (match) {
+                            if ((match.index + match[0].length) > lastLastIndex) {
+                                push(output, strSlice(str, lastLastIndex, match.index));
+                                if (match.length > 1 && match.index < str.length) {
+                                    output = concat(output, slice(match, 1));
+                                }
+
+                                lastLength = match[0].length;
+                                lastLastIndex = match.index + lastLength;
+                            }
+                        });
+
+                        if (lastLastIndex === str.length) {
+                            if (!test(separator, '') || lastLength) {
+                                push(output, '');
+                            }
+                        } else {
+                            push(output, strSlice(str, lastLastIndex));
+                        }
+
+                        separator.lastIndex = origLastIndex;
+                        if (output.length > limit) {
+                            output = slice(output, 0, limit);
+                        }
                     }
+                }
+
+                return output;
+            };
+        } else {
+            $.String.prototype.split = function (separator, limit) {
+                var type = typeof separator,
+                    val;
+
+                // "0".split(undefined, 0) -> []
+                if (type === 'undefined' && limit === 0) {
+                    val = [];
                 } else {
-                    $.Array.push(output, strSlice(str, lastLastIndex));
+                    if (es5limit) {
+                        type = typeof limit;
+                        if (type === 'undefined') {
+                            limit = MAX_UINT32;
+                        } else {
+                            limit = mMin(toLength(limit), MAX_UINT32);
+                        }
+                    }
+
+                    val = split(onlyCoercibleToString(this), separator, limit);
                 }
 
-                separator.lastIndex = origLastIndex;
-                if (output.length > limit) {
-                    output = slice(output, 0, limit);
-                }
-            }
-
-            return output;
-        };
-    } else {
-        $.String.prototype.split = function (separator, limit) {
-            var type = typeof separator,
-                val;
-
-            // "0".split(undefined, 0) -> []
-            if (type === 'undefined' && limit === 0) {
-                val = [];
-            } else {
-                val = base.String.split.apply(onlyCoercibleToString(this), arguments);
-            }
-
-            return val;
-        };
-    }
+                return val;
+            };
+        }
+    }(split, onlyCoercibleToString, toLength, strSlice, mMin, concat, isRegExp, test, $.Array.push));
 
     $.String.split = toMethod($.String.prototype.split);
 
@@ -4226,30 +4286,6 @@
     $.String.padLeadingChar = toMethod($.String.prototype.padLeadingChar);
 
     /**
-     * Repeat the current string several times, return the new string. Used by String.repeat
-     * @private
-     * @function stringRepeatRep
-     * @param {string} s
-     * @param {number} times
-     * @returns {string}
-     */
-    function stringRepeatRep(s, times) {
-        var half,
-            val;
-
-        if (times < 1) {
-            val = '';
-        } else if (times % 2) {
-            val = stringRepeatRep(s, times - 1) + s;
-        } else {
-            half = stringRepeatRep(s, times / 2);
-            val = half + half;
-        }
-
-        return val;
-    }
-
-    /**
      * Repeat the current string several times, return the new string.
      * @memberof utilx.String
      * @name repeat
@@ -4262,16 +4298,42 @@
     if (!testShims && isNative(base.String.repeat)) {
         $.String.repeat = toMethod(base.String.repeat);
     } else {
-        $.String.prototype.repeat = function (times) {
-            var thisString = onlyCoercibleToString(this),
-                count = toInteger(times);
+        $.String.prototype.repeat = (function (onlyCoercibleToString, toInteger, RangeError) {
+            /**
+             * Repeat the current string several times, return the new string. Used by String.repeat
+             * @private
+             * @function stringRepeatRep
+             * @param {string} s
+             * @param {number} times
+             * @returns {string}
+             */
+            function stringRepeatRep(s, times) {
+                var half,
+                    val;
 
-            if (count < 0 || count === Infinity) {
-                throw new base.RangeError.Ctr();
+                if (times < 1) {
+                    val = '';
+                } else if (times % 2) {
+                    val = stringRepeatRep(s, times - 1) + s;
+                } else {
+                    half = stringRepeatRep(s, times / 2);
+                    val = half + half;
+                }
+
+                return val;
             }
 
-            return stringRepeatRep(thisString, count);
-        };
+            return function (times) {
+                var thisString = onlyCoercibleToString(this),
+                    count = toInteger(times);
+
+                if (count < 0 || count === Infinity) {
+                    throw new RangeError();
+                }
+
+                return stringRepeatRep(thisString, count);
+            };
+        }(onlyCoercibleToString, toInteger, base.RangeError.Ctr));
 
         $.String.repeat = toMethod($.String.prototype.repeat);
     }
@@ -4409,41 +4471,65 @@
                 return base.Object.getPrototypeOf(toObject(object));
             };
         }
-    } else if (base.Object.proto[base.str.proto] === null) {
+    } else if (!testShims && base.Object.proto[base.str.proto] === null) {
         $.Object.getPrototypeOf = getPrototypeOf = function (object) {
             return toObject(object)[base.str.proto];
         };
     } else {
-        if ($.Function.returnArgs().constructor.prototype !== base.Object.proto) {
-            fixOpera10GetPrototypeOf = true;
-        }
+        $.Object.getPrototypeOf = getPrototypeOf = (function (
+            toObject,
+            oProto,
+            isArguments,
+            isFunction,
+            toClassStr,
+            classString,
+            strProto
+        ) {
+            var fixOpera10GetPrototypeOf;
 
-        $.Object.getPrototypeOf = getPrototypeOf = function (object) {
-            var obj = toObject(object),
-                ctrProto;
-
-            if (obj === base.Object.proto) {
-                return null;
+            if (returnArgs().constructor.prototype !== oProto) {
+                fixOpera10GetPrototypeOf = true;
             }
 
-            if (isFunction(obj.constructor)) {
-                if (fixOpera10GetPrototypeOf && isArguments(obj)) {
-                    ctrProto = base.Object.proto;
-                } else {
-                    ctrProto = obj.constructor.prototype;
+            return function (object) {
+                var obj = toObject(object),
+                    ctrProto,
+                    protoObj;
+
+                if (obj === oProto) {
+                    return null;
                 }
-            } else if (isObject(obj[base.str.proto])) {
-                ctrProto = obj[base.str.proto];
-            } else {
-                ctrProto = base.Object.proto;
-            }
 
-            if (obj === ctrProto) {
-                return base.Object.proto;
-            }
+                if (isFunction(obj.constructor)) {
+                    if (fixOpera10GetPrototypeOf && isArguments(obj)) {
+                        ctrProto = oProto;
+                    } else {
+                        ctrProto = obj.constructor.prototype;
+                    }
+                } else {
+                    protoObj = obj[strProto];
+                    if (toClassStr(protoObj) === classString && !isFunction(protoObj)) {
+                        ctrProto = protoObj;
+                    } else {
+                        ctrProto = oProto;
+                    }
+                }
 
-            return ctrProto;
-        };
+                if (obj === ctrProto) {
+                    return oProto;
+                }
+
+                return ctrProto;
+            };
+        }(
+            toObject,
+            base.Object.proto,
+            isArguments,
+            isFunction,
+            toClassStr,
+            base.classString.object,
+            base.str.proto
+        ));
     }
 
     /**
@@ -4456,7 +4542,9 @@
      * @returns {boolean}
      */
     $.Object.isPlainObject = function (object) {
-        return isObject(object) && getPrototypeOf(object) === base.Object.proto;
+        return toClassStr(object) === base.classString.object &&
+                !isFunction(object) &&
+                getPrototypeOf(object) === base.Object.proto;
     };
 
     /**
@@ -4482,12 +4570,12 @@
         return !hasDontEnumBug;
     });
 
-    testObject1 = function () {
+    testingTemp.a = function () {
         return;
     };
 
-    testObject1.prototype.constructor = testObject1;
-    enumer(testObject1, false, function (unused, prop) {
+    testingTemp.a.prototype.constructor = testingTemp.a;
+    enumer(testingTemp.a, false, function (unused, prop) {
         /*jslint unparam: true */
         /*jshint unused: false */
         hasFuncProtoBug = prop === 'prototype';
@@ -4551,41 +4639,26 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     if (hasDontEnumBug) {
-        $.Object.prototype.hasOwn = function (property) {
+        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
             var prop = toString(property);
 
-            /*
-            if (hasOwn(this, prop)) {
-                val = true;
-            } else {
-                val = (prop in this) && $.Array.contains(base.props.shadowed, prop) &&
-                                        !$.Object.is(this[prop], getPrototypeOf(this)[prop]);
-            }
-            */
-
-            return hasOwn(this, prop) || ((prop in this) && $.Array.contains(base.props.shadowed, prop) &&
-                                          !$.Object.is(this[prop], getPrototypeOf(this)[prop]));
+            return hasOwn(this, prop) ||
+                    ((prop in this) &&
+                        $.Array.contains(base.props.shadowed, prop) &&
+                        !$.Object.is(this[prop], getPrototypeOf(this)[prop]));
         };
 
-        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
     } else if (hasFuncProtoBug) {
-        $.Object.prototype.hasOwn = function (property) {
+        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
             var prop = toString(property);
-
-            /*
-            if (prop === 'prototype' && isFunction(this)) {
-                val = true;
-            } else {
-                val = hasOwn(this, prop);
-            }
-            */
 
             return (prop === 'prototype' && isFunction(this)) || hasOwn(this, prop);
         };
 
-        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
     } else {
-        $.Object.hasOwn = toMethod(base.Object.hasOwn);
+        $.Object.hasOwn = hasOwnProp = toMethod(base.Object.hasOwn);
     }
 
     /**
@@ -4662,21 +4735,19 @@
             numIndex,
             number,
             string,
-            lastIndex,
             isInt;
 
         if (arguments.length >= 2) {
             updateLen = hasValidLength(object) && !isFunction(object);
             if (updateLen) {
-                lastIndex = $.Number.MAX_UINT32 - 1;
                 if (toClassStr(index) === base.classString.number) {
                     numIndex = +index;
-                    isInt = isInteger(numIndex);
+                    isInt = numIndex >= 0 && isSafeInteger(numIndex);
                 } else {
                     string = toString(index);
                     if (test(base.RegExp.assignInteger, string)) {
                         number = +string;
-                        if (number >= 0 && number <= lastIndex && isInteger(number)) {
+                        if (number >= 0 && isSafeInteger(number)) {
                             numIndex = number;
                             isInt = true;
                         }
@@ -4684,11 +4755,23 @@
                 }
             }
 
-            if (updateLen && isInt && numIndex >= 0 && numIndex <= lastIndex) {
-                object[numIndex] = value;
-                numIndex += 1;
-                if (numIndex > object.length) {
-                    object.length = numIndex;
+            if (updateLen && isInt) {
+                if (isArray(object) || isArguments(object)) {
+                    if (numIndex <= MAX_UINT32 - 1) {
+                        object[numIndex] = value;
+                        numIndex += 1;
+                        if (numIndex > object.length) {
+                            object.length = numIndex;
+                        }
+                    } else {
+                        object[index] = value;
+                    }
+                } else {
+                    object[numIndex] = value;
+                    numIndex += 1;
+                    if (numIndex > object.length) {
+                        object.length = numIndex;
+                    }
                 }
             } else {
                 object[index] = value;
@@ -4748,19 +4831,22 @@
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
-    boxedString = toObject('g');
-    shouldSplitString = boxedString[0] !== 'g' || !('0' in boxedString);
-    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = function (inputArg) {
-        var object = toObject(inputArg);
+    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = (function (toObject, iter, toClassStr, classString) {
+        var objg = toObject('g'),
+            shouldSplitString = objg[0] !== 'g' || !('0' in objg);
 
-        if (shouldSplitString && toClassStr(object) === base.classString.string) {
-            iter(object, false, 0, object.length, false, function (it, idx, obj) {
-                obj[idx] = it;
-            });
-        }
+        return function (inputArg) {
+            var object = toObject(inputArg);
 
-        return object;
-    };
+            if (shouldSplitString && toClassStr(object) === classString) {
+                iter(object, false, 0, object.length, false, function (it, idx, obj) {
+                    obj[idx] = it;
+                });
+            }
+
+            return object;
+        };
+    }(toObject, iter, toClassStr, base.classString.string));
 
     /**
      * The $.Array.splice() method changes the content of an array,
@@ -4800,9 +4886,9 @@
     } else {
         $.Array.prototype.splice = function (start, deleteCount) {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object),
+                length = toLength(object.length),
                 removed = [],
-                relativeStart = mMin(mMax(toInteger(start), -MAX_UINT32), MAX_UINT32),
+                relativeStart = toInteger(start),
                 actualStart,
                 actualDeleteCount,
                 k = 0,
@@ -4828,8 +4914,7 @@
                 deleteCount = length - actualStart;
             }
 
-            actualDeleteCount = mMin(mMax(toInteger(deleteCount), 0), MAX_UINT32);
-            actualDeleteCount = mMin(mMax(actualDeleteCount, 0), length - actualStart);
+            actualDeleteCount = mMin(mMax(toLength(deleteCount), 0), length - actualStart);
             while (k < actualDeleteCount) {
                 from = actualStart + k;
                 if (hasOwn(object, from)) {
@@ -4938,11 +5023,14 @@
         forEach('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.forEach) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.forEach)) {
+        if (!testShims &&
+                isNative(base.Array.forEach) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a) &&
+                !checkV8StrictBug(base.Array.forEach)) {
 
             $.Array.forEach = toMethod(base.Array.forEach);
         } else {
@@ -4952,7 +5040,7 @@
         $.Array.prototype.forEach = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this);
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 this.call(thisArg, it, idx, obj);
             }, throwIfNotAFunction(fn));
         };
@@ -4977,7 +5065,7 @@
         var object = toObjectFixIndexedAccess(this),
             val = false;
 
-        iter(object, false, 0, fixLength(object), false, function (it, idx, obj) {
+        iter(object, false, 0, toLength(object.length), false, function (it, idx, obj) {
             val = !!this.call(thisArg, it, idx, obj);
 
             return val;
@@ -5017,11 +5105,14 @@
         some('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.some) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.some)) {
+        if (!testShims &&
+                isNative(base.Array.some) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a) &&
+                !checkV8StrictBug(base.Array.some)) {
 
             $.Array.some = toMethod(base.Array.some);
         } else {
@@ -5032,7 +5123,7 @@
             var object = toObjectFixIndexedAccess(this),
                 val = false;
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 val = !!this.call(thisArg, it, idx, obj);
 
                 return val;
@@ -5077,7 +5168,7 @@
             var object = toObjectFixIndexedAccess(this),
                 val;
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     val = it;
                 }
@@ -5124,7 +5215,7 @@
             var object = toObjectFixIndexedAccess(this),
                 val = -1;
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     val = idx;
                 }
@@ -5182,7 +5273,7 @@
         $.Array.from = function (arrayLike, mapfn, thisArg) {
             var object = toObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
-                length = fixLength(object),
+                length = toLength(object.length),
                 array,
                 mapping;
 
@@ -5239,11 +5330,14 @@
         every('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.every) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.every)) {
+        if (!testShims &&
+                isNative(base.Array.every) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a) &&
+                !checkV8StrictBug(base.Array.every)) {
 
             $.Array.every = toMethod(base.Array.every);
         } else {
@@ -5254,7 +5348,7 @@
             var object = toObjectFixIndexedAccess(this),
                 val = true;
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 val = !!this.call(thisArg, it, idx, obj);
 
                 return !val;
@@ -5295,11 +5389,14 @@
         map('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.map) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.map)) {
+        if (!testShims &&
+                isNative(base.Array.map) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a) &&
+                !checkV8StrictBug(base.Array.map)) {
 
             $.Array.map = toMethod(base.Array.map);
         } else {
@@ -5310,7 +5407,7 @@
             var object = toObjectFixIndexedAccess(this),
                 arr = [];
 
-            arr.length = fixLength(object);
+            arr.length = toLength(object.length);
             iter(object, true, 0, arr.length, false, function (it, idx, obj) {
                 put(arr, idx, this.call(thisArg, it, idx, obj));
             }, throwIfNotAFunction(fn));
@@ -5328,7 +5425,7 @@
      * @returns {Arguments}
      */
     function someArgs() {
-        return $.Function.returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
+        return returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
     }
 
     /**
@@ -5342,7 +5439,7 @@
      */
     internalSlice = function (start, end) {
         var object = toObjectFixIndexedAccess(this),
-            length = fixLength(object),
+            length = toLength(object.length),
             relativeStart = toInteger(start),
             val = [],
             next = 0,
@@ -5394,7 +5491,8 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
     try {
-        if (testShims || !isNative(base.Array.slice) ||
+        if (testShims ||
+                !isNative(base.Array.slice) ||
                 slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
                 slice(someArgs(), -1).length !== 1 ||
@@ -5442,11 +5540,14 @@
         filter('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.filter) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1) && !checkV8StrictBug(base.Array.filter)) {
+        if (!testShims &&
+                isNative(base.Array.filter) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a) &&
+                !checkV8StrictBug(base.Array.filter)) {
 
             $.Array.filter = toMethod(base.Array.filter);
         } else {
@@ -5457,7 +5558,7 @@
             var object = toObjectFixIndexedAccess(this),
                 arr = [];
 
-            iter(object, true, 0, fixLength(object), false, function (it, idx, obj) {
+            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
                     $.Array.push(arr, it);
                 }
@@ -5487,11 +5588,13 @@
         reduce('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.reduce) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1)) {
+        if (!testShims &&
+                isNative(base.Array.reduce) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a)) {
 
             $.Array.reduce = toMethod(base.Array.reduce);
         } else {
@@ -5507,7 +5610,7 @@
                 index;
 
             throwIfNotAFunction(fn);
-            length = fixLength(object);
+            length = toLength(object.length);
             if (!length && arguments.length === 1) {
                 throw new base.TypeError.Ctr(reduceTypeErrorMessage);
             }
@@ -5562,11 +5665,13 @@
         reduceRight('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testObject1 = list;
+            testingTemp.a = list;
         });
 
-        if (!testShims && isNative(base.Array.reduceRight) && isTypeObject(testObject1) &&
-                $.String.isStringAny(testObject1)) {
+        if (!testShims &&
+                isNative(base.Array.reduceRight) &&
+                isTypeObject(testingTemp.a) &&
+                $.String.isStringAny(testingTemp.a)) {
 
             $.Array.reduceRight = toMethod(base.Array.reduceRight);
         } else {
@@ -5582,7 +5687,7 @@
                 index;
 
             throwIfNotAFunction(fn);
-            length = fixLength(object);
+            length = toLength(object.length);
             if (!length && arguments.length === 1) {
                 throw new base.TypeError.Ctr(reduceRightTypeErrorMessage);
             }
@@ -5717,7 +5822,7 @@
      * @returns {Array}
      */
     function mergeSort(array, comparefn) {
-        var length = fixLength(array),
+        var length = toLength(array.length),
             middle,
             val;
 
@@ -5726,7 +5831,7 @@
         } else {
             middle = ceil(length / 2);
             val = merge(mergeSort(slice(array, 0, middle), comparefn),
-                         mergeSort(slice(array, middle), comparefn), comparefn);
+                        mergeSort(slice(array, middle), comparefn), comparefn);
         }
 
         return val;
@@ -5755,7 +5860,7 @@
         }
 
         throwIfNotAFunction(comparefn);
-        if (fixLength(object) > 1) {
+        if (toLength(object.length) > 1) {
             $.Array.forEach(mergeSort(object, comparefn), function (value, index) {
                 put(object, index, value);
             });
@@ -5821,7 +5926,8 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
      */
     try {
-        if (!testShims && isNative(base.String.trim) &&
+        if (!testShims &&
+                isNative(base.String.trim) &&
                 !trim($.Array.reduce(base.String.whiteSpaces, buildTestString, '')).length) {
 
             $.String.trim = toMethod(base.String.trim);
@@ -5847,12 +5953,14 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseInt
      */
-    if (testShims || !isNative(base.Number.parseInt) ||
+    if (testShims ||
+            !isNative(base.Number.parseInt) ||
             base.Number.parseInt(base.String.wsStr + '08') !== 8 ||
             base.Number.parseInt(base.String.wsStr + '0x16') !== 22 ||
             base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
 
-        if (testShims || base.parseInt(base.String.wsStr + '08') !== 8 ||
+        if (testShims ||
+                base.parseInt(base.String.wsStr + '08') !== 8 ||
                 base.parseInt(base.String.wsStr + '0x16') !== 22 ||
                 base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
 
@@ -5902,14 +6010,15 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
-    if (testShims || !isNative(base.Number.toFixed) ||
+    if (testShims ||
+            !isNative(base.Number.toFixed) ||
             base.Number.toFixed.call(0.00008, 3) !== '0.000' ||
             base.Number.toFixed.call(0.9, 0) === '0' ||
             base.Number.toFixed.call(1.255, 2) !== '1.25' ||
             base.Number.toFixed.call(1000000000000000128, 0) !== '1000000000000000128') {
 
         // Hide these variables and functions
-        (function () {
+        (function (floor, strSlice, toString, RangeError) {
             var baseNum = 1e7,
                 data = [0, 0, 0, 0, 0, 0],
                 size = data.length,
@@ -6074,7 +6183,7 @@
 
                 return m;
             };
-        }());
+        }(floor, strSlice, toString, base.RangeError.Ctr));
     } else {
         $.Number.prototype.toFixed = base.Number.toFixed;
     }
@@ -6101,7 +6210,7 @@
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object),
+                length = toLength(object.length),
                 val = -1;
 
             if (length) {
@@ -6153,7 +6262,7 @@
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object),
+                length = toLength(object.length),
                 val = -1;
 
             if (length) {
@@ -6204,7 +6313,7 @@
     } else {
         $.Array.prototype.fill = function (value, start, end) {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object),
+                length = toLength(object.length),
                 relativeStart = toInteger(start),
                 type = typeof end,
                 relativeEnd,
@@ -6258,7 +6367,7 @@
     } else {
         $.Array.prototype.copyWithin = function (target, start, end) {
             var object = toObjectFixIndexedAccess(this),
-                length = fixLength(object),
+                length = toLength(object.length),
                 relativeTarget = toInteger(target),
                 relativeStart = toInteger(start),
                 type = typeof end,
@@ -6367,7 +6476,7 @@
      */
     try {
         if (!testShims && isNative(base.Object.keys)) {
-            keysWorksWithArguments = base.Object.keys($.Function.returnArgs(1, 2)).length === 2;
+            keysWorksWithArguments = base.Object.keys(returnArgs(1, 2)).length === 2;
             if (hasErrorProps) {
                 $.Object.keys = function (object) {
                     if (!keysWorksWithArguments && isArguments(object)) {
@@ -6403,8 +6512,9 @@
                 props = enumer(object, false, function (unused, prop, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
-                    if (!(skipProto && prop === 'prototype') && !(skipErrorProps &&
-                            $.Array.contains(base.props.unwantedError, prop)) && $.Object.hasOwn(obj, prop)) {
+                    if (!(skipProto && prop === 'prototype') &&
+                            !(skipErrorProps && $.Array.contains(base.props.unwantedError, prop)) &&
+                            hasOwnProp(obj, prop)) {
 
                         $.Array.push(this, prop);
                     }
@@ -6428,12 +6538,12 @@
             if (hasDontEnumBug && object !== base.Object.proto) {
                 ctor = object.constructor;
                 isProto = (isFunction(ctor) && ctor.prototype === object);
-                nonEnum = nonEnumProps[toClass(object)];
+                nonEnum = nonEnumProps[toClassStr(object)];
                 $.Array.forEach(base.props.shadowed, function (property) {
                     if (!(isProto && nonEnum[property]) && this(object, property)) {
                         $.Array.push(props, property);
                     }
-                }, $.Object.hasOwn);
+                }, hasOwnProp);
             }
 
             return props;
@@ -6469,7 +6579,7 @@
             keys = $.Object.keys(obj),
             val = false;
 
-        iter(keys, true, 0, fixLength(keys), false, function (it) {
+        iter(keys, true, 0, toLength(keys.length), false, function (it) {
             if (this.call(thisArg, obj[it], it, obj)) {
                 val = true;
             }
@@ -6520,42 +6630,6 @@
 
     $.String.isDigits = toMethod($.String.prototype.isDigits);
 
-    /**
-     * Returns true if the operand inputArg is deemed numeric.
-     * @memberof utilx.Object
-     * @name isNumeric
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $.Object.isNumeric = function (inputArg) {
-        var val = false,
-            string,
-            number;
-
-        if ($.Number.isNumberAny(inputArg) || $.String.isStringAny(inputArg)) {
-            string = $.String.replace(inputArg, base.RegExp.plusMinus, '');
-            number = base.parseFloat(string);
-            val = number === number && base.isFinite(string);
-        }
-
-        return val;
-    };
-
-    definePropertyInteger = function (index) {
-        var val;
-
-        if ($.Number.isNumberAny(index)) {
-            val = +index;
-        } else {
-            val = toString(index);
-            if (test(base.RegExp.definePropertyInteger, val)) {
-                val = +val;
-            }
-        }
-
-        return val;
-    };
 
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
@@ -6574,21 +6648,21 @@
             throw new Error();
         }
 
-        testObject1 = base.Object.defineProperty({}, 'sentinel', {
+        testingTemp.a = base.Object.defineProperty({}, 'sentinel', {
             value: null
         });
 
-        if (testObject1.sentinel !== null) {
+        if (testingTemp.a.sentinel !== null) {
             throw new Error('Fails sentinel check');
         }
 
         // Test string integer
         try {
-            testValue = base.Object.defineProperty([], '1.', {
+            testingTemp.b = base.Object.defineProperty([], '1.', {
                 value: null
             });
 
-            if (testValue[1] !== null) {
+            if (testingTemp.b[1] !== null) {
                 throw new Error('Fails integer check');
             }
         } catch (eDP1) {
@@ -6597,11 +6671,11 @@
 
         // Test assign to array
         try {
-            testObject1 = base.Object.defineProperty([], '0', {
+            testingTemp.c = base.Object.defineProperty([], '0', {
                 value: null
             });
 
-            if (testObject1[0] !== null) {
+            if (testingTemp.c[0] !== null) {
                 throw new Error('Fails array check');
             }
         } catch (eDP2) {
@@ -6610,8 +6684,8 @@
 
         // Test overwrite array property when no value defined
         try {
-            testObject1 = base.Object.defineProperty([10], '0', {});
-            if (testObject1[0] !== 10) {
+            testingTemp.d = base.Object.defineProperty([10], '0', {});
+            if (testingTemp.d[0] !== 10) {
                 throw new Error('Fails overwrite check');
             }
         } catch (eDP3) {
@@ -6622,13 +6696,14 @@
             $.Object.defineProperty = function (object, property, descriptor) {
                 var isA = (isArray(object) || isArguments(object)) &&
                             $.Object.isNumeric(property) && $.Number.isUint32(+property),
+
                     isB = (definePropertyPatch1 || definePropertyPatch2) && hasOwn(descriptor, 'value');
 
                 if (definePropertyPatch1 && isA) {
                     property = +property;
                 }
 
-                if (definePropertyPatch2 && isA && (isB || !$.Object.hasOwn(object, property))) {
+                if (definePropertyPatch2 && isA && (isB || !hasOwnProp(object, property))) {
                     put(object, property, descriptor.value);
                 }
 
@@ -6642,35 +6717,56 @@
             $.Object.defineProperty = base.Object.defineProperty;
         }
 
-        testObject1 = {
+        testingTemp.d = {
             abc: 0,
             def: '',
             ghi: true,
             jkl: $.Function.noop
         };
 
-        $.Array.forEach($.Object.keys(testObject1), function (key) {
-            this(testObject1, key, base.properties.notEnumerable);
+        $.Array.forEach($.Object.keys(testingTemp.a), function (key) {
+            this(testingTemp.d, key, base.properties.notEnumerable);
         }, $.Object.defineProperty);
 
-        if (testObject1.abc !== 0 || testObject1.def !==  '' || testObject1.ghi !== true ||
-                                                        testObject1.jkl !== $.Function.noop) {
+        if (testingTemp.d.abc !== 0 ||
+                testingTemp.d.def !==  '' ||
+                testingTemp.d.ghi !== true ||
+                testingTemp.d.jkl !== $.Function.noop) {
 
             throw new Error();
         }
 
-        testObject1 = [10, true, '', $.Function.noop];
+        testingTemp.e = [10, true, '', $.Function.noop];
 
-        $.Array.forEach($.Object.keys(testObject1), function (key) {
-            this(testObject1, key, base.properties.notEnumerable);
+        $.Array.forEach($.Object.keys(testingTemp.e), function (key) {
+            this(testingTemp.e, key, base.properties.notEnumerable);
         }, $.Object.defineProperty);
 
-        if (testObject1[0] !== 10 || testObject1[1] !== true || testObject1[2] !== '' ||
-                                                        testObject1[3] !== $.Function.noop) {
+        if (testingTemp.e[0] !== 10 ||
+                testingTemp.e[1] !== true ||
+                testingTemp.e[2] !== '' ||
+                testingTemp.e[3] !== $.Function.noop) {
 
             throw new Error();
         }
     } catch (eDP) {
+        definePropertyInteger = (function (definePropertyInteger, toClassStr, classString, toString, test) {
+            return function (index) {
+                var val;
+
+                if (toClassStr(index) === classString) {
+                    val = +index;
+                } else {
+                    val = toString(index);
+                    if (test(definePropertyInteger, val)) {
+                        val = +val;
+                    }
+                }
+
+                return val;
+            };
+        }(new RegExp('^[1-9]\\d*.?$'), toClassStr, base.classString.number, toString, test));
+
         $.Object.defineProperty = function (object, property, descriptor) {
             throwIfIsPrimitive(object);
             if (isPrimitive(descriptor)) {
@@ -6686,7 +6782,7 @@
                 index;
 
             if (!hasOwn(descriptor, 'get') && !hasOwn(descriptor, 'set')) {
-                if (hasOwn(descriptor, 'value') || !$.Object.hasOwn(object, property)) {
+                if (hasOwnProp(descriptor, 'value') || !hasOwnProp(object, property)) {
                     index = definePropertyInteger(property);
                     if (isProtoSupported) {
                         prototype = object[base.str.proto];
@@ -6709,9 +6805,7 @@
                     }
                 }
             } else {
-                if (!isNative(base.Object.defineGetter) ||
-                        !isNative(base.Object.defineSetter)) {
-
+                if (!isNative(base.Object.defineGetter) || !isNative(base.Object.defineSetter)) {
                     throw new base.TypeError.Ctr('getters & setters can not be defined on this javascript engine');
                 }
 
@@ -6773,11 +6867,11 @@
 
     // detect a Rhino bug and patch it
     try {
-        testObject1 = {
+        testingTemp.a = {
             noop: $.Function.noop
         };
 
-        $.Object.freeze(testObject1.noop);
+        $.Object.freeze(testingTemp.a.noop);
     } catch (eFreeze) {
         freezeObject = $.Object.freeze;
         $.Object.freeze = function (object) {
@@ -6824,9 +6918,16 @@
     $.Object.deepFreeze = function (object) {
         $.Object.freeze(object);
         $.Array.forEach($.Object.keys(object), function (propKey) {
-            var prop = object[propKey];
+            var prop = object[propKey],
+                type = typeof prop;
 
-            if (isNotPrimitive(prop) && !this.isFrozen(prop)) {
+            if (prop !== null &&
+                    type !== 'boolean' &&
+                    type !== 'undefined' &&
+                    type !== 'string' &&
+                    type !== 'number' &&
+                    !this.isFrozen(prop)) {
+
                 this.deepFreeze(prop);
             }
         }, $.Object);
@@ -6848,20 +6949,32 @@
         $.Object.instanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
-            return isNotPrimitive(object) &&
+            var type = typeof object;
+
+            return object !== null &&
+                type !== 'boolean' &&
+                type !== 'undefined' &&
+                type !== 'string' &&
+                type !== 'number' &&
                 (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
         };
     } else {
         $.Object.instanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
-            var val = false;
+            var type = typeof object,
+                val = false;
 
-            if (isNotPrimitive(object)) {
+            if (object !== null &&
+                    type !== 'boolean' &&
+                    type !== 'undefined' &&
+                    type !== 'string' &&
+                    type !== 'number') {
+
                 val = object instanceof ctr;
                 if (!val) {
                     while (object) {
-                        if (object === ctr.prototype) {
+                        if (base.Object.Ctr(object) === ctr.prototype) {
                             val = true;
                             break;
                         }
@@ -6925,7 +7038,7 @@
             throw new Error();
         }
 
-        testObject1 = base.Object.create(ObjectCreateFunc.prototype, {
+        testingTemp.a = base.Object.create(ObjectCreateFunc.prototype, {
             constructor: $.Object.assign({
                 value: ObjectCreateFunc
             }, base.properties.notEnumerable),
@@ -6935,7 +7048,7 @@
             }, base.properties.notEnumerable)
         });
 
-        if (testObject1.foo !== 'test') {
+        if (testingTemp.a.foo !== 'test') {
             throw new Error();
         }
 
@@ -7103,9 +7216,7 @@
         }
 
         if (opts.strict) {
-            if (!$.Object.is(getPrototypeOf(toObject(a)),
-                                getPrototypeOf(toObject(b)))) {
-
+            if (!$.Object.is(getPrototypeOf(toObject(a)), getPrototypeOf(toObject(b)))) {
                 return false;
             }
         } else {
@@ -7275,8 +7386,11 @@
 
         if (type === 'string') {
             result = value;
-        } else if (type === 'undefined' || value === Infinity || value === -Infinity ||
-                            isFunction(value) || isRegExp(value)) {
+        } else if (type === 'undefined' ||
+                    value === Infinity ||
+                    value === -Infinity ||
+                    isFunction(value) ||
+                    isRegExp(value)) {
 
             result = toString(value);
         } else {
@@ -7286,70 +7400,91 @@
         return result;
     };
 
-    /**
-     * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
-     * This is an obtrusive fix.
-     * @memberof utilx
-     * @name normaliseErrorIEToStringOn
-     * @function
-     * @returns {boolean}
-     */
-    $.normaliseErrorIEToStringOn = function () {
-        var message = 'Should we patch IE6&7?';
+    (function (
+        Error,
+        proto,
+        classString,
+        defineProperties,
+        assign,
+        notEnumerable
+    ) {
 
-        try {
-            throw new base.Error.Ctr(message);
-        } catch (ePatch) {
-            if (ePatch.message === message && ePatch.toString() === base.classString.error) {
-                previousIEErrorToString = base.Error.prototype.toString;
-                $.Object.defineProperties(base.Error.proto, {
-                    toString: $.Object.assign({
-                        value: function () {
-                            return this.name + ': ' + this.message;
-                        }
-                    }, base.properties.notEnumerable)
+        var patchedIEErrorToString = false,
+            previousIEErrorToString;
+
+        /**
+         * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
+         * This is an obtrusive fix.
+         * @memberof utilx
+         * @name normaliseErrorIEToStringOn
+         * @function
+         * @returns {boolean}
+         */
+        $.normaliseErrorIEToStringOn = function () {
+            var message = 'Should we patch IE6&7?';
+
+            try {
+                throw new Error(message);
+            } catch (ePatch) {
+                if (ePatch.message === message && ePatch.toString() === classString) {
+                    previousIEErrorToString = proto.toString;
+                    defineProperties(proto, {
+                        toString: assign({
+                            value: function () {
+                                return this.name + ': ' + this.message;
+                            }
+                        }, notEnumerable)
+                    });
+
+                    patchedIEErrorToString = true;
+                }
+            }
+
+            return patchedIEErrorToString;
+        };
+
+        /**
+         * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
+         * This is an obtrusive fix.
+         * @memberof utilx
+         * @name normaliseErrorIEToStringOff
+         * @function
+         * @returns {boolean}
+         */
+        $.normaliseErrorIEToStringOff = function () {
+            if (patchedIEErrorToString) {
+                defineProperties(proto, {
+                    toString: assign({
+                        value: previousIEErrorToString
+                    }, notEnumerable)
                 });
 
-                patchedIEErrorToString = true;
+                previousIEErrorToString = null;
+                patchedIEErrorToString = false;
             }
-        }
 
-        return patchedIEErrorToString;
-    };
+            return patchedIEErrorToString;
+        };
 
-    /**
-     * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
-     * This is an obtrusive fix.
-     * @memberof utilx
-     * @name normaliseErrorIEToStringOff
-     * @function
-     * @returns {boolean}
-     */
-    $.normaliseErrorIEToStringOff = function () {
-        if (patchedIEErrorToString) {
-            $.Object.defineProperties(base.Error.proto, {
-                toString: $.Object.assign({
-                    value: previousIEErrorToString
-                }, base.properties.notEnumerable)
-            });
-
-            patchedIEErrorToString = false;
-        }
-
-        return patchedIEErrorToString;
-    };
-
-    /**
-     * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
-     * This is an obtrusive fix.
-     * @memberof utilx
-     * @name normaliseErrorIEToStringState
-     * @function
-     * @returns {boolean}
-     */
-    $.normaliseErrorIEToStringState = function () {
-        return patchedIEErrorToString;
-    };
+        /**
+         * Pathces IE6 & 7 Error.prototype.toString to make it function as expected in all other browsers.
+         * This is an obtrusive fix.
+         * @memberof utilx
+         * @name normaliseErrorIEToStringState
+         * @function
+         * @returns {boolean}
+         */
+        $.normaliseErrorIEToStringState = function () {
+            return patchedIEErrorToString;
+        };
+    }(
+        base.Error.Ctr,
+        base.Error.proto,
+        base.classString.error,
+        $.Object.defineProperties,
+        $.Object.assign,
+        base.properties.notEnumerable
+    ));
 
     /**
      * Creates a custom Error constructor.
@@ -7362,7 +7497,7 @@
      */
     function makeCustomError(name, ErrorConstructor, maxMessageLength) {
         if (typeof name !== 'string' || name === '') {
-            throw new base.TypeError.Ctr('"name" was not a valid string');
+            throw new base.TypeError.Ctr('"name" was not a valid string: ' + toString(name));
         }
 
         if (!$.Error.isErrorTypeConstructor(ErrorConstructor)) {
@@ -7448,14 +7583,6 @@
         return CustomError;
     }
 
-    try {
-        TestConstructor = makeCustomError('CustomSyntaxError', base.SyntaxError.Ctr);
-        isOkToUseOtherErrors = $.Object.instanceOf(new TestConstructor('test'), base.SyntaxError.Ctr);
-    } catch (eCSE) {
-        // IE < 9
-        isOkToUseOtherErrors = false;
-    }
-
     /**
      * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
      * If a valid native Error type constructor is provided but not supporte by the browesr the it will
@@ -7468,31 +7595,44 @@
      * @param {NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
      * @returns {Function}
      */
-    $.customError = function (name, ErrorConstructor, maxMessageLength) {
-        if (typeof name !== 'string') {
-            throw new base.TypeError.Ctr('"name" was not a string');
+    $.customError = (function (instanceOf, TypeError, SyntaxError, toString, isErrorTypeConstructor) {
+        var isOkToUseOtherErrors,
+            Custom;
+
+        try {
+            Custom = makeCustomError('CustomSyntaxError', SyntaxError);
+            isOkToUseOtherErrors = instanceOf(new Custom('test'), SyntaxError);
+        } catch (eCSE) {
+            // IE < 9
+            isOkToUseOtherErrors = false;
         }
 
-        if (name === '') {
-            throw new base.SyntaxError.Ctr('"name" was an empty string');
-        }
+        return function (name, ErrorConstructor, maxMessageLength) {
+            if (typeof name !== 'string') {
+                throw new TypeError('"name" was not a string: ' + toString(name));
+            }
 
-        var type = typeof maxMessageLength;
+            if (name === '') {
+                throw new SyntaxError('"name" was an empty string');
+            }
 
-        if (type === 'undefined') {
-            type = typeof ErrorConstructor;
-            if (type === 'number' || type === 'string') {
-                maxMessageLength = ErrorConstructor;
+            var type = typeof maxMessageLength;
+
+            if (type === 'undefined') {
+                type = typeof ErrorConstructor;
+                if (type === 'number' || type === 'string') {
+                    maxMessageLength = ErrorConstructor;
+                    ErrorConstructor = base.Error.Ctr;
+                }
+            }
+
+            if (!isOkToUseOtherErrors || !isErrorTypeConstructor(ErrorConstructor)) {
                 ErrorConstructor = base.Error.Ctr;
             }
-        }
 
-        if (!isOkToUseOtherErrors || !$.Error.isErrorTypeConstructor(ErrorConstructor)) {
-            ErrorConstructor = base.Error.Ctr;
-        }
-
-        return makeCustomError(name, ErrorConstructor, maxMessageLength);
-    };
+            return makeCustomError(name, ErrorConstructor, maxMessageLength);
+        };
+    }($.Object.instanceOf, base.TypeError.Ctr, base.SyntaxError.Ctr, toString, $.Error.isErrorTypeConstructor));
 
     /*jslint maxlen: 125 */
     /**
@@ -7508,20 +7648,21 @@
      */
     /*jslint maxlen: 120 */
     try {
-        testObject1 = {
+        testingTemp.a = {
             sentinel: null
         };
 
-        testObject2 = [10, 20, 30];
-        testObject2[4] = Undefined;
-        if (testShims || !isNative(base.Object.getOwnPropertyDescriptor) ||
-                base.Object.getOwnPropertyDescriptor(testObject1, 'sentinel').value !== null ||
-                base.Object.getOwnPropertyDescriptor(testObject2, 3).value !== 30 ||
-                base.Object.getOwnPropertyDescriptor(testObject2, '3').value !== 30 ||
-                !hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 4), 'value') ||
-                base.Object.getOwnPropertyDescriptor(testObject2, 4).value !== Undefined ||
-                base.Object.getOwnPropertyDescriptor(testObject2, 5) !== Undefined ||
-                hasOwn(base.Object.getOwnPropertyDescriptor(testObject2, 5), 'value')) {
+        testingTemp.b = [10, 20, 30];
+        testingTemp.b[4] = Undefined;
+        if (testShims ||
+                !isNative(base.Object.getOwnPropertyDescriptor) ||
+                base.Object.getOwnPropertyDescriptor(testingTemp.a, 'sentinel').value !== null ||
+                base.Object.getOwnPropertyDescriptor(testingTemp.b, 3).value !== 30 ||
+                base.Object.getOwnPropertyDescriptor(testingTemp.b, '3').value !== 30 ||
+                !hasOwn(base.Object.getOwnPropertyDescriptor(testingTemp.b, 4), 'value') ||
+                base.Object.getOwnPropertyDescriptor(testingTemp.b, 4).value !== Undefined ||
+                base.Object.getOwnPropertyDescriptor(testingTemp.b, 5) !== Undefined ||
+                hasOwn(base.Object.getOwnPropertyDescriptor(testingTemp.b, 5), 'value')) {
 
             throw new Error();
         }
@@ -7550,7 +7691,7 @@
                 setter,
                 type;
 
-            if ($.Object.hasOwn(throwIfIsPrimitive(object), property)) {
+            if (hasOwnProp(throwIfIsPrimitive(object), property)) {
                 descriptor = {};
                 descriptor.configurable = true;
                 descriptor.enumerable = true;
@@ -7610,7 +7751,7 @@
         if (prop1 !== prop2) {
             temp1 = $.Object.getOwnPropertyDescriptor(object, prop1);
             temp2 = $.Object.getOwnPropertyDescriptor(object, prop2);
-            num = $.Number.toUint32(prop2);
+            num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc && hasValidLength(object) && toString(num) === prop2;
             if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
@@ -7627,7 +7768,7 @@
                 $.Object.defineProperty(object, prop2, temp1);
             }
 
-            num = $.Number.toUint32(prop1);
+            num = toLength(prop1);
             cond2 = notFunc && hasValidLength(object) && toString(num) === prop1;
             if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if (cond2 && num === object.length - 1) {
@@ -7666,12 +7807,12 @@
             length;
 
         if (isString) {
-            array = split(object, '');
+            array = $.String.split(object, '');
         } else {
             array = object;
         }
 
-        length = fixLength(array);
+        length = toLength(array.length);
         if (length > 1) {
             iter(null, false, 0, mMin(mMax(toInteger(rounds), 1), MAX_SAFE_INTEGER), false, function () {
                 iter(array, false, 0, length, false, function (unused, idx, obj) {
@@ -7713,15 +7854,15 @@
     if (!testShims && isNative(base.JSON.stringify)) {
         // A test function object with a custom `toJSON` method.
         (function () {
-            stringifiedValue = function () {
+            testingTemp.a = function () {
                 return 1;
             };
         }());
 
-        stringifiedValue.toJSON = stringifiedValue;
+        testingTemp.a.toJSON = testingTemp.a;
 
         try {
-            isSupportedResult =
+            testingTemp.b =
                 // Firefox 3.1b1 and b2 serialize string, number, and boolean
                 // primitives as object literals.
                 base.JSON.stringify(0) === '0' &&
@@ -7729,7 +7870,7 @@
                 // literals.
                 base.JSON.stringify(new base.Number.Ctr()) === '0' &&
                 base.JSON.stringify(new base.String.Ctr()) === '""' &&
-                // FF 3.1b1, 2 throw an error if the stringifiedValue is `null`, `undefined`, or
+                // FF 3.1b1, 2 throw an error if the testingTemp.a is `null`, `undefined`, or
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
@@ -7738,15 +7879,15 @@
                 // 3.1b3 pass this test.
                 $.Object.isUndefined(base.JSON.stringify(Undefined)) &&
                 // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-                // respectively, if the stringifiedValue is omitted entirely.
+                // respectively, if the testingTemp.a is omitted entirely.
                 $.Object.isUndefined(base.JSON.stringify()) &&
-                // FF 3.1b1, 2 throw an error if the given stringifiedValue is not a number,
+                // FF 3.1b1, 2 throw an error if the given testingTemp.a is not a number,
                 // string, array, object, Boolean, or `null` literal. This applies to
                 // objects with custom `toJSON` methods as well, unless they are nested
                 // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
                 // methods entirely.
-                base.JSON.stringify(stringifiedValue) === '1' &&
-                base.JSON.stringify([stringifiedValue]) === '[1]' &&
+                base.JSON.stringify(testingTemp.a) === '1' &&
+                base.JSON.stringify([testingTemp.a]) === '[1]' &&
                 // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
                 // `"[null]"`.
                 base.JSON.stringify([Undefined]) === '[null]' &&
@@ -7763,10 +7904,10 @@
                 // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
                 // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
                 base.JSON.stringify({
-                    'A': [stringifiedValue, true, false, null, '\b\n\f\r\t']
+                    'A': [testingTemp.a, true, false, null, '\b\n\f\r\t']
                 }) === '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}' &&
                 // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                //base.JSON.stringify(null, stringifiedValue) === '"1"' &&
+                //base.JSON.stringify(null, testingTemp.a) === '"1"' &&
                 base.JSON.stringify([1, 2], null, 1) === '[\n 1,\n 2\n]' &&
                 // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
                 // serialize extended years.
@@ -7780,96 +7921,163 @@
                 // values less than 1000. Credits: @Yaffle.
                 base.JSON.stringify(new base.Date.Ctr(-1)) === '"1969-12-31T23:59:59.999Z"';
         } catch (eStringify) {
-            isSupportedResult = false;
+            testingTemp.b = false;
         }
     }
 
-    if (isSupportedResult) {
+    if (testingTemp.b) {
         $.JSON.stringify = base.JSON.stringify;
     } else {
-        base.str.stringifyRxCharacters = '[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5' +
-                                            '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+        $.JSON.stringify = (function (
+            test,
+            replace,
+            charCodeAt,
+            isFunction,
+            toString,
+            map,
+            join,
+            reduce,
+            push,
+            repeat,
+            keys,
+            isArray
+        ) {
 
-        base.RegExp.stringifyEscapable = new RegExp(base.str.stringifyRxCharacters, 'g');
-        stringifyMeta = {
-            '\b': '\\b',
-            '\t': '\\t',
-            '\n': '\\n',
-            '\f': '\\f',
-            '\r': '\\r',
-            '"': '\\"',
-            '\\': '\\\\'
-        };
+            var stringifyEscapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
+                                                '\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-' +
+                                                '\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g'),
+                stringifyMeta = {
+                    '\b': '\\b',
+                    '\t': '\\t',
+                    '\n': '\\n',
+                    '\f': '\\f',
+                    '\r': '\\r',
+                    '"': '\\"',
+                    '\\': '\\\\'
+                },
+                stringifyIndent,
+                stringifyGap,
+                stringifyReplacer;
 
-        stringifyQuote = function (string) {
-            var result = '"';
+            function stringifyQuote(string) {
+                var result = '"';
 
-            base.RegExp.stringifyEscapable.lastIndex = 0;
-            if ($.RegExp.test(base.RegExp.stringifyEscapable, string)) {
-                result += $.String.replace(string, base.RegExp.stringifyEscapable, function (a) {
-                    var c = stringifyMeta[a],
-                        r;
+                stringifyEscapable.lastIndex = 0;
+                if (test(stringifyEscapable, string)) {
+                    result += replace(string, stringifyEscapable, function (a) {
+                        var c = stringifyMeta[a],
+                            r;
 
-                    if (typeof c === 'string') {
-                        r = c;
-                    } else {
-                        r = '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
+                        if (typeof c === 'string') {
+                            r = c;
+                        } else {
+                            r = '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
+                        }
+
+                        return r;
+                    });
+                } else {
+                    result += string;
+                }
+
+                return result + '"';
+            }
+
+            function stringifyToString(key, holder) {
+                var member,
+                    mind = stringifyGap,
+                    partial,
+                    value = holder[key],
+                    type = typeof value;
+
+                if (value !== null &&
+                        type !== 'boolean' &&
+                        type !== 'undefined' &&
+                        type !== 'string' &&
+                        type !== 'number' &&
+                        isFunction(value.toJSON)) {
+
+                    value = value.toJSON(key);
+                }
+
+                if (isFunction(stringifyReplacer)) {
+                    value = stringifyReplacer.call(holder, key, value);
+                }
+
+                switch (typeof value) {
+                case 'string':
+                    return stringifyQuote(value);
+                case 'number':
+                    if (value !== Infinity && value !== -Infinity) {
+                        return toString(value);
                     }
 
-                    return r;
-                });
-            } else {
-                result += string;
-            }
-
-            return result + '"';
-        };
-
-        stringifyToString = function (key, holder) {
-            var member,
-                mind = stringifyGap,
-                partial,
-                value = holder[key];
-
-            if (isNotPrimitive(value) && isFunction(value.toJSON)) {
-                value = value.toJSON(key);
-            }
-
-            if (isFunction(stringifyReplacer)) {
-                value = stringifyReplacer.call(holder, key, value);
-            }
-
-            switch (typeof value) {
-            case 'string':
-                return stringifyQuote(value);
-            case 'number':
-                if (value !== Infinity && value !== -Infinity) {
+                    return 'null';
+                case 'boolean':
+                case 'null':
                     return toString(value);
-                }
+                case 'object':
+                    if (value === null) {
+                        return toString(value);
+                    }
 
-                return 'null';
-            case 'boolean':
-            case 'null':
-                return toString(value);
-            case 'object':
-                if (value === null) {
-                    return toString(value);
-                }
+                    stringifyGap += stringifyIndent;
+                    if (isArray(value)) {
+                        partial = map(value, function (unused, idx, obj) {
+                            /*jslint unparam: true */
+                            /*jshint unused : false */
+                            return this(idx, obj) || 'null';
+                        }, stringifyToString);
 
-                stringifyGap += stringifyIndent;
-                if (isArray(value)) {
-                    partial = $.Array.map(value, function (unused, idx, obj) {
-                        /*jslint unparam: true */
-                        /*jshint unused : false */
-                        return this(idx, obj) || 'null';
-                    }, stringifyToString);
+                        if (!partial.length) {
+                            member = '[]';
+                        } else if (typeof stringifyGap === 'string' && stringifyGap !== '') {
+                            member = '[\n' + stringifyGap + join(partial, ',\n' + stringifyGap) + '\n' + mind + ']';
+                        } else {
+                            member = '[' + join(partial) + ']';
+                        }
+
+                        stringifyGap = mind;
+
+                        return member;
+                    }
+
+                    if (isArray(stringifyReplacer)) {
+                        partial = reduce(stringifyReplacer, function (prev, element) {
+                            var v,
+                                typev;
+
+                            if (typeof element === 'string') {
+                                v = stringifyToString(element, value);
+                                typev = typeof v;
+                                if (typev !== 'undefined') {
+                                    push(prev, stringifyQuote(element) +
+                                            (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
+                                }
+                            }
+
+                            return prev;
+                        }, []);
+                    } else {
+                        partial = reduce(keys(value), function (prev, k) {
+                            var v = stringifyToString(k, value),
+                                typev = typeof v;
+
+                            if (typev !== 'undefined') {
+                                push(prev, stringifyQuote(k) +
+                                            (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
+                            }
+
+                            return prev;
+                        }, []);
+                    }
 
                     if (!partial.length) {
-                        member = '[]';
+                        member = '{}';
                     } else if (typeof stringifyGap === 'string' && stringifyGap !== '') {
-                        member = '[\n' + stringifyGap + $.Array.join(partial, ',\n' + stringifyGap) + '\n' + mind + ']';
+                        member = '{\n' + stringifyGap + join(partial, ',\n' + stringifyGap) + '\n' + mind + '}';
                     } else {
-                        member = '[' + $.Array.join(partial) + ']';
+                        member = '{' + join(partial) + '}';
                     }
 
                     stringifyGap = mind;
@@ -7877,70 +8085,47 @@
                     return member;
                 }
 
-                if (isArray(stringifyReplacer)) {
-                    partial = $.Array.reduce(stringifyReplacer, function (prev, element) {
-                        var v;
+                return Undefined;
+            }
 
-                        if (typeof element === 'string') {
-                            v = stringifyToString(element, value);
-                            if (v !== Undefined) {
-                                $.Array.push(prev, stringifyQuote(element) +
-                                        (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
-                            }
-                        }
+            return function (value, replacer, space) {
+                stringifyGap = '';
 
-                        return prev;
-                    }, []);
+                var type = typeof space;
+
+                if (type === 'number') {
+                    stringifyIndent = repeat(' ', space);
+                } else if (type === 'string') {
+                    stringifyIndent = space;
                 } else {
-                    partial = $.Array.reduce($.Object.keys(value), function (prev, k) {
-                        var v = stringifyToString(k, value);
-
-                        if (v !== Undefined) {
-                            $.Array.push(prev, stringifyQuote(k) +
-                                        (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
-                        }
-
-                        return prev;
-                    }, []);
+                    stringifyIndent = '';
                 }
 
-                if (!partial.length) {
-                    member = '{}';
-                } else if (typeof stringifyGap === 'string' && stringifyGap !== '') {
-                    member = '{\n' + stringifyGap + $.Array.join(partial, ',\n' + stringifyGap) + '\n' + mind + '}';
-                } else {
-                    member = '{' + $.Array.join(partial) + '}';
+                stringifyReplacer = replacer;
+
+                type = typeof replacer;
+                if (type !== 'undefined' && replacer !== null && !isFunction(replacer) && !isArray(replacer)) {
+                    throw new base.Error.Ctr('JSON.stringify');
                 }
 
-                stringifyGap = mind;
-
-                return member;
-            }
-
-            return Undefined;
-        };
-
-        $.JSON.stringify = function (value, replacer, space) {
-            stringifyGap = '';
-            if (typeof space === 'number') {
-                stringifyIndent = $.String.repeat(' ', space);
-            } else if (typeof space === 'string') {
-                stringifyIndent = space;
-            } else {
-                stringifyIndent = '';
-            }
-
-            stringifyReplacer = replacer;
-            if (!$.Object.isUndefinedOrNull(replacer) && !isFunction(replacer) &&
-                                                                    !isArray(replacer)) {
-
-                throw new base.Error.Ctr('JSON.stringify');
-            }
-
-            return stringifyToString('', {
-                '': value
-            });
-        };
+                return stringifyToString('', {
+                    '': value
+                });
+            };
+        }(
+            $.RegExp.test,
+            $.String.replace,
+            charCodeAt,
+            isFunction,
+            toString,
+            $.Array.map,
+            $.Array.join,
+            $.Array.reduce,
+            $.Array.push,
+            $.String.repeat,
+            $.Object.keys,
+            isArray
+        ));
     }
 
     /**
@@ -7962,37 +8147,37 @@
             // a string prior to parsing.
             if (base.JSON.parse('0') === 0 && base.JSON.parse(false) === false) {
                 // Simple parsing test.
-                testValue = base.JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                isSupportedResult = (testValue.A.length === 5 && testValue.A[0] === 1);
-                if (isSupportedResult) {
+                testingTemp.a = base.JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
+                testingTemp.b = (testingTemp.a.A.length === 5 && testingTemp.a.A[0] === 1);
+                if (testingTemp.b) {
                     try {
                         // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in base.str.
-                        isSupportedResult = typeof base.JSON.parse('"\t"') === 'string';
+                        testingTemp.b = typeof base.JSON.parse('"\t"') === 'string';
                     } catch (ignore) {}
 
-                    if (isSupportedResult) {
+                    if (testingTemp.b) {
                         try {
                             // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
                             // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
                             // allow certain octal literals.
-                            isSupportedResult = base.JSON.parse('01') !== 1;
+                            testingTemp.b = base.JSON.parse('01') !== 1;
                         } catch (ignore) {}
                     }
                 }
             }
         } catch (eParse) {
-            isSupportedResult = false;
+            testingTemp.b = false;
         }
     }
 
-    if (isSupportedResult) {
+    if (testingTemp.b) {
         try {
             base.JSON.parse();
         } catch (eParse) {
-            threwSynatxError = $.Object.instanceOf(eParse, base.SyntaxError.Ctr);
+            testingTemp.c = $.Object.instanceOf(eParse, base.SyntaxError.Ctr);
         }
 
-        if (threwSynatxError) {
+        if (testingTemp.c) {
             $.JSON.parse = base.JSON.parse;
         } else {
             $.JSON.parse = function (text, reviver) {
@@ -8006,24 +8191,32 @@
             };
         }
     } else {
-        base.RegExp.parseProtect1 = new RegExp('^[\\],:{}\\s]*$');
-        base.RegExp.parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g');
-        base.RegExp.parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
-                                                '-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g');
+        $.JSON.parse = (function (
+            forEach,
+            keys,
+            test,
+            replace,
+            charCodeAt,
+            isFunction,
+            isTypeObject,
+            strSlice
+        ) {
 
-        base.RegExp.parseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g');
-        base.str.parseRxCharacters = '[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f' +
-                                        '\\u2028-\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]';
+            var parseProtect1 = new RegExp('^[\\],:{}\\s]*$'),
+                parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g'),
+                parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
+                                           '-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g'),
 
-        base.RegExp.parseCharacterTest = new RegExp(base.str.parseRxCharacters, 'g');
-        $.JSON.parse = function (text, reviver) {
-            var j;
+                parseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g'),
+                parseCharacterTest = new RegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5' +
+                                                '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff' +
+                                                '\\ufff0-\\uffff]', 'g');
 
-            function walk(holder, key) {
+            function walk(holder, key, reviver) {
                 var value = holder[key];
 
                 if (isTypeObject(value)) {
-                    $.Array.forEach($.Object.keys(value), function (k) {
+                    forEach(keys(value), function (k) {
                         var v = this(value, k),
                             type = typeof v;
 
@@ -8038,34 +8231,48 @@
                 return reviver.call(holder, key, value);
             }
 
-            text = toString(text);
-            base.RegExp.parseCharacterTest.lastIndex = 0;
-            if ($.RegExp.test(base.RegExp.parseCharacterTest, text)) {
-                text = $.String.replace(text, base.RegExp.parseCharacterTest, function (a) {
-                    return '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
-                });
-            }
+            return function (text, reviver) {
+                var j;
 
-            if ($.RegExp.test(base.RegExp.parseProtect1, $.String.replace($.String.replace($.String.replace(text,
-                                base.RegExp.parseProtect2, '@'),
-                                base.RegExp.parseProtect3, ']'),
-                                base.RegExp.parseProtect4, ''))) {
-
-                /*jslint evil: true */
-                j = eval('(' + text + ')');
-                /*jslint evil: false */
-
-                if (isFunction(reviver)) {
-                    return walk({
-                        '': j
-                    }, '');
+                text = toString(text);
+                parseCharacterTest.lastIndex = 0;
+                if (test(parseCharacterTest, text)) {
+                    text = replace(text, parseCharacterTest, function (a) {
+                        return '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
+                    });
                 }
 
-                return j;
-            }
+                if (test(parseProtect1,
+                        replace(replace(replace(text,
+                            parseProtect2, '@'),
+                            parseProtect3, ']'),
+                            parseProtect4, ''))) {
 
-            throw new base.SyntaxError.Ctr('JSON.parse');
-        };
+                    /*jslint evil: true */
+                    j = eval('(' + text + ')');
+                    /*jslint evil: false */
+
+                    if (isFunction(reviver)) {
+                        return walk({
+                            '': j
+                        }, '', reviver);
+                    }
+
+                    return j;
+                }
+
+                throw new base.SyntaxError.Ctr('JSON.parse');
+            };
+        }(
+            $.Array.forEach,
+            $.Object.keys,
+            $.RegExp.test,
+            $.String.replace,
+            charCodeAt,
+            isFunction,
+            isTypeObject,
+            strSlice
+        ));
     }
 
     /**
@@ -8087,7 +8294,7 @@
             object = $.String.split(object, '');
         }
 
-        if (!fixLength(object)) {
+        if (toLength(object.length) < 1) {
             val = [[]];
         } else {
             lastElement = pop(object);
@@ -8298,6 +8505,15 @@
             value: publicUtil
         }, base.properties.notEnumerable));
     }
+
+    enumer(testingTemp, true, function (unused, prop) {
+        /*jslint unparam: true */
+        /*jshint unused : false */
+        testingTemp[prop] = null;
+        delete testingTemp[prop];
+    });
+
+    testingTemp = null;
 
     /**
      * The window object represents a window containing a DOM document;

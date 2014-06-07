@@ -8,48 +8,23 @@
         expect = required.expect;
 
     describe('String.isNotEmptyAny', function () {
-        it('should throw if no arguments', function () {
-            expect(function () {
-                utilx.String.isNotEmptyAny();
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw if argument is undefined', function () {
-            expect(function () {
-                utilx.String.isNotEmptyAny(undefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw if argument is null', function () {
-            expect(function () {
-                utilx.String.isNotEmptyAny(null);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
         it('should throw if argument is not a string', function () {
-            expect(function () {
-                utilx.String.isNotEmptyAny(true);
-                utilx.String.isNotEmptyAny(false);
-                utilx.String.isNotEmptyAny(0);
-                utilx.String.isNotEmptyAny(1);
-                utilx.String.isNotEmptyAny({});
-                utilx.String.isNotEmptyAny([]);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            expect(utilx.String.isNotEmptyAny()).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(undefined)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(null)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(true)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(false)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(0)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny(1)).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny({})).to.be(undefined);
+            expect(utilx.String.isNotEmptyAny([])).to.be(undefined);
         });
 
         it('should not throw an error in each case', function () {
-            expect(utilx.String.isNotEmptyAny('')).to.not.be.ok();
-            expect(utilx.String.isNotEmptyAny(utilx.Object.ToObject(''))).to.not.be.ok();
-            expect(utilx.String.isNotEmptyAny(' ')).to.be.ok();
-            expect(utilx.String.isNotEmptyAny(utilx.Object.ToObject(' '))).to.be.ok();
+            expect(utilx.String.isNotEmptyAny('')).to.be(false);
+            expect(utilx.String.isNotEmptyAny(utilx.Object.ToObject(''))).to.be(false);
+            expect(utilx.String.isNotEmptyAny(' ')).to.be(true);
+            expect(utilx.String.isNotEmptyAny(utilx.Object.ToObject(' '))).to.be(true);
         });
     });
 }());

@@ -9,16 +9,22 @@
 
     describe('Number.isZero', function () {
         it('should not throw an error in each case', function () {
-            expect(utilx.Number.isZero(0)).to.be.ok();
-            expect(utilx.Number.isZero(+0)).to.be.ok();
-            expect(utilx.Number.isZero(-0)).to.be.ok();
-            expect(utilx.Number.isZero(0.0)).to.be.ok();
-            expect(utilx.Number.isZero(+0.0)).to.be.ok();
-            expect(utilx.Number.isZero(-0.0)).to.be.ok();
-            expect(utilx.Number.isZero(1)).to.not.be.ok();
-            expect(utilx.Number.isZero('0')).to.not.be.ok();
-            expect(utilx.Number.isZero()).to.not.be.ok();
-            expect(utilx.Number.isZero(null)).to.not.be.ok();
+            expect(utilx.Number.isZero(0)).to.be(true);
+            expect(utilx.Number.isZero(+0)).to.be(true);
+            expect(utilx.Number.isZero(-0)).to.be(true);
+            expect(utilx.Number.isZero(0.0)).to.be(true);
+            expect(utilx.Number.isZero(+0.0)).to.be(true);
+            expect(utilx.Number.isZero(-0.0)).to.be(true);
+            expect(utilx.Number.isZero(1)).to.be(false);
+            expect(utilx.Number.isZero(NaN)).to.be(false);
+            expect(utilx.Number.isZero(Infinity)).to.be(false);
+            expect(utilx.Number.isZero(-Infinity)).to.be(false);
+            expect(utilx.Number.isZero('0')).to.be(undefined);
+            expect(utilx.Number.isZero()).to.be(undefined);
+            expect(utilx.Number.isZero(undefined)).to.be(undefined);
+            expect(utilx.Number.isZero(null)).to.be(undefined);
+            expect(utilx.Number.isZero({})).to.be(undefined);
+            expect(utilx.Number.isZero([])).to.be(undefined);
         });
     });
 }());

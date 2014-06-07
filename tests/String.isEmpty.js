@@ -8,48 +8,23 @@
         expect = required.expect;
 
     describe('String.isEmpty', function () {
-        it('should throw if no arguments', function () {
-            expect(function () {
-                utilx.String.isEmpty();
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw if argument is undefined', function () {
-            expect(function () {
-                utilx.String.isEmpty(undefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw if argument is null', function () {
-            expect(function () {
-                utilx.String.isEmpty(null);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
-        });
-
-        it('should throw if argument is not a string', function () {
-            expect(function () {
-                utilx.String.isEmpty(true);
-                utilx.String.isEmpty(false);
-                utilx.String.isEmpty(0);
-                utilx.String.isEmpty(1);
-                utilx.String.isEmpty({});
-                utilx.String.isEmpty([]);
-                utilx.String.isEmpty(utilx.Object.ToObject(''));
-                utilx.String.isEmpty(utilx.Object.ToObject(' '));
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+        it('should return undefined for non strings', function () {
+            expect(utilx.String.isEmpty()).to.be(undefined);
+            expect(utilx.String.isEmpty(undefined)).to.be(undefined);
+            expect(utilx.String.isEmpty(null)).to.be(undefined);
+            expect(utilx.String.isEmpty(true)).to.be(undefined);
+            expect(utilx.String.isEmpty(false)).to.be(undefined);
+            expect(utilx.String.isEmpty(0)).to.be(undefined);
+            expect(utilx.String.isEmpty(1)).to.be(undefined);
+            expect(utilx.String.isEmpty({})).to.be(undefined);
+            expect(utilx.String.isEmpty([])).to.be(undefined);
+            expect(utilx.String.isEmpty(utilx.Object.ToObject(''))).to.be(undefined);
+            expect(utilx.String.isEmpty(utilx.Object.ToObject(' '))).to.be(undefined);
         });
 
         it('should not throw an error in each case', function () {
-            expect(utilx.String.isEmpty('')).to.be.ok();
-            expect(utilx.String.isEmpty(' ')).to.not.be.ok();
+            expect(utilx.String.isEmpty('')).to.be(true);
+            expect(utilx.String.isEmpty(' ')).to.be(false);
         });
     });
 }());

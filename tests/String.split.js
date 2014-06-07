@@ -133,10 +133,10 @@
             expect(utilx.String.split(txt, /(?:)/, 2)).to.eql(['t', 'e']);
         });
 
-        it('(\'test\', /(?:)/, -1) results in [\'t\', \'e\', \'s\', \'t\']', function () {
+        it('(\'test\', /(?:)/, -1) results in []', function () {
             var txt = 'test';
 
-            expect(utilx.String.split(txt, /(?:)/, -1)).to.eql(['t', 'e', 's', 't']);
+            expect(utilx.String.split(txt, /(?:)/, -1)).to.eql([]);
         });
 
         it('(\'test\', /(?:)/, undefined) results in [\'t\', \'e\', \'s\', \'t\']', function () {
@@ -443,19 +443,19 @@
         it('(\'a b c d\', / /, -(Math.pow(2, 32) - 1)) results in [\'a\']', function () {
             var txt = 'a b c d';
 
-            expect(utilx.String.split(txt, / /, -(Math.pow(2, 32) - 1))).to.eql(['a']);
+            expect(utilx.String.split(txt, / /, -(Math.pow(2, 32) - 1))).to.eql([]);
         });
 
         it('(\'a b c d\', / /, Math.pow(2, 32) + 1) results in [\'a\']', function () {
             var txt = 'a b c d';
 
-            expect(utilx.String.split(txt, / /, Math.pow(2, 32) + 1)).to.eql(['a']);
+            expect(utilx.String.split(txt, / /, Math.pow(2, 32) + 1)).to.eql(['a', 'b', 'c', 'd']);
         });
 
         it('(\'a b c d\', / /, Infinity) results in []', function () {
             var txt = 'a b c d';
 
-            expect(utilx.String.split(txt, / /, Infinity)).to.eql([]);
+            expect(utilx.String.split(txt, / /, Infinity)).to.eql(['a', 'b', 'c', 'd']);
         });
     });
 }());
