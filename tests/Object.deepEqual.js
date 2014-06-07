@@ -45,37 +45,6 @@
                 undefined
             ])).to.be(true);
 
-            expect(utilx.Object.deepEqual(NaN, NaN)).to.be(true);
-            expect(utilx.Object.deepEqual([], {})).to.be(true);
-        });
-
-        it('not equal', function () {
-            expect(utilx.Object.deepEqual({
-                x: 5,
-                y: [6]
-            }, {
-                x: 5,
-                y: 6
-            })).to.be(false);
-        });
-
-        it('nested nulls', function () {
-            expect(utilx.Object.deepEqual([null, null, null], [null, null, null])).to.be(true);
-        });
-
-        it('strict equal', function () {
-            expect(utilx.Object.deepEqual([{
-                a: 3
-            }, {
-                b: 4
-            }], [{
-                a: '3'
-            }, {
-                b: '4'
-            }], {
-                strict: true
-            })).to.be(false);
-
             expect(utilx.Object.deepEqual([{
                 a: 3
             }, {
@@ -85,19 +54,35 @@
             }, {
                 b: '4'
             }])).to.be(true);
+
+            expect(utilx.Object.deepEqual([], {})).to.be(true);
+            expect(utilx.Object.deepEqual([6], ['6'])).to.be(true);
+        });
+
+        it('not equal', function () {
+            expect(utilx.Object.deepEqual(NaN, NaN)).to.be(false);
+            expect(utilx.Object.deepEqual({
+                x: 5,
+                y: [6]
+            }, {
+                x: 5,
+                y: 6
+            })).to.be(false);
+
+            expect(utilx.Object.deepEqual([3], {valueOf: 3})).to.be(false);
+        });
+
+        it('nested nulls', function () {
+            expect(utilx.Object.deepEqual([null, null, null], [null, null, null])).to.be(true);
         });
 
         it('non-objects', function () {
             expect(utilx.Object.deepEqual(3, 3)).to.be(true);
             expect(utilx.Object.deepEqual('beep', 'beep')).to.be(true);
             expect(utilx.Object.deepEqual('3', 3)).to.be(true);
-
-            expect(utilx.Object.deepEqual('3', 3, {
-                strict: true
-            })).to.be(false);
-
             expect(utilx.Object.deepEqual('3', [3])).to.be(false);
             expect(utilx.Object.deepEqual(3, [3])).to.be(false);
+            expect(utilx.Object.deepEqual(3, {valueOf: 3})).to.be(false);
         });
 
         it('arguments class', function () {

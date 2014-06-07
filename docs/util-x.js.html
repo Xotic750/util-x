@@ -1278,6 +1278,16 @@
          * @returns {boolean}
          */
         test = toMethod(base.RegExp.test),
+
+        /**
+         * @private
+         * @name getTime
+         * @function
+         * @param {Date} date
+         * @returns {number}
+         */
+        getTime = toMethod(Date.prototype.getTime),
+
         correctExecNpcg,
 
         /**
@@ -7115,7 +7125,7 @@
             throw new base.TypeError.Ctr('this is not a Date object.');
         }
 
-        var ms = base.Date.getTime.call(this);
+        var ms = getTime(this);
 
         return ms === ms;
     };
@@ -7134,7 +7144,7 @@
         $.Date.now = base.Date.now;
     } else {
         $.Date.now = function now() {
-            return base.Date.getTime.call(new base.Date.Ctr());
+            return getTime(new base.Date.Ctr());
         };
     }
 
@@ -7210,27 +7220,22 @@
     $.String.replaceAll = toMethod($.String.prototype.replaceAll);
 
     /**
-     * Tests a deep equality relation.. set opts {strict: true} for Object.deepStrictEqual.
+     * Tests a deep equality relation.
      * @memberof utilx.Object
      * @name deepEqual
      * @function
      * @param {*} a
      * @param {*} b
-     * @param {Object} opts
      * @returns {boolean}
-     * @see http://wiki.commonjs.org/wiki/Unit_Testing
+     * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
      */
-    $.Object.deepEqual = function (a, b, opts) {
-        if (!$.Object.isPlainObject(opts)) {
-            opts = {};
-        }
-
-        if ($.Object.is(a, b)) {
+    $.Object.deepEqual = function (a, b) {
+        if (a === b) {
             return true;
         }
 
         if ($.Date.isDate(a) &amp;&amp; $.Date.isDate(b)) {
-            return $.Object.is(a.getTime(), b.getTime());
+            return getTime(a) === getTime(b);
         }
 
         if (isRegExp(a) &amp;&amp; isRegExp(b)) {
@@ -7243,17 +7248,11 @@
         }
 
         if (!isTypeObject(a) &amp;&amp; !isTypeObject(b)) {
-            return opts.strict ? $.Object.is(a, b) : $.Object.equal(a, b);
+            return $.Object.equal(a, b);
         }
 
-        if (opts.strict) {
-            if (!$.Object.is(getPrototypeOf(toObject(a)), getPrototypeOf(toObject(b)))) {
-                return false;
-            }
-        } else {
-            if (!$.Object.is(a.prototype, b.prototype)) {
-                return false;
-            }
+        if (a.prototype !== b.prototype) {
+            return false;
         }
 
         if (isArguments(a)) {
@@ -7261,7 +7260,7 @@
                 return false;
             }
 
-            return $.Object.deepEqual(slice(a), slice(b), opts);
+            return $.Object.deepEqual(slice(a), slice(b));
         }
 
         var ka,
@@ -7286,17 +7285,21 @@
         } else {
             $.Array.stableSort(ka);
             $.Array.stableSort(kb);
-            status = $.Array.some(ka, function (aKey, index) {
-                return aKey !== kb[index];
-            });
+            iter(ka, false, 0, ka.length, false, function (it, idx) {
+                status = it !== this[idx];
+
+                return status;
+            }, kb);
 
             if (status) {
                 return false;
             }
         }
 
-        status = $.Array.some(ka, function (aKey) {
-            return !this(a[aKey], b[aKey], opts);
+        iter(ka, false, 0, ka.length, false, function (it) {
+            status = !this(a[it], b[it]);
+
+            return status;
         }, $.Object.deepEqual);
 
         if (status) {
@@ -7307,7 +7310,7 @@
     };
 
     /**
-     * Shortcut for $.Object.deepEqual(a, b, {strict: true})
+     * Tests a deep equality relation.
      * @memberof utilx.Object
      * @name deepStrictEqual
      * @function
@@ -7316,9 +7319,83 @@
      * @returns {boolean}
      */
     $.Object.deepStrictEqual = function (a, b) {
-        return $.Object.deepEqual(a, b, {
-            strict: true
-        });
+        if (a === b) {
+            return true;
+        }
+
+        if ($.Date.isDate(a) &amp;&amp; $.Date.isDate(b)) {
+            return getTime(a) === getTime(b);
+        }
+
+        if (isRegExp(a) &amp;&amp; isRegExp(b)) {
+            return a.source === b.source &amp;&amp;
+                a.global === b.global &amp;&amp;
+                a.multiline === b.multiline &amp;&amp;
+                a.lastIndex === b.lastIndex &amp;&amp;
+                a.ignoreCase === b.ignoreCase &amp;&amp;
+                a.sticky === b.sticky;
+        }
+
+        if (!isTypeObject(a) &amp;&amp; !isTypeObject(b)) {
+            return a === b;
+        }
+
+        if (getPrototypeOf(a) !== getPrototypeOf(b)) {
+            return false;
+        }
+
+        if (isArguments(a)) {
+            if (!isArguments(b)) {
+                return false;
+            }
+
+            return $.Object.deepStrictEqual(slice(a), slice(b));
+        }
+
+        var ka,
+            kb,
+            status;
+
+        try {
+            ka = $.Object.keys(a);
+            kb = $.Object.keys(b);
+        } catch (eDE) {
+            return false;
+        }
+
+        if (ka.length !== kb.length) {
+            if (isArray(a) &amp;&amp; isArray(b)) {
+                if (a.length !== b.length) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            $.Array.stableSort(ka);
+            $.Array.stableSort(kb);
+            iter(ka, false, 0, ka.length, false, function (it, idx) {
+                status = it !== this[idx];
+
+                return status;
+            }, kb);
+
+            if (status) {
+                return false;
+            }
+        }
+
+        iter(ka, false, 0, ka.length, false, function (it) {
+            status = !this(a[it], b[it]);
+
+            return status;
+        }, $.Object.deepStrictEqual);
+
+        if (status) {
+            return false;
+        }
+
+        return true;
     };
 
     /**
@@ -8575,7 +8652,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat Jun 07 2014 21:15:47 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sun Jun 08 2014 00:21:33 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -105,7 +105,7 @@
         return result + '"';
     }
 
-    function stringifyToString(key, holder) {
+    function customStringify(key, holder) {
         var member,
             mind = stringifyGap,
             partial,
@@ -140,7 +140,7 @@
                     /*jslint unparam: true */
                     /*jshint unused : false */
                     return this(idx, obj) || 'null';
-                }, stringifyToString);
+                }, customStringify);
 
                 if (!partial.length) {
                     member = '[]';
@@ -160,7 +160,7 @@
                     var v;
 
                     if (typeof element === 'string') {
-                        v = stringifyToString(element, value);
+                        v = customStringify(element, value);
                         if (v !== undefined) {
                             utilx.Array.push(prev, stringifyQuote(element) +
                                     (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
@@ -171,7 +171,7 @@
                 }, []);
             } else {
                 partial = utilx.Array.reduce(utilx.Object.keys(value), function (prev, k) {
-                    var v = stringifyToString(k, value);
+                    var v = customStringify(k, value);
 
                     if (v !== undefined) {
                         utilx.Array.push(prev, stringifyQuote(k) +
@@ -215,7 +215,7 @@
             throw new Error('stringify');
         }
 
-        return stringifyToString('', {
+        return customStringify('', {
             '': value
         });
     }
@@ -232,7 +232,7 @@
     };
 
     required.log.toEql = function (x, y) {
-        if (!required.utilx.Object.deepEqual(x, y)) {
+        if (!required.expect.eql(x, y)) {
             console.log('Expected: ');
             console.log(stringify(x));
             console.log('To sort of equal: ');

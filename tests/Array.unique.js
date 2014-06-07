@@ -51,7 +51,7 @@
             }];
 
             expect(utilx.Array.unique(list)).to.eql(list);
-            expect(utilx.Array.unique(list, utilx.Object.deepStrictEqual)).to.eql([{
+            expect(utilx.Array.unique(list, utilx.Object.deepEqual)).to.eql([{
                 name: 'moe'
             }, {
                 name: 'curly'
