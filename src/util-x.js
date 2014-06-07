@@ -784,9 +784,11 @@
          * @returns {boundPrototypalFunction}
          */
         toMethod = function (protoFn, checkThisArgFn) {
+            /*
             if (!protoFn) {
                 throw new base.TypeError.Ctr(protoFn + ' is not a function');
             }
+            */
 
             if (!checkThisArgFn) {
                 checkThisArgFn = function (inputArg) {
