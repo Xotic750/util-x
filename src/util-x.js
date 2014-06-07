@@ -784,16 +784,35 @@
          * @returns {boundPrototypalFunction}
          */
         toMethod = function (protoFn, checkThisArgFn) {
-            if (!(protoFn instanceof base.Function.Ctr)) {
-                throw new base.TypeError.Ctr(protoFn + ' is not a function');
+            var type = typeof protoFn;
+
+            if (protoFn === null ||
+                    type === 'boolean' ||
+                    type === 'undefined' ||
+                    type === 'string' ||
+                    type === 'number' ||
+                    !protoFn.constructor ||
+                    !protoFn.call ||
+                    !protoFn.apply) {
+
+                throw new base.TypeError.Ctr(type + ' is not a function');
             }
 
-            if (!(checkThisArgFn instanceof base.Function.Ctr)) {
-                checkThisArgFn = function (inputArg) {
-                    var type = typeof inputArg;
+            type = typeof checkThisArgFn;
+            if (protoFn === null ||
+                    type === 'boolean' ||
+                    type === 'undefined' ||
+                    type === 'string' ||
+                    type === 'number' ||
+                    !checkThisArgFn.constructor ||
+                    !checkThisArgFn.call ||
+                    !checkThisArgFn.apply) {
 
-                    if (type === 'undefined' || inputArg === null) {
-                        throw new base.TypeError.Ctr('Cannot convert "' + type + '" to object');
+                checkThisArgFn = function (inputArg) {
+                    var itype = typeof inputArg;
+
+                    if (itype === 'undefined' || inputArg === null) {
+                        throw new base.TypeError.Ctr('Cannot convert "' + itype + '" to object');
                     }
 
                     return inputArg;
