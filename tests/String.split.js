@@ -440,13 +440,13 @@
             expect(utilx.String.split(txt, rx)).to.eql(['.']);
         });
 
-        it('(\'a b c d\', / /, -(Math.pow(2, 32) - 1)) results in [\'a\']', function () {
+        it('(\'a b c d\', / /, -(Math.pow(2, 32) - 1)) results in []', function () {
             var txt = 'a b c d';
 
             expect(utilx.String.split(txt, / /, -(Math.pow(2, 32) - 1))).to.eql([]);
         });
 
-        it('(\'a b c d\', / /, Math.pow(2, 32) + 1) results in [\'a\']', function () {
+        it('(\'a b c d\', / /, Math.pow(2, 32) + 1) results in []', function () {
             var txt = 'a b c d';
 
             expect(utilx.String.split(txt, / /, Math.pow(2, 32) + 1)).to.eql(['a', 'b', 'c', 'd']);

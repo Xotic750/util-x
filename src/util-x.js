@@ -776,6 +776,7 @@
 
         /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
+         * Overwritten later by the correct version.
          * @private
          * @name ToMethod
          * @function
@@ -783,19 +784,16 @@
          * @returns {boundPrototypalFunction}
          */
         toMethod = function (protoFn, checkThisArgFn) {
-            var type = typeof protoFn;
-
-            if (type !== 'function' && base.Object.toString.call(protoFn) !== base.classString.Function) {
-                throw new base.TypeError.Ctr(type + ' is not a function');
+            if (!(protoFn instanceof base.Function.Ctr)) {
+                throw new base.TypeError.Ctr(protoFn + ' is not a function');
             }
 
-            type = typeof checkThisArgFn;
-            if (type !== 'function' && base.Object.toString.call(checkThisArgFn) !== base.classString.Function) {
+            if (!(checkThisArgFn instanceof base.Function.Ctr)) {
                 checkThisArgFn = function (inputArg) {
-                    var itype = typeof inputArg;
+                    var type = typeof inputArg;
 
-                    if (itype === 'undefined' || inputArg === null) {
-                        throw new base.TypeError.Ctr('Cannot convert "' + itype + '" to object');
+                    if (type === 'undefined' || inputArg === null) {
+                        throw new base.TypeError.Ctr('Cannot convert "' + type + '" to object');
                     }
 
                     return inputArg;
