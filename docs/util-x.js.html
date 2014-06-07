@@ -1331,7 +1331,7 @@
         hasFuncProtoBug = false,
         hasErrorProps,
         nonEnumProps,
-        testingTemp = {},
+        testTemp = {},
 
         /**
          * Indicates if __proto__ is supported.
@@ -2385,10 +2385,10 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
      */
     try {
-        testingTemp.a = base.String.Ctr();
-        testingTemp.b = base.String.Ctr(Undefined);
-        testingTemp.c = base.String.Ctr(null);
-        if (testShims || testingTemp.a !== 'undefined' || testingTemp.b !== 'undefined' || testingTemp.c === 'null') {
+        testTemp.tsS1 = base.String.Ctr();
+        testTemp.tsS2 = base.String.Ctr(Undefined);
+        testTemp.tsS3 = base.String.Ctr(null);
+        if (testShims || testTemp.tsS1 !== 'undefined' || testTemp.tsS2 !== 'undefined' || testTemp.tsS3 === 'null') {
             throw new Error();
         }
 
@@ -3024,23 +3024,23 @@
             throw new Error();
         }
 
-        testingTemp.a = [1, 2, 3];
-        testingTemp.c = base.Function.bind.call(function () {
-            return testingTemp.a;
+        testTemp.bindArr = [1, 2, 3];
+        testTemp.bindCtr1 = base.Function.bind.call(function () {
+            return testTemp.bindArr;
         }, null);
 
-        testingTemp.b = new testingTemp.c();
-        if (testingTemp.a !== testingTemp.b) {
+        testTemp.bindArrObj = new testTemp.bindCtr1();
+        if (testTemp.bindArr !== testTemp.bindArrObj) {
             throw new Error();
         }
 
-        testingTemp.a = function (x) {
+        testTemp.bindFn = function (x) {
             this.name = x || 'A';
         };
 
-        testingTemp.c = base.Function.bind.call(testingTemp.a, null, 'B');
-        testingTemp.b = new testingTemp.c();
-        if (!(testingTemp.b instanceof testingTemp.a) || !(testingTemp.b instanceof testingTemp.c)) {
+        testTemp.bindCtr2 = base.Function.bind.call(testTemp.bindFunc1, null, 'B');
+        testTemp.bindObj = new testTemp.bindCtr2();
+        if (!(testTemp.bindObj instanceof testTemp.bindFn) || !(testTemp.bindObj instanceof testTemp.bindCtr2)) {
             throw new Error();
         }
 
@@ -3700,13 +3700,13 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
-    testingTemp.a = [];
-    testingTemp.b = {};
+    testTemp.pushArr = [];
+    testTemp.pushObj = {};
     if (!testShims &amp;&amp;
-            push(testingTemp.a, 0) === 1 &amp;&amp;
-            testingTemp.a[0] === 0 &amp;&amp;
-            push(testingTemp.b, 0) === 1 &amp;&amp;
-            testingTemp.b[0] === 0) {
+            push(testTemp.pushArr, 0) === 1 &amp;&amp;
+            testTemp.pushArr[0] === 0 &amp;&amp;
+            push(testTemp.pushObj, 0) === 1 &amp;&amp;
+            testTemp.pushObj[0] === 0) {
 
         $.Array.push = toMethod(base.Array.push);
     } else {
@@ -3744,8 +3744,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
-    testingTemp.a = [];
-    if (!testShims &amp;&amp; unshift(testingTemp.a, 0) === 1 &amp;&amp; testingTemp.a[0] === 0) {
+    testTemp.unshiftArr = [];
+    if (!testShims &amp;&amp; unshift(testTemp.unshiftArr, 0) === 1 &amp;&amp; testTemp.unshiftArr[0] === 0) {
         $.Array.unshift = toMethod(base.Array.unshift);
     } else {
         $.Array.prototype.unshift = function () {
@@ -3832,8 +3832,8 @@
     }
 
     // Check for correct `exec` handling of nonparticipating capturing groups
-    testingTemp.a = typeof exec(new RegExp('()??'), '')[1];
-    correctExecNpcg = testingTemp.a === 'undefined';
+    testTemp.npcgType = typeof exec(new RegExp('()??'), '')[1];
+    correctExecNpcg = testTemp.npcgType === 'undefined';
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -4614,12 +4614,12 @@
         return !hasDontEnumBug;
     });
 
-    testingTemp.a = function () {
+    testTemp.fpbFunc = function () {
         return;
     };
 
-    testingTemp.a.prototype.constructor = testingTemp.a;
-    enumer(testingTemp.a, false, function (unused, prop) {
+    testTemp.fpbFunc.prototype.constructor = testTemp.fpbFunc;
+    enumer(testTemp.fpbFunc, false, function (unused, prop) {
         /*jslint unparam: true */
         /*jshint unused: false */
         hasFuncProtoBug = prop === 'prototype';
@@ -5067,13 +5067,13 @@
         forEach('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.felist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.forEach) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a) &amp;&amp;
+                isTypeObject(testTemp.felist) &amp;&amp;
+                $.String.isStringAny(testTemp.felist) &amp;&amp;
                 !checkV8StrictBug(base.Array.forEach)) {
 
             $.Array.forEach = toMethod(base.Array.forEach);
@@ -5149,13 +5149,13 @@
         some('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.slist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.some) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a) &amp;&amp;
+                isTypeObject(testTemp.slist) &amp;&amp;
+                $.String.isStringAny(testTemp.slist) &amp;&amp;
                 !checkV8StrictBug(base.Array.some)) {
 
             $.Array.some = toMethod(base.Array.some);
@@ -5374,13 +5374,13 @@
         every('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.elist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.every) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a) &amp;&amp;
+                isTypeObject(testTemp.elist) &amp;&amp;
+                $.String.isStringAny(testTemp.elist) &amp;&amp;
                 !checkV8StrictBug(base.Array.every)) {
 
             $.Array.every = toMethod(base.Array.every);
@@ -5433,13 +5433,13 @@
         map('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.mlist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.map) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a) &amp;&amp;
+                isTypeObject(testTemp.mlist) &amp;&amp;
+                $.String.isStringAny(testTemp.mlist) &amp;&amp;
                 !checkV8StrictBug(base.Array.map)) {
 
             $.Array.map = toMethod(base.Array.map);
@@ -5584,13 +5584,13 @@
         filter('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.flist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.filter) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a) &amp;&amp;
+                isTypeObject(testTemp.flist) &amp;&amp;
+                $.String.isStringAny(testTemp.flist) &amp;&amp;
                 !checkV8StrictBug(base.Array.filter)) {
 
             $.Array.filter = toMethod(base.Array.filter);
@@ -5632,13 +5632,13 @@
         reduce('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.rlist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.reduce) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a)) {
+                isTypeObject(testTemp.rlist) &amp;&amp;
+                $.String.isStringAny(testTemp.rlist)) {
 
             $.Array.reduce = toMethod(base.Array.reduce);
         } else {
@@ -5709,13 +5709,13 @@
         reduceRight('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            testingTemp.a = list;
+            testTemp.rrlist = list;
         });
 
         if (!testShims &amp;&amp;
                 isNative(base.Array.reduceRight) &amp;&amp;
-                isTypeObject(testingTemp.a) &amp;&amp;
-                $.String.isStringAny(testingTemp.a)) {
+                isTypeObject(testTemp.rrlist) &amp;&amp;
+                $.String.isStringAny(testTemp.rrlist)) {
 
             $.Array.reduceRight = toMethod(base.Array.reduceRight);
         } else {
@@ -6692,21 +6692,14 @@
             throw new Error();
         }
 
-        testingTemp.a = base.Object.defineProperty({}, 'sentinel', {
-            value: null
-        });
-
-        if (testingTemp.a.sentinel !== null) {
+        if (base.Object.defineProperty({}, 'sentinel', { value: null }) !== null) {
             throw new Error('Fails sentinel check');
         }
 
         // Test string integer
         try {
-            testingTemp.b = base.Object.defineProperty([], '1.', {
-                value: null
-            });
+            if (base.Object.defineProperty([], '1.', { value: null })[1] !== null) {
 
-            if (testingTemp.b[1] !== null) {
                 throw new Error('Fails integer check');
             }
         } catch (eDP1) {
@@ -6715,11 +6708,7 @@
 
         // Test assign to array
         try {
-            testingTemp.c = base.Object.defineProperty([], '0', {
-                value: null
-            });
-
-            if (testingTemp.c[0] !== null) {
+            if (base.Object.defineProperty([], '0', { value: null }) !== null) {
                 throw new Error('Fails array check');
             }
         } catch (eDP2) {
@@ -6728,8 +6717,7 @@
 
         // Test overwrite array property when no value defined
         try {
-            testingTemp.d = base.Object.defineProperty([10], '0', {});
-            if (testingTemp.d[0] !== 10) {
+            if (base.Object.defineProperty([10], '0', {})[0] !== 10) {
                 throw new Error('Fails overwrite check');
             }
         } catch (eDP3) {
@@ -6761,35 +6749,34 @@
             $.Object.defineProperty = base.Object.defineProperty;
         }
 
-        testingTemp.d = {
+        testTemp.dpObject = {
             abc: 0,
             def: '',
             ghi: true,
             jkl: $.Function.noop
         };
 
-        $.Array.forEach($.Object.keys(testingTemp.a), function (key) {
-            this(testingTemp.d, key, base.properties.notEnumerable);
+        $.Array.forEach($.Object.keys(testTemp.dpObject), function (key) {
+            this(testTemp.dpObject, key, base.properties.notEnumerable);
         }, $.Object.defineProperty);
 
-        if (testingTemp.d.abc !== 0 ||
-                testingTemp.d.def !==  '' ||
-                testingTemp.d.ghi !== true ||
-                testingTemp.d.jkl !== $.Function.noop) {
+        if (testTemp.dpObject.abc !== 0 ||
+                testTemp.dpObject.def !==  '' ||
+                testTemp.dpObject.ghi !== true ||
+                testTemp.dpObject.jkl !== $.Function.noop) {
 
             throw new Error();
         }
 
-        testingTemp.e = [10, true, '', $.Function.noop];
-
-        $.Array.forEach($.Object.keys(testingTemp.e), function (key) {
-            this(testingTemp.e, key, base.properties.notEnumerable);
+        testTemp.dpArray = [10, true, '', $.Function.noop];
+        $.Array.forEach($.Object.keys(testTemp.dpArray), function (key) {
+            this(testTemp.dpArray, key, base.properties.notEnumerable);
         }, $.Object.defineProperty);
 
-        if (testingTemp.e[0] !== 10 ||
-                testingTemp.e[1] !== true ||
-                testingTemp.e[2] !== '' ||
-                testingTemp.e[3] !== $.Function.noop) {
+        if (testTemp.dpArray[0] !== 10 ||
+                testTemp.dpArray[1] !== true ||
+                testTemp.dpArray[2] !== '' ||
+                testTemp.dpArray[3] !== $.Function.noop) {
 
             throw new Error();
         }
@@ -6911,11 +6898,11 @@
 
     // detect a Rhino bug and patch it
     try {
-        testingTemp.a = {
+        testTemp.rhinoTest = {
             noop: $.Function.noop
         };
 
-        $.Object.freeze(testingTemp.a.noop);
+        $.Object.freeze(testTemp.rhinoTest.noop);
     } catch (eFreeze) {
         freezeObject = $.Object.freeze;
         $.Object.freeze = function (object) {
@@ -7082,7 +7069,7 @@
             throw new Error();
         }
 
-        testingTemp.a = base.Object.create(ObjectCreateFunc.prototype, {
+        testTemp.created = base.Object.create(ObjectCreateFunc.prototype, {
             constructor: $.Object.assign({
                 value: ObjectCreateFunc
             }, base.properties.notEnumerable),
@@ -7092,7 +7079,7 @@
             }, base.properties.notEnumerable)
         });
 
-        if (testingTemp.a.foo !== 'test') {
+        if (testTemp.created.foo !== 'test') {
             throw new Error();
         }
 
@@ -7692,21 +7679,21 @@
      */
     /*jslint maxlen: 120 */
     try {
-        testingTemp.a = {
+        testTemp.gOPDsentinel = {
             sentinel: null
         };
 
-        testingTemp.b = [10, 20, 30];
-        testingTemp.b[4] = Undefined;
+        testTemp.gOPDarray = [10, 20, 30];
+        testTemp.gOPDarray[4] = Undefined;
         if (testShims ||
                 !isNative(base.Object.getOwnPropertyDescriptor) ||
-                base.Object.getOwnPropertyDescriptor(testingTemp.a, 'sentinel').value !== null ||
-                base.Object.getOwnPropertyDescriptor(testingTemp.b, 3).value !== 30 ||
-                base.Object.getOwnPropertyDescriptor(testingTemp.b, '3').value !== 30 ||
-                !hasOwn(base.Object.getOwnPropertyDescriptor(testingTemp.b, 4), 'value') ||
-                base.Object.getOwnPropertyDescriptor(testingTemp.b, 4).value !== Undefined ||
-                base.Object.getOwnPropertyDescriptor(testingTemp.b, 5) !== Undefined ||
-                hasOwn(base.Object.getOwnPropertyDescriptor(testingTemp.b, 5), 'value')) {
+                base.Object.getOwnPropertyDescriptor(testTemp.gOPDsentinel, 'sentinel').value !== null ||
+                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 3).value !== 30 ||
+                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, '3').value !== 30 ||
+                !hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
+                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4).value !== Undefined ||
+                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5) !== Undefined ||
+                hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
 
             throw new Error();
         }
@@ -7897,16 +7884,14 @@
      */
     if (!testShims &amp;&amp; isNative(base.JSON.stringify)) {
         // A test function object with a custom `toJSON` method.
-        (function () {
-            testingTemp.a = function () {
-                return 1;
-            };
-        }());
+        testTemp.customJSON = function () {
+            return 1;
+        };
 
-        testingTemp.a.toJSON = testingTemp.a;
+        testTemp.customJSON.toJSON = testTemp.customJSON;
 
         try {
-            testingTemp.b =
+            testTemp.stringifySupport =
                 // Firefox 3.1b1 and b2 serialize string, number, and boolean
                 // primitives as object literals.
                 base.JSON.stringify(0) === '0' &amp;&amp;
@@ -7914,7 +7899,7 @@
                 // literals.
                 base.JSON.stringify(new base.Number.Ctr()) === '0' &amp;&amp;
                 base.JSON.stringify(new base.String.Ctr()) === '""' &amp;&amp;
-                // FF 3.1b1, 2 throw an error if the testingTemp.a is `null`, `undefined`, or
+                // FF 3.1b1, 2 throw an error if the testTemp.customJSON is `null`, `undefined`, or
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
@@ -7923,15 +7908,15 @@
                 // 3.1b3 pass this test.
                 $.Object.isUndefined(base.JSON.stringify(Undefined)) &amp;&amp;
                 // Safari &lt;= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
-                // respectively, if the testingTemp.a is omitted entirely.
+                // respectively, if the testTemp.customJSON is omitted entirely.
                 $.Object.isUndefined(base.JSON.stringify()) &amp;&amp;
-                // FF 3.1b1, 2 throw an error if the given testingTemp.a is not a number,
+                // FF 3.1b1, 2 throw an error if the given testTemp.a is not a number,
                 // string, array, object, Boolean, or `null` literal. This applies to
                 // objects with custom `toJSON` methods as well, unless they are nested
                 // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
                 // methods entirely.
-                base.JSON.stringify(testingTemp.a) === '1' &amp;&amp;
-                base.JSON.stringify([testingTemp.a]) === '[1]' &amp;&amp;
+                base.JSON.stringify(testTemp.customJSON) === '1' &amp;&amp;
+                base.JSON.stringify([testTemp.customJSON]) === '[1]' &amp;&amp;
                 // Prototype &lt;= 1.6.1 serializes `[undefined]` as `"[]"` instead of
                 // `"[null]"`.
                 base.JSON.stringify([Undefined]) === '[null]' &amp;&amp;
@@ -7948,10 +7933,10 @@
                 // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
                 // Error: Uncaught SyntaxError: Octal literals are not allowed in strict mode.
                 base.JSON.stringify({
-                    'A': [testingTemp.a, true, false, null, '\b\n\f\r\t']
+                    'A': [testTemp.customJSON, true, false, null, '\b\n\f\r\t']
                 }) === '{"A":[1,true,false,null,"\\b\\n\\f\\r\\t"]}' &amp;&amp;
                 // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
-                //base.JSON.stringify(null, testingTemp.a) === '"1"' &amp;&amp;
+                //base.JSON.stringify(null, testTemp.customJSON) === '"1"' &amp;&amp;
                 base.JSON.stringify([1, 2], null, 1) === '[\n 1,\n 2\n]' &amp;&amp;
                 // JSON 2, Prototype &lt;= 1.7, and older WebKit builds incorrectly
                 // serialize extended years.
@@ -7965,11 +7950,10 @@
                 // values less than 1000. Credits: @Yaffle.
                 base.JSON.stringify(new base.Date.Ctr(-1)) === '"1969-12-31T23:59:59.999Z"';
         } catch (eStringify) {
-            testingTemp.b = false;
+            testTemp.stringifySupport = null;
         }
     }
-
-    if (testingTemp.b) {
+    if (testTemp.stringifySupport) {
         $.JSON.stringify = base.JSON.stringify;
     } else {
         $.JSON.stringify = (function (
@@ -7984,7 +7968,9 @@
             push,
             repeat,
             keys,
-            isArray
+            isArray,
+            strSlice,
+            Error
         ) {
 
             var stringifyEscapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
@@ -8149,7 +8135,7 @@
 
                 type = typeof replacer;
                 if (type !== 'undefined' &amp;&amp; replacer !== null &amp;&amp; !isFunction(replacer) &amp;&amp; !isArray(replacer)) {
-                    throw new base.Error.Ctr('JSON.stringify');
+                    throw new Error('JSON.stringify');
                 }
 
                 return stringifyToString('', {
@@ -8168,7 +8154,9 @@
             $.Array.push,
             $.String.repeat,
             $.Object.keys,
-            isArray
+            isArray,
+            strSlice,
+            base.Error.Ctr
         ));
     }
 
@@ -8191,37 +8179,37 @@
             // a string prior to parsing.
             if (base.JSON.parse('0') === 0 &amp;&amp; base.JSON.parse(false) === false) {
                 // Simple parsing test.
-                testingTemp.a = base.JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
-                testingTemp.b = (testingTemp.a.A.length === 5 &amp;&amp; testingTemp.a.A[0] === 1);
-                if (testingTemp.b) {
+                testTemp.parseSimple = base.JSON.parse('{\"A\":[1,true,false,null,\"\\u0000\\b\\n\\f\\r\\t\"]}');
+                testTemp.parseSupport = testTemp.parseSimple.A.length === 5 &amp;&amp; testTemp.parseSimple.A[0] === 1;
+                if (testTemp.parseSupport) {
                     try {
                         // Safari &lt;= 5.1.2 and FF 3.1b1 allow unescaped tabs in base.str.
-                        testingTemp.b = typeof base.JSON.parse('"\t"') === 'string';
+                        testTemp.parseSupport = typeof base.JSON.parse('"\t"') === 'string';
                     } catch (ignore) {}
 
-                    if (testingTemp.b) {
+                    if (testTemp.parseSupport) {
                         try {
                             // FF 4.0 and 4.0.1 allow leading `+` signs, and leading and
                             // trailing decimal points. FF 4.0, 4.0.1, and IE 9-10 also
                             // allow certain octal literals.
-                            testingTemp.b = base.JSON.parse('01') !== 1;
+                            testTemp.parseSupport = base.JSON.parse('01') !== 1;
                         } catch (ignore) {}
                     }
                 }
             }
         } catch (eParse) {
-            testingTemp.b = false;
+            testTemp.parseSupport = null;
         }
     }
 
-    if (testingTemp.b) {
+    if (testTemp.parseSupport) {
         try {
             base.JSON.parse();
         } catch (eParse) {
-            testingTemp.c = $.Object.instanceOf(eParse, base.SyntaxError.Ctr);
+            testTemp.parseSupport = $.Object.instanceOf(eParse, base.SyntaxError.Ctr);
         }
 
-        if (testingTemp.c) {
+        if (testTemp.parseSupport) {
             $.JSON.parse = base.JSON.parse;
         } else {
             $.JSON.parse = function (text, reviver) {
@@ -8550,14 +8538,14 @@
         }, base.properties.notEnumerable));
     }
 
-    enumer(testingTemp, true, function (unused, prop) {
+    enumer(testTemp, true, function (unused, prop) {
         /*jslint unparam: true */
         /*jshint unused : false */
-        testingTemp[prop] = null;
-        delete testingTemp[prop];
+        testTemp[prop] = null;
+        delete testTemp[prop];
     });
 
-    testingTemp = null;
+    testTemp = null;
 
     /**
      * The window object represents a window containing a DOM document;
@@ -8587,7 +8575,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat Jun 07 2014 05:26:03 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sat Jun 07 2014 16:18:14 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
