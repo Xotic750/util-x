@@ -15,11 +15,12 @@
             }, {
                 a: [2, 3],
                 b: [4]
-            })).to.be.ok();
+            })).to.be(true);
 
-            expect([
+            expect(utilx.Object.deepEqual([
                 undefined,
-                null, -1,
+                null,
+                -1,
                 0,
                 1,
                 false,
@@ -31,7 +32,8 @@
                 undefined
             ], [
                 undefined,
-                null, -1,
+                null,
+                -1,
                 0,
                 1,
                 false,
@@ -41,7 +43,10 @@
                 'abc',
                 null,
                 undefined
-            ]).to.be.ok();
+            ])).to.be(true);
+
+            expect(utilx.Object.deepEqual(NaN, NaN)).to.be(true);
+            expect(utilx.Object.deepEqual([], {})).to.be(true);
         });
 
         it('not equal', function () {
@@ -51,11 +56,11 @@
             }, {
                 x: 5,
                 y: 6
-            })).to.not.be.ok();
+            })).to.be(false);
         });
 
         it('nested nulls', function () {
-            expect(utilx.Object.deepEqual([null, null, null], [null, null, null])).to.be.ok();
+            expect(utilx.Object.deepEqual([null, null, null], [null, null, null])).to.be(true);
         });
 
         it('strict equal', function () {
@@ -69,9 +74,9 @@
                 b: '4'
             }], {
                 strict: true
-            })).to.not.be.ok();
+            })).to.be(false);
 
-            expect(utilx.Object.deepStrictEqual([{
+            expect(utilx.Object.deepEqual([{
                 a: 3
             }, {
                 b: 4
@@ -79,63 +84,58 @@
                 a: '3'
             }, {
                 b: '4'
-            }])).to.not.be.ok();
+            }])).to.be(true);
         });
 
         it('non-objects', function () {
-            expect(utilx.Object.deepEqual(3, 3)).to.be.ok();
-            expect(utilx.Object.deepEqual('beep', 'beep')).to.be.ok();
-            expect(utilx.Object.deepEqual('3', 3)).to.be.ok();
+            expect(utilx.Object.deepEqual(3, 3)).to.be(true);
+            expect(utilx.Object.deepEqual('beep', 'beep')).to.be(true);
+            expect(utilx.Object.deepEqual('3', 3)).to.be(true);
 
             expect(utilx.Object.deepEqual('3', 3, {
                 strict: true
-            })).to.not.be.ok();
+            })).to.be(false);
 
-            expect(utilx.Object.deepEqual('3', [3])).to.not.be.ok();
+            expect(utilx.Object.deepEqual('3', [3])).to.be(false);
+            expect(utilx.Object.deepEqual(3, [3])).to.be(false);
         });
 
         it('arguments class', function () {
-            expect(utilx.Object.deepEqual(utilx.Function.returnArgs(1, 2, 3),
-                                          utilx.Function.returnArgs(1, 2, 3))).to.be.ok();
+            var x = utilx.Function.returnArgs(1, 2, 3),
+                y = utilx.Function.returnArgs(1, 2, 3);
 
-            expect(utilx.Object.deepEqual((function () {
-                return arguments;
-            }(1, 2, 3)), [1, 2, 3])).to.not.be.ok();
+            expect(utilx.Object.deepEqual(x, y)).to.be(true);
+            expect(utilx.Object.deepEqual(x, [1, 2, 3])).to.be(false);
         });
 
         it('test the arguments shim', function () {
-            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be.ok();
-
-            expect(utilx.Object.isArguments([1, 2, 3])).to.not.be.ok();
-
-            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be.ok();
-
-            expect(utilx.Object.isArguments([1, 2, 3])).to.not.be.ok();
+            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be(true);
+            expect(utilx.Object.isArguments([1, 2, 3])).to.be(false);
         });
 
         it('test the keys shim', function () {
             expect(utilx.Object.deepEqual(utilx.Object.keys({
                 a: 1,
                 b: 2
-            }), ['a', 'b'])).to.be.ok();
+            }), ['a', 'b'])).to.be(true);
         });
 
         it('dates', function () {
             var d0 = new Date(1391297899000),
                 d1 = new Date(Date.UTC(2014, 1, 1, 23, 38, 19));
 
-            expect(utilx.Object.deepEqual(d0, d1)).to.be.ok();
+            expect(utilx.Object.deepEqual(d0, d1)).to.be(true);
         });
 
         it('regexp', function () {
             var r0 = /test/gi,
                 r1 = new RegExp('test', 'gi');
 
-            expect(utilx.Object.deepEqual(r0, r1)).to.be.ok();
+            expect(utilx.Object.deepEqual(r0, r1)).to.be(true);
 
             r0 = /test/g;
             r1 = new RegExp('test', 'gi');
-            expect(utilx.Object.deepEqual(r0, r1)).to.not.be.ok();
+            expect(utilx.Object.deepEqual(r0, r1)).to.be(false);
         });
 
         it('arrays', function () {

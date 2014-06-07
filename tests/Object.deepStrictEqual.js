@@ -9,6 +9,12 @@
 
     describe('Object.deepStrictEqual', function () {
         it('strict equal', function () {
+            expect(utilx.Object.deepStrictEqual(NaN, NaN)).to.be(true);
+        });
+
+        it('strict not equal', function () {
+            expect(utilx.Object.deepStrictEqual('3', 3)).to.be(false);
+            expect(utilx.Object.deepStrictEqual([], {})).to.be(false);
             expect(utilx.Object.deepStrictEqual([{
                 a: 3
             }, {

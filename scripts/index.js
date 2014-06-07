@@ -123,11 +123,7 @@
         case 'boolean':
             return value.toString();
         case 'function':
-            if (utilx.Function.isNativeFunction(value)) {
-                return '[Native Function]';
-            }
-
-            return '[Function]';
+            return '[Function' + (value.name ? ': ' + value.name : '') + ']';
         case 'null':
             return 'null';
         case 'object':

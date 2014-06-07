@@ -117,10 +117,13 @@
         it('new Array(...*) should have correct elements', function () {
             testSubject1 = new A();
             expect(testSubject1).to.eql([]);
-            testSubject2 = new A(5);
-            expect(testSubject2).to.eql(create('[ , , , , , ]'));
-            testSubject3 = new A(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
-            expect(testSubject3).to.eql(create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9));
+            testSubject1 = new A(5);
+            testSubject2 = [];
+            testSubject2.length = 5;
+            expect(testSubject1).to.eql(testSubject2);
+            testSubject1 = new A(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            expect(testSubject2).to.eql(create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9));
         });
 
         it('[...*] should have correct elements', function () {
@@ -128,59 +131,61 @@
             testSubject2 = [];
             expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
 
-            testSubject1 = [ , , , , ];
-            testSubject2 = create('[ , , , , , ]');
+            testSubject1 = [ , , , , , ];
+            testSubject2 = [];
+            testSubject2.length = 5;
             expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
 
             testSubject1 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
-            testSubject2 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
+            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            delete testSubject2[8];
             expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
         });
 
         it('using delete on an element should not throw an error', function () {
             expect(function () {
-                delete testSubject3[1];
-                delete testSubject3[8];
+                delete testSubject2[1];
+                delete testSubject2[8];
             }).to.not.throwException();
         });
 
         it('elements should give correct values when index accessed', function () {
-            expect(testSubject3[0]).to.be(2);
-            expect(testSubject3[1]).to.be(undefined);
-            expect(testSubject3[2]).to.be(undefined);
-            expect(testSubject3[3]).to.be(true);
-            expect(testSubject3[4]).to.be('hej');
-            expect(testSubject3[5]).to.be(null);
-            expect(testSubject3[6]).to.be(false);
-            expect(testSubject3[7]).to.be(0);
-            expect(testSubject3[8]).to.be(undefined);
-            expect(testSubject3[9]).to.be(9);
+            expect(testSubject2[0]).to.be(2);
+            expect(testSubject2[1]).to.be(undefined);
+            expect(testSubject2[2]).to.be(undefined);
+            expect(testSubject2[3]).to.be(true);
+            expect(testSubject2[4]).to.be('hej');
+            expect(testSubject2[5]).to.be(null);
+            expect(testSubject2[6]).to.be(false);
+            expect(testSubject2[7]).to.be(0);
+            expect(testSubject2[8]).to.be(undefined);
+            expect(testSubject2[9]).to.be(9);
         });
 
         it('elements should show correctly with in', function () {
-            expect(0 in testSubject3).to.be.ok();
-            expect(1 in testSubject3).to.not.be.ok();
-            expect(2 in testSubject3).to.be.ok();
-            expect(3 in testSubject3).to.be.ok();
-            expect(4 in testSubject3).to.be.ok();
-            expect(5 in testSubject3).to.be.ok();
-            expect(6 in testSubject3).to.be.ok();
-            expect(7 in testSubject3).to.be.ok();
-            expect(8 in testSubject3).to.not.be.ok();
-            expect(9 in testSubject3).to.be.ok();
+            expect(0 in testSubject2).to.be.ok();
+            expect(1 in testSubject2).to.not.be.ok();
+            expect(2 in testSubject2).to.be.ok();
+            expect(3 in testSubject2).to.be.ok();
+            expect(4 in testSubject2).to.be.ok();
+            expect(5 in testSubject2).to.be.ok();
+            expect(6 in testSubject2).to.be.ok();
+            expect(7 in testSubject2).to.be.ok();
+            expect(8 in testSubject2).to.not.be.ok();
+            expect(9 in testSubject2).to.be.ok();
         });
 
         it('elements should show correctly with hasOwnProperty', function () {
-            expect(testSubject3.hasOwnProperty(0)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(1)).to.not.be.ok();
-            expect(testSubject3.hasOwnProperty(2)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(3)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(4)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(5)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(6)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(7)).to.be.ok();
-            expect(testSubject3.hasOwnProperty(8)).to.not.be.ok();
-            expect(testSubject3.hasOwnProperty(9)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(0)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(1)).to.not.be.ok();
+            expect(testSubject2.hasOwnProperty(2)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(3)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(4)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(5)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(6)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(7)).to.be.ok();
+            expect(testSubject2.hasOwnProperty(8)).to.not.be.ok();
+            expect(testSubject2.hasOwnProperty(9)).to.be.ok();
         });
 
         it('assigning undefined element should create the element', function () {
@@ -310,7 +315,8 @@
         });
 
         it('slice should work on array', function () {
-            testSubject1 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
+            testSubject1 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            delete testSubject1[8];
             testSubject2 = Array.prototype.slice.call(testSubject1);
             expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
         });
@@ -329,7 +335,8 @@
                 length: 10
             };
 
-            testSubject2 = create('[2, 3, undefined, true, "hej", null, false, 0, , 9]');
+            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            delete testSubject2[8];
             testSubject3 = Array.prototype.slice.call(testSubject1);
             expect(log.toEql(testSubject3, testSubject2)).to.eql(testSubject2);
         });
