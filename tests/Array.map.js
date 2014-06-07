@@ -138,33 +138,38 @@
         });
 
         it('should only run for the number of objects in the array when it started', function () {
-            var arr = create('[1, 2, 3, , 5]'),
+            var arr1 = [1, 2, 3, 4, 5],
+                arr2 = [1, 2, 3, 4, 5, 4, 5, 6, 8],
                 i = 0;
 
-            utilx.Array.map(arr, function (o) {
-                utilx.Array.push(arr, o + 3);
+            delete arr1[3];
+            delete arr2[3];
+            utilx.Array.map(arr1, function (o) {
+                utilx.Array.push(arr1, o + 3);
                 i += 1;
 
                 return o;
             });
 
-            expect(arr).to.eql(create('[1, 2, 3, , 5, 4, 5, 6, 8]'));
+            expect(arr1).to.eql(arr2);
             expect(i).to.be(4);
         });
 
         it('should properly translate the values as according to the callback', function () {
             var result = utilx.Array.map(testSubject, callback),
-                expected = create('[0, 0, 1, 2, 3, 4, 5, 6, , 7]');
+                expected = [0, 0, 1, 2, 3, 4, 5, 6, 'a', 7];
 
             delete expected[1];
+            delete expected[8];
             expect(result).to.eql(expected);
         });
 
         it('should skip non-existing values', function () {
-            var array = create('[1, 2, 3, 4, , 6]'),
+            var array = [1, 2, 3, 4, 5, 6],
                 i = 0;
 
             delete array[2];
+            delete array[5];
             utilx.Array.map(array, function () {
                 i += 1;
             });

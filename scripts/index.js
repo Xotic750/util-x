@@ -32,17 +32,15 @@
     }
 
     required.Array.create = function (varArgs) {
-        var result,
+        var length = arguments.length,
+            result = [],
             sliced,
-            length,
             idx,
             it;
 
-        if (!arguments.length) {
-            result = [];
+        if (!length) {
             result.length = 0;
-        } else if (arguments.length === 1) {
-            result = [];
+        } else if (length === 1) {
             if (Object.prototype.toString.call(varArgs) === '[object Number]') {
                 /*jslint bitwise: true */
                 result.length = varArgs >>> 0;
@@ -54,7 +52,7 @@
                 }
 
                 /*jslint regexp: true */
-                sliced = sliced.split(/,/g);
+                sliced = sliced.split(',');
                 length = sliced.length;
                 for (idx = 0; idx < length; idx += 1) {
                     it = sliced[idx].replace(/^\s+|\s+$/g, '');
@@ -72,7 +70,12 @@
                 result.length = 1;
             }
         } else {
-            result = Array.prototype.slice.call(arguments);
+            for (idx = 0; idx < length; idx += 1) {
+                result[idx] = arguments[idx];
+                if (idx + 1 > result.length) {
+                    result.length = idx + 1;
+                }
+            }
         }
 
         return result;
