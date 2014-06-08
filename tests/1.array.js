@@ -317,7 +317,7 @@
             testSubject1 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject1[8];
             testSubject2 = Array.prototype.slice.call(testSubject1);
-            expect(testSubject1).to.eql(testSubject2);
+            expect(testSubject2).to.eql(testSubject1);
         });
 
         it('slice should work on object with length', function () {
@@ -354,7 +354,10 @@
             };
 
             testSubject2 = [];
-            testSubject3 = Array.prototype.slice.call(testSubject1);
+            expect(function () {
+                testSubject3 = Array.prototype.slice.call(testSubject1);
+            }).to.not.throwException();
+
             expect(testSubject3).to.eql(testSubject2);
         });
 

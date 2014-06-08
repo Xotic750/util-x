@@ -1,4 +1,4 @@
-/*global module, require, process */
+/*global module, require, process, window */
 
 (function () {
     'use strict';
@@ -10,7 +10,8 @@
         },
         logit = false,
         assert = required.expect.Assertion.prototype.assert,
-        type;
+        type,
+        str;
 
     if ('1' === process.env.UTILX_WHICH) {
         required.utilx = require('../lib/util-x.min');
@@ -69,10 +70,26 @@
     };
 
     try {
+        type = typeof window;
+        if (type !== 'undefined' &&
+                window !== null &&
+                type !== 'boolean' &&
+                type !== 'string' &&
+                type !== 'number' &&
+                window.alert) {
+
+            Function.prototype.toString.call(window.alert);
+        }
+    } catch (eRunIENativeFunction) {
+        logit = true;
+    }
+
+    try {
         throw new Error('test if we see info');
     } catch (e) {
         type = typeof console;
-        logit = e.toString().indexOf('test if we see info') === -1 &&
+        str = e.toString();
+        logit = (logit || str.indexOf('test if we see info') === -1) &&
             type !== 'undefined' &&
             console !== null &&
             type !== 'boolean' &&
