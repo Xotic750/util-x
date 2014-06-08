@@ -119,7 +119,7 @@
         });
 
         it('should work with a sparse array', function () {
-            var obj = [1, 2, undefined],
+            var obj = create(1, 2, undefined),
                 seen = [],
                 found,
                 expected = [];
