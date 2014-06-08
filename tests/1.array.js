@@ -6,8 +6,7 @@
     var required = require('../scripts/'),
         expect = required.expect,
         utilx = required.utilx,
-        create = required.Array.create,
-        log = required.log;
+        create = required.Array.create;
 
     describe('Native array', function () {
         var A = Array,
@@ -53,7 +52,7 @@
                 }
             }).to.not.throwException();
 
-            expect(log.toBe(max.length, maxLength)).to.be(maxLength);
+            expect(max.length).to.be(maxLength);
 
             max = [];
             expect(function () {
@@ -65,16 +64,16 @@
                 }
             }).to.not.throwException();
 
-            expect(log.toBe(max.length, maxLength)).to.be(maxLength);
+            expect(max.length).to.be(maxLength);
 
             testValue = 10;
-            expect(log.toBe(testSubject1.length, testValue)).to.be(testValue);
+            expect(testSubject1.length).to.be(testValue);
 
             testValue = 0;
-            expect(log.toBe(testSubject2.length, testValue)).to.be(testValue);
+            expect(testSubject2.length).to.be(testValue);
 
             testValue = 2;
-            expect(log.toBe(testSubject3.length, testValue)).to.be(testValue);
+            expect(testSubject3.length).to.be(testValue);
 
         });
 
@@ -129,17 +128,17 @@
         it('[...*] should have correct elements', function () {
             testSubject1 = [];
             testSubject2 = [];
-            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+            expect(testSubject1).to.eql(testSubject2);
 
             testSubject1 = [ , , , , , ];
             testSubject2 = [];
             testSubject2.length = 5;
-            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+            expect(testSubject1).to.eql(testSubject2);
 
             testSubject1 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
             testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject2[8];
-            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+            expect(testSubject1).to.eql(testSubject2);
         });
 
         it('using delete on an element should not throw an error', function () {
@@ -254,7 +253,7 @@
             };
 
             Array.prototype.push.call(testSubject1, 2);
-            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+            expect(testSubject1).to.eql(testSubject2);
         });
 
         it('push should work with arguments', function () {
@@ -281,7 +280,7 @@
 
         it('unshift element should return the length', function () {
             testSubject1 = [];
-            expect(log.toBe(Array.prototype.unshift.call(testSubject1, 2), 1)).to.be(1);
+            expect(Array.prototype.unshift.call(testSubject1, 2)).to.be(1);
         });
 
         it('unshift should work with arguments', function () {
@@ -318,7 +317,7 @@
             testSubject1 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject1[8];
             testSubject2 = Array.prototype.slice.call(testSubject1);
-            expect(log.toEql(testSubject1, testSubject2)).to.eql(testSubject2);
+            expect(testSubject1).to.eql(testSubject2);
         });
 
         it('slice should work on object with length', function () {
@@ -338,7 +337,7 @@
             testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject2[8];
             testSubject3 = Array.prototype.slice.call(testSubject1);
-            expect(log.toEql(testSubject3, testSubject2)).to.eql(testSubject2);
+            expect(testSubject3).to.eql(testSubject2);
         });
 
         it('slice should work on object without length', function () {
@@ -356,7 +355,7 @@
 
             testSubject2 = [];
             testSubject3 = Array.prototype.slice.call(testSubject1);
-            expect(log.toEql(testSubject3, testSubject2)).to.eql(testSubject2);
+            expect(testSubject3).to.eql(testSubject2);
         });
 
         it('slice should work on arguments', function () {

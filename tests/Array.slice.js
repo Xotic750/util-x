@@ -6,8 +6,7 @@
     var required = require('../scripts/'),
         utilx = required.utilx,
         expect = required.expect,
-        create = required.Array.create,
-        log = required.log;
+        create = required.Array.create;
 
     describe('Array.slice', function () {
         var arr = create(undefined, null, 1, 'a', 2, 'b', null, undefined),
@@ -38,70 +37,70 @@
         });
 
         it('should not throw an error in each case', function () {
-            expect(log.toEql(utilx.Array.slice(arr), arr)).to.eql(arr);
-            expect(log.toEql(utilx.Array.slice(arr, undefined, undefined), arr)).to.eql(arr);
+            expect(utilx.Array.slice(arr)).to.eql(arr);
+            expect(utilx.Array.slice(arr, undefined, undefined)).to.eql(arr);
 
             testValue = create(undefined);
-            expect(log.toEql(utilx.Array.slice(arr, -1), testValue)).to.eql(testValue);
-            expect(log.toBe(utilx.Array.slice(arr, -1).length, 1)).to.be(1);
-            expect(log.toEql(utilx.Array.slice(arr, 0), arr)).to.eql(arr);
+            expect(utilx.Array.slice(arr, -1)).to.eql(testValue);
+            expect(utilx.Array.slice(arr, -1).length).to.be(1);
+            expect(utilx.Array.slice(arr, 0)).to.eql(arr);
 
             testValue = create('a', 2, 'b', null, undefined);
-            expect(log.toEql(utilx.Array.slice(arr, 3), testValue)).to.eql(testValue);
-            expect(log.toEql(utilx.Array.slice(arr, -1, 4), [])).to.eql([]);
-            expect(log.toBe(utilx.Array.slice(arr, -1, 4).length, 0)).to.be(0);
+            expect(utilx.Array.slice(arr, 3)).to.eql(testValue);
+            expect(utilx.Array.slice(arr, -1, 4)).to.eql([]);
+            expect(utilx.Array.slice(arr, -1, 4).length).to.be(0);
 
             testValue = create(undefined, null, 1, 'a');
-            expect(log.toEql(utilx.Array.slice(arr, 0, 4), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(arr, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];
-            expect(log.toEql(utilx.Array.slice(arr, 3, 6), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(arr, 3, 6)).to.eql(testValue);
         });
 
         it('should work with objects that have length', function () {
             var obj = utilx.Array.toObject(arr);
 
-            expect(log.toEql(utilx.Array.slice(obj), arr)).to.eql(arr);
-            expect(log.toEql(utilx.Array.slice(obj, undefined, undefined), arr)).to.eql(arr);
+            expect(utilx.Array.slice(obj)).to.eql(arr);
+            expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
 
             testValue = create(undefined);
-            expect(log.toEql(utilx.Array.slice(obj, -1), testValue)).to.eql(testValue);
-            expect(log.toBe(utilx.Array.slice(obj, -1).length, 1)).to.be(1);
-            expect(log.toEql(utilx.Array.slice(obj, 0), arr)).to.eql(arr);
+            expect(utilx.Array.slice(obj, -1)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, -1).length).to.be(1);
+            expect(utilx.Array.slice(obj, 0)).to.eql(arr);
 
             testValue = create('a', 2, 'b', null, undefined);
-            expect(log.toEql(utilx.Array.slice(obj, 3), testValue)).to.eql(testValue);
-            expect(log.toEql(utilx.Array.slice(obj, -1, 4), [])).to.eql([]);
-            expect(log.toBe(utilx.Array.slice(obj, -1, 4).length, 0)).to.be(0);
+            expect(utilx.Array.slice(obj, 3)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, -1, 4)).to.eql([]);
+            expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
 
             testValue = create(undefined, null, 1, 'a');
-            expect(log.toEql(utilx.Array.slice(obj, 0, 4), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];
-            expect(log.toEql(utilx.Array.slice(obj, 3, 6), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, 3, 6)).to.eql(testValue);
         });
 
         it('should work with arguments', function () {
             var obj = utilx.Function.returnArgs(undefined, null, 1, 'a', 2, 'b', null, undefined);
 
-            expect(log.toEql(utilx.Array.slice(obj), arr)).to.eql(arr);
-            expect(log.toEql(utilx.Array.slice(obj, undefined, undefined), arr)).to.eql(arr);
+            expect(utilx.Array.slice(obj)).to.eql(arr);
+            expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
 
             testValue = create(undefined);
-            expect(log.toEql(utilx.Array.slice(obj, -1), testValue)).to.eql(testValue);
-            expect(log.toBe(utilx.Array.slice(obj, -1).length, 1)).to.be(1);
-            expect(log.toEql(utilx.Array.slice(obj, 0), arr)).to.eql(arr);
+            expect(utilx.Array.slice(obj, -1)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, -1).length).to.be(1);
+            expect(utilx.Array.slice(obj, 0)).to.eql(arr);
 
             testValue = create('a', 2, 'b', null, undefined);
-            expect(log.toEql(utilx.Array.slice(obj, 3), testValue)).to.eql(testValue);
-            expect(log.toEql(utilx.Array.slice(obj, -1, 4), [])).to.eql([]);
-            expect(log.toBe(utilx.Array.slice(obj, -1, 4).length, 0)).to.be(0);
+            expect(utilx.Array.slice(obj, 3)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, -1, 4), []).to.eql([]);
+            expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
 
             testValue = create(undefined, null, 1, 'a');
-            expect(log.toEql(utilx.Array.slice(obj, 0, 4), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];
-            expect(log.toEql(utilx.Array.slice(obj, 3, 6), testValue)).to.eql(testValue);
+            expect(utilx.Array.slice(obj, 3, 6)).to.eql(testValue);
         });
     });
 }());

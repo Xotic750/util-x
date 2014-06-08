@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        log = required.log;
+        expect = required.expect;
 
     describe('Object.keys', function () {
         /*jshint -W001 */
@@ -136,8 +135,8 @@
             var argKeys = utilx.Array.sort(utilx.Object.keys(utilx.Function.returnArgs(1, 2))),
                 testValue = ['0', '1'];
 
-            expect(log.toBe(argKeys.length, 2)).to.be(2);
-            expect(log.toEql(argKeys, testValue)).to.eql(testValue);
+            expect(argKeys.length).to.be(2);
+            expect(argKeys).to.eql(testValue);
         });
 
         it('should not list prototype or constructor', function () {

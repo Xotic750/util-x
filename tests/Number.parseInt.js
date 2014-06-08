@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        log = required.log;
+        expect = required.expect;
 
     describe('Number.parseInt', function () {
         var ws = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
@@ -17,17 +16,17 @@
             var i;
 
             for (i = 2; i <= 36; i += 1) {
-                expect(log.toBeRef(i, utilx.Number.parseInt('10', i), i)).to.be(i);
+                expect(utilx.Number.parseInt('10', i)).to.be(i);
                 if (i === 16) {
-                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 22)).to.be(22);
+                    expect(utilx.Number.parseInt('0x16', i)).to.be(22);
                 } else if (i === 34) {
-                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 38188)).to.be(38188);
+                    expect(utilx.Number.parseInt('0x16', i)).to.be(38188);
                 } else if (i === 35) {
-                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 40466)).to.be(40466);
+                    expect(utilx.Number.parseInt('0x16', i)).to.be(40466);
                 } else if (i === 36) {
-                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 42810)).to.be(42810);
+                    expect(utilx.Number.parseInt('0x16', i)).to.be(42810);
                 } else {
-                    expect(log.toBeRef(i, utilx.Number.parseInt('0x16', i), 0)).to.be(0);
+                    expect(utilx.Number.parseInt('0x16', i)).to.be(0);
                 }
             }
         });
