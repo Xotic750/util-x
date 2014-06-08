@@ -2557,7 +2557,7 @@
         var typeA = typeof a,
             typeB = typeof b;
 
-        return typeA === typeB &amp;&amp; !iter(arguments, false, 2, arguments.length, false, function (arg) {
+        return typeA === typeB &amp;&amp; !iter(arguments, true, 2, arguments.length, false, function (arg) {
             var type = typeof arg;
 
             this.same = typeA !== type;
@@ -2578,7 +2578,7 @@
     $.Object.areSameClass = function (a, b) {
         var classA = toClassStr(a);
 
-        return classA === toClassStr(b) &amp;&amp; !iter(arguments, false, 2, arguments.length, false, function (arg) {
+        return classA === toClassStr(b) &amp;&amp; !iter(arguments, true, 2, arguments.length, false, function (arg) {
             this.same = classA !== toClassStr(arg);
 
             return this.same;
@@ -2944,6 +2944,36 @@
     }
 
     /**
+     * Returns true if argument is an object that has own property of length which is a number of uint32
+     * but is not a {@link Function function}.
+     * @private
+     * @function hasValidLength
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
+     */
+    function hasValidLength(inputArg) {
+        var valid = false,
+            type = typeof inputArg,
+            length;
+
+        if (inputArg !== null &amp;&amp;
+                type !== 'boolean' &amp;&amp;
+                type !== 'undefined' &amp;&amp;
+                type !== 'string' &amp;&amp;
+                type !== 'number' &amp;&amp;
+                hasOwn(inputArg, 'length')) {
+
+            length = inputArg.length;
+            if (isInteger(length) &amp;&amp; length >= 0) {
+                valid = true;
+            }
+        }
+
+        return valid;
+    }
+
+    /**
      * The function takes one argument protoFn, and returns the bound function as a stand alone method.
      * @memberof utilx.Function
      * @name ToMethod
@@ -2960,7 +2990,20 @@
         }
 
         return function (thisArg) {
-            return protoFn.apply(checkThisArgFn(thisArg), slice(arguments, 1));
+            var args = iter(arguments, true, 1, arguments.length, false, function (it) {
+                    var length = toLength(this.length);
+
+                    if (hasValidLength(this)) {
+                        base.Array.push.call(this, it);
+                        length = this.length;
+                    } else {
+                        this[length] = it;
+                        length += 1;
+                        this.length = length;
+                    }
+                }, []);
+
+            return protoFn.apply(checkThisArgFn(thisArg), args);
         };
     };
 
@@ -3072,10 +3115,14 @@
             /*jslint unparam:true */
             /*jshint unused:false */
             var fn = throwIfNotAFunction(this),
-                args = slice(arguments, 1),
+                args = iter(arguments, true, 1, arguments.length, false, function (it) {
+                    $.Array.push(this, it);
+                }, []),
                 bound = base.Function.Ctr('binder', 'return function(' + bindArgs(fn.length - args.length) +
                     '){return binder.apply(this,arguments);}')(function () {
-                    var binderArgs = concat(args, slice(arguments)),
+                    var binderArgs = concat(args, iter(arguments, true, 0, arguments.length, false, function (it) {
+                            $.Array.push(this, it);
+                        }, [])),
                         result;
 
                     if (this instanceof bound) {
@@ -3654,36 +3701,6 @@
     };
 
     /**
-     * Returns true if argument is an object that has own property of length which is a number of uint32
-     * but is not a {@link Function function}.
-     * @private
-     * @function hasValidLength
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function hasValidLength(inputArg) {
-        var valid = false,
-            type = typeof inputArg,
-            length;
-
-        if (inputArg !== null &amp;&amp;
-                type !== 'boolean' &amp;&amp;
-                type !== 'undefined' &amp;&amp;
-                type !== 'string' &amp;&amp;
-                type !== 'number' &amp;&amp;
-                hasOwn(inputArg, 'length')) {
-
-            length = inputArg.length;
-            if (isInteger(length) &amp;&amp; length >= 0) {
-                valid = true;
-            }
-        }
-
-        return valid;
-    }
-
-    /**
      * Throws TypeError if argument has not got a valid length otherwise return the object.
      * @private
      * @function throwIfIsNotHasValidLength
@@ -3729,7 +3746,7 @@
 
                 length = object.length;
             } else {
-                iter(arguments, false, 0, arguments.length, false, function (it) {
+                iter(arguments, true, 0, arguments.length, false, function (it) {
                     object[length] = it;
                     length += 1;
                 });
@@ -3873,7 +3890,7 @@
                 // matching due to characters outside the match
                 replace(strSlice(toString(str), match.index), r2, function () {
                     // Skip index 0 and the last 2
-                    iter(arguments, false, 1, arguments.length - 2, false, function (it, idx) {
+                    iter(arguments, true, 1, arguments.length - 2, false, function (it, idx) {
                         var type = typeof it;
 
                         if (type === 'undefined') {
@@ -4138,7 +4155,9 @@
             // Stringifying `this` fixes a bug in IE &lt; 9 where the last argument in replacement
             // functions isn't type-converted to a string
             result = replace(str, search, function () {
-                var args = slice(arguments);
+                var args = iter(arguments, true, 0, arguments.length, false, function (it) {
+                        $.Array.push(this, it);
+                    }, []);
 
                 // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                 // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
@@ -4155,11 +4174,15 @@
             // while still throwing on `null` or `undefined` context
             result = replace(str, search, function () {
                 // Keep this function's `arguments` available through closure
-                var args = slice(arguments),
+                var args = iter(arguments, true, 0, arguments.length, false, function (it) {
+                        $.Array.push(this, it);
+                    }, []),
                     length = args.length;
 
                 return replace(toString(replacement), base.RegExp.replacementToken, function () {
-                    var argTokens = slice(arguments),
+                    var argTokens = iter(arguments, true, 0, arguments.length, false, function (it) {
+                            $.Array.push(this, it);
+                        }, []),
                         $0 = argTokens[0],
                         $2 = argTokens[2];
 
@@ -4947,7 +4970,9 @@
                 actualDeleteCount,
                 k = 0,
                 from,
-                args = slice(arguments),
+                args = iter(arguments, true, 0, arguments.length, false, function (it) {
+                    $.Array.push(this, it);
+                }, []),
                 argLength = args.length,
                 item = 2,
                 itemCount = mMax(argLength - item, 0),
@@ -5297,7 +5322,9 @@
         $.Array.of = base.Array.of;
     } else {
         $.Array.of = function () {
-            return slice(arguments);
+            return iter(arguments, true, 0, arguments.length, false, function (it) {
+                $.Array.push(this, it);
+            }, []);
         };
     }
 
@@ -5560,7 +5587,9 @@
         }
 
         $.Array.prototype.slice = function () {
-            var args = slice(arguments),
+            var args = iter(arguments, true, 0, arguments.length, false, function (it) {
+                    $.Array.push(this, it);
+                }, []),
                 section;
 
             try {
@@ -6576,13 +6605,14 @@
                 ctor,
                 isProto,
                 nonEnum,
-                arr,
-                length;
+                arr;
 
             if (!base.Array.canEnumerArgs &amp;&amp; isArguments(object)) {
-                arr = slice(object);
-                length = arr.length;
-                iter(arr, true, length, false, function (unused, idx, obj) {
+                arr = iter(object, false, 0, object.length, false, function (it, idx) {
+                    $.Array.assign(this, idx, it);
+                }, []);
+
+                iter(arr, true, arr.length, false, function (unused, idx) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
                     $.Array.push(this, idx);
@@ -7044,9 +7074,12 @@
         $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
-            var object = toObject(target);
+            var object = toObject(target),
+                args = iter(arguments, true, 1, arguments.length, false, function (it) {
+                    $.Array.push(this, it);
+                }, []);
 
-            $.Array.forEach(slice(arguments, 1), function (source) {
+            $.Array.forEach(args, function (source) {
                 this.forEach($.Object.keys(toObjectFixIndexedAccess(source)), function (key) {
                     this.assign(object, key, source[key]);
                 }, this);
@@ -7488,7 +7521,9 @@
      * @returns {string}
      */
     $.customErrorReplacer = function () {
-        var value = slice(arguments, 1, 2),
+        var value = iter(arguments, true, 1, 2, false, function (it) {
+                $.Array.push(this, it);
+            }, []),
             type = typeof value,
             result;
 
@@ -8652,7 +8687,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sun Jun 08 2014 02:40:15 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Sun Jun 08 2014 04:39:40 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

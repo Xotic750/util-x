@@ -119,14 +119,17 @@
         });
 
         it('should work with a sparse array', function () {
-            var obj = create('[1, , undefined]'),
+            var obj = [1, 2, undefined],
                 seen = [],
-                found = utilx.Array.find(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, [idx, item]);
-
-                    return false;
-                }),
+                found,
                 expected = [];
+
+            delete obj[1];
+            found = utilx.Array.find(obj, function (item, idx) {
+                utilx.Array.assign(seen, idx, create(idx, item));
+
+                return false;
+            });
 
             utilx.Array.assign(expected, 0, [0, 1]);
             utilx.Array.assign(expected, 2, create(2, undefined));
@@ -142,7 +145,7 @@
                 },
                 seen = [],
                 found = utilx.Array.find(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, [idx, item]);
+                    utilx.Array.assign(seen, idx, create(idx, item));
 
                     return false;
                 }),

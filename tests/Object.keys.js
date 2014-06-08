@@ -132,9 +132,15 @@
         });
 
         it('should work with arguments object', function () {
-            var argKeys = utilx.Array.sort(utilx.Object.keys(utilx.Function.returnArgs(1, 2))),
-                testValue = ['0', '1'];
+            var testValue = ['0', '1'],
+                theKeys,
+                argKeys;
 
+            expect(function () {
+                theKeys = utilx.Object.keys(utilx.Function.returnArgs(1, 2));
+            }).to.not.throwException();
+
+            argKeys = utilx.Array.sort(theKeys);
             expect(argKeys.length).to.be(2);
             expect(argKeys).to.eql(testValue);
         });

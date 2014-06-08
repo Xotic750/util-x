@@ -80,7 +80,7 @@
 
             Function.prototype.toString.call(window.alert);
         }
-    } catch (eRunIENativeFunction) {
+    } catch (e) {
         logit = true;
     }
 
