@@ -133,16 +133,15 @@
 
         it('should work with arguments object', function () {
             var testValue = ['0', '1'],
-                theKeys,
-                argKeys;
+                theArgs = utilx.Function.returnArgs(1, 2),
+                theKeys;
 
             expect(function () {
-                theKeys = utilx.Object.keys(utilx.Function.returnArgs(1, 2));
+                theKeys = utilx.Object.keys(theArgs);
             }).to.not.throwException();
 
-            argKeys = utilx.Array.sort(theKeys);
-            expect(argKeys.length).to.be(2);
-            expect(argKeys).to.eql(testValue);
+            expect(theKeys.length).to.be(2);
+            expect(theKeys).to.eql(testValue);
         });
 
         it('should not list prototype or constructor', function () {
