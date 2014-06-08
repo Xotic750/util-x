@@ -786,9 +786,9 @@
         toMethod = function (protoFn, checkThisArgFn) {
             var type = typeof protoFn;
 
-            if (protoFn === null ||
+            if (type === 'undefined' ||
+                    protoFn === null ||
                     type === 'boolean' ||
-                    type === 'undefined' ||
                     type === 'string' ||
                     type === 'number' ||
                     !protoFn.constructor ||
@@ -799,9 +799,9 @@
             }
 
             type = typeof checkThisArgFn;
-            if (protoFn === null ||
+            if (type === 'undefined' ||
+                    protoFn === null ||
                     type === 'boolean' ||
-                    type === 'undefined' ||
                     type === 'string' ||
                     type === 'number' ||
                     !checkThisArgFn.constructor ||
@@ -851,7 +851,13 @@
          * @param {*} inputArg
          * @returns {string}
          */
-        toClassStr = (function (ts, classString, hasOwn, isEnumerable, isErrorTypePrototype) {
+        toClassStr = (function (
+            ts,
+            classString,
+            hasOwn,
+            isEnumerable,
+            isErrorTypePrototype
+        ) {
             try {
                 if (testShims ||
                         ts.call() !== classString.Undefined ||
@@ -906,12 +912,13 @@
                     return val;
                 };
             }
-        }(base.Object.toString, base.classString, hasOwn, isEnumerable, isErrorTypePrototype)),
-
-        definePropertyPatch1,
-        definePropertyPatch2,
-        definePropertyPatch3,
-        freezeObject,
+        }(
+            base.Object.toString,
+            base.classString,
+            hasOwn,
+            isEnumerable,
+            isErrorTypePrototype
+        )),
 
         /**
          * @private
@@ -984,56 +991,6 @@
 
         /**
          * @private
-         * @name forEach
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {forEachCallback} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [thisArg]
-         * @returns {undefined}
-         */
-        forEach = toMethod(base.Array.forEach),
-
-        /**
-         * @private
-         * @name toClassStr
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {someCallback} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [thisArg]
-         * @returns {boolean}
-         */
-        some = toMethod(base.Array.some),
-
-        /**
-         * @private
-         * @name every
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {everyCallback} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [thisArg]
-         * @returns {boolean}
-         */
-        every = toMethod(base.Array.every),
-
-        /**
-         * @private
-         * @name map
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {mapCallback} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [thisArg]
-         * @returns {Array}
-         */
-        map = toMethod(base.Array.map),
-
-        /**
-         * @private
          * @name slice
          * @function
          * @param {ArrayLike} array
@@ -1042,45 +999,6 @@
          * @returns {Array}
          */
         slice = toMethod(base.Array.slice),
-
-        /**
-         * @private
-         * @name filter
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Function} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [thisArg]
-         * @returns {Array}
-         */
-        filter = toMethod(base.Array.filter),
-
-        /**
-         * @private
-         * @name reduce
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Function} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [initialValue]
-         * @returns {*}}
-         */
-        reduce = toMethod(base.Array.reduce),
-
-        /**
-         * @private
-         * @name reduceRight
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Function} fn
-         * @throws {TypeError} if fn is not a function
-         * @param {*} [initialValue]
-         * @returns {*}
-         */
-        reduceRight = toMethod(base.Array.reduceRight),
 
         /**
          * @private
@@ -1096,30 +1014,6 @@
 
         /**
          * @private
-         * @name indexOf
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Object} searchElement
-         * @param {number} [fromIndex]
-         * @returns {number}
-         */
-        indexOf = toMethod(base.Array.indexOf),
-
-        /**
-         * @private
-         * @name lastIndexOf
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Object} searchElement
-         * @param {number} [fromIndex]
-         * @returns {number}
-         */
-        lastIndexOf = toMethod(base.Array.lastIndexOf),
-
-        /**
-         * @private
          * @name split
          * @function
          * @param {string} stringArg
@@ -1128,15 +1022,6 @@
          * @returns {Array.<string>}
          */
         split = toMethod(base.String.split),
-
-        /**
-         * @private
-         * @name trim
-         * @function
-         * @param {string} inputArg
-         * @returns {string}
-         */
-        trim = toMethod(base.String.trim),
 
         /**
          * @private
@@ -1178,6 +1063,25 @@
          * @returns {string}
          */
         strSlice = toMethod(base.String.slice),
+
+        /**
+         * @private
+         * @name test
+         * @function
+         * @param {RegExp} regex
+         * @param {string} string
+         * @returns {boolean}
+         */
+        test = toMethod(base.RegExp.test),
+
+        /**
+         * @private
+         * @name getTime
+         * @function
+         * @param {Date} date
+         * @returns {number}
+         */
+        getTime = toMethod(base.Date.getTime),
 
         /**
          * @private
@@ -1242,25 +1146,6 @@
          */
         exec = toMethod(base.RegExp.exec),
 
-        /**
-         * @private
-         * @name test
-         * @function
-         * @param {RegExp} regex
-         * @param {string} string
-         * @returns {boolean}
-         */
-        test = toMethod(base.RegExp.test),
-
-        /**
-         * @private
-         * @name getTime
-         * @function
-         * @param {Date} date
-         * @returns {number}
-         */
-        getTime = toMethod(Date.prototype.getTime),
-
         correctExecNpcg,
 
         /**
@@ -1288,6 +1173,7 @@
          */
         bindArgs,
 
+        hop,
         hasOwnProp,
         checkObjectCoercible,
         toString,
@@ -1310,6 +1196,16 @@
         getPrototypeOf,
         modulo,
         put,
+        forEach,
+        //every,
+        //some,
+        map,
+        reduce,
+        //reduceRight,
+        filter,
+        indexOf,
+        //lastIndexOf,
+        //trim,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
         hasErrorProps,
@@ -1327,8 +1223,6 @@
         reduceTypeErrorMessage,
         reduceRightTypeErrorMessage,
         unwantedErrorPropsFilter,
-        keysWorksWithArguments,
-        definePropertyInteger,
 
         publicUtil,
 
@@ -2491,6 +2385,17 @@
 
     /**
      * @private
+     * @name safeSlice
+     * @function
+     */
+    function safeSlice(inputArg, start, end) {
+        return iter(inputArg, true, start, end, false, function (it) {
+            push(this, it);
+        }, []);
+    }
+
+    /**
+     * @private
      * @name enumer
      * @function
      */
@@ -2502,7 +2407,7 @@
         for (prop in object) {
             item = object[prop];
             if (own) {
-                if (hasOwn(object, prop)) {
+                if ((hasOwnProp || hop || hasOwn)(object, prop)) {
                     if (fn.call(thisArg, item, prop, object)) {
                         break;
                     }
@@ -2891,9 +2796,9 @@
         $.Function.isFunction = isFunction = function (inputArg) {
             var type = typeof inputArg;
 
-            return inputArg !== null &&
+            return type !== 'undefined' &&
+                    inputArg !== null &&
                     type !== 'boolean' &&
-                    type !== 'undefined' &&
                     type !== 'string' &&
                     type !== 'number' &&
                     (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
@@ -2930,9 +2835,9 @@
             type = typeof inputArg,
             length;
 
-        if (inputArg !== null &&
+        if (type !== 'undefined' &&
+                inputArg !== null &&
                 type !== 'boolean' &&
-                type !== 'undefined' &&
                 type !== 'string' &&
                 type !== 'number' &&
                 hasOwn(inputArg, 'length')) {
@@ -2979,6 +2884,23 @@
             return protoFn.apply(checkThisArgFn(thisArg), args);
         };
     };
+
+    hop = toMethod(base.Object.hasOwn);
+    splice = toMethod(base.Array.splice);
+    concat = toMethod(base.Array.concat);
+    push = toMethod(base.Array.push);
+    join = toMethod(base.Array.join);
+    unshift = toMethod(base.Array.unshift);
+    shift = toMethod(base.Array.shift);
+    pop = toMethod(base.Array.pop);
+    slice = toMethod(base.Array.slice);
+    split = toMethod(base.String.split);
+    replace = toMethod(base.String.replace);
+    charAt = toMethod(base.String.charAt);
+    charCodeAt = toMethod(base.String.charCodeAt);
+    strSlice = toMethod(base.String.slice);
+    test = toMethod(base.RegExp.test);
+    getTime = toMethod(base.Date.getTime);
 
     /**
      * Throws a TypeError if arguments is a function otherwise returns the function.
@@ -3088,14 +3010,10 @@
             /*jslint unparam:true */
             /*jshint unused:false */
             var fn = throwIfNotAFunction(this),
-                args = iter(arguments, true, 1, arguments.length, false, function (it) {
-                    $.Array.push(this, it);
-                }, []),
+                args = safeSlice(arguments, 1, arguments.length),
                 bound = base.Function.Ctr('binder', 'return function(' + bindArgs(fn.length - args.length) +
                     '){return binder.apply(this,arguments);}')(function () {
-                    var binderArgs = concat(args, iter(arguments, true, 0, arguments.length, false, function (it) {
-                            $.Array.push(this, it);
-                        }, [])),
+                    var binderArgs = concat(args, safeSlice(arguments, 0, arguments.length)),
                         result;
 
                     if (this instanceof bound) {
@@ -3153,19 +3071,27 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
      */
-    $.Array.prototype.join = function (separator) {
-        checkObjectCoercible(this);
+    $.Array.prototype.join = (function (
+        checkObjectCoercible,
+        join
+    ) {
+        return function (separator) {
+            checkObjectCoercible(this);
 
-        var type = typeof separator;
+            var type = typeof separator;
 
-        if (type === 'undefined') {
-            separator = ',';
-        }
+            if (type === 'undefined') {
+                separator = ',';
+            }
 
-        return join(this, separator);
-    };
+            return join(this, separator);
+        };
+    }(
+        checkObjectCoercible,
+        join
+    ));
 
-    $.Array.join = toMethod($.Array.prototype.join);
+    $.Array.join = join = toMethod($.Array.prototype.join);
 
     /**
      * Determines whether two values are the same value.
@@ -3690,6 +3616,42 @@
     }
 
     /**
+     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     * @memberof utilx.Object
+     * @name ToObjectFixIndexedAccess
+     * @function
+     * @param {*} inputArg
+     * @returns {Object}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     */
+    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = (function (
+        toObject,
+        iter,
+        toClassStr,
+        classString
+    ) {
+        var objg = toObject('g'),
+            shouldSplitString = objg[0] !== 'g' || !('0' in objg);
+
+        return function (inputArg) {
+            var object = toObject(inputArg);
+
+            if (shouldSplitString && toClassStr(object) === classString) {
+                iter(object, false, 0, object.length, false, function (it, idx, obj) {
+                    obj[idx] = it;
+                });
+            }
+
+            return object;
+        };
+    }(
+        toObject,
+        iter,
+        toClassStr,
+        base.classString.string
+    ));
+
+    /**
      * The Array.push() {@link boundPrototypalFunction method} adds one or more elements to the end of an array and
      * returns the new length of the array.
      * @memberof utilx.Array
@@ -3721,6 +3683,8 @@
 
         $.Array.push = toMethod($.Array.prototype.push);
     }
+
+    push = $.Array.push;
 
     /**
      * The Array.unshift() method adds one or more elements to the beginning of an array and
@@ -3754,6 +3718,8 @@
 
         $.Array.unshift = toMethod($.Array.prototype.unshift);
     }
+
+    $.Array.unshift = unshift;
 
     /**
      * Returns an integer clamped to the range set by min and max.
@@ -3883,7 +3849,7 @@
         return match;
     };
 
-    $.RegExp.exec = toMethod($.RegExp.prototype.exec);
+    $.RegExp.exec = exec = toMethod($.RegExp.prototype.exec);
 
     /**
      * Fixes browser bugs in the native `RegExp.prototype.test`.
@@ -3897,84 +3863,10 @@
      */
     $.RegExp.prototype.test = function (stringArg) {
         // Do this the easy way :-)
-        return !!$.RegExp.exec(this, stringArg);
+        return !!exec(this, stringArg);
     };
 
-    $.RegExp.test = toMethod($.RegExp.prototype.test);
-
-    /**
-     * Executes a regex search in a specified string. Returns a match array or `null`.
-     * Optional `pos` argument specifies the search start position.
-     * The `lastIndex` property of the provided regex is not
-     * used, but is updated for compatibility. Also fixes browser bugs compared to the native
-     * `RegExp.prototype.exec` and can be used reliably cross-browser.
-     * @private
-     * @function regExpForEachExec
-     * @param {string} stringArg String to search.
-     * @param {RegExp} regExpArg Regex to search with.
-     * @param {Number} [pos=0] Zero-based index at which to start the search.
-     * @returns {Array} Match array or `null`.
-     */
-    function regExpForEachExec(stringArg, regExpArg, pos) {
-        throwIfIsNotRegExp(regExpArg);
-
-        var str = onlyCoercibleToString(stringArg),
-            r2 = copyRegExp(regExpArg, {
-                add: 'g',
-                remove: 'y'
-            }),
-            match;
-
-        r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
-        match = $.RegExp.exec(r2, str);
-        if (regExpArg.global) {
-            if (isArray(match)) {
-                regExpArg.lastIndex = r2.lastIndex;
-            } else {
-                regExpArg.lastIndex = 0;
-            }
-        }
-
-        return match;
-    }
-
-    /**
-     * Executes a provided function once per regex match.
-     * @private
-     * @function regExpForEach
-     * @param {string} str String to search.
-     * @param {RegExp} regex Regex to search with.
-     * @param {Function} callback Function to execute for each match. Invoked with four arguments:
-     *   <li>The match array, with named backreference properties.
-     *   <li>The zero-based match index.
-     *   <li>The string being traversed.
-     *   <li>The regex object being used to traverse the string.
-     * @param {*} [context] Object to use as `this` when executing `callback`.
-     * @returns {*} Provided `context` object.
-     */
-    function regExpForEach(stringArg, regExpArg, callback, context) {
-        throwIfIsNotRegExp(regExpArg);
-
-        var str = onlyCoercibleToString(stringArg),
-            pos = 0,
-            index = 0,
-            match = regExpForEachExec(str, regExpArg, pos);
-
-        while (isArray(match)) {
-            // Because `regex` is provided to `callback`, the function can use the deprecated/
-            // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
-            // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
-            // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
-            // globalized versions of regexes, mutating the regex will not have any effect on the
-            // iteration or matched strings, which is a nice side effect that brings extra safety
-            callback.call(context, match, index, str, regExpArg);
-            pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
-            match = regExpForEachExec(str, regExpArg, pos);
-            index += 1;
-        }
-
-        return context;
-    }
+    $.RegExp.test = test = toMethod($.RegExp.prototype.test);
 
     /**
      * Splits a String object into an array of strings by separating the string into subbase.str.
@@ -3987,7 +3879,102 @@
      * @returns {Array.<string>}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
      */
-    (function (split, onlyCoercibleToString, toLength, strSlice, mMin, concat, isRegExp, test, push) {
+    (function (
+        split,
+        join,
+        slice,
+        onlyCoercibleToString,
+        throwIfIsNotRegExp,
+        toLength,
+        strSlice,
+        mMin,
+        mMax,
+        concat,
+        isRegExp,
+        test,
+        push,
+        isArray,
+        toInteger,
+        exec,
+        copyRegExp,
+        MAX_UINT32,
+        UWORD32,
+        MAX_SAFE_INTEGER
+    ) {
+        /**
+         * Executes a regex search in a specified string. Returns a match array or `null`.
+         * Optional `pos` argument specifies the search start position.
+         * The `lastIndex` property of the provided regex is not
+         * used, but is updated for compatibility. Also fixes browser bugs compared to the native
+         * `RegExp.prototype.exec` and can be used reliably cross-browser.
+         * @private
+         * @function regExpForEachExec
+         * @param {string} stringArg String to search.
+         * @param {RegExp} regExpArg Regex to search with.
+         * @param {Number} [pos=0] Zero-based index at which to start the search.
+         * @returns {Array} Match array or `null`.
+         */
+        function regExpForEachExec(stringArg, regExpArg, pos) {
+            throwIfIsNotRegExp(regExpArg);
+
+            var str = onlyCoercibleToString(stringArg),
+                r2 = copyRegExp(regExpArg, {
+                    add: 'g',
+                    remove: 'y'
+                }),
+                match;
+
+            r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
+            match = exec(r2, str);
+            if (regExpArg.global) {
+                if (isArray(match)) {
+                    regExpArg.lastIndex = r2.lastIndex;
+                } else {
+                    regExpArg.lastIndex = 0;
+                }
+            }
+
+            return match;
+        }
+
+        /**
+         * Executes a provided function once per regex match.
+         * @private
+         * @function regExpForEach
+         * @param {string} str String to search.
+         * @param {RegExp} regex Regex to search with.
+         * @param {Function} callback Function to execute for each match. Invoked with four arguments:
+         *   <li>The match array, with named backreference properties.
+         *   <li>The zero-based match index.
+         *   <li>The string being traversed.
+         *   <li>The regex object being used to traverse the string.
+         * @param {*} [context] Object to use as `this` when executing `callback`.
+         * @returns {*} Provided `context` object.
+         */
+        function regExpForEach(stringArg, regExpArg, callback, context) {
+            throwIfIsNotRegExp(regExpArg);
+
+            var str = onlyCoercibleToString(stringArg),
+                pos = 0,
+                index = 0,
+                match = regExpForEachExec(str, regExpArg, pos);
+
+            while (isArray(match)) {
+                // Because `regex` is provided to `callback`, the function can use the deprecated/
+                // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
+                // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
+                // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
+                // globalized versions of regexes, mutating the regex will not have any effect on the
+                // iteration or matched strings, which is a nice side effect that brings extra safety
+                callback.call(context, match, index, str, regExpArg);
+                pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
+                match = regExpForEachExec(str, regExpArg, pos);
+                index += 1;
+            }
+
+            return context;
+        }
+
         var es5limit = join(split('test', /(?:)/, -1), '') === 'test' &&
                         join(split('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
                         join(split('a b c d', / /, UWORD32 + 1), '') === 'a' &&
@@ -4088,9 +4075,30 @@
                 return val;
             };
         }
-    }(split, onlyCoercibleToString, toLength, strSlice, mMin, concat, isRegExp, test, $.Array.push));
+    }(
+        split,
+        join,
+        slice,
+        onlyCoercibleToString,
+        throwIfIsNotRegExp,
+        toLength,
+        strSlice,
+        mMin,
+        mMax,
+        concat,
+        isRegExp,
+        test,
+        push,
+        isArray,
+        toInteger,
+        exec,
+        copyRegExp,
+        MAX_UINT32,
+        UWORD32,
+        MAX_SAFE_INTEGER
+    ));
 
-    $.String.split = toMethod($.String.prototype.split);
+    $.String.split = split = toMethod($.String.prototype.split);
 
     /**
      * Fixes browser bugs in replacement text syntax when performing a replacement using a nonregex search
@@ -4105,115 +4113,125 @@
      * @returns {string} New string with one or all matches replaced.
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
      */
-    $.String.prototype.replace = function (search, replacement) {
-        var str = onlyCoercibleToString(this),
-            isRegex = isRegExp(search),
-            origLastIndex,
-            result;
+    $.String.prototype.replace = (function (
+        onlyCoercibleToString,
+        isRegExp,
+        slice,
+        replace,
+        toString,
+        replacementToken,
+        SyntaxError
+    ) {
+        return function (search, replacement) {
+            var str = onlyCoercibleToString(this),
+                isRegex = isRegExp(search),
+                origLastIndex,
+                result;
 
-        if (isRegex) {
-            // Only needed if `search` is nonglobal
-            origLastIndex = search.lastIndex;
-        } else {
-            // Type-convert
-            search = toString(search);
-        }
+            if (isRegex) {
+                // Only needed if `search` is nonglobal
+                origLastIndex = search.lastIndex;
+            } else {
+                // Type-convert
+                search = toString(search);
+            }
 
-        // Don't use `typeof`; some older browsers return 'function' for regex objects
-        if (isFunction(replacement)) {
-            // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
-            // functions isn't type-converted to a string
-            result = replace(str, search, function () {
-                var args = iter(arguments, true, 0, arguments.length, false, function (it) {
-                        $.Array.push(this, it);
-                    }, []);
+            // Don't use `typeof`; some older browsers return 'function' for regex objects
+            if (isFunction(replacement)) {
+                // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
+                // functions isn't type-converted to a string
+                result = replace(str, search, function () {
+                    var args = safeSlice(arguments, 0, arguments.length);
 
-                // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
-                // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
-                if (isRegex && search.global) {
-                    search.lastIndex = args[args.length - 2] + args[0].length;
-                }
-
-                // Should pass `undefined` as context; see
-                // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                return replacement.apply(Undefined, args);
-            });
-        } else {
-            // Ensure that the last value of `args` will be a string when given nonstring `this`,
-            // while still throwing on `null` or `undefined` context
-            result = replace(str, search, function () {
-                // Keep this function's `arguments` available through closure
-                var args = iter(arguments, true, 0, arguments.length, false, function (it) {
-                        $.Array.push(this, it);
-                    }, []),
-                    length = args.length;
-
-                return replace(toString(replacement), base.RegExp.replacementToken, function () {
-                    var argTokens = iter(arguments, true, 0, arguments.length, false, function (it) {
-                            $.Array.push(this, it);
-                        }, []),
-                        $0 = argTokens[0],
-                        $2 = argTokens[2];
-
-                    // Special variable or numbered backreference without curly braces
-                    // $$
-                    if ($2 === '$') {
-                        return '$';
+                    // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
+                    // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
+                    if (isRegex && search.global) {
+                        search.lastIndex = args[args.length - 2] + args[0].length;
                     }
 
-                    // $&, $0 (not followed by 1-9), $00
-                    if ($2 === '&' || +$2 === 0) {
-                        return args[0];
-                    }
+                    // Should pass `undefined` as context; see
+                    // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
+                    return replacement.apply(Undefined, args);
+                });
+            } else {
+                // Ensure that the last value of `args` will be a string when given nonstring `this`,
+                // while still throwing on `null` or `undefined` context
+                result = replace(str, search, function () {
+                    // Keep this function's `arguments` available through closure
+                    var length = arguments.length,
+                        args = safeSlice(arguments, 0, length);
 
-                    // $` (left context)
-                    if ($2 === '`') {
-                        return slice(args[length - 1], 0, args[length - 2]);
-                    }
-
-                    // $' (right context)
-                    if ($2 === '\'') {
-                        return slice(args[length - 1], args[length - 2] + args[0].length);
-                    }
-
-                    // Numbered backreference without curly braces
-                    // Type-convert; drop leading zero
-                    $2 = +$2;
-                    /*
-                     * Native behavior
-                     * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
-                     * - `$1` is a literal `$1` if no capturing groups.
-                     * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
-                     * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
-                     * - `$0` is a literal `$0`.
-                     */
-                    if ($2 === $2) {
-                        if ($2 > (length - 3)) {
-                            throw new base.SyntaxError.Ctr('Backreference to undefined group ' + $0);
+                    return replace(toString(replacement), replacementToken, function ($0, $1, $2) {
+                        /*jslint unparam: true */
+                        /*jshint unused: false */
+                        // Special variable or numbered backreference without curly braces
+                        // $$
+                        if ($2 === '$') {
+                            return '$';
                         }
 
-                        return args[$2] || '';
-                    }
+                        // $&, $0 (not followed by 1-9), $00
+                        if ($2 === '&' || +$2 === 0) {
+                            return args[0];
+                        }
 
-                    throw new base.SyntaxError.Ctr('Invalid token ' + $0);
+                        // $` (left context)
+                        if ($2 === '`') {
+                            return slice(args[length - 1], 0, args[length - 2]);
+                        }
+
+                        // $' (right context)
+                        if ($2 === '\'') {
+                            return slice(args[length - 1], args[length - 2] + args[0].length);
+                        }
+
+                        // Numbered backreference without curly braces
+                        // Type-convert; drop leading zero
+                        $2 = +$2;
+                        /*
+                         * Native behavior
+                         * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
+                         * - `$1` is a literal `$1` if no capturing groups.
+                         * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
+                         * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
+                         * - `$0` is a literal `$0`.
+                         */
+                        if ($2 === $2) {
+                            if ($2 > (length - 3)) {
+                                throw new SyntaxError('Backreference to undefined group ' + $0);
+                            }
+
+                            return args[$2] || '';
+                        }
+
+                        throw new SyntaxError('Invalid token ' + $0);
+                    });
                 });
-            });
-        }
-
-        if (isRegex) {
-            if (search.global) {
-                // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
-                search.lastIndex = 0;
-            } else {
-                // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
-                search.lastIndex = origLastIndex;
             }
-        }
 
-        return result;
-    };
+            if (isRegex) {
+                if (search.global) {
+                    // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
+                    search.lastIndex = 0;
+                } else {
+                    // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
+                    search.lastIndex = origLastIndex;
+                }
+            }
 
-    $.String.replace = toMethod($.String.prototype.replace);
+            return result;
+        };
+    }(
+        onlyCoercibleToString,
+        isRegExp,
+        slice,
+        replace,
+        toString,
+        base.RegExp.replacementToken,
+        base.SyntaxError.Ctr
+    ));
+
+    $.String.replace = replace = toMethod($.String.prototype.replace);
 
     /**
      * Fixes browser bugs in the native `String.prototype.match`.
@@ -4600,12 +4618,51 @@
      * @name contains
      * @function
      * @param {ArrayLike} array
-     * @param {*} searchElement
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
+     * @param {Object} searchElement
+     * @param {number} [fromIndex]
      * @returns {boolean}
      */
-    $.Array.prototype.contains = function (searchElement) {
-        return $.Array.indexOf(this, searchElement) !== -1;
-    };
+    if (!testShims && isNative(base.Array.indexOf) && indexOf([0, 1], 1, 2) === -1) {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            /*jslint unparam: true */
+            /*jshint unused: false */
+            return base.Array.indexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
+        };
+    } else {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            var object = toObjectFixIndexedAccess(this),
+                length = toLength(object.length),
+                val = false;
+
+            if (length) {
+                if (arguments.length > 1) {
+                    fromIndex = toInteger(fromIndex);
+                } else {
+                    fromIndex = 0;
+                }
+
+                if (fromIndex < length) {
+                    if (fromIndex < 0) {
+                        fromIndex = length - abs(fromIndex);
+                        if (fromIndex < 0) {
+                            fromIndex = 0;
+                        }
+                    }
+
+                    iter(object, true, fromIndex, length, false, function (it) {
+                        if (searchElement === it) {
+                            val = true;
+                        }
+
+                        return val;
+                    });
+                }
+            }
+
+            return val;
+        };
+    }
 
     $.Array.contains = toMethod($.Array.prototype.contains);
 
@@ -4684,28 +4741,44 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
-    if (hasDontEnumBug) {
-        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
-            var prop = toString(property);
+    (function (
+        toString,
+        isFunction,
+        contains,
+        is,
+        getPrototypeOf,
+        shadowed,
+        hop
+    ) {
+        if (hasDontEnumBug) {
+            $.Object.prototype.hasOwn = hasOwnProp = function (property) {
+                var prop = toString(property);
 
-            return hasOwn(this, prop) ||
-                    ((prop in this) &&
-                        $.Array.contains(base.props.shadowed, prop) &&
-                        !$.Object.is(this[prop], getPrototypeOf(this)[prop]));
-        };
+                return hop(this, prop) ||
+                        ((prop in this) && contains(shadowed, prop) && !is(this[prop], getPrototypeOf(this)[prop]));
+            };
 
-        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
-    } else if (hasFuncProtoBug) {
-        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
-            var prop = toString(property);
+            $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
+        } else if (hasFuncProtoBug) {
+            $.Object.prototype.hasOwn = hasOwnProp = function (property) {
+                var prop = toString(property);
 
-            return (prop === 'prototype' && isFunction(this)) || hasOwn(this, prop);
-        };
+                return (prop === 'prototype' && isFunction(this)) || hop(this, prop);
+            };
 
-        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
-    } else {
-        $.Object.hasOwn = hasOwnProp = toMethod(base.Object.hasOwn);
-    }
+            $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
+        } else {
+            $.Object.hasOwn = hasOwnProp = hop;
+        }
+    }(
+        toString,
+        isFunction,
+        $.Array.contains,
+        $.Object.is,
+        getPrototypeOf,
+        base.props.shadowed,
+        hop
+    ));
 
     /**
      * The function takes one argument inputArg, if the argument is an object whose class internal
@@ -4775,57 +4848,85 @@
      * @param {*} value
      * @returns {(number|undefined)}
      */
-    $.Array.prototype.assign = function (index, value) {
-        var object = toObjectFixIndexedAccess(this),
-            updateLen,
-            numIndex,
-            number,
-            string,
-            isInt;
+    $.Array.prototype.assign = (function (
+        toObjectFixIndexedAccess,
+        hasValidLength,
+        isFunction,
+        toClassStr,
+        isSafeInteger,
+        toString,
+        test,
+        isArray,
+        isArguments,
+        classString,
+        assignInteger,
+        MAX_UINT32
+    ) {
+        return function (index, value) {
+            var object = toObjectFixIndexedAccess(this),
+                updateLen,
+                numIndex,
+                number,
+                string,
+                isInt;
 
-        if (arguments.length >= 2) {
-            updateLen = hasValidLength(object) && !isFunction(object);
-            if (updateLen) {
-                if (toClassStr(index) === base.classString.number) {
-                    numIndex = +index;
-                    isInt = numIndex >= 0 && isSafeInteger(numIndex);
-                } else {
-                    string = toString(index);
-                    if (test(base.RegExp.assignInteger, string)) {
-                        number = +string;
-                        if (number >= 0 && isSafeInteger(number)) {
-                            numIndex = number;
-                            isInt = true;
+            if (arguments.length >= 2) {
+                updateLen = hasValidLength(object) && !isFunction(object);
+                if (updateLen) {
+                    if (toClassStr(index) === classString) {
+                        numIndex = +index;
+                        isInt = numIndex >= 0 && isSafeInteger(numIndex);
+                    } else {
+                        string = toString(index);
+                        if (test(assignInteger, string)) {
+                            number = +string;
+                            if (number >= 0 && isSafeInteger(number)) {
+                                numIndex = number;
+                                isInt = true;
+                            }
                         }
                     }
                 }
-            }
 
-            if (updateLen && isInt) {
-                if (isArray(object) || isArguments(object)) {
-                    if (numIndex <= MAX_UINT32 - 1) {
+                if (updateLen && isInt) {
+                    if (isArray(object) || isArguments(object)) {
+                        if (numIndex <= MAX_UINT32 - 1) {
+                            object[numIndex] = value;
+                            numIndex += 1;
+                            if (numIndex > object.length) {
+                                object.length = numIndex;
+                            }
+                        } else {
+                            object[index] = value;
+                        }
+                    } else {
                         object[numIndex] = value;
                         numIndex += 1;
                         if (numIndex > object.length) {
                             object.length = numIndex;
                         }
-                    } else {
-                        object[index] = value;
                     }
                 } else {
-                    object[numIndex] = value;
-                    numIndex += 1;
-                    if (numIndex > object.length) {
-                        object.length = numIndex;
-                    }
+                    object[index] = value;
                 }
-            } else {
-                object[index] = value;
             }
-        }
 
-        return object.length;
-    };
+            return object.length;
+        };
+    }(
+        toObjectFixIndexedAccess,
+        hasValidLength,
+        isFunction,
+        toClassStr,
+        isSafeInteger,
+        toString,
+        test,
+        isArray,
+        isArguments,
+        base.classString.number,
+        base.RegExp.assignInteger,
+        MAX_UINT32
+    ));
 
     $.Array.assign = put = toMethod($.Array.prototype.assign);
 
@@ -4867,32 +4968,6 @@
     };
 
     $.Array.unique = toMethod($.Array.prototype.unique);
-
-    /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     * @memberof utilx.Object
-     * @name ToObjectFixIndexedAccess
-     * @function
-     * @param {*} inputArg
-     * @returns {Object}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
-     */
-    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = (function (toObject, iter, toClassStr, classString) {
-        var objg = toObject('g'),
-            shouldSplitString = objg[0] !== 'g' || !('0' in objg);
-
-        return function (inputArg) {
-            var object = toObject(inputArg);
-
-            if (shouldSplitString && toClassStr(object) === classString) {
-                iter(object, false, 0, object.length, false, function (it, idx, obj) {
-                    obj[idx] = it;
-                });
-            }
-
-            return object;
-        };
-    }(toObject, iter, toClassStr, base.classString.string));
 
     /**
      * The $.Array.splice() method changes the content of an array,
@@ -4939,10 +5014,8 @@
                 actualDeleteCount,
                 k = 0,
                 from,
-                args = iter(arguments, true, 0, arguments.length, false, function (it) {
-                    $.Array.push(this, it);
-                }, []),
-                argLength = args.length,
+                argLength = arguments.length,
+                args = safeSlice(arguments, 0, argLength),
                 item = 2,
                 itemCount = mMax(argLength - item, 0),
                 to,
@@ -4965,8 +5038,8 @@
             actualDeleteCount = mMin(mMax(toLength(deleteCount), 0), length - actualStart);
             while (k < actualDeleteCount) {
                 from = actualStart + k;
-                if (hasOwn(object, from)) {
-                    $.Array.push(removed, object[from]);
+                if (hasOwnProp(object, from)) {
+                    push(removed, object[from]);
                 }
 
                 k += 1;
@@ -4978,7 +5051,7 @@
                 while (k < loopCache) {
                     from = k + actualDeleteCount;
                     to = k + itemCount;
-                    if (hasOwn(object, from)) {
+                    if (hasOwnProp(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -4998,7 +5071,7 @@
                 while (k > actualStart) {
                     from = k + actualDeleteCount - 1;
                     to = k + itemCount - 1;
-                    if (hasOwn(object, from)) {
+                    if (hasOwnProp(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -5022,6 +5095,8 @@
 
         $.Array.splice = toMethod($.Array.prototype.splice);
     }
+
+    splice = $.Array.splice;
 
     /**
      * Checks if the supplied function suffers from the V8 strict mode bug.
@@ -5068,7 +5143,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
      */
     try {
-        forEach('foo', function (item, index, list) {
+        base.Array.forEach.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.felist = list;
@@ -5095,6 +5170,8 @@
 
         $.Array.forEach = toMethod($.Array.prototype.forEach);
     }
+
+    forEach = $.Array.forEach;
 
     /**
      * Executes a provided function once per array element position.
@@ -5150,7 +5227,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
      */
     try {
-        some('foo', function (item, index, list) {
+        base.Array.some.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.slist = list;
@@ -5182,6 +5259,8 @@
 
         $.Array.some = toMethod($.Array.prototype.some);
     }
+
+    //some = $.Array.some;
 
     /**
      * The find method executes the callback function once for each element present in the array until it
@@ -5291,9 +5370,7 @@
         $.Array.of = base.Array.of;
     } else {
         $.Array.of = function () {
-            return iter(arguments, true, 0, arguments.length, false, function (it) {
-                $.Array.push(this, it);
-            }, []);
+            return safeSlice(arguments, 0, arguments.length);
         };
     }
 
@@ -5377,7 +5454,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every
      */
     try {
-        every('foo', function (item, index, list) {
+        base.Array.every.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.elist = list;
@@ -5410,6 +5487,8 @@
         $.Array.every = toMethod($.Array.prototype.every);
     }
 
+    //every = $.Array.every;
+
     /**
      * map calls a provided callback function once for each element in an arrayLike object, in order,
      * and constructs a new array from the results.
@@ -5436,7 +5515,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
      */
     try {
-        map('foo', function (item, index, list) {
+        base.Array.map.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.mlist = list;
@@ -5467,6 +5546,8 @@
 
         $.Array.map = toMethod($.Array.prototype.map);
     }
+
+    map = $.Array.map;
 
     /**
      * Returns some args for testing purposes.
@@ -5556,9 +5637,7 @@
         }
 
         $.Array.prototype.slice = function () {
-            var args = iter(arguments, true, 0, arguments.length, false, function (it) {
-                    $.Array.push(this, it);
-                }, []),
+            var args = safeSlice(arguments, 0, arguments.length),
                 section;
 
             try {
@@ -5589,7 +5668,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
      */
     try {
-        filter('foo', function (item, index, list) {
+        base.Array.filter.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.flist = list;
@@ -5612,7 +5691,7 @@
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
                 if (this.call(thisArg, it, idx, obj)) {
-                    $.Array.push(arr, it);
+                    push(arr, it);
                 }
             }, throwIfNotAFunction(fn));
 
@@ -5621,6 +5700,8 @@
 
         $.Array.filter = toMethod($.Array.prototype.filter);
     }
+
+    filter = $.Array.filter;
 
     /**
      * Apply a function against an accumulator and each value of the array (from left-to-right)
@@ -5637,7 +5718,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
      */
     try {
-        reduce('foo', function (unused1, unused2, unused3, list) {
+        base.Array.reduce.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rlist = list;
@@ -5699,6 +5780,8 @@
         $.Array.reduce = toMethod($.Array.prototype.reduce);
     }
 
+    reduce = $.Array.reduce;
+
     /**
      * This {@link boundPrototypalFunction method} applies a function against an accumulator and
      * each value of the array (from left-to-right) as to reduce it to a single value.
@@ -5714,7 +5797,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight
      */
     try {
-        reduceRight('foo', function (unused1, unused2, unused3, list) {
+        base.Array.reduceRight.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rrlist = list;
@@ -5775,6 +5858,8 @@
 
         $.Array.reduceRight = toMethod($.Array.prototype.reduceRight);
     }
+
+    //reduceRight = $.Array.reduceRight;
 
     /**
      * Returns a random integer between the supplied min and max arguments.
@@ -5848,18 +5933,18 @@
 
         while (left.length && right.length) {
             if (comparison(left[0], right[0]) <= 0) {
-                $.Array.push(result, shift(left));
+                push(result, shift(left));
             } else {
-                $.Array.push(result, shift(right));
+                push(result, shift(right));
             }
         }
 
         while (left.length) {
-            $.Array.push(result, shift(left));
+            push(result, shift(left));
         }
 
         while (right.length) {
-            $.Array.push(result, shift(right));
+            push(result, shift(right));
         }
 
         return result;
@@ -5913,7 +5998,7 @@
 
         throwIfNotAFunction(comparefn);
         if (toLength(object.length) > 1) {
-            $.Array.forEach(mergeSort(object, comparefn), function (value, index) {
+            forEach(mergeSort(object, comparefn), function (value, index) {
                 put(object, index, value);
             });
         }
@@ -5964,7 +6049,7 @@
         return previous + base.String.Ctr.fromCharCode(element);
     }
 
-    base.String.wsStr = $.Array.reduce(base.String.whiteSpaces, function (previous, element) {
+    base.String.wsStr = reduce(base.String.whiteSpaces, function (previous, element) {
         return previous + '\\u' + $.String.padLeadingChar(element.toString(16), '0', 4);
     }, '');
 
@@ -5980,7 +6065,7 @@
     try {
         if (!testShims &&
                 isNative(base.String.trim) &&
-                !trim($.Array.reduce(base.String.whiteSpaces, buildTestString, '')).length) {
+                !base.String.trim.call($.Array.reduce(base.String.whiteSpaces, buildTestString, '')).length) {
 
             $.String.trim = toMethod(base.String.trim);
         } else {
@@ -5989,11 +6074,13 @@
     } catch (eTrim) {
         base.RegExp.wsTrim = new RegExp('^[' + base.String.wsStr + ']+|[' + base.String.wsStr + ']+$', 'g');
         $.String.prototype.trim = function () {
-            return $.String.replace(onlyCoercibleToString(this), base.RegExp.wsTrim, '');
+            return replace(onlyCoercibleToString(this), base.RegExp.wsTrim, '');
         };
 
         $.String.trim = toMethod($.String.prototype.trim);
     }
+
+    //trim = $.String.trim;
 
     /**
      * This function parses a string argument and returns an integer of the specified radix or base.
@@ -6258,7 +6345,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
     if (!testShims && isNative(base.Array.indexOf) && indexOf([0, 1], 1, 2) === -1) {
-        $.Array.indexOf = toMethod(base.Array.indexOf);
+        $.Array.indexOf = indexOf;
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
@@ -6296,6 +6383,7 @@
         $.Array.indexOf = toMethod($.Array.prototype.indexOf);
     }
 
+    indexOf = $.Array.indexOf;
     /**
      * This {@link boundPrototypalFunction method} returns the first index at which a given element
      * can be found in the array, or -1 if it is not present.
@@ -6309,7 +6397,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf
      */
-    if (!testShims && isNative(base.Array.lastIndexOf) && lastIndexOf([0, 1], 0, -3) === -1) {
+    if (!testShims && isNative(base.Array.lastIndexOf) && base.Array.lastIndexOf.call([0, 1], 0, -3) === -1) {
         $.Array.lastIndexOf = toMethod(base.Array.lastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
@@ -6466,7 +6554,7 @@
             iter(object, false, count, 1, true, function (unused1, unused2, obj) {
                 /*jslint unparam: true */
                 /*jshint unused: false */
-                if (hasOwn(obj, from)) {
+                if (hasOwnProp(obj, from)) {
                     put(obj, to, obj[from]);
                 } else {
                     delete obj[to];
@@ -6528,30 +6616,55 @@
      */
     try {
         if (!testShims && isNative(base.Object.keys)) {
-            keysWorksWithArguments = base.Object.keys(returnArgs(1, 2)).length === 2;
-            if (hasErrorProps) {
-                $.Object.keys = function (object) {
-                    if (!keysWorksWithArguments && isArguments(object)) {
-                        object = slice(object);
-                    }
+            (function (
+                returnArgs,
+                oKeys,
+                isArguments,
+                slice,
+                isErrorTypePrototype,
+                filter,
+                contains,
+                unwantedError
+            ) {
+                var keysWorksWithArguments = oKeys(returnArgs(1, 2)).length === 2;
 
-                    var keys = base.Object.keys(object);
+                if (hasErrorProps) {
+                    $.Object.keys = function (object) {
+                        if (!keysWorksWithArguments && isArguments(object)) {
+                            object = slice(object);
+                        }
 
-                    if (isErrorTypePrototype(object)) {
-                        keys = $.Array.filter(keys, function (key) {
-                            return !this(base.props.unwantedError, key);
-                        }, $.Array.contains);
-                    }
+                        var keys = oKeys(object);
 
-                    return keys;
-                };
-            } else if (!keysWorksWithArguments) {
-                $.Object.keys = function (object) {
-                    return base.Object.keys(slice(object));
-                };
-            } else {
-                $.Object.keys = base.Object.keys;
-            }
+                        if (isErrorTypePrototype(object)) {
+                            keys = filter(keys, function (key) {
+                                return !contains(unwantedError, key);
+                            });
+                        }
+
+                        return keys;
+                    };
+                } else if (!keysWorksWithArguments) {
+                    $.Object.keys = function (object) {
+                        if (isArguments(object)) {
+                            object = slice(object);
+                        }
+
+                        return oKeys(object);
+                    };
+                } else {
+                    $.Object.keys = oKeys;
+                }
+            }(
+                returnArgs,
+                base.Object.keys,
+                isArguments,
+                slice,
+                isErrorTypePrototype,
+                filter,
+                $.Array.contains,
+                base.props.unwantedError
+            ));
         } else {
             throw new Error();
         }
@@ -6568,23 +6681,18 @@
                             !(skipErrorProps && $.Array.contains(base.props.unwantedError, prop)) &&
                             hasOwnProp(obj, prop)) {
 
-                        $.Array.push(this, prop);
+                        push(this, prop);
                     }
                 }, []),
                 ctor,
                 isProto,
-                nonEnum,
-                arr;
+                nonEnum;
 
             if (!base.Array.canEnumerArgs && isArguments(object)) {
-                arr = iter(object, false, 0, object.length, false, function (it) {
-                    $.Array.push(this, it);
-                }, []);
-
-                iter(arr, true, 0, arr.length, false, function (unused, idx) {
+                iter(object, true, 0, object.length, false, function (unused, idx) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
-                    $.Array.push(this, idx);
+                    push(this, idx);
                 }, props);
             }
 
@@ -6592,9 +6700,9 @@
                 ctor = object.constructor;
                 isProto = (isFunction(ctor) && ctor.prototype === object);
                 nonEnum = nonEnumProps[toClassStr(object)];
-                $.Array.forEach(base.props.shadowed, function (property) {
+                forEach(base.props.shadowed, function (property) {
                     if (!(isProto && nonEnum[property]) && this(object, property)) {
-                        $.Array.push(props, property);
+                        push(props, property);
                     }
                 }, hasOwnProp);
             }
@@ -6683,7 +6791,6 @@
 
     $.String.isDigits = toMethod($.String.prototype.isDigits);
 
-
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
      * and returns the object.
@@ -6697,169 +6804,238 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
      */
     try {
-        if (testShims) {
-            throw new Error();
-        }
-
-        if (base.Object.defineProperty({}, 'sentinel', { value: null }) !== null) {
-            throw new Error('Fails sentinel check');
-        }
-
-        // Test string integer
-        try {
-            if (base.Object.defineProperty([], '1.', { value: null })[1] !== null) {
-
-                throw new Error('Fails integer check');
+        (function (
+            isArray,
+            isArguments,
+            forEach,
+            keys,
+            noop,
+            isNumeric,
+            isUint32,
+            hasOwnProp,
+            hop,
+            defineProp,
+            notEnumerable
+        ) {
+            if (testShims) {
+                throw new Error();
             }
-        } catch (eDP1) {
-            definePropertyPatch1 = true;
-        }
 
-        // Test assign to array
-        try {
-            if (base.Object.defineProperty([], '0', { value: null }) !== null) {
-                throw new Error('Fails array check');
+            if (defineProp({}, 'sentinel', { value: null }) !== null) {
+                throw new Error('Fails sentinel check');
             }
-        } catch (eDP2) {
-            definePropertyPatch2 = true;
-        }
 
-        // Test overwrite array property when no value defined
-        try {
-            if (base.Object.defineProperty([10], '0', {})[0] !== 10) {
-                throw new Error('Fails overwrite check');
+            var definePropertyPatch1,
+                definePropertyPatch2,
+                definePropertyPatch3;
+
+            // Test string integer
+            try {
+                if (defineProp([], '1.', { value: null })[1] !== null) {
+                    throw new Error('Fails integer check');
+                }
+            } catch (eDP1) {
+                definePropertyPatch1 = true;
             }
-        } catch (eDP3) {
-            definePropertyPatch3 = true;
-        }
 
-        if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
-            $.Object.defineProperty = function (object, property, descriptor) {
-                var isA = (isArray(object) || isArguments(object)) &&
-                            $.Object.isNumeric(property) && $.Number.isUint32(+property),
-
-                    isB = (definePropertyPatch1 || definePropertyPatch2) && hasOwn(descriptor, 'value');
-
-                if (definePropertyPatch1 && isA) {
-                    property = +property;
+            // Test assign to array
+            try {
+                if (defineProp([], '0', { value: null }) !== null) {
+                    throw new Error('Fails array check');
                 }
+            } catch (eDP2) {
+                definePropertyPatch2 = true;
+            }
 
-                if (definePropertyPatch2 && isA && (isB || !hasOwnProp(object, property))) {
-                    put(object, property, descriptor.value);
+            // Test overwrite array property when no value defined
+            try {
+                if (defineProp([10], '0', {})[0] !== 10) {
+                    throw new Error('Fails overwrite check');
                 }
+            } catch (eDP3) {
+                definePropertyPatch3 = true;
+            }
 
-                if (definePropertyPatch3 && isA && !isB) {
-                    descriptor.value = object[property];
-                }
+            if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
+                $.Object.defineProperty = function (object, property, descriptor) {
+                    var isA = (isArray(object) || isArguments(object)) && isNumeric(property) && isUint32(+property),
+                        isB = (definePropertyPatch1 || definePropertyPatch2) && hop(descriptor, 'value');
 
-                return base.Object.defineProperty(object, property, descriptor);
-            };
-        } else {
-            $.Object.defineProperty = base.Object.defineProperty;
-        }
-
-        testTemp.dpObject = {
-            abc: 0,
-            def: '',
-            ghi: true,
-            jkl: $.Function.noop
-        };
-
-        $.Array.forEach($.Object.keys(testTemp.dpObject), function (key) {
-            this(testTemp.dpObject, key, base.properties.notEnumerable);
-        }, $.Object.defineProperty);
-
-        if (testTemp.dpObject.abc !== 0 ||
-                testTemp.dpObject.def !==  '' ||
-                testTemp.dpObject.ghi !== true ||
-                testTemp.dpObject.jkl !== $.Function.noop) {
-
-            throw new Error();
-        }
-
-        testTemp.dpArray = [10, true, '', $.Function.noop];
-        $.Array.forEach($.Object.keys(testTemp.dpArray), function (key) {
-            this(testTemp.dpArray, key, base.properties.notEnumerable);
-        }, $.Object.defineProperty);
-
-        if (testTemp.dpArray[0] !== 10 ||
-                testTemp.dpArray[1] !== true ||
-                testTemp.dpArray[2] !== '' ||
-                testTemp.dpArray[3] !== $.Function.noop) {
-
-            throw new Error();
-        }
-    } catch (eDP) {
-        definePropertyInteger = (function (definePropertyInteger, toClassStr, classString, toString, test) {
-            return function (index) {
-                var val;
-
-                if (toClassStr(index) === classString) {
-                    val = +index;
-                } else {
-                    val = toString(index);
-                    if (test(definePropertyInteger, val)) {
-                        val = +val;
+                    if (definePropertyPatch1 && isA) {
+                        property = +property;
                     }
-                }
 
-                return val;
-            };
-        }(new RegExp('^[1-9]\\d*.?$'), toClassStr, base.classString.number, toString, test));
-
-        $.Object.defineProperty = function (object, property, descriptor) {
-            throwIfIsPrimitive(object);
-            if (isPrimitive(descriptor)) {
-                throw new base.TypeError.Ctr('Property descriptor must be an object: ' + toString(descriptor));
-            }
-
-            if (hasOwn(descriptor, 'value') && (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
-                throw new base.TypeError.Ctr('Invalid property. A property cannot have accessors and a value');
-            }
-
-            var prototype,
-                type,
-                index;
-
-            if (!hasOwn(descriptor, 'get') && !hasOwn(descriptor, 'set')) {
-                if (hasOwnProp(descriptor, 'value') || !hasOwnProp(object, property)) {
-                    index = definePropertyInteger(property);
-                    if (isProtoSupported) {
-                        prototype = object[base.str.proto];
-                        object[base.str.proto] = base.Object.proto;
-                        /*
-                        try {
-                            delete object[index];
-                        } catch (ignore) {}
-                        */
-
-                        put(object, index, descriptor.value);
-                        type = typeof prototype;
-                        if (type === 'undefined') {
-                            delete object[base.str.proto];
-                        } else {
-                            object[base.str.proto] = prototype;
-                        }
-                    } else {
-                        put(object, index, descriptor.value);
+                    if (definePropertyPatch2 && isA && (isB || !hasOwnProp(object, property))) {
+                        put(object, property, descriptor.value);
                     }
-                }
+
+                    if (definePropertyPatch3 && isA && !isB) {
+                        descriptor.value = object[property];
+                    }
+
+                    return defineProp(object, property, descriptor);
+                };
             } else {
-                if (!isNative(base.Object.defineGetter) || !isNative(base.Object.defineSetter)) {
-                    throw new base.TypeError.Ctr('getters & setters can not be defined on this javascript engine');
-                }
-
-                if (isFunction(descriptor.get)) {
-                    base.Object.defineGetter.call(object, property, descriptor.get);
-                }
-
-                if (isFunction(descriptor.set)) {
-                    base.Object.defineSetter.call(object, property, descriptor.set);
-                }
+                $.Object.defineProperty = defineProp;
             }
 
-            return object;
-        };
+            testTemp.dpObject = {
+                abc: 0,
+                def: '',
+                ghi: true,
+                jkl: noop
+            };
+
+            forEach(keys(testTemp.dpObject), function (key) {
+                this(testTemp.dpObject, key, notEnumerable);
+            }, $.Object.defineProperty);
+
+            if (testTemp.dpObject.abc !== 0 ||
+                    testTemp.dpObject.def !==  '' ||
+                    testTemp.dpObject.ghi !== true ||
+                    testTemp.dpObject.jkl !== noop) {
+
+                throw new Error();
+            }
+
+            testTemp.dpArray = [10, true, '', noop];
+            forEach(keys(testTemp.dpArray), function (key) {
+                this(testTemp.dpArray, key, notEnumerable);
+            }, $.Object.defineProperty);
+
+            if (testTemp.dpArray[0] !== 10 ||
+                    testTemp.dpArray[1] !== true ||
+                    testTemp.dpArray[2] !== '' ||
+                    testTemp.dpArray[3] !== noop) {
+
+                throw new Error();
+            }
+        }(
+            isArray,
+            isArguments,
+            forEach,
+            $.Object.keys,
+            $.Function.noop,
+            isNumeric,
+            $.Number.isUint32,
+            hasOwnProp,
+            hop,
+            base.Object.defineProperty,
+            base.properties.notEnumerable
+        ));
+    } catch (eDP) {
+        (function (
+            put,
+            isNative,
+            isFunction,
+            isPrimitive,
+            throwIfIsPrimitive,
+            hasOwnProp,
+            hop,
+            defineGetter,
+            defineSetter,
+            proto,
+            oProto,
+            TypeError,
+            toString
+        ) {
+            var definePropertyInteger = (function (
+                    definePropertyInteger,
+                    toClassStr,
+                    classString,
+                    toString,
+                    test
+                ) {
+                    return function (index) {
+                        var val;
+
+                        if (toClassStr(index) === classString) {
+                            val = +index;
+                        } else {
+                            val = toString(index);
+                            if (test(definePropertyInteger, val)) {
+                                val = +val;
+                            }
+                        }
+
+                        return val;
+                    };
+                }(
+                    new RegExp('^[1-9]\\d*.?$'),
+                    toClassStr,
+                    base.classString.number,
+                    toString,
+                    test
+                ));
+
+            $.Object.defineProperty = function (object, property, descriptor) {
+                throwIfIsPrimitive(object);
+                if (isPrimitive(descriptor)) {
+                    throw new TypeError('Property descriptor must be an object: ' + toString(descriptor));
+                }
+
+                if (hop(descriptor, 'value') && (hop(descriptor, 'get') || hop(descriptor, 'set'))) {
+                    throw new TypeError('Invalid property. A property cannot have accessors and a value');
+                }
+
+                var prototype,
+                    type,
+                    index;
+
+                if (!hop(descriptor, 'get') && !hop(descriptor, 'set')) {
+                    if (hop(descriptor, 'value') || !hasOwnProp(object, property)) {
+                        index = definePropertyInteger(property);
+                        if (isProtoSupported) {
+                            prototype = object[proto];
+                            object[proto] = oProto;
+                            /*
+                            try {
+                                delete object[index];
+                            } catch (ignore) {}
+                            */
+
+                            put(object, index, descriptor.value);
+                            type = typeof prototype;
+                            if (type === 'undefined') {
+                                delete object[proto];
+                            } else {
+                                object[proto] = prototype;
+                            }
+                        } else {
+                            put(object, index, descriptor.value);
+                        }
+                    }
+                } else {
+                    if (!isNative(defineGetter) || !isNative(defineSetter)) {
+                        throw new TypeError('getters & setters can not be defined on this javascript engine');
+                    }
+
+                    if (isFunction(descriptor.get)) {
+                        defineGetter.call(object, property, descriptor.get);
+                    }
+
+                    if (isFunction(descriptor.set)) {
+                        defineSetter.call(object, property, descriptor.set);
+                    }
+                }
+
+                return object;
+            };
+        }(
+            put,
+            isNative,
+            isFunction,
+            isPrimitive,
+            throwIfIsPrimitive,
+            hasOwnProp,
+            hop,
+            base.Object.defineGetter,
+            base.Object.defineSetter,
+            base.str.proto,
+            base.Object.proto,
+            base.TypeError.Ctr,
+            toString
+        ));
     }
 
     /**
@@ -6878,7 +7054,7 @@
             throw new base.TypeError.Ctr('Property description must be an object');
         }
 
-        $.Array.forEach($.Object.keys(props), function (key) {
+        forEach($.Object.keys(props), function (key) {
             this(object, key, props[key]);
         }, $.Object.defineProperty);
 
@@ -6907,24 +7083,29 @@
 
     // detect a Rhino bug and patch it
     try {
-        testTemp.rhinoTest = {
+        $.Object.freeze({
             noop: $.Function.noop
-        };
-
-        $.Object.freeze(testTemp.rhinoTest.noop);
+        });
     } catch (eFreeze) {
-        freezeObject = $.Object.freeze;
-        $.Object.freeze = function (object) {
-            var val;
+        $.Object.freeze = (function (
+            isFunction,
+            freezeObject
+        ) {
+            return function (object) {
+                var val;
 
-            if (isFunction(object)) {
-                val = object;
-            } else {
-                val = freezeObject(object);
-            }
+                if (isFunction(object)) {
+                    val = object;
+                } else {
+                    val = freezeObject(object);
+                }
 
-            return val;
-        };
+                return val;
+            };
+        }(
+            isFunction,
+            $.Object.freeze
+        ));
     }
 
     /**
@@ -6957,13 +7138,13 @@
      */
     $.Object.deepFreeze = function (object) {
         $.Object.freeze(object);
-        $.Array.forEach($.Object.keys(object), function (propKey) {
+        forEach($.Object.keys(object), function (propKey) {
             var prop = object[propKey],
                 type = typeof prop;
 
-            if (prop !== null &&
+            if (type !== 'undefined' &&
+                    prop !== null &&
                     type !== 'boolean' &&
-                    type !== 'undefined' &&
                     type !== 'string' &&
                     type !== 'number' &&
                     !this.isFrozen(prop)) {
@@ -6991,9 +7172,9 @@
 
             var type = typeof object;
 
-            return object !== null &&
+            return type !== 'undefined' &&
+                object !== null &&
                 type !== 'boolean' &&
-                type !== 'undefined' &&
                 type !== 'string' &&
                 type !== 'number' &&
                 (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
@@ -7005,9 +7186,9 @@
             var type = typeof object,
                 val = false;
 
-            if (object !== null &&
+            if (type !== 'undefined' &&
+                    object !== null &&
                     type !== 'boolean' &&
-                    type !== 'undefined' &&
                     type !== 'string' &&
                     type !== 'number') {
 
@@ -7043,16 +7224,13 @@
         $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
-            var object = toObject(target),
-                args = iter(arguments, true, 1, arguments.length, false, function (it) {
-                    $.Array.push(this, it);
-                }, []);
+            var object = toObject(target);
 
-            $.Array.forEach(args, function (source) {
-                this.forEach($.Object.keys(toObjectFixIndexedAccess(source)), function (key) {
-                    this.assign(object, key, source[key]);
-                }, this);
-            }, $.Array);
+            forEach(safeSlice(arguments, 1, arguments.length), function (source) {
+                forEach(this(toObjectFixIndexedAccess(source)), function (key) {
+                    this(object, key, source[key]);
+                }, put);
+            }, $.Object.keys);
 
             return object;
         };
@@ -7163,7 +7341,7 @@
      * @returns {string}
      */
     $.String.prototype.escapeRegex = function () {
-        return $.String.replace(onlyCoercibleToString(this), base.RegExp.escapeThese, '\\$&');
+        return replace(onlyCoercibleToString(this), base.RegExp.escapeThese, '\\$&');
     };
 
     $.String.escapeRegex = toMethod($.String.prototype.escapeRegex);
@@ -7216,7 +7394,7 @@
             characters = toString(characters);
         }
 
-        return $.String.replace(onlyCoercibleToString(this), pattern, characters);
+        return replace(onlyCoercibleToString(this), pattern, characters);
     };
 
     $.String.replaceAll = toMethod($.String.prototype.replaceAll);
@@ -7262,7 +7440,7 @@
                 return false;
             }
 
-            return $.Object.deepEqual(slice(a), slice(b));
+            return $.Object.deepEqual(safeSlice(a, 0, a.length), safeSlice(b, 0, b.length));
         }
 
         var ka,
@@ -7351,7 +7529,7 @@
                 return false;
             }
 
-            return $.Object.deepStrictEqual(slice(a), slice(b));
+            return $.Object.deepStrictEqual(safeSlice(a, 0, a.length), safeSlice(b, 0, b.length));
         }
 
         var ka,
@@ -7489,11 +7667,10 @@
      * @param {*} value
      * @returns {string}
      */
-    $.customErrorReplacer = function () {
-        var value = iter(arguments, true, 1, 2, false, function (it) {
-                $.Array.push(this, it);
-            }, []),
-            type = typeof value,
+    $.customErrorReplacer = function (key, value) {
+        /*jslint unparam: true */
+        /*jshint unused: false */
+        var type = typeof value,
             result;
 
         if (type === 'string') {
@@ -7667,11 +7844,11 @@
 
             toString: $.Object.assign({
                 value: function () {
-                    var arr = $.String.split(this.message, base.RegExp.splitNewLine),
+                    var arr = split(this.message, base.RegExp.splitNewLine),
                         messageToString = this.name + ': ';
 
                     if (arr.length > 1) {
-                        arr = $.Array.filter(arr, function (element) {
+                        arr = filter(arr, function (element) {
                             var val;
 
                             if (!this(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
@@ -7682,7 +7859,7 @@
                             return val;
                         }, $.String.contains);
 
-                        messageToString += $.Array.join(arr, '\n');
+                        messageToString += join(arr, '\n');
                     } else {
                         messageToString += this.message;
                     }
@@ -7707,7 +7884,13 @@
      * @param {NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
      * @returns {Function}
      */
-    $.customError = (function (instanceOf, TypeError, SyntaxError, toString, isErrorTypeConstructor) {
+    $.customError = (function (
+        instanceOf,
+        TypeError,
+        SyntaxError,
+        toString,
+        isErrorTypeConstructor
+    ) {
         var isOkToUseOtherErrors,
             Custom;
 
@@ -7744,7 +7927,13 @@
 
             return makeCustomError(name, ErrorConstructor, maxMessageLength);
         };
-    }($.Object.instanceOf, base.TypeError.Ctr, base.SyntaxError.Ctr, toString, $.Error.isErrorTypeConstructor));
+    }(
+        $.Object.instanceOf,
+        base.TypeError.Ctr,
+        base.SyntaxError.Ctr,
+        toString,
+        $.Error.isErrorTypeConstructor
+    ));
 
     /*jslint maxlen: 125 */
     /**
@@ -7771,10 +7960,10 @@
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDsentinel, 'sentinel').value !== null ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 3).value !== 30 ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, '3').value !== 30 ||
-                !hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
+                !hop(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4).value !== Undefined ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5) !== Undefined ||
-                hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
+                hop(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
 
             throw new Error();
         }
@@ -7866,7 +8055,7 @@
             num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc && hasValidLength(object) && toString(num) === prop2;
-            if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
+            if (!$.Object.isPlainObject(temp1) || !hop(temp1, 'value')) {
                 if (cond1 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -7882,7 +8071,7 @@
 
             num = toLength(prop1);
             cond2 = notFunc && hasValidLength(object) && toString(num) === prop1;
-            if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
+            if (!$.Object.isPlainObject(temp2) || !hop(temp2, 'value')) {
                 if (cond2 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -7919,7 +8108,7 @@
             length;
 
         if (isString) {
-            array = $.String.split(object, '');
+            array = split(object, '');
         } else {
             array = object;
         }
@@ -8101,9 +8290,9 @@
                     value = holder[key],
                     type = typeof value;
 
-                if (value !== null &&
+                if (type !== 'undefined' &&
+                        value !== null &&
                         type !== 'boolean' &&
-                        type !== 'undefined' &&
                         type !== 'string' &&
                         type !== 'number' &&
                         isFunction(value.toJSON)) {
@@ -8224,15 +8413,15 @@
                 });
             };
         }(
-            $.RegExp.test,
-            $.String.replace,
+            test,
+            replace,
             charCodeAt,
             isFunction,
             toString,
-            $.Array.map,
-            $.Array.join,
-            $.Array.reduce,
-            $.Array.push,
+            map,
+            join,
+            reduce,
+            push,
             $.String.repeat,
             $.Object.keys,
             isArray,
@@ -8377,10 +8566,10 @@
                 throw new base.SyntaxError.Ctr('JSON.parse');
             };
         }(
-            $.Array.forEach,
+            forEach,
             $.Object.keys,
-            $.RegExp.test,
-            $.String.replace,
+            test,
+            replace,
             charCodeAt,
             isFunction,
             isTypeObject,
@@ -8399,23 +8588,24 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = function () {
-        var object = slice(toObjectFixIndexedAccess(this)),
+        var thiObj = toObjectFixIndexedAccess(this),
+            object = safeSlice(thiObj, 0, toLength(thiObj.length)),
             lastElement,
             val;
 
         if ($.String.isStringAny(object)) {
-            object = $.String.split(object, '');
+            object = split(object, '');
         }
 
         if (toLength(object.length) < 1) {
             val = [[]];
         } else {
             lastElement = pop(object);
-            val = $.Array.reduce($.Array.powerSet(object), function (previous, element) {
-                $.Array.push(previous, element);
-                element = slice(element);
-                $.Array.push(element, lastElement);
-                $.Array.push(previous, element);
+            val = reduce($.Array.powerSet(object), function (previous, element) {
+                push(previous, element);
+                element = safeSlice(element, 0, element.length);
+                push(element, lastElement);
+                push(previous, element);
 
                 return previous;
             }, []);
@@ -8437,7 +8627,7 @@
     $.Array.prototype.toObject = function () {
         var object = toObjectFixIndexedAccess(this);
 
-        return $.Array.reduce(object, function (acc, it, idx) {
+        return reduce(object, function (acc, it, idx) {
             acc[idx] = it;
             acc.length = idx + 1;
 
@@ -8457,8 +8647,8 @@
     function factory() {
         var utilx = {};
 
-        $.Array.forEach($.Object.keys($), function (key1) {
-            if (!this.hasOwn(utilx, 'methods')) {
+        forEach($.Object.keys($), function (key1) {
+            if (!hop(utilx, 'methods')) {
                 this.defineProperty(utilx, 'methods', this.assign({
                     value: []
                 }, base.properties.notEnumerable));
@@ -8469,37 +8659,37 @@
             }, base.properties.notEnumerable));
 
             if (this.isPlainObject($[key1])) {
-                if (!this.hasOwn(utilx[key1], 'methods')) {
+                if (!hop(utilx[key1], 'methods')) {
                     this.defineProperty(utilx[key1], 'methods', this.assign({
                         value: []
                     }, base.properties.notEnumerable));
                 }
 
-                $.Array.forEach(this.keys($[key1]), function (key2) {
-                    this.defineProperty(utilx[key1], key2, $.Object.assign({
+                forEach(this.keys($[key1]), function (key2) {
+                    this.defineProperty(utilx[key1], key2, this.assign({
                         value: $[key1][key2]
                     }, base.properties.notEnumerable));
 
                     if (this.isPlainObject($[key1][key2])) {
-                        if (!this.hasOwn(utilx[key1][key2], 'methods')) {
+                        if (!hop(utilx[key1][key2], 'methods')) {
                             this.defineProperty(utilx[key1][key2], 'methods', this.assign({
                                 value: []
                             }, base.properties.notEnumerable));
                         }
 
-                        $.Array.forEach(this.keys($[key1][key2]), function (key3) {
+                        forEach(this.keys($[key1][key2]), function (key3) {
                             this.defineProperty(utilx[key1][key2], key3, this.assign({
                                 value: $[key1][key2][key3]
                             }, base.properties.notEnumerable));
 
-                            $.Array.push(utilx[key1][key2].methods, key3);
+                            push(utilx[key1][key2].methods, key3);
                         }, this);
                     } else {
-                        $.Array.push(utilx[key1].methods, key2);
+                        push(utilx[key1].methods, key2);
                     }
                 }, this);
             } else {
-                $.Array.push(utilx.methods, key1);
+                push(utilx.methods, key1);
             }
         }, $.Object);
 
