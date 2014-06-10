@@ -14,6 +14,7 @@
             expect(utilx.Boolean.isBooleanAny(true)).to.be.ok();
             expect(utilx.Boolean.isBooleanAny(false)).to.be.ok();
             expect(utilx.Boolean.isBooleanAny()).to.not.be.ok();
+            expect(utilx.Boolean.isBooleanAny(undefined)).to.not.be.ok();
             expect(utilx.Boolean.isBooleanAny(null)).to.not.be.ok();
             expect(utilx.Boolean.isBooleanAny('')).to.not.be.ok();
             expect(utilx.Boolean.isBooleanAny(0)).to.not.be.ok();

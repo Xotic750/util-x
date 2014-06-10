@@ -111,7 +111,7 @@
                 utilx.Array.splice(array, 0, 1);
                 utilx.Array.splice(array, 0, 2);
                 array.pop();
-                utilx.Array.prototype.push.apply(array, makeArray(10, '-'));
+                Array.prototype.push.apply(array, makeArray(10, '-'));
                 utilx.Array.splice(array, array.length - 2, 10);
                 utilx.Array.splice(array);
                 utilx.Array.splice(array, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9);

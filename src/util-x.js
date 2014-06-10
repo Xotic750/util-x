@@ -769,7 +769,7 @@
      * @returns {*}
      */
 
-    var testShims = true,
+    var testShims = false,
 
         /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
@@ -1214,7 +1214,7 @@
         reduce,
         //reduceRight,
         filter,
-        indexOf,
+        //indexOf,
         //lastIndexOf,
         //trim,
         hasDontEnumBug = true,
@@ -2929,7 +2929,7 @@
                         var length = toLength(this.length);
 
                         if (hasValidLength(this)) {
-                            call(base.Array.push, toObjectCallFix(this), it);
+                            call(base.Array.push, this, it);
                             length = this.length;
                         } else {
                             this[length] = it;
@@ -2938,7 +2938,7 @@
                         }
                     }, []);
 
-                return apply(protoFn, checkThisArgFn(toObjectCallFix(thisArg)), args);
+                return apply(protoFn, checkThisArgFn(thisArg), args);
             };
         };
     }(
@@ -2947,7 +2947,9 @@
     ));
 
     if (baseToClassStr) {
-        toClassStr = toMethod(base.Object.toString);
+        toClassStr = toMethod(base.Object.toString, function (inputArg) {
+            return inputArg;
+        });
     }
 
     /**
@@ -4722,61 +4724,6 @@
                 getPrototypeOf(object) === base.Object.proto;
     };
 
-    /**
-     * Returns true if the specified searchElement is in the specified array.
-     * Using strict equality (the same method used by the === comparison operator).
-     * @memberof utilx.Array
-     * @name contains
-     * @function
-     * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@link undefined}
-     * @param {Object} searchElement
-     * @param {number} [fromIndex]
-     * @returns {boolean}
-     */
-    if (!testShims && isNative(base.Array.indexOf) && indexOf([0, 1], 1, 2) === -1) {
-        $.Array.prototype.contains = function (searchElement, fromIndex) {
-            /*jslint unparam: true */
-            /*jshint unused: false */
-            return apply(base.Array.indexOf, toObjectFixIndexedAccess(this), arguments) !== -1;
-        };
-    } else {
-        $.Array.prototype.contains = function (searchElement, fromIndex) {
-            var object = toObjectFixIndexedAccess(this),
-                length = toLength(object.length),
-                val = false;
-
-            if (length) {
-                if (arguments.length > 1) {
-                    fromIndex = toInteger(fromIndex);
-                } else {
-                    fromIndex = 0;
-                }
-
-                if (fromIndex < length) {
-                    if (fromIndex < 0) {
-                        fromIndex = length - abs(fromIndex);
-                        if (fromIndex < 0) {
-                            fromIndex = 0;
-                        }
-                    }
-
-                    iter(object, true, fromIndex, length, false, function (it) {
-                        if (searchElement === it) {
-                            val = true;
-                        }
-
-                        return val;
-                    });
-                }
-            }
-
-            return val;
-        };
-    }
-
-    $.Array.contains = toMethod($.Array.prototype.contains);
-
     //Test for hasDontEnumBug and hasFuncProtoBug.
     enumer({toString: null}, false, function (it, prop) {
         hasDontEnumBug = prop !== 'toString' || it !== null;
@@ -6427,8 +6374,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
-    if (!testShims && isNative(base.Array.indexOf) && indexOf([0, 1], 1, 2) === -1) {
-        $.Array.indexOf = indexOf;
+    if (!testShims && isNative(base.Array.indexOf) && call(base.Array.indexOf, [0, 1], 1, 2) === -1) {
+        $.Array.indexOf = toMethod(base.Array.indexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
@@ -6466,7 +6413,63 @@
         $.Array.indexOf = toMethod($.Array.prototype.indexOf);
     }
 
-    indexOf = $.Array.indexOf;
+    //indexOf = $.Array.indexOf;
+
+    /**
+     * Returns true if the specified searchElement is in the specified array.
+     * Using strict equality (the same method used by the === comparison operator).
+     * @memberof utilx.Array
+     * @name contains
+     * @function
+     * @param {ArrayLike} array
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
+     * @param {Object} searchElement
+     * @param {number} [fromIndex]
+     * @returns {boolean}
+     */
+    if (!testShims && isNative(base.Array.indexOf) && call(base.Array.indexOf, [0, 1], 1, 2) === -1) {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            /*jslint unparam: true */
+            /*jshint unused: false */
+            return apply(base.Array.indexOf, toObjectFixIndexedAccess(this), arguments) !== -1;
+        };
+    } else {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            var object = toObjectFixIndexedAccess(this),
+                length = toLength(object.length),
+                val = false;
+
+            if (length) {
+                if (arguments.length > 1) {
+                    fromIndex = toInteger(fromIndex);
+                } else {
+                    fromIndex = 0;
+                }
+
+                if (fromIndex < length) {
+                    if (fromIndex < 0) {
+                        fromIndex = length - abs(fromIndex);
+                        if (fromIndex < 0) {
+                            fromIndex = 0;
+                        }
+                    }
+
+                    iter(object, true, fromIndex, length, false, function (it) {
+                        if (searchElement === it) {
+                            val = true;
+                        }
+
+                        return val;
+                    });
+                }
+            }
+
+            return val;
+        };
+    }
+
+    $.Array.contains = toMethod($.Array.prototype.contains);
+
     /**
      * This {@link boundPrototypalFunction method} returns the first index at which a given element
      * can be found in the array, or -1 if it is not present.
@@ -8087,8 +8090,8 @@
             cond2;
 
         if (prop1 !== prop2) {
-            temp1 = $.Object.getOwnPropertyDescriptor(object, prop1);
-            temp2 = $.Object.getOwnPropertyDescriptor(object, prop2);
+            temp1 = $.Object.getOwnPropertyDescriptor(object, prop1) || {};
+            temp2 = $.Object.getOwnPropertyDescriptor(object, prop2) || {};
             num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc && hasValidLength(object) && toString(num) === prop2;
