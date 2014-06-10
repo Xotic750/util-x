@@ -89,7 +89,7 @@
     } catch (e) {
         type = typeof console;
         str = e.toString();
-        logit = (logit || str.indexOf('test if we see info') === -1) &&
+        logit = (logit || typeof e.stack !== 'string' || str.indexOf('test if we see info') === -1) &&
             type !== 'undefined' &&
             console !== null &&
             type !== 'boolean' &&

@@ -202,6 +202,11 @@
                 actual = obj;
             });
 
+            if (typeof actual !== 'object') {
+                /*global console */
+                console.log('actual', actual);
+            }
+
             expect(typeof actual).to.be('object');
             expect(utilx.Object.ToClassString(actual)).to.be('[object String]');
             expect(actual.toString()).to.be('foo');
