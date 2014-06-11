@@ -266,7 +266,7 @@
      * @type {Object.<string, Function>}
      */
     base.JSON = {};
-    if (typeof JSON === 'object') {
+    if (typeof JSON === 'object' && JSON !== null) {
         base.JSON.parse = JSON.parse;
         base.JSON.stringify = JSON.stringify;
     }
@@ -769,7 +769,376 @@
      * @returns {*}
      */
 
-    var testShims = false,
+    /**
+     * To be used when isFunction has not yet been defined
+     * @private
+     * @name isFunctionFallback
+     * @function
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    function isFunctionFallback(inputArg) {
+        var isFn = false,
+            type;
+
+        if (inputArg !== null) {
+            type = typeof inputArg;
+            if ((type === 'function' || type === 'object') &&
+                    'constructor' in inputArg &&
+                    'call' in inputArg &&
+                    'apply' in inputArg &&
+                    'length' in inputArg) {
+
+                isFn = true;
+            }
+        }
+
+        return isFn;
+    }
+
+    var testShims = true,
+
+        // constants
+        POSITIVE_ZERO = +0,
+        NEGATIVE_ZERO = -0,
+        WORD8 = 128,
+        UWORD8 = 256,
+        WORD16 = 32768,
+        UWORD16 = 65536,
+        WORD32 = 2147483648,
+        UWORD32 = 4294967296,
+        MAX_UINT32 = 4294967295,
+        MAX_INT32 = 2147483647,
+        MIN_INT32 = -2147483648,
+        MAX_UINT16 = 65535,
+        MAX_INT16 = 32767,
+        MIN_INT16 = -32768,
+        MAX_UINT8 = 255,
+        MAX_INT8 = 127,
+        MIN_INT8 = -128,
+        MAX_SAFE_INTEGER = 9007199254740991,
+        MIN_SAFE_INTEGER = -9007199254740991,
+        UNSAFE_INTEGER = 9007199254740992,
+        MAX_VALUE = 1.7976931348623157e+308,
+        MIN_VALUE = 5e-324,
+        EPSILON = 2.220446049250313e-16,
+
+        /**
+         * The Object constructor creates an object wrapper.
+         * shortcut
+         * @private
+         * @name cObject
+         * @function
+         * @param {*} inputArg
+         * @throws TypeError if inputArg is {@link null} or {@link undefined}
+         * @returns {*}
+         */
+        cObject = base.Object.Ctr,
+
+        /**
+         * shortcut
+         * @private
+         * @name mMin
+         * @function
+         * @param {number} number
+         * @returns {number}
+         */
+        mMin = base.Math.min,
+
+        /**
+         * shortcut
+         * @private
+         * @name mMax
+         * @function
+         * @param {number} number
+         * @returns {number}
+         */
+        mMax = base.Math.max,
+
+        /**
+         * shortcut
+         * @private
+         * @name floor
+         * @function
+         * @param {number} number
+         * @returns {number}
+         */
+        floor = base.Math.floor,
+
+        /**
+         * shortcut
+         * @private
+         * @name abs
+         * @function
+         * @param {number} number
+         * @returns {number}
+         */
+        abs = base.Math.abs,
+
+        /**
+         * shortcut
+         * @private
+         * @name ceil
+         * @function
+         * @param {number} number
+         * @returns {number}
+         */
+        ceil = base.Math.ceil,
+
+        /**
+         * shortcut
+         * @private
+         * @name random
+         * @function
+         * @returns {number}
+         */
+        random = base.Math.random,
+
+        /**
+         * Returns true if the operand inputArg is a Function.
+         * @private
+         * @name isFunction
+         * @function
+         * @param {*} inputArg
+         * @returns {boolean}
+         * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+         */
+        isFunction,
+
+        /**
+         * Uses isFunction if defined otherwise isFunctionFallback
+         * @private
+         * @name isFun
+         * @function
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        isFun = function (inputArg) {
+            return (isFunction && isFunction(inputArg)) || (!isFunction && isFunctionFallback(inputArg));
+        },
+
+        /**
+         * Throws a TypeError if arguments is not a function otherwise returns the function.
+         * @private
+         * @function throwIfNotAFunction
+         * @param {*} inputArg
+         * @throws {TypeError} if inputArg is not a {@link Function function}.
+         * @returns {Function}
+         */
+        throwIfNotAFunction = function (inputArg) {
+            if (!isFun(inputArg)) {
+                throw new base.TypeError.Ctr('Argument is not a function: ' + inputArg);
+            }
+
+            return inputArg;
+        },
+
+        /**
+         * The abstract operation throws an error if its argument is a value that cannot be
+         * converted to an Object, otherwise returns the argument.
+         * @private
+         * @name checkObjectCoercible
+         * @function
+         * @param {*} inputArg
+         * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
+         * @returns {*}
+         * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
+         */
+        checkObjectCoercible = function (inputArg) {
+            var type = typeof inputArg;
+
+            if (type === 'undefined' || inputArg === null) {
+                throw new base.TypeError.Ctr('Cannot convert argument to object: ' + inputArg);
+            }
+
+            return inputArg;
+        },
+
+        /**
+         * The function evaluates the passed value and converts it to an integer.
+         * @private
+         * @name toInteger
+         * @function
+         * @param {*} inputArg
+         * @returns {number}
+         * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toInteger
+         */
+        toInteger = function (inputArg) {
+            var number = +inputArg,
+                val = 0;
+
+            if (number === number) {
+                if (!number || number === Infinity || number === -Infinity) {
+                    val = number;
+                } else {
+                    val = (number > 0 || -1) * floor(abs(number));
+                }
+            }
+
+            return val;
+        },
+
+        /**
+         * The abstract operation ToLength converts its argument to an integer suitable for use as the length
+         * of an array-like object.
+         * @private
+         * @name toLength
+         * @function
+         * @param {*} inputArg
+         * @returns {number}
+         * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+         */
+        toLength = function (inputArg) {
+            var length = toInteger(inputArg);
+
+            if (length <= 0) {
+                length = 0;
+            }
+
+            return mMin(length, MAX_SAFE_INTEGER);
+        },
+
+        /**
+         * The abstract operation CreateListFromArrayLike is used to create a List value whose elements
+         * are provided by the indexed properties of an array-like object.
+         * @private
+         * @function createListFromArrayLike
+         * @param {ArrayLike} inputArg
+         * @throws {TypeError} if inputArg is not an {@link Object object}.
+         * @returns {Array}
+         * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-createlistfromarraylike
+         */
+        /*
+        createListFromArrayLike = function (inputArg) {
+            if (inputArg === null || typeof inputArg !== 'object' || isFun(inputArg)) {
+                throw new base.TypeError.Ctr('Arguments list has wrong type: ' + inputArg);
+            }
+
+            var length = toLength(inputArg.length),
+                list = [],
+                next = 0,
+                index;
+
+            for (index = 0; index < length; index += 1) {
+                list[next] = inputArg[index];
+                next += 1;
+                if (next > list.length) {
+                    list.length = next;
+                }
+            }
+
+            return list;
+        },
+        */
+
+        /**
+         * @private
+         * @name argSlice
+         * @function
+         * @param {ArrayLike} array
+         * @param {NumberLike} [start]
+         * @param {NumberLike} [end]
+         * @returns {Array}
+         */
+        argSlice = function (args, start, end) {
+            var list = [],
+                index,
+                relIdx;
+
+            for (start = start || 0, end = end || args.length, index = start; index < end; index += 1) {
+                if (index in args) {
+                    relIdx = index - start;
+                    list[relIdx] = args[index];
+                    if (relIdx + 1 > list.length) {
+                        list.length = relIdx + 1;
+                    }
+                }
+            }
+
+            return list;
+        },
+
+        /**
+         * @private
+         * @name returnThis
+         * @function
+         * @returns {(object|undefined)} depends on strict mode
+         */
+        returnThis = function () {
+            return this;
+        },
+
+        /**
+         * This method calls a function with a given this value and arguments provided individually.
+         * @private
+         * @name callProto
+         * @function
+         * @param {*} thisArg
+         * @param {...*} [varArgs]
+         * @returns {*}
+         */
+        /*
+        callProto = function (thisArg) {
+            throwIfNotAFunction(this);
+
+            var argsArray = createListFromArrayLike(arguments),
+                applyFn = 'apply:' + this,
+                type,
+                val;
+
+            if (returnThis()) {
+                type = typeof thisArg;
+                if (type === 'boolean' || type === 'number' || type === 'string') {
+                    thisArg = cObject(thisArg);
+                }
+            }
+
+            this[applyFn] = base.Function.apply;
+            val = this[applyFn](thisArg, argSlice(argsArray, 1));
+            delete this[applyFn];
+
+            return val;
+        },
+        */
+
+        /**
+         * This method calls a function with a given this value and arguments provided individually.
+         * @private
+         * @name applyProto
+         * @function
+         * @param {*} thisArg
+         * @param {ArrayLike} [argsArray]
+         * @returns {*}
+         */
+        /*
+        applyProto = function (thisArg, argsArray) {
+            throwIfNotAFunction(this);
+
+            var applyFn = 'apply:' + this,
+                type,
+                val;
+
+            if (returnThis()) {
+                type = typeof thisArg;
+                if (type === 'boolean' || type === 'number' || type === 'string') {
+                    thisArg = cObject(thisArg);
+                }
+            }
+
+            type = typeof argsArray;
+            if (type === 'undefined' || argsArray === null) {
+                argsArray = [];
+            } else {
+                argsArray = createListFromArrayLike(argsArray);
+            }
+
+            this[applyFn] = base.Function.apply;
+            val = this[applyFn](thisArg, argsArray);
+            delete this[applyFn];
+
+            return val;
+        },
+        */
 
         /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
@@ -781,43 +1150,14 @@
          * @returns {boundPrototypalFunction}
          */
         toMethod = function (protoFn, checkThisArgFn) {
-            var type = typeof protoFn;
+            throwIfNotAFunction(protoFn);
 
-            if (type === 'undefined' ||
-                    protoFn === null ||
-                    type === 'boolean' ||
-                    type === 'string' ||
-                    type === 'number' ||
-                    !protoFn.constructor ||
-                    !protoFn.call ||
-                    !protoFn.apply) {
-
-                return Undefined;
-            }
-
-            type = typeof checkThisArgFn;
-            if (type === 'undefined' ||
-                    protoFn === null ||
-                    type === 'boolean' ||
-                    type === 'string' ||
-                    type === 'number' ||
-                    !checkThisArgFn.constructor ||
-                    !checkThisArgFn.call ||
-                    !checkThisArgFn.apply) {
-
-                checkThisArgFn = function (inputArg) {
-                    var itype = typeof inputArg;
-
-                    if (itype === 'undefined' || inputArg === null) {
-                        throw new base.TypeError.Ctr('Cannot convert "' + itype + '" to object');
-                    }
-
-                    return inputArg;
-                };
+            if (!isFun(checkThisArgFn)) {
+                checkThisArgFn = checkObjectCoercible;
             }
 
             return function (thisArg) {
-                return protoFn.apply(checkThisArgFn(thisArg), base.Array.slice.call(arguments, 1));
+                return protoFn.apply(checkThisArgFn(thisArg), argSlice(arguments, 1));
             };
         },
 
@@ -830,7 +1170,7 @@
          * @param {...*} [varArgs]
          * @returns {*}
          */
-        call = toMethod(base.Function.call),
+        //call = toMethod(base.Function.call),
 
         /**
          * @private
@@ -841,7 +1181,7 @@
          * @param {ArrayLike} [argsArray]
          * @returns {*}
          */
-        apply = toMethod(base.Function.apply),
+        //apply = toMethod(base.Function.apply),
 
         /**
          * @private
@@ -865,41 +1205,36 @@
 
         /**
          * @private
-         * @name toClassStr
+         * @name toClass
          * @function
          * @param {*} inputArg
          * @returns {string}
          */
-        baseToClassStr = true,
-        toClassStr = (function (
-            call,
-            ts,
-            classString
-        ) {
+        toClass = (function () {
             try {
                 if (testShims ||
-                        call(ts) !== classString.Undefined ||
-                        call(ts, null) !== classString.Null ||
-                        call(ts, base.RegExp.proto) !== classString.regexp ||
-                        call(ts, base.String.proto) !== classString.string ||
-                        call(ts, base.Error.proto) !== classString.error ||
-                        call(ts, returnArgs()) !== classString.arguments) {
+                        base.Object.toString.call() !== base.classString.Undefined ||
+                        base.Object.toString.call(null) !== base.classString.Null ||
+                        base.Object.toString.call(base.RegExp.proto) !== base.classString.regexp ||
+                        base.Object.toString.call(base.String.proto) !== base.classString.string ||
+                        base.Object.toString.call(base.Error.proto) !== base.classString.error ||
+                        base.Object.toString.call(returnArgs()) !== base.classString.arguments) {
 
                     throw new Error();
                 }
 
-                return toMethod(ts);
+                return toMethod(base.Object.toString, function (inputArg) {
+                    return inputArg;
+                });
             } catch (eClass) {
-                baseToClassStr = false;
-
                 return function (inputArg) {
                     var type = typeof inputArg,
                         val;
 
                     if (type === 'undefined') {
-                        val = classString.Undefined;
+                        val = base.classString.Undefined;
                     } else if (inputArg === null) {
-                        val = classString.Null;
+                        val = base.classString.Null;
                     } else if (type === 'object' &&
                             !hasOwn(inputArg, 'arguments') &&
                             hasOwn(inputArg, 'callee') &&
@@ -908,35 +1243,31 @@
                             !isEnumerable(inputArg, 'length') &&
                             typeof inputArg.length === 'number') {
 
-                        val = classString.arguments;
+                        val = base.classString.arguments;
                     } else if (inputArg === base.Number.proto) {
-                        val = classString.number;
+                        val = base.classString.number;
                     } else if (inputArg === base.Boolean.proto) {
-                        val = classString.Boolean;
+                        val = base.classString.Boolean;
                     } else if (inputArg === base.Object.proto) {
-                        val = classString.object;
+                        val = base.classString.object;
                     } else if (inputArg === base.Function.proto) {
-                        val = classString.Function;
+                        val = base.classString.Function;
                     } else if (inputArg === base.String.proto) {
-                        val = classString.string;
+                        val = base.classString.string;
                     } else if (inputArg === base.Date.proto) {
-                        val = classString.date;
+                        val = base.classString.date;
                     } else if (inputArg === base.RegExp.proto) {
-                        val = classString.regexp;
+                        val = base.classString.regexp;
                     } else if (isErrorTypePrototype(inputArg)) {
-                        val = classString.error;
+                        val = base.classString.error;
                     } else {
-                        val = call(ts, inputArg);
+                        val = base.Object.toString.call(inputArg);
                     }
 
                     return val;
                 };
             }
-        }(
-            call,
-            base.Object.toString,
-            base.classString
-        )),
+        }()),
 
         /**
          * @private
@@ -1103,59 +1434,6 @@
 
         /**
          * @private
-         * @name mMin
-         * @function
-         * @param {number} number
-         * @returns {number}
-         */
-        mMin = base.Math.min,
-
-        /**
-         * @private
-         * @name mMax
-         * @function
-         * @param {number} number
-         * @returns {number}
-         */
-        mMax = base.Math.max,
-
-        /**
-         * @private
-         * @name floor
-         * @function
-         * @param {number} number
-         * @returns {number}
-         */
-        floor = base.Math.floor,
-
-        /**
-         * @private
-         * @name abs
-         * @function
-         * @param {number} number
-         * @returns {number}
-         */
-        abs = base.Math.abs,
-
-        /**
-         * @private
-         * @name ceil
-         * @function
-         * @param {number} number
-         * @returns {number}
-         */
-        ceil = base.Math.ceil,
-
-        /**
-         * @private
-         * @name random
-         * @function
-         * @returns {number}
-         */
-        random = base.Math.random,
-
-        /**
-         * @private
          * @name exec
          * @function
          * @param {RegExp} regex
@@ -1169,32 +1447,15 @@
         /**
          * @private
          * @name isStrictMode
-         * @function
-         * @return {*}
-         */
-        returnThis = function () {
-            return this;
-        },
-
-        /**
-         * @private
-         * @name isStrictMode
          * @type {boolean}
          */
         isStrictMode = !returnThis(),
 
-        cObject = base.Object.Ctr,
-        hop,
         hasOwnProp,
-        checkObjectCoercible,
         toString,
-        //toObject,
         toObjectFixIndexedAccess,
-        toInteger,
-        toLength,
         isPrimitive,
         isNotPrimitive,
-        isFunction,
         isNative,
         internalSlice,
         isArguments,
@@ -1208,15 +1469,9 @@
         modulo,
         put,
         forEach,
-        //every,
-        //some,
         map,
         reduce,
-        //reduceRight,
         filter,
-        //indexOf,
-        //lastIndexOf,
-        //trim,
         hasDontEnumBug = true,
         hasFuncProtoBug = false,
         hasErrorProps,
@@ -1236,31 +1491,6 @@
         unwantedErrorPropsFilter,
 
         publicUtil,
-
-        // constants
-        POSITIVE_ZERO = +0,
-        NEGATIVE_ZERO = -0,
-        WORD8 = 128,
-        UWORD8 = 256,
-        WORD16 = 32768,
-        UWORD16 = 65536,
-        WORD32 = 2147483648,
-        UWORD32 = 4294967296,
-        MAX_UINT32 = 4294967295,
-        MAX_INT32 = 2147483647,
-        MIN_INT32 = -2147483648,
-        MAX_UINT16 = 65535,
-        MAX_INT16 = 32767,
-        MIN_INT16 = -32768,
-        MAX_UINT8 = 255,
-        MAX_INT8 = 127,
-        MIN_INT8 = -128,
-        MAX_SAFE_INTEGER = 9007199254740991,
-        MIN_SAFE_INTEGER = -9007199254740991,
-        UNSAFE_INTEGER = 9007199254740992,
-        MAX_VALUE = 1.7976931348623157e+308,
-        MIN_VALUE = 5e-324,
-        EPSILON = 2.220446049250313e-16,
 
         /** @namespace {Object} utilx */
         $ = {
@@ -1325,7 +1555,7 @@
             JSON: {}
         },
 
-        hasCallBug = (!isStrictMode && typeof call(returnThis, 'foo') === 'string');
+        hasCallBug = (!isStrictMode && typeof returnThis.call('foo') === 'string');
 
     function toObjectCallFix(inputArg) {
         var type;
@@ -1988,7 +2218,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanObject = function (inputArg) {
-        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.Boolean;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -2000,9 +2230,10 @@
      * @returns {boolean}
      */
     $.Boolean.isTrueObject = function (inputArg) {
-        return typeof inputArg === 'object' &&
-                toClassStr(inputArg) === base.classString.Boolean &&
-                call(base.Boolean.valueOf, inputArg);
+        return inputArg !== null &&
+                typeof inputArg === 'object' &&
+                toClass(inputArg) === base.classString.Boolean &&
+                base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2014,9 +2245,10 @@
      * @returns {boolean}
      */
     $.Boolean.isFalseObject = function (inputArg) {
-        return typeof inputArg === 'object' &&
-                toClassStr(inputArg) === base.classString.Boolean &&
-                !call(base.Boolean.valueOf, inputArg);
+        return inputArg !== null &&
+                typeof inputArg === 'object' &&
+                toClass(inputArg) === base.classString.Boolean &&
+                !base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2028,7 +2260,7 @@
      * @returns {boolean}
      */
     $.String.isStringObject = function (inputArg) {
-        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.string;
     };
 
     /**
@@ -2040,7 +2272,7 @@
      * @returns {boolean}
      */
     $.Number.isNumberObject = function (inputArg) {
-        return typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.number;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.number;
     };
 
     /**
@@ -2052,7 +2284,7 @@
      * @returns {boolean}
      */
     $.Boolean.isBooleanAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.Boolean;
+        return toClass(inputArg) === base.classString.Boolean;
     };
 
     /**
@@ -2064,7 +2296,7 @@
      * @returns {boolean}
      */
     $.Boolean.isTrueAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.Boolean && call(base.Boolean.valueOf, inputArg);
+        return toClass(inputArg) === base.classString.Boolean && base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2076,7 +2308,7 @@
      * @returns {boolean}
      */
     $.Boolean.isFalseAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.Boolean && !call(base.Boolean.valueOf, inputArg);
+        return toClass(inputArg) === base.classString.Boolean && !base.Boolean.valueOf.call(inputArg);
     };
 
     /**
@@ -2088,7 +2320,7 @@
      * @returns {boolean}
      */
     $.String.isStringAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.string;
+        return toClass(inputArg) === base.classString.string;
     };
 
     /**
@@ -2100,7 +2332,7 @@
      * @returns {boolean}
      */
     $.Number.isNumberAny = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.number;
+        return toClass(inputArg) === base.classString.number;
     };
 
     /**
@@ -2131,11 +2363,11 @@
      * @returns {boolean}
      */
     $.String.isEmptyObject = function (inputArg) {
-        var isStr = typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string,
+        var isStr = inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.string,
             isEm;
 
         if (isStr) {
-            isEm = !call(base.String.valueOf, inputArg);
+            isEm = !base.String.valueOf.call(inputArg);
         }
 
         return isEm;
@@ -2150,11 +2382,11 @@
      * @returns {boolean}
      */
     $.String.isEmptyAny = function (inputArg) {
-        var isStr = toClassStr(inputArg) === base.classString.string,
+        var isStr = toClass(inputArg) === base.classString.string,
             isEm;
 
         if (isStr) {
-            isEm = !call(base.String.valueOf, inputArg);
+            isEm = !base.String.valueOf.call(inputArg);
         }
 
         return isEm;
@@ -2188,11 +2420,11 @@
      * @returns {boolean}
      */
     $.String.isNotEmptyObject = function (inputArg) {
-        var isStr = typeof inputArg === 'object' && toClassStr(inputArg) === base.classString.string,
+        var isStr = inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.string,
             isEm;
 
         if (isStr) {
-            isEm = !!call(base.String.valueOf, inputArg);
+            isEm = !!base.String.valueOf.call(inputArg);
         }
 
         return isEm;
@@ -2207,11 +2439,11 @@
      * @returns {boolean}
      */
     $.String.isNotEmptyAny = function (inputArg) {
-        var isStr = toClassStr(inputArg) === base.classString.string,
+        var isStr = toClass(inputArg) === base.classString.string,
             isEm;
 
         if (isStr) {
-            isEm = !!call(base.String.valueOf, inputArg);
+            isEm = !!base.String.valueOf.call(inputArg);
         }
 
         return isEm;
@@ -2226,7 +2458,7 @@
      * @returns {boolean}
      */
     $.Object.isArguments = isArguments = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.arguments;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.arguments;
     };
 
     /**
@@ -2238,7 +2470,17 @@
      * @returns {boolean}
      */
     $.RegExp.isRegExp = isRegExp = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.regexp;
+        var isRx = false,
+            type;
+
+        if (inputArg !== null) {
+            type = typeof inputArg;
+            if ((type === 'object' || type === 'function') && toClass(inputArg) === base.classString.regexp) {
+                isRx = true;
+            }
+        }
+
+        return isRx;
     };
 
     /**
@@ -2249,15 +2491,6 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    if (!testShims && typeof base.RegExp.testStr === 'object') {
-        $.Object.isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object';
-        };
-    } else {
-        $.Object.isTypeOfObject = function (inputArg) {
-            return typeof inputArg === 'object' || toClassStr(inputArg) === base.classString.regexp;
-        };
-    }
 
     /**
      * Returns true if the operand inputArg is of type Object but not if null.
@@ -2267,16 +2500,25 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    if (!testShims && typeof base.RegExp.testStr === 'object') {
-        $.Object.isTypeObject = isTypeObject = function (inputArg) {
+    if (!testShims && base.RegExp.testStr !== null && typeof base.RegExp.testStr === 'object') {
+        $.Object.isTypeOfObject = function (inputArg) {
+            return inputArg === null || typeof inputArg === 'object';
+        };
+
+        $.Object.isTypeObject = function (inputArg) {
             return inputArg !== null && typeof inputArg === 'object';
         };
     } else {
-        $.Object.isTypeObject = isTypeObject = function (inputArg) {
-            return inputArg !== null &&
-                (typeof inputArg === 'object' || toClassStr(inputArg) === base.classString.regexp);
+        $.Object.isTypeOfObject = function (inputArg) {
+            return inputArg === null || typeof inputArg === 'object' || toClass(inputArg) === base.classString.regexp;
+        };
+
+        $.Object.isTypeObject = function (inputArg) {
+            return inputArg !== null && (typeof inputArg === 'object' || toClass(inputArg) === base.classString.regexp);
         };
     }
+
+    isTypeObject = $.Object.isTypeObject;
 
     /**
      * The abstract operation converts its argument to a value of type string
@@ -2295,9 +2537,9 @@
             throw new Error();
         }
 
-        $.String.ToString = toString = base.String.Ctr;
+        $.String.ToString = base.String.Ctr;
     } catch (eToString) {
-        $.String.ToString = toString = function (inputArg) {
+        $.String.ToString = function (inputArg) {
             var type = typeof inputArg,
                 val;
 
@@ -2313,6 +2555,8 @@
         };
     }
 
+    toString = $.String.ToString;
+
     /**
      * Returns true if the operand inputArg is an error.
      * @memberof utilx.Error
@@ -2322,7 +2566,7 @@
      * @returns {boolean}
      */
     $.Error.isError = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.error;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.error;
     };
 
     /**
@@ -2334,7 +2578,7 @@
      * @returns {boolean}
      */
     $.Date.isDate = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.date;
+        return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.date;
     };
 
     /**
@@ -2346,7 +2590,7 @@
         var item;
 
         if (object) {
-            if (toClassStr(object) === base.classString.string) {
+            if (toClass(object) === base.classString.string) {
                 item = charAt(object, index);
             } else {
                 item = object[index];
@@ -2355,13 +2599,11 @@
 
         if (has) {
             if (index in object) {
-                //if (call(fn, thisArg, item, index, object)) {
                 if (fn.call(toObjectCallFix(thisArg), item, index, object)) {
                     return true;
                 }
             }
         } else {
-            //if (call(fn, thisArg, item, index, object)) {
             if (fn.call(toObjectCallFix(thisArg), item, index, object)) {
                 return true;
             }
@@ -2378,7 +2620,7 @@
     function iter(object, has, start, length, reverse, fn, thisArg) {
         var index;
 
-        if (!base.Array.canEnumerArgs && toClassStr(object) === base.classString.arguments) {
+        if (!base.Array.canEnumerArgs && toClass(object) === base.classString.arguments) {
             has = false;
         }
 
@@ -2423,15 +2665,13 @@
         for (prop in object) {
             item = object[prop];
             if (own) {
-                if ((hasOwnProp || hop || hasOwn)(object, prop)) {
-                    if (call(fn, thisArg, item, prop, object)) {
-                    //if (fn.call(thisArg, item, prop, object)) {
+                if ((hasOwnProp || hasOwn)(object, prop)) {
+                    if (fn.call(thisArg, item, prop, object)) {
                         break;
                     }
                 }
             } else {
-                if (call(fn, thisArg, item, prop, object)) {
-                //if (fn.call(thisArg, item, prop, object)) {
+                if (fn.call(thisArg, item, prop, object)) {
                     break;
                 }
             }
@@ -2472,10 +2712,10 @@
      * @returns {boolean}
      */
     $.Object.areSameClass = function (a, b) {
-        var classA = toClassStr(a);
+        var classA = toClass(a);
 
-        return classA === toClassStr(b) && !iter(arguments, true, 2, arguments.length, false, function (arg) {
-            this.same = classA !== toClassStr(arg);
+        return classA === toClass(b) && !iter(arguments, true, 2, arguments.length, false, function (arg) {
+            this.same = classA !== toClass(arg);
 
             return this.same;
         }, {}).same;
@@ -2494,7 +2734,7 @@
             string,
             number;
 
-        if (toClassStr(inputArg) === base.classString.number || toClassStr(inputArg) === base.classString.string) {
+        if (toClass(inputArg) === base.classString.number || toClass(inputArg) === base.classString.string) {
             string = $.String.replace(inputArg, base.RegExp.plusMinus, '');
             number = base.parseFloat(string);
             val = number === number && base.isFinite(string);
@@ -2514,13 +2754,13 @@
      * @returns {boolean}
      */
     $.Number.inRange = function (value, min, max) {
-        if (toClassStr(min) === base.classString.number || isNumeric(min)) {
+        if (toClass(min) === base.classString.number || isNumeric(min)) {
             min = +min;
         } else {
             min = NaN;
         }
 
-        if (toClassStr(max) === base.classString.number || isNumeric(max)) {
+        if (toClass(max) === base.classString.number || isNumeric(max)) {
             max = +max;
         } else {
             max = NaN;
@@ -2540,19 +2780,19 @@
      * @returns {boolean}
      */
     $.Number.outRange = function (value, min, max) {
-        if ((toClassStr(value) === base.classString.number && !base.isNaN(value)) || isNumeric(value)) {
+        if ((toClass(value) === base.classString.number && !base.isNaN(value)) || isNumeric(value)) {
             value = +value;
         } else {
             return true;
         }
 
-        if ((toClassStr(min) === base.classString.number && !base.isNaN(min)) || isNumeric(min)) {
+        if ((toClass(min) === base.classString.number && !base.isNaN(min)) || isNumeric(min)) {
             min = +min;
         } else {
             return true;
         }
 
-        if ((toClassStr(max) === base.classString.number && !base.isNaN(min)) || isNumeric(max)) {
+        if ((toClass(max) === base.classString.number && !base.isNaN(min)) || isNumeric(max)) {
             max = +max;
         } else {
             return true;
@@ -2578,15 +2818,7 @@
      * @returns {*}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
      */
-    $.Object.CheckObjectCoercible = checkObjectCoercible = function (inputArg) {
-        var type = typeof inputArg;
-
-        if (type === 'undefined' || inputArg === null) {
-            throw new base.TypeError.Ctr('Cannot convert "' + toString(inputArg) + '" to object');
-        }
-
-        return inputArg;
-    };
+    $.Object.CheckObjectCoercible = checkObjectCoercible;
 
     /**
      * Returns a string only if the arguments is coercible otherwise throws an error.
@@ -2634,7 +2866,7 @@
         return function (inputArg) {
             var object = cObject(checkObjectCoercible(inputArg));
 
-            if (shouldSplitString && toClassStr(object) === classString) {
+            if (shouldSplitString && toClass(object) === classString) {
                 iter(object, false, 0, object.length, false, function (it, idx, obj) {
                     obj[idx] = it;
                 });
@@ -2660,7 +2892,9 @@
         return toString(property) in cObject(checkObjectCoercible(object));
     };
 
-    (function (toClassStr, classString, test) {
+    (function (
+        classString
+    ) {
         var beginsFunction = new RegExp('^\\s*\\bfunction\\b'),
             runIENativeFunction,
             isIENativeFunction,
@@ -2677,7 +2911,7 @@
          * @returns {boolean}
          */
         function isFunctionBasic(inputArg) {
-            return toClassStr(inputArg) === classString ||
+            return toClass(inputArg) === classString ||
                     (typeof inputArg === 'function' && inputArg.call && inputArg.apply);
         }
 
@@ -2687,7 +2921,7 @@
             // as scope to evaluate ... only IE, sure
             if (isNotPrimitive(window) && window.alert) {
                 //base.Function.toString.call(window.alert);
-                call(base.Function.toString, window.alert);
+                base.Function.toString.call(window.alert);
             }
         } catch (eRunIENativeFunction) {
             runIENativeFunction = true;
@@ -2746,7 +2980,7 @@
         try {
             /*jslint evil: true */
             //eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
-            eval('(' + call(base.Function.toString, base.Function.Ctr) + ')');
+            eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
             /*jslint evil: false */
             // Opera 10 doesn't play ball so have to test the string
             operaNative = new RegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|' +
@@ -2769,7 +3003,7 @@
                     ownToString = inputArg.toString;
                     /*jslint evil: true */
                     //eval('(' + ownToString.call(inputArg) + ')');
-                    eval('(' + call(ownToString, inputArg) + ')');
+                    eval('(' + ownToString.call(inputArg) + ')');
                     /*jslint evil: false */
                     val = false;
                 } catch (ignore) {}
@@ -2856,23 +3090,9 @@
                     type !== 'number' &&
                     (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
         };
-    }(toClassStr, base.classString.Function, test));
-
-    /**
-     * Throws a TypeError if arguments is not a function otherwise returns the function.
-     * @private
-     * @function throwIfNotAFunction
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not a {@link Function function}.
-     * @returns {Function}
-     */
-    function throwIfNotAFunction(inputArg) {
-        if (!isFunction(inputArg)) {
-            throw new base.TypeError.Ctr(toClassStr(inputArg) + ' is not a function');
-        }
-
-        return inputArg;
-    }
+    }(
+        base.classString.Function
+    ));
 
     /**
      * Returns true if argument is an object that has own property of length which is a number of uint32
@@ -2910,47 +3130,11 @@
      * @name ToMethod
      * @function
      * @param {prototypalFunction} protoFn
+     * @param {Function} checkThisArgFn
      * @throws {TypeError} if protoFn is not a {@link Function function}.
      * @returns {boundPrototypalFunction}
      */
-    $.Function.ToMethod = toMethod = (function (
-        call,
-        apply
-    ) {
-        return function (protoFn, checkThisArgFn) {
-            throwIfNotAFunction(protoFn);
-
-            if (!isFunction(checkThisArgFn)) {
-                checkThisArgFn = checkObjectCoercible;
-            }
-
-            return function (thisArg) {
-                var args = iter(arguments, true, 1, arguments.length, false, function (it) {
-                        var length = toLength(this.length);
-
-                        if (hasValidLength(this)) {
-                            call(base.Array.push, this, it);
-                            length = this.length;
-                        } else {
-                            this[length] = it;
-                            length += 1;
-                            this.length = length;
-                        }
-                    }, []);
-
-                return apply(protoFn, checkThisArgFn(thisArg), args);
-            };
-        };
-    }(
-        call,
-        apply
-    ));
-
-    if (baseToClassStr) {
-        toClassStr = toMethod(base.Object.toString, function (inputArg) {
-            return inputArg;
-        });
-    }
+    $.Function.ToMethod = toMethod;
 
     /**
      * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
@@ -2962,24 +3146,7 @@
      * @returns {string}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
      */
-    $.Object.ToClassString = toClassStr;
-
-    hop = toMethod(base.Object.hasOwn);
-    splice = toMethod(base.Array.splice);
-    concat = toMethod(base.Array.concat);
-    push = toMethod(base.Array.push);
-    join = toMethod(base.Array.join);
-    unshift = toMethod(base.Array.unshift);
-    shift = toMethod(base.Array.shift);
-    pop = toMethod(base.Array.pop);
-    slice = toMethod(base.Array.slice);
-    split = toMethod(base.String.split);
-    replace = toMethod(base.String.replace);
-    charAt = toMethod(base.String.charAt);
-    charCodeAt = toMethod(base.String.charCodeAt);
-    strSlice = toMethod(base.String.slice);
-    test = toMethod(base.RegExp.test);
-    getTime = toMethod(base.Date.getTime);
+    $.Object.ToClassString = toClass;
 
     /**
      * Returns true if the operand inputArg is an Object.
@@ -2990,33 +3157,8 @@
      * @returns {boolean}
      */
     $.Object.isObject = function (inputArg) {
-        return toClassStr(inputArg) === base.classString.object && !isFunction(inputArg);
+        return toClass(inputArg) === base.classString.object && !isFunction(inputArg);
     };
-
-    /**
-     * The abstract operation CreateListFromArrayLike is used to create a List value whose elements
-     * are provided by the indexed properties of an array-like object.
-     * @private
-     * @function createListFromArrayLike
-     * @param {*} inputArg
-     * @throws {TypeError} if inputArg is not an {@link Object object}.
-     * @returns {Array}
-     */
-    function createListFromArrayLike(inputArg) {
-        if (typeof inputArg !== 'object' || isFunction(inputArg)) {
-            throw new base.TypeError.Ctr('Arguments list has wrong type ' + inputArg);
-        }
-
-        var next = 0;
-
-        return iter(inputArg, true, 0, toLength(inputArg.length), false, function (it) {
-            this[next] = it;
-            next += 1;
-            if (next > this.length) {
-                this.length = next;
-            }
-        }, []);
-    }
 
     /**
      * This method calls a function with a given this value and arguments provided individually.
@@ -3028,35 +3170,14 @@
      * @param {...*} [varArgs]
      * @returns {*}
      */
+    /*
     if (!testShims && !hasCallBug) {
-        $.Function.call = toMethod(base.Function.call);
+        $.Function.call = call;
     } else {
-        $.Function.prototype.call = function (thisArg) {
-            throwIfNotAFunction(this);
-
-            var argsArray = createListFromArrayLike(arguments),
-                applyFn = 'apply:' + this,
-                type,
-                val;
-
-            if (returnThis()) {
-                type = typeof thisArg;
-                if (type === 'boolean' || type === 'number' || type === 'string') {
-                    thisArg = cObject(thisArg);
-                }
-            }
-
-            this[applyFn] = base.Function.apply;
-            val = this[applyFn](thisArg, slice(argsArray, 1));
-            delete this[applyFn];
-
-            return val;
-        };
-
-        $.Function.call = toMethod($.Function.prototype.call);
+        $.Function.prototype.call = callProto;
+        $.Function.call = call = toMethod(callProto);
     }
-
-    call = $.Function.call;
+    */
 
     /**
      * This method calls a function with a given this value and arguments provided individually.
@@ -3068,41 +3189,14 @@
      * @param {ArrayLike} [argsArray]
      * @returns {*}
      */
+    /*
     if (!testShims && !hasCallBug) {
-        $.Function.apply = toMethod(base.Function.apply);
+        $.Function.apply = apply;
     } else {
-        $.Function.prototype.apply = function (thisArg, argsArray) {
-            throwIfNotAFunction(this);
-
-            var applyFn = 'apply:' + this,
-                type,
-                val;
-
-            if (returnThis()) {
-                type = typeof thisArg;
-                if (type === 'boolean' || type === 'number' || type === 'string') {
-                    thisArg = cObject(thisArg);
-                }
-            }
-
-            type = typeof argsArray;
-            if (type === 'undefined' || argsArray === null) {
-                argsArray = [];
-            } else {
-                argsArray = createListFromArrayLike(argsArray);
-            }
-
-            this[applyFn] = base.Function.apply;
-            val = this[applyFn](thisArg, argsArray);
-            delete this[applyFn];
-
-            return val;
-        };
-
-        $.Function.apply = toMethod($.Function.prototype.apply);
+        $.Function.prototype.apply = applyProto;
+        $.Function.apply = apply = toMethod(applyProto);
     }
-
-    apply = $.Function.apply;
+    */
 
     /**
      * Throws a TypeError if arguments is a function otherwise returns the function.
@@ -3114,7 +3208,7 @@
      */
     function throwIfAFunction(inputArg) {
         if (isFunction(inputArg)) {
-            throw new base.TypeError.Ctr(toClassStr(inputArg) + ' is a function');
+            throw new base.TypeError.Ctr(toClass(inputArg) + ' is a function');
         }
 
         return inputArg;
@@ -3163,7 +3257,7 @@
         }
 
         testTemp.bindArr = [1, 2, 3];
-        testTemp.bindCtr1 = call(base.Function.bind, function () {
+        testTemp.bindCtr1 = base.Function.bind.call(function () {
             return testTemp.bindArr;
         }, null);
 
@@ -3176,7 +3270,7 @@
             this.name = x || 'A';
         };
 
-        testTemp.bindCtr2 = call(base.Function.bind, testTemp.bindFunc1, null, 'B');
+        testTemp.bindCtr2 = base.Function.bind.call(testTemp.bindFunc1, null, 'B');
         testTemp.bindObj = new testTemp.bindCtr2();
         if (!(testTemp.bindObj instanceof testTemp.bindFn) || !(testTemp.bindObj instanceof testTemp.bindCtr2)) {
             throw new Error();
@@ -3213,15 +3307,15 @@
                 /*jslint unparam:true */
                 /*jshint unused:false */
                 var fn = throwIfNotAFunction(this),
-                    args = safeSlice(arguments, 1, arguments.length),
-                    bound = base.Function.Ctr('binder', 'apply', 'return function(' +
+                    args = argSlice(arguments, 1),
+                    bound = base.Function.Ctr('binder', 'return function(' +
                                               bindArgs(fn.length - args.length) +
-                        '){return apply(binder,this,arguments);}')(function () {
-                        var binderArgs = concat(args, safeSlice(arguments, 0, arguments.length)),
+                        '){return binder.apply(this,arguments);}')(function () {
+                        var binderArgs = concat(args, argSlice(arguments)),
                             result;
 
                         if (this instanceof bound) {
-                            result = apply(fn, this, binderArgs);
+                            result = fn.apply(this, binderArgs);
                             if (cObject(result) === result) {
                                 return result;
                             }
@@ -3229,8 +3323,8 @@
                             return this;
                         }
 
-                        return apply(fn, thisArg, binderArgs);
-                    }, apply);
+                        return fn.apply(thisArg, binderArgs);
+                    });
 
                 if (cObject(fn.prototype) === fn.prototype) {
                     BindCtr.prototype = fn.prototype;
@@ -3259,7 +3353,7 @@
         $.Array.isArray = isArray = base.Array.isArray;
     } else {
         $.Array.isArray = isArray = function (inputArg) {
-            return toClassStr(inputArg) === base.classString.array;
+            return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.array;
         };
     }
 
@@ -3403,20 +3497,7 @@
     if (!testShims && isNative(base.Number.toInteger)) {
         $.Number.toInteger = toInteger = base.Number.toInteger;
     } else {
-        $.Number.toInteger = toInteger = function (inputArg) {
-            var number = +inputArg,
-                val = 0;
-
-            if (number === number) {
-                if (!number || number === Infinity || number === -Infinity) {
-                    val = number;
-                } else {
-                    val = (number > 0 || -1) * floor(abs(number));
-                }
-            }
-
-            return val;
-        };
+        $.Number.toInteger = toInteger;
     }
 
     /**
@@ -3607,15 +3688,7 @@
      * @returns {number}
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
      */
-    $.Number.toLength = toLength = function (inputArg) {
-        var length = toInteger(inputArg);
-
-        if (length <= 0) {
-            length = 0;
-        }
-
-        return mMin(length, MAX_SAFE_INTEGER);
-    };
+    $.Number.toLength = toLength;
 
     /**
      * The abstract operation converts its argument to one of 2^32 integer values in
@@ -3843,7 +3916,7 @@
             var object = toObjectFixIndexedAccess(this);
 
             object.length = toLength(object.length);
-            apply(base.Array.push, object, arguments);
+            base.Array.push.apply(object, arguments);
 
             return object.length;
         };
@@ -3878,7 +3951,7 @@
             var object = toObjectFixIndexedAccess(this);
 
             object.length = toLength(object.length);
-            apply(base.Array.unshift, object, arguments);
+            base.Array.unshift.apply(object, arguments);
 
             return object.length;
         };
@@ -3979,7 +4052,7 @@
 
         var str = toString(stringArg),
             origLastIndex = this.lastIndex,
-            match = apply(base.RegExp.exec, this, arguments),
+            match = base.RegExp.exec.apply(this, arguments),
             r2;
 
         if (isArray(match)) {
@@ -4114,7 +4187,7 @@
                 // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
                 // globalized versions of regexes, mutating the regex will not have any effect on the
                 // iteration or matched strings, which is a nice side effect that brings extra safety
-                call(callback, context, match, index, str, regExpArg);
+                callback.call(context, match, index, str, regExpArg);
                 pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
                 match = regExpForEachExec(str, regExpArg, pos);
                 index += 1;
@@ -4266,7 +4339,7 @@
                 // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
                 // functions isn't type-converted to a string
                 result = replace(str, search, function () {
-                    var args = safeSlice(arguments, 0, arguments.length);
+                    var args = argSlice(arguments);
 
                     // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                     // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
@@ -4276,15 +4349,15 @@
 
                     // Should pass `undefined` as context; see
                     // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                    return apply(replacement, Undefined, args);
+                    return replacement.apply(Undefined, args);
                 });
             } else {
                 // Ensure that the last value of `args` will be a string when given nonstring `this`,
                 // while still throwing on `null` or `undefined` context
                 result = replace(str, search, function () {
                     // Keep this function's `arguments` available through closure
-                    var length = arguments.length,
-                        args = safeSlice(arguments, 0, length);
+                    var args = argSlice(arguments),
+                        length = args.length;
 
                     return replace(toString(replacement), replacementToken, function ($0, $1, $2) {
                         /*jslint unparam: true */
@@ -4372,7 +4445,7 @@
         if (!isRegExp(regExpArg)) {
             regExpArg = new base.RegExp.Ctr(regExpArg);
         } else if (regExpArg.global) {
-            result = apply(base.String.match, str, arguments);
+            result = base.String.match.apply(str, arguments);
             // Fixes IE bug
             regExpArg.lastIndex = 0;
 
@@ -4614,7 +4687,7 @@
                 position = toInteger(position);
             }
 
-            return call(base.String.indexOf, str, searchStr, mMin(mMax(position, 0), length)) !== -1;
+            return base.String.indexOf.call(str, searchStr, mMin(mMax(position, 0), length)) !== -1;
         };
 
         $.String.contains = toMethod($.String.prototype.contains);
@@ -4689,7 +4762,7 @@
                     }
                 } else {
                     protoObj = obj[strProto];
-                    if (toClassStr(protoObj) === classString && !isFunction(protoObj)) {
+                    if (toClass(protoObj) === classString && !isFunction(protoObj)) {
                         ctrProto = protoObj;
                     } else {
                         ctrProto = oProto;
@@ -4719,7 +4792,7 @@
      * @returns {boolean}
      */
     $.Object.isPlainObject = function (object) {
-        return toClassStr(object) === base.classString.object &&
+        return toClass(object) === base.classString.object &&
                 !isFunction(object) &&
                 getPrototypeOf(object) === base.Object.proto;
     };
@@ -4808,7 +4881,7 @@
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
                 var prop = toString(property);
 
-                return hop(this, prop) ||
+                return hasOwn(this, prop) ||
                         ((prop in this) && contains(shadowed, prop) && !is(this[prop], getPrototypeOf(this)[prop]));
             };
 
@@ -4817,12 +4890,12 @@
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
                 var prop = toString(property);
 
-                return (prop === 'prototype' && isFunction(this)) || hop(this, prop);
+                return (prop === 'prototype' && isFunction(this)) || hasOwn(this, prop);
             };
 
             $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
         } else {
-            $.Object.hasOwn = hasOwnProp = hop;
+            $.Object.hasOwn = hasOwnProp = hasOwn;
         }
     }(
         $.Array.contains,
@@ -4913,7 +4986,7 @@
             if (arguments.length >= 2) {
                 updateLen = hasValidLength(object) && !isFunction(object);
                 if (updateLen) {
-                    if (toClassStr(index) === classString) {
+                    if (toClass(index) === classString) {
                         numIndex = +index;
                         isInt = numIndex >= 0 && isSafeInteger(numIndex);
                     } else {
@@ -5026,7 +5099,7 @@
                 if (arguments.length < 1) {
                     val = [];
                 } else {
-                    val = apply(base.Array.splice, this, arguments);
+                    val = base.Array.splice.apply(this, arguments);
                 }
 
                 return val;
@@ -5045,7 +5118,7 @@
                 k = 0,
                 from,
                 argLength = arguments.length,
-                args = safeSlice(arguments, 0, argLength),
+                args = argSlice(arguments),
                 item = 2,
                 itemCount = mMax(argLength - item, 0),
                 to,
@@ -5139,8 +5212,8 @@
         var hasV8StrictBug = false;
 
         if (isStrictMode) {
-            call(fn, [1], function () {
-                hasV8StrictBug = typeof this === 'object';
+            fn.call([1], function () {
+                hasV8StrictBug = this !== null && typeof this === 'object';
             }, 'foo');
         }
 
@@ -5173,7 +5246,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
      */
     try {
-        call(base.Array.forEach, 'foo', function (item, index, list) {
+        base.Array.forEach.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.felist = list;
@@ -5182,7 +5255,7 @@
         if (!testShims &&
                 isNative(base.Array.forEach) &&
                 isTypeObject(testTemp.felist) &&
-                $.String.isStringAny(testTemp.felist) &&
+                toClass(testTemp.felist) === base.classString.string &&
                 !checkV8StrictBug(base.Array.forEach)) {
 
             $.Array.forEach = toMethod(base.Array.forEach);
@@ -5194,7 +5267,7 @@
             var object = toObjectFixIndexedAccess(this);
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                call(this, thisArg, it, idx, obj);
+                this.call(thisArg, it, idx, obj);
             }, throwIfNotAFunction(fn));
         };
 
@@ -5221,7 +5294,7 @@
             val = false;
 
         iter(object, false, 0, toLength(object.length), false, function (it, idx, obj) {
-            val = !!call(this, thisArg, it, idx, obj);
+            val = !!this.call(thisArg, it, idx, obj);
 
             return val;
         }, throwIfNotAFunction(fn));
@@ -5257,7 +5330,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
      */
     try {
-        call(base.Array.some, 'foo', function (item, index, list) {
+        base.Array.some.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.slist = list;
@@ -5266,7 +5339,7 @@
         if (!testShims &&
                 isNative(base.Array.some) &&
                 isTypeObject(testTemp.slist) &&
-                $.String.isStringAny(testTemp.slist) &&
+                toClass(testTemp.slist) === base.classString.string &&
                 !checkV8StrictBug(base.Array.some)) {
 
             $.Array.some = toMethod(base.Array.some);
@@ -5279,7 +5352,7 @@
                 val = false;
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                val = !!call(this, thisArg, it, idx, obj);
+                val = !!this.call(thisArg, it, idx, obj);
 
                 return val;
             }, throwIfNotAFunction(fn));
@@ -5326,7 +5399,7 @@
                 val;
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (call(this, thisArg, it, idx, obj)) {
+                if (this.call(thisArg, it, idx, obj)) {
                     val = it;
                 }
 
@@ -5373,7 +5446,7 @@
                 val = -1;
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (call(this, thisArg, it, idx, obj)) {
+                if (this.call(thisArg, it, idx, obj)) {
                     val = idx;
                 }
 
@@ -5400,7 +5473,7 @@
         $.Array.of = base.Array.of;
     } else {
         $.Array.of = function () {
-            return safeSlice(arguments, 0, arguments.length);
+            return argSlice(arguments);
         };
     }
 
@@ -5446,7 +5519,7 @@
 
             iter(object, false, 0, length, false, function (it, idx) {
                 if (mapping) {
-                    it = call(mapfn, thisArg, it, idx);
+                    it = mapfn.call(thisArg, it, idx);
                 }
 
                 put(array, idx, it);
@@ -5484,7 +5557,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every
      */
     try {
-        call(base.Array.every, 'foo', function (item, index, list) {
+        base.Array.every.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.elist = list;
@@ -5493,7 +5566,7 @@
         if (!testShims &&
                 isNative(base.Array.every) &&
                 isTypeObject(testTemp.elist) &&
-                $.String.isStringAny(testTemp.elist) &&
+                toClass(testTemp.elist) === base.classString.string &&
                 !checkV8StrictBug(base.Array.every)) {
 
             $.Array.every = toMethod(base.Array.every);
@@ -5506,7 +5579,7 @@
                 val = true;
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                val = !!call(this, thisArg, it, idx, obj);
+                val = !!this.call(thisArg, it, idx, obj);
 
                 return !val;
             }, throwIfNotAFunction(fn));
@@ -5545,7 +5618,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
      */
     try {
-        call(base.Array.map, 'foo', function (item, index, list) {
+        base.Array.map.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.mlist = list;
@@ -5554,7 +5627,7 @@
         if (!testShims &&
                 isNative(base.Array.map) &&
                 isTypeObject(testTemp.mlist) &&
-                $.String.isStringAny(testTemp.mlist) &&
+                toClass(testTemp.mlist) === base.classString.string &&
                 !checkV8StrictBug(base.Array.map)) {
 
             $.Array.map = toMethod(base.Array.map);
@@ -5568,7 +5641,7 @@
 
             arr.length = toLength(object.length);
             iter(object, true, 0, arr.length, false, function (it, idx, obj) {
-                put(arr, idx, call(this, thisArg, it, idx, obj));
+                put(arr, idx, this.call(thisArg, it, idx, obj));
             }, throwIfNotAFunction(fn));
 
             return arr;
@@ -5667,13 +5740,13 @@
         }
 
         $.Array.prototype.slice = function () {
-            var args = safeSlice(arguments, 0, arguments.length),
+            var args = argSlice(arguments),
                 section;
 
             try {
-                section = apply(base.Array.slice, this, args);
+                section = base.Array.slice.apply(this, args);
             } catch (eSliceFB) {
-                section = apply(internalSlice, this, args);
+                section = internalSlice.apply(this, args);
             }
 
             return section;
@@ -5698,7 +5771,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
      */
     try {
-        call(base.Array.filter, 'foo', function (item, index, list) {
+        base.Array.filter.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.flist = list;
@@ -5707,7 +5780,7 @@
         if (!testShims &&
                 isNative(base.Array.filter) &&
                 isTypeObject(testTemp.flist) &&
-                $.String.isStringAny(testTemp.flist) &&
+                toClass(testTemp.flist) === base.classString.string &&
                 !checkV8StrictBug(base.Array.filter)) {
 
             $.Array.filter = toMethod(base.Array.filter);
@@ -5720,7 +5793,7 @@
                 arr = [];
 
             iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (call(this, thisArg, it, idx, obj)) {
+                if (this.call(thisArg, it, idx, obj)) {
                     push(arr, it);
                 }
             }, throwIfNotAFunction(fn));
@@ -5748,7 +5821,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
      */
     try {
-        call(base.Array.reduce, 'foo', function (unused1, unused2, unused3, list) {
+        base.Array.reduce.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rlist = list;
@@ -5757,7 +5830,7 @@
         if (!testShims &&
                 isNative(base.Array.reduce) &&
                 isTypeObject(testTemp.rlist) &&
-                $.String.isStringAny(testTemp.rlist)) {
+                toClass(testTemp.rlist) === base.classString.string) {
 
             $.Array.reduce = toMethod(base.Array.reduce);
         } else {
@@ -5798,7 +5871,7 @@
 
             while (index < length) {
                 if (index in object) {
-                    accumulator = call(fn, Undefined, accumulator, object[index], index, object);
+                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
                 index += 1;
@@ -5827,7 +5900,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight
      */
     try {
-        call(base.Array.reduceRight, 'foo', function (unused1, unused2, unused3, list) {
+        base.Array.reduceRight.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rrlist = list;
@@ -5836,7 +5909,7 @@
         if (!testShims &&
                 isNative(base.Array.reduceRight) &&
                 isTypeObject(testTemp.rrlist) &&
-                $.String.isStringAny(testTemp.rrlist)) {
+                toClass(testTemp.rrlist) === base.classString.string) {
 
             $.Array.reduceRight = toMethod(base.Array.reduceRight);
         } else {
@@ -5877,7 +5950,7 @@
 
             while (index >= 0) {
                 if (index in object) {
-                    accumulator = call(fn, Undefined, accumulator, object[index], index, object);
+                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
                 }
 
                 index -= 1;
@@ -6059,7 +6132,7 @@
                 comparefn = defaultComparison;
             }
 
-            return call(sort, checkObjectCoercible(this), throwIfNotAFunction(comparefn));
+            return sort.call(checkObjectCoercible(this), throwIfNotAFunction(comparefn));
         };
     } else {
         $.Array.prototype.sort = $.Array.prototype.stableSort;
@@ -6095,7 +6168,7 @@
     try {
         if (!testShims &&
                 isNative(base.String.trim) &&
-                !call(base.String.trim, $.Array.reduce(base.String.whiteSpaces, buildTestString, '')).length) {
+                !base.String.trim.call(reduce(base.String.whiteSpaces, buildTestString, '')).length) {
 
             $.String.trim = toMethod(base.String.trim);
         } else {
@@ -6181,10 +6254,10 @@
      */
     if (testShims ||
             !isNative(base.Number.toFixed) ||
-            call(base.Number.toFixed, 0.00008, 3) !== '0.000' ||
-            call(base.Number.toFixed, 0.9, 0) === '0' ||
-            call(base.Number.toFixed, 1.255, 2) !== '1.25' ||
-            call(base.Number.toFixed, 1000000000000000128, 0) !== '1000000000000000128') {
+            base.Number.toFixed.call(0.00008, 3) !== '0.000' ||
+            base.Number.toFixed.call(0.9, 0) === '0' ||
+            base.Number.toFixed.call(1.255, 2) !== '1.25' ||
+            base.Number.toFixed.call(1000000000000000128, 0) !== '1000000000000000128') {
 
         // Hide these variables and functions
         (function (floor, strSlice, toString, RangeError) {
@@ -6374,7 +6447,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
-    if (!testShims && isNative(base.Array.indexOf) && call(base.Array.indexOf, [0, 1], 1, 2) === -1) {
+    if (!testShims && isNative(base.Array.indexOf) && base.Array.indexOf.call([0, 1], 1, 2) === -1) {
         $.Array.indexOf = toMethod(base.Array.indexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
@@ -6427,11 +6500,11 @@
      * @param {number} [fromIndex]
      * @returns {boolean}
      */
-    if (!testShims && isNative(base.Array.indexOf) && call(base.Array.indexOf, [0, 1], 1, 2) === -1) {
+    if (!testShims && isNative(base.Array.indexOf) && base.Array.indexOf.call([0, 1], 1, 2) === -1) {
         $.Array.prototype.contains = function (searchElement, fromIndex) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            return apply(base.Array.indexOf, toObjectFixIndexedAccess(this), arguments) !== -1;
+            return base.Array.indexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
         };
     } else {
         $.Array.prototype.contains = function (searchElement, fromIndex) {
@@ -6483,7 +6556,7 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf
      */
-    if (!testShims && isNative(base.Array.lastIndexOf) && call(base.Array.lastIndexOf, [0, 1], 0, -3) === -1) {
+    if (!testShims && isNative(base.Array.lastIndexOf) && base.Array.lastIndexOf.call([0, 1], 0, -3) === -1) {
         $.Array.lastIndexOf = toMethod(base.Array.lastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
@@ -6767,17 +6840,13 @@
                 nonEnum;
 
             if (!base.Array.canEnumerArgs && isArguments(object)) {
-                iter(object, true, 0, object.length, false, function (unused, idx) {
-                    /*jslint unparam: true */
-                    /*jshint unused: false */
-                    push(this, idx);
-                }, props);
+                props = concat(props, argSlice(object));
             }
 
             if (hasDontEnumBug && object !== base.Object.proto) {
                 ctor = object.constructor;
                 isProto = (isFunction(ctor) && ctor.prototype === object);
-                nonEnum = nonEnumProps[toClassStr(object)];
+                nonEnum = nonEnumProps[toClass(object)];
                 forEach(base.props.shadowed, function (property) {
                     if (!(isProto && nonEnum[property]) && this(object, property)) {
                         push(props, property);
@@ -6819,7 +6888,7 @@
             val = false;
 
         iter(keys, true, 0, toLength(keys.length), false, function (it) {
-            if (call(this, thisArg, obj[it], it, obj)) {
+            if (this.call(thisArg, obj[it], it, obj)) {
                 val = true;
             }
 
@@ -6931,7 +7000,7 @@
             if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
                 $.Object.defineProperty = function (object, property, descriptor) {
                     var isA = (isArray(object) || isArguments(object)) && isNumeric(property) && isUint32(+property),
-                        isB = (definePropertyPatch1 || definePropertyPatch2) && hop(descriptor, 'value');
+                        isB = (definePropertyPatch1 || definePropertyPatch2) && hasOwn(descriptor, 'value');
 
                     if (definePropertyPatch1 && isA) {
                         property = +property;
@@ -7004,7 +7073,7 @@
                     return function (index) {
                         var val;
 
-                        if (toClassStr(index) === classString) {
+                        if (toClass(index) === classString) {
                             val = +index;
                         } else {
                             val = toString(index);
@@ -7026,7 +7095,7 @@
                     throw new TypeError('Property descriptor must be an object: ' + toString(descriptor));
                 }
 
-                if (hop(descriptor, 'value') && (hop(descriptor, 'get') || hop(descriptor, 'set'))) {
+                if (hasOwn(descriptor, 'value') && (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
                     throw new TypeError('Invalid property. A property cannot have accessors and a value');
                 }
 
@@ -7034,8 +7103,8 @@
                     type,
                     index;
 
-                if (!hop(descriptor, 'get') && !hop(descriptor, 'set')) {
-                    if (hop(descriptor, 'value') || !hasOwnProp(object, property)) {
+                if (!hasOwn(descriptor, 'get') && !hasOwn(descriptor, 'set')) {
+                    if (hasOwn(descriptor, 'value') || !hasOwnProp(object, property)) {
                         index = definePropertyInteger(property);
                         if (isProtoSupported) {
                             prototype = object[proto];
@@ -7063,11 +7132,11 @@
                     }
 
                     if (isFunction(descriptor.get)) {
-                        call(defineGetter, object, property, descriptor.get);
+                        defineGetter.call(object, property, descriptor.get);
                     }
 
                     if (isFunction(descriptor.set)) {
-                        call(defineSetter, object, property, descriptor.set);
+                        defineSetter.call(object, property, descriptor.set);
                     }
                 }
 
@@ -7219,7 +7288,7 @@
                 type !== 'boolean' &&
                 type !== 'string' &&
                 type !== 'number' &&
-                (object instanceof ctr || call(base.Object.isPrototypeOf, ctr.prototype, object));
+                (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
         };
     } else {
         $.Object.instanceOf = function (object, ctr) {
@@ -7268,7 +7337,7 @@
         $.Object.assign = function (target) {
             var object = cObject(checkObjectCoercible(target));
 
-            forEach(safeSlice(arguments, 1, arguments.length), function (source) {
+            forEach(argSlice(arguments, 1), function (source) {
                 forEach(this(toObjectFixIndexedAccess(source)), function (key) {
                     this(object, key, source[key]);
                 }, put);
@@ -7343,7 +7412,7 @@
      * @returns {boolean}
      */
     $.Date.prototype.isValid = function () {
-        if (!$.Date.isDate(this)) {
+        if (toClass(this) !== base.classString.date) {
             throw new base.TypeError.Ctr('this is not a Date object.');
         }
 
@@ -7398,7 +7467,7 @@
      * @returns {string}
      */
     $.String.prototype.wrapInChars = function (characters) {
-        if (!$.String.isStringAny(characters) && !$.Number.isNumberAny(characters)) {
+        if (toClass(characters) !== base.classString.string && toClass(characters) !== base.classString.number) {
             characters = '';
         } else {
             characters = toString(characters);
@@ -7422,7 +7491,7 @@
      * @returns {string}
      */
     $.String.prototype.replaceAll = function (pattern, characters) {
-        if ($.String.isStringAny(pattern)) {
+        if (toClass(pattern) === base.classString.string) {
             pattern = new base.RegExp.Ctr($.String.escapeRegex(pattern), 'g');
         } else if (isRegExp(pattern)) {
             pattern = copyRegExp(pattern, {
@@ -7430,7 +7499,7 @@
             });
         }
 
-        if (!$.String.isStringAny(characters) && !$.Number.isNumberAny(characters)) {
+        if (toClass(characters) !== base.classString.string && toClass(characters) !== base.classString.number) {
             characters = '';
         } else {
             characters = toString(characters);
@@ -7456,7 +7525,7 @@
             return true;
         }
 
-        if ($.Date.isDate(a) && $.Date.isDate(b)) {
+        if (toClass(a) === base.classString.date && toClass(b) === base.classString.date) {
             return getTime(a) === getTime(b);
         }
 
@@ -7482,7 +7551,7 @@
                 return false;
             }
 
-            return $.Object.deepEqual(safeSlice(a, 0, a.length), safeSlice(b, 0, b.length));
+            return $.Object.deepEqual(argSlice(a), argSlice(b));
         }
 
         var ka,
@@ -7545,7 +7614,7 @@
             return true;
         }
 
-        if ($.Date.isDate(a) && $.Date.isDate(b)) {
+        if (toClass(a) === base.classString.date && toClass(b) === base.classString.date) {
             return getTime(a) === getTime(b);
         }
 
@@ -7571,7 +7640,7 @@
                 return false;
             }
 
-            return $.Object.deepStrictEqual(safeSlice(a, 0, a.length), safeSlice(b, 0, b.length));
+            return $.Object.deepStrictEqual(argSlice(a), argSlice(b));
         }
 
         var ka,
@@ -7864,7 +7933,7 @@
             if (isFunction(ErrorConstructor.captureStackTrace)) {
                 ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
             } else {
-                err = call(ErrorConstructor, this);
+                err = ErrorConstructor.call(this);
                 if (typeof err.stack === 'string') {
                     $.Object.defineProperty(this, 'stack', $.Object.assign({
                         value: err.stack
@@ -8000,10 +8069,10 @@
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDsentinel, 'sentinel').value !== null ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 3).value !== 30 ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, '3').value !== 30 ||
-                !hop(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
+                !hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4).value !== Undefined ||
                 base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5) !== Undefined ||
-                hop(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
+                hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
 
             throw new Error();
         }
@@ -8039,8 +8108,8 @@
                 if (areGetSetSupported) {
                     prototype = object[base.str.proto];
                     object[base.str.proto] = base.Object.proto;
-                    getter = call(base.Object.lookupGetter, object, property);
-                    setter = call(base.Object.lookupSetter, object, property);
+                    getter = base.Object.lookupGetter.call(object, property);
+                    setter = base.Object.lookupSetter.call(object, property);
                     type = typeof prototype;
                     if (type === 'undefined') {
                         delete object[base.str.proto];
@@ -8095,7 +8164,7 @@
             num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc && hasValidLength(object) && toString(num) === prop2;
-            if (!$.Object.isPlainObject(temp1) || !hop(temp1, 'value')) {
+            if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
                 if (cond1 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -8111,7 +8180,7 @@
 
             num = toLength(prop1);
             cond2 = notFunc && hasValidLength(object) && toString(num) === prop1;
-            if (!$.Object.isPlainObject(temp2) || !hop(temp2, 'value')) {
+            if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if (cond2 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -8138,41 +8207,33 @@
      * @param {ArrayLike} array
      * @throws {TypeError} if array is {@link null} or {@link undefined}
      * @param {NumberLike} [rounds]
-     * @returns {Array} same type as supplied array argument.
+     * @returns {Array}
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     $.Array.prototype.shuffle = function (rounds) {
         var object = cObject(checkObjectCoercible(this)),
-            isString = typeof object === 'object' && toClassStr(object) === base.classString.string,
-            array,
+            isString = toClass(object) === base.classString.string,
             length;
 
         if (isString) {
-            array = split(object, '');
-        } else {
-            array = object;
+            object = split(object, '');
         }
 
-        length = toLength(array.length);
+        length = toLength(object.length);
         if (length > 1) {
             iter(null, false, 0, mMin(mMax(toInteger(rounds), 1), MAX_SAFE_INTEGER), false, function () {
-                iter(array, false, 0, length, false, function (unused, idx, obj) {
+                iter(object, false, 0, length, false, function (unused, idx, obj) {
                     /*jslint unparam: true */
                     /*jshint unused: false */
                     this(obj, idx, $.Number.randomInt(0, idx));
                 }, this);
             }, $.Object.swapItems);
 
-            array.length = length;
+            object.length = length;
         }
 
         if (isString) {
-            object = join(array, '');
-            if (typeof this === 'object' && toClassStr(this) === base.classString.string) {
-                object = cObject(checkObjectCoercible(object));
-            }
-        } else if (isPrimitive(this)) {
-            object = this;
+            object = cObject(join(object, ''));
         }
 
         return object;
@@ -8330,7 +8391,7 @@
                 }
 
                 if (isFunction(stringifyReplacer)) {
-                    value = call(stringifyReplacer, holder, key, value);
+                    value = stringifyReplacer.call(holder, key, value);
                 }
 
                 switch (typeof value) {
@@ -8540,7 +8601,7 @@
                     }, walk);
                 }
 
-                return call(reviver, holder, key, value);
+                return reviver.call(holder, key, value);
             }
 
             return function (text, reviver) {
@@ -8596,7 +8657,7 @@
             lastElement,
             val;
 
-        if ($.String.isStringAny(object)) {
+        if (toClass(object) === base.classString.string) {
             object = split(object, '');
         }
 
@@ -8651,7 +8712,7 @@
         var utilx = {};
 
         forEach($.Object.keys($), function (key1) {
-            if (!hop(utilx, 'methods')) {
+            if (!hasOwn(utilx, 'methods')) {
                 this.defineProperty(utilx, 'methods', this.assign({
                     value: []
                 }, base.properties.notEnumerable));
@@ -8662,7 +8723,7 @@
             }, base.properties.notEnumerable));
 
             if (this.isPlainObject($[key1])) {
-                if (!hop(utilx[key1], 'methods')) {
+                if (!hasOwn(utilx[key1], 'methods')) {
                     this.defineProperty(utilx[key1], 'methods', this.assign({
                         value: []
                     }, base.properties.notEnumerable));
@@ -8674,7 +8735,7 @@
                     }, base.properties.notEnumerable));
 
                     if (this.isPlainObject($[key1][key2])) {
-                        if (!hop(utilx[key1][key2], 'methods')) {
+                        if (!hasOwn(utilx[key1][key2], 'methods')) {
                             this.defineProperty(utilx[key1][key2], 'methods', this.assign({
                                 value: []
                             }, base.properties.notEnumerable));
