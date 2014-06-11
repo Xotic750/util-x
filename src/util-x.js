@@ -129,16 +129,7 @@
      * @name base.props.unwantedError
      * @type {Array.<string>}
      */
-    base.props.unwantedError = [
-        'fileName',
-        'lineNumber',
-        'columnNumber',
-        'name',
-        'message',
-        'stack',
-        'arguments',
-        'type'
-    ];
+    base.props.unwantedError = [];
 
     /**
      * @private
@@ -353,7 +344,6 @@
         reverse: Array.prototype.reverse,
         shift: Array.prototype.shift,
         slice: Array.prototype.slice,
-        canEnumerArgs: true,
         some: Array.prototype.some,
         sort: Array.prototype.sort,
         splice: Array.prototype.splice,
@@ -722,35 +712,6 @@
 
         return result;
     }
-
-    /**
-     * @private
-     * @mermberpf base.Array
-     * @name canEnumerArgs
-     * @type {boolean}
-     */
-    (function () {
-        var args = returnArgs(1, 2, 3, 4, 5, 6, 7, 8, 9, 0),
-            count = 0,
-            prop;
-
-        try {
-            for (prop in args) {
-                /*jslint forin: false */
-                count += 1;
-                /*jslint forin: true */
-            }
-        } catch (eCEA) {
-            count = prop;
-        }
-
-        if (typeof count === 'string' || count < 10) {
-            base.Array.canEnumerArgs = false;
-        }
-    }());
-
-    /*global console */
-    console.log('+++++++++ can enumerate arguments: ' + base.Array.canEnumerArgs);
 
     /*jslint maxlen: 150 */
     /**
@@ -1455,6 +1416,7 @@
          */
         isStrictMode = !returnThis(),
 
+        // shortcuts
         hasOwnProp,
         toString,
         isPrimitive,
@@ -1476,10 +1438,110 @@
         filter,
         deepEqual,
         deepStrictEqual,
-        hasDontEnumBug,
-        hasFuncProtoBug,
-        hasErrorProps,
-        nonEnumProps,
+
+        /**
+         * Indicates if object suffers the don'r enum bug
+         * @private
+         * @type {boolean
+         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+         */
+        hasDontEnumBug = !base.Object.propertyIsEnumerable.call({'toString': null}, 'toString'),
+
+        /**
+         * Indicates if a function suffers the prototype is enumerable bug.
+         * @private
+         * @type {boolean}
+         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+         */
+        hasProtoEnumBug = base.Object.propertyIsEnumerable.call(returnArgs, 'prototype'),
+
+        /**
+         * Indicates if a arguments suffers the prototype is enumerable bug.
+         * @private
+         * @type {boolean}
+         */
+        hasEnumArgsBug = !base.Object.propertyIsEnumerable.call(returnArgs(1), '0'),
+
+        /**
+         * Indicates if the Error object has additional enumerable properties.
+         * @private
+         * @type {boolean}
+         */
+        hasErrorProps = (function () {
+            var index = 0,
+                prop;
+
+            for (prop in base.Error.proto) {
+                /*jslint forin: false */
+                base.props.unwantedError[index] = prop;
+                index += 1;
+                /*jslint forin: true */
+            }
+
+            return !!index;
+        }()),
+
+        /**
+         * Used to avoid iterating non-enumerable properties in IE < 9 if hasDontEnumBug.
+         * @private
+         * @type {Object.<string, Object>}
+         */
+        nonEnumProps = (function () {
+            var props,
+                length,
+                index,
+                prop,
+                it;
+
+            if (hasDontEnumBug) {
+                props = {};
+                props[base.classString.array] =
+                    props[base.classString.date] =
+                    props[base.classString.number] = {
+                        constructor: true,
+                        toLocaleString: true,
+                        toString: true,
+                        valueOf: true
+                    };
+
+                props[base.classString.Boolean] =
+                    props[base.classString.string] = {
+                        constructor: true,
+                        toString: true,
+                        valueOf: true
+                    };
+
+                props[base.classString.error] =
+                    props[base.classString.Function] =
+                    props[base.classString.regexp] = {
+                        constructor: true,
+                        toString: true
+                    };
+
+                props[base.classString.object] = {
+                    constructor: true
+                };
+
+                for (index = 0, length = base.props.shadowed.length; index < length; index += 1) {
+                    for (prop in props) {
+                        /*jslint forin: false */
+                        it = base.props.shadowed[index];
+                        if (!hasOwn(props[prop], it)) {
+                            props[prop][it] = false;
+                        }
+                        /*jslint forin: true */
+                    }
+                }
+            }
+
+            return props;
+        }()),
+
+        /**
+         * Object used for temporary testing values.
+         * @private
+         * @type {Object.<string, *>}
+         */
         testTemp = {},
 
         /**
@@ -1490,7 +1552,6 @@
         isProtoSupported = base.Object.proto[base.str.proto] === null,
 
         areGetSetSupported,
-        unwantedErrorPropsFilter,
 
         publicUtil,
 
@@ -1573,6 +1634,12 @@
         return inputArg;
     }
     */
+
+    /*global console */
+    console.log('+++++++++ hasDontEnumBug: ' + hasDontEnumBug);
+    console.log('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
+    console.log('+++++++++ hasEnumArgsBug: ' + hasEnumArgsBug);
+    console.log('+++++++++ hasErrorProps: ' + hasErrorProps);
 
     /*
      *
@@ -4816,88 +4883,10 @@
                 getPrototypeOf(object) === base.Object.proto;
     };
 
-    //Test for hasDontEnumBug and hasFuncProtoBug.
-    (function () {
-        var obj = {
-                toString: null
-            },
-            prop;
-
-        for (prop in obj) {
-            if (prop === 'toString' && obj[prop] !== null) {
-                hasDontEnumBug = true;
-                break;
-            }
-        }
-
-        obj = function () {
-            return;
-        };
-
-        obj.prototype.constructor = obj;
-        for (prop in obj) {
-            if (prop === 'prototype') {
-                hasFuncProtoBug = true;
-                break;
-            }
-        }
-    }());
-
-    if (hasDontEnumBug) {
-        // Used to avoid iterating non-enumerable properties in IE < 9
-        nonEnumProps = {};
-
-        nonEnumProps[base.classString.array] =
-            nonEnumProps[base.classString.date] =
-            nonEnumProps[base.classString.number] = {
-                constructor: true,
-                toLocaleString: true,
-                toString: true,
-                valueOf: true
-            };
-
-        nonEnumProps[base.classString.Boolean] =
-            nonEnumProps[base.classString.string] = {
-                constructor: true,
-                toString: true,
-                valueOf: true
-            };
-
-        nonEnumProps[base.classString.error] =
-            nonEnumProps[base.classString.Function] =
-            nonEnumProps[base.classString.regexp] = {
-                constructor: true,
-                toString: true
-            };
-
-        nonEnumProps[base.classString.object] = {
-            constructor: true
-        };
-
-        (function () {
-            var length = base.props.shadowed.length,
-                index,
-                prop,
-                it;
-
-            for (index = 0; index < length; index += 1) {
-                for (prop in nonEnumProps) {
-                    /*jslint forin: false */
-                    it = base.props.shadowed[index];
-                    if (!hasOwn(nonEnumProps[prop], it)) {
-                        nonEnumProps[prop][it] = false;
-                    }
-                    /*jslint forin: true */
-                }
-            }
-        }());
-    }
-
     /**
      * Returns a boolean indicating whether the object has the specified property.
      * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the $.Object.has function, this method does not check down the object's prototype
-     * chain.
+     * that object; unlike the $.Object.has function, this method does not check down the object's prototype chain.
      * @memberof utilx.Object
      * @name hasOwn
      * @function
@@ -4920,7 +4909,7 @@
             };
 
             $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
-        } else if (hasFuncProtoBug) {
+        } else if (hasProtoEnumBug) {
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
                 var prop = toString(property);
 
@@ -6660,29 +6649,6 @@
     }
 
     /**
-     * Returns true if the operand key matches the test property name.
-     * @private
-     * @function unwantedErrorPropsFilter
-     * @param {key} string
-     * @returns {boolean}
-     */
-    unwantedErrorPropsFilter = function (key) {
-        return key !== this;
-    };
-
-    (function () {
-        var prop;
-
-        for (prop in base.Error.proto) {
-            if ($.Array.contains(base.props.unwantedError, prop)) {
-                hasErrorProps = true;
-            } else {
-                base.props.unwantedError = $.Array.filter(base.props.unwantedError, unwantedErrorPropsFilter, prop);
-            }
-        }
-    }());
-
-    /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
      * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
      * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
@@ -6709,7 +6675,6 @@
         if (!testShims && isNative(base.Object.keys)) {
             (function (
                 oKeys,
-                isErrorTypePrototype,
                 contains,
                 unwantedError
             ) {
@@ -6744,7 +6709,6 @@
                 }
             }(
                 base.Object.keys,
-                isErrorTypePrototype,
                 $.Array.contains,
                 base.props.unwantedError
             ));
@@ -6755,7 +6719,7 @@
         $.Object.keys = function (object) {
             throwIfIsPrimitive(object);
 
-            var skipProto = hasFuncProtoBug && isFunction(object),
+            var skipProto = hasProtoEnumBug && isFunction(object),
                 skipErrorProps = hasErrorProps && isErrorTypePrototype(object),
                 props = [],
                 next = 0,
@@ -6777,7 +6741,7 @@
             }
 
             props.length = next;
-            if (!base.Array.canEnumerArgs && isArguments(object)) {
+            if (hasEnumArgsBug && isArguments(object)) {
                 length = object.length;
                 for (index = 0; index < length; index += 1) {
                     if (index in object) {
@@ -6785,20 +6749,22 @@
                         next += 1;
                     }
                 }
-
-                props.length = next;
             }
 
             if (hasDontEnumBug && object !== base.Object.proto) {
                 ctor = object.constructor;
                 isProto = (isFunction(ctor) && ctor.prototype === object);
                 nonEnum = nonEnumProps[toClass(object)];
-                forEach(base.props.shadowed, function (property) {
-                    if (!(isProto && nonEnum[property]) && this(object, property)) {
-                        push(props, property);
+                for (index = 0, length = base.props.shadowed.length; index < length; index += 1) {
+                    prop = base.props.shadowed[index];
+                    if (!(isProto && nonEnum[prop]) && hasOwnProp(object, prop)) {
+                        props[next] = prop;
+                        next += 1;
                     }
-                }, hasOwnProp);
+                }
             }
+
+            props.length = next;
 
             return props;
         };
