@@ -1501,8 +1501,10 @@
         map,
         reduce,
         filter,
-        hasDontEnumBug = true,
-        hasFuncProtoBug = false,
+        deepEqual,
+        deepStrictEqual,
+        hasDontEnumBug,
+        hasFuncProtoBug,
         hasErrorProps,
         nonEnumProps,
         testTemp = {},
@@ -1515,8 +1517,6 @@
         isProtoSupported = base.Object.proto[base.str.proto] === null,
 
         areGetSetSupported,
-        reduceTypeErrorMessage,
-        reduceRightTypeErrorMessage,
         unwantedErrorPropsFilter,
 
         publicUtil,
@@ -1582,10 +1582,11 @@
 
             /** @namespace {Object} utilx.JSON */
             JSON: {}
-        },
+        };
 
-        hasCallBug = (!isStrictMode &amp;&amp; typeof returnThis.call('foo') === 'string');
+        //hasCallBug = (!isStrictMode &amp;&amp; typeof returnThis.call('foo') === 'string');
 
+    /*
     function toObjectCallFix(inputArg) {
         var type;
 
@@ -1598,6 +1599,7 @@
 
         return inputArg;
     }
+    */
 
     /*
      *
@@ -2611,94 +2613,6 @@
     };
 
     /**
-     * @private
-     * @name iterBody
-     * @function
-     */
-    function iterBody(object, index, has, fn, thisArg) {
-        var item;
-
-        if (object) {
-            if (toClass(object) === base.classString.string) {
-                item = charAt(object, index);
-            } else {
-                item = object[index];
-            }
-        }
-
-        if (has) {
-            if (index in object) {
-                if (fn.call(toObjectCallFix(thisArg), item, index, object)) {
-                    return true;
-                }
-            }
-        } else {
-            if (fn.call(toObjectCallFix(thisArg), item, index, object)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @private
-     * @name iter
-     * @function
-     */
-    function iter(object, has, start, length, reverse, fn, thisArg) {
-        var index;
-
-        if (!base.Array.canEnumerArgs &amp;&amp; toClass(object) === base.classString.arguments) {
-            has = false;
-        }
-
-        if (reverse) {
-            for (index = start; index >= length; index -= 1) {
-                if (iterBody(object, index, has, fn, thisArg)) {
-                    break;
-                }
-            }
-        } else {
-            for (index = start; index &lt; length; index += 1) {
-                if (iterBody(object, index, has, fn, thisArg)) {
-                    break;
-                }
-            }
-        }
-
-        return thisArg;
-    }
-
-    /**
-     * @private
-     * @name enumer
-     * @function
-     */
-    function enumer(object, own, fn, thisArg) {
-        var prop,
-            item;
-
-        /*jslint forin: true */
-        for (prop in object) {
-            item = object[prop];
-            if (own) {
-                if ((hasOwnProp || hasOwn)(object, prop)) {
-                    if (fn.call(thisArg, item, prop, object)) {
-                        break;
-                    }
-                }
-            } else {
-                if (fn.call(thisArg, item, prop, object)) {
-                    break;
-                }
-            }
-        }
-
-        return thisArg;
-    }
-
-    /**
      * Returns true if the operands are of the same typeof.
      * @memberof utilx.Object
      * @name areSameTypeOf
@@ -2708,16 +2622,25 @@
      * @returns {boolean}
      */
     $.Object.areSameTypeOf = function (a, b) {
-        var typeA = typeof a,
-            typeB = typeof b;
+        var length = arguments.length,
+            typeA = typeof a,
+            typeB = typeof b,
+            same = true,
+            index;
 
-        return typeA === typeB &amp;&amp; !iter(arguments, true, 2, arguments.length, false, function (arg) {
-            var type = typeof arg;
+        if (typeA !== typeB) {
+            same = false;
+        } else {
+            for (index = 2; index &lt; length; index += 1) {
+                typeB = typeof arguments[index];
+                if (typeA !== typeB) {
+                    same = false;
+                    break;
+                }
+            }
+        }
 
-            this.same = typeA !== type;
-
-            return this.same;
-        }, {}).same;
+        return same;
     };
 
     /**
@@ -2730,13 +2653,23 @@
      * @returns {boolean}
      */
     $.Object.areSameClass = function (a, b) {
-        var classA = toClass(a);
+        var classA = toClass(a),
+            length = arguments.length,
+            same = true,
+            index;
 
-        return classA === toClass(b) &amp;&amp; !iter(arguments, true, 2, arguments.length, false, function (arg) {
-            this.same = classA !== toClass(arg);
+        if (classA !== toClass(b)) {
+            same = false;
+        } else {
+            for (index = 2; index &lt; length; index += 1) {
+                if (classA !== toClass(arguments[index])) {
+                    same = false;
+                    break;
+                }
+            }
+        }
 
-            return this.same;
-        }, {}).same;
+        return same;
     };
 
     /**
@@ -3345,11 +3278,15 @@
              * @returns {string}
              */
             function bindArgs(length) {
-                return join(iter(null, false, 0, mMax(0, length), false, function (it, idx) {
-                    /*jslint unparam: true */
-                    /*jshint unused: false */
-                    push(this, '$' + idx);
-                }, []), ',');
+                var len = mMax(0, length),
+                    args = [],
+                    index;
+
+                for (index = 0, args.length = len; index &lt; len; index += 1) {
+                    args[index] = '$' + index;
+                }
+
+                return join(args, ',');
             }
 
             return function (thisArg, varArgs) {
@@ -4037,6 +3974,61 @@
     };
 
     /**
+     * Returns true if the specified searchElement is in the specified array.
+     * Using strict equality (the same method used by the === comparison operator).
+     * @memberof utilx.Array
+     * @name contains
+     * @function
+     * @param {ArrayLike} array
+     * @throws {TypeError} if array is {@link null} or {@link undefined}
+     * @param {Object} searchElement
+     * @param {number} [fromIndex]
+     * @returns {boolean}
+     */
+    if (!testShims &amp;&amp; isNative(base.Array.indexOf) &amp;&amp; base.Array.indexOf.call([0, 1], 1, 2) === -1) {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            /*jslint unparam: true */
+            /*jshint unused: false */
+            return base.Array.indexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
+        };
+    } else {
+        $.Array.prototype.contains = function (searchElement, fromIndex) {
+            var object = toObjectFixIndexedAccess(this),
+                length = toLength(object.length),
+                val = false,
+                index;
+
+            if (length) {
+                if (arguments.length > 1) {
+                    fromIndex = toInteger(fromIndex);
+                } else {
+                    fromIndex = 0;
+                }
+
+                if (fromIndex &lt; length) {
+                    if (fromIndex &lt; 0) {
+                        fromIndex = length - abs(fromIndex);
+                        if (fromIndex &lt; 0) {
+                            fromIndex = 0;
+                        }
+                    }
+
+                    for (index = fromIndex; index &lt; length; index += 1) {
+                        if (index in object &amp;&amp; searchElement === object[index]) {
+                            val = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return val;
+        };
+    }
+
+    $.Array.contains = toMethod($.Array.prototype.contains);
+
+    /**
      * Throws a TypeError if the argument is not a RegExp.
      * @function throwIfIsNotRegExp
      * @private
@@ -4113,14 +4105,19 @@
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
                 replace(strSlice(toString(str), match.index), r2, function () {
-                    // Skip index 0 and the last 2
-                    iter(arguments, true, 1, arguments.length - 2, false, function (it, idx) {
-                        var type = typeof it;
+                    var length = arguments.length - 2,
+                        index,
+                        type,
+                        it;
 
+                    // Skip index 0 and the last 2
+                    for (index = 1; index &lt; length; index += 1) {
+                        it = arguments[index];
+                        type = typeof it;
                         if (type === 'undefined') {
-                            put(match, idx, it);
+                            match[index] = it;
                         }
-                    });
+                    }
                 });
             }
 
@@ -4847,24 +4844,31 @@
     };
 
     //Test for hasDontEnumBug and hasFuncProtoBug.
-    enumer({toString: null}, false, function (it, prop) {
-        hasDontEnumBug = prop !== 'toString' || it !== null;
+    (function () {
+        var obj = {
+                toString: null
+            },
+            prop;
 
-        return !hasDontEnumBug;
-    });
+        for (prop in obj) {
+            if (prop === 'toString' &amp;&amp; obj[prop] !== null) {
+                hasDontEnumBug = true;
+                break;
+            }
+        }
 
-    testTemp.fpbFunc = function () {
-        return;
-    };
+        obj = function () {
+            return;
+        };
 
-    testTemp.fpbFunc.prototype.constructor = testTemp.fpbFunc;
-    enumer(testTemp.fpbFunc, false, function (unused, prop) {
-        /*jslint unparam: true */
-        /*jshint unused: false */
-        hasFuncProtoBug = prop === 'prototype';
-
-        return hasFuncProtoBug;
-    });
+        obj.prototype.constructor = obj;
+        for (prop in obj) {
+            if (prop === 'prototype') {
+                hasFuncProtoBug = true;
+                break;
+            }
+        }
+    }());
 
     if (hasDontEnumBug) {
         // Used to avoid iterating non-enumerable properties in IE &lt; 9
@@ -4897,15 +4901,23 @@
             constructor: true
         };
 
-        iter(base.props.shadowed, false, 0, base.props.shadowed.length, false, function (it) {
-            this(nonEnumProps, true, function (unused, prop, obj) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                if (!this(obj[prop], it)) {
-                    obj[prop][it] = false;
+        (function () {
+            var length = base.props.shadowed.length,
+                index,
+                prop,
+                it;
+
+            for (index = 0; index &lt; length; index += 1) {
+                for (prop in nonEnumProps) {
+                    /*jslint forin: false */
+                    it = base.props.shadowed[index];
+                    if (!hasOwn(nonEnumProps[prop], it)) {
+                        nonEnumProps[prop][it] = false;
+                    }
+                    /*jslint forin: true */
                 }
-            }, hasOwn);
-        }, enumer);
+            }
+        }());
     }
 
     /**
@@ -5101,22 +5113,25 @@
      * @function
      * @param {ArrayLike} array
      * @throws {TypeError} if array is {@link null} or {@link undefined}.
-     * @param {equalityFn} [fn]
-     * @throws {TypeError} if equalityFn is not a {@link Function function}.
+     * @param {equalityFn} [equalFn]
+     * @throws {TypeError} if equalFn is not a {@link Function function}.
+     * @param {*} [thisArg]
      * @returns {Array}
      */
-    $.Array.prototype.unique = function (fn) {
+    $.Array.prototype.unique = function (equalFn, thisArg) {
+        var type = typeof equalFn;
+
+        if (type === 'undefined') {
+            equalFn = $.Object.strictEqual;
+        }
+
+        throwIfNotAFunction(equalFn);
+
         return $.Array.filter(this, function (element, index, obj) {
-            var type = typeof fn;
-
-            if (type === 'undefined') {
-                fn = $.Object.strictEqual;
-            }
-
-            return !this(obj, function (ele, idx) {
-                return idx &lt; index &amp;&amp; this(element, ele);
-            }, throwIfNotAFunction(fn));
-        }, $.Array.some);
+            return !$.Array.some(obj, function (ele, idx) {
+                return idx &lt; index &amp;&amp; equalFn.call(thisArg, element, ele);
+            });
+        });
     };
 
     $.Array.unique = toMethod($.Array.prototype.unique);
@@ -5311,11 +5326,16 @@
         }
     } catch (eForEach) {
         $.Array.prototype.forEach = function (fn, thisArg) {
-            var object = toObjectFixIndexedAccess(this);
+            var object = toObjectFixIndexedAccess(this),
+                length,
+                index;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                this.call(thisArg, it, idx, obj);
-            }, throwIfNotAFunction(fn));
+            throwIfNotAFunction(fn);
+            for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object) {
+                    fn.call(thisArg, object[index], index, object);
+                }
+            }
         };
 
         $.Array.forEach = toMethod($.Array.prototype.forEach);
@@ -5338,13 +5358,17 @@
      */
     $.Array.prototype.forAll = function (fn, thisArg) {
         var object = toObjectFixIndexedAccess(this),
-            val = false;
+            length,
+            index,
+            val;
 
-        iter(object, false, 0, toLength(object.length), false, function (it, idx, obj) {
-            val = !!this.call(thisArg, it, idx, obj);
-
-            return val;
-        }, throwIfNotAFunction(fn));
+        throwIfNotAFunction(fn);
+        for (val = false, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            val = !!fn.call(thisArg, object[index], index, object);
+            if (val) {
+                break;
+            }
+        }
 
         return val;
     };
@@ -5396,13 +5420,19 @@
     } catch (eSome) {
         $.Array.prototype.some = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                val = false;
+                val,
+                length,
+                index;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                val = !!this.call(thisArg, it, idx, obj);
-
-                return val;
-            }, throwIfNotAFunction(fn));
+            throwIfNotAFunction(fn);
+            for (val = false, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object) {
+                    val = !!fn.call(thisArg, object[index], index, object);
+                    if (val) {
+                        break;
+                    }
+                }
+            }
 
             return val;
         };
@@ -5441,15 +5471,21 @@
     } else {
         $.Array.prototype.find = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                val;
+                length,
+                index,
+                val,
+                it;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (this.call(thisArg, it, idx, obj)) {
-                    val = it;
+            throwIfNotAFunction(fn);
+            for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object) {
+                    it = object[index];
+                    if (fn.call(thisArg, it, index, object)) {
+                        val = it;
+                        break;
+                    }
                 }
-
-                return val === it;
-            }, throwIfNotAFunction(fn));
+            }
 
             return val;
         };
@@ -5488,15 +5524,17 @@
     } else {
         $.Array.prototype.findIndex = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                val = -1;
+                val,
+                length,
+                index;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (this.call(thisArg, it, idx, obj)) {
-                    val = idx;
+            throwIfNotAFunction(fn);
+            for (val = -1, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object &amp;&amp; fn.call(thisArg, object[index], index, object)) {
+                    val = index;
+                    break;
                 }
-
-                return val === idx;
-            }, throwIfNotAFunction(fn));
+            }
 
             return val;
         };
@@ -5530,30 +5568,32 @@
         $.Array.from = function (arrayLike, mapfn, thisArg) {
             var object = toObjectFixIndexedAccess(arrayLike),
                 type = typeof mapfn,
-                length = toLength(object.length),
+                length,
                 array,
-                mapping;
+                mapping,
+                index,
+                it;
 
             if (type !== 'undefined') {
                 mapping = !!throwIfNotAFunction(mapfn);
             }
 
+            length = toLength(object.length);
             if (isFunction(this)) {
                 array = new this(length);
             } else {
                 array = [];
             }
 
-            iter(object, false, 0, length, false, function (it, idx) {
+            array.length = length;
+            for (index = 0; index &lt; length; index += 1) {
+                it = object[index];
                 if (mapping) {
-                    it = mapfn.call(thisArg, it, idx);
+                    it = mapfn.call(thisArg, it, index);
                 }
 
-                put(array, idx, it);
-            });
-
-            array.length = length;
-
+                array[index] = it;
+            }
             return array;
         };
     }
@@ -5603,13 +5643,19 @@
     } catch (eEvery) {
         $.Array.prototype.every = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                val = true;
+                length,
+                val,
+                index;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                val = !!this.call(thisArg, it, idx, obj);
-
-                return !val;
-            }, throwIfNotAFunction(fn));
+            throwIfNotAFunction(fn);
+            for (val = true, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object) {
+                    val = !!fn.call(thisArg, object[index], index, object);
+                    if (!val) {
+                        break;
+                    }
+                }
+            }
 
             return val;
         };
@@ -5662,12 +5708,16 @@
     } catch (eMap) {
         $.Array.prototype.map = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                arr = [];
+                length,
+                arr,
+                index;
 
-            arr.length = toLength(object.length);
-            iter(object, true, 0, arr.length, false, function (it, idx, obj) {
-                put(arr, idx, this.call(thisArg, it, idx, obj));
-            }, throwIfNotAFunction(fn));
+            throwIfNotAFunction(fn);
+            for (arr = [], index = 0, arr.length = length = toLength(object.length); index &lt; length; index += 1) {
+                if (index in object) {
+                    arr[index] =  fn.call(thisArg, object[index], index, object);
+                }
+            }
 
             return arr;
         };
@@ -5728,13 +5778,22 @@
     } catch (eFilter) {
         $.Array.prototype.filter = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
-                arr = [];
+                length,
+                arr,
+                next,
+                index,
+                it;
 
-            iter(object, true, 0, toLength(object.length), false, function (it, idx, obj) {
-                if (this.call(thisArg, it, idx, obj)) {
-                    push(arr, it);
+            throwIfNotAFunction(fn);
+            for (arr = [], next = 0, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                it = object[index];
+                if (index in object &amp;&amp; fn.call(thisArg, it, index, object)) {
+                    arr[next] = it;
+                    next += 1;
                 }
-            }, throwIfNotAFunction(fn));
+            }
+
+            arr.length = next;
 
             return arr;
         };
@@ -5775,48 +5834,55 @@
             throw new Error();
         }
     } catch (eReduce) {
-        reduceTypeErrorMessage = 'reduce of empty array with no initial value';
-        $.Array.prototype.reduce = function (fn, initialValue) {
-            var object = toObjectFixIndexedAccess(this),
-                accumulator,
-                length,
-                kPresent,
-                index;
+        (function (
+            TypeError
+        ) {
+            var reduceTypeErrorMessage = 'reduce of empty array with no initial value';
 
-            throwIfNotAFunction(fn);
-            length = toLength(object.length);
-            if (!length &amp;&amp; arguments.length === 1) {
-                throw new base.TypeError.Ctr(reduceTypeErrorMessage);
-            }
+            $.Array.prototype.reduce = function (fn, initialValue) {
+                var object = toObjectFixIndexedAccess(this),
+                    accumulator,
+                    length,
+                    kPresent,
+                    index;
 
-            index = 0;
-            if (arguments.length > 1) {
-                accumulator = initialValue;
-            } else {
-                kPresent = false;
-                while (!kPresent &amp;&amp; index &lt; length) {
-                    kPresent = index in object;
-                    if (kPresent) {
-                        accumulator = object[index];
-                        index += 1;
+                throwIfNotAFunction(fn);
+                length = toLength(object.length);
+                if (!length &amp;&amp; arguments.length === 1) {
+                    throw new TypeError(reduceTypeErrorMessage);
+                }
+
+                index = 0;
+                if (arguments.length > 1) {
+                    accumulator = initialValue;
+                } else {
+                    kPresent = false;
+                    while (!kPresent &amp;&amp; index &lt; length) {
+                        kPresent = index in object;
+                        if (kPresent) {
+                            accumulator = object[index];
+                            index += 1;
+                        }
+                    }
+
+                    if (!kPresent) {
+                        throw new TypeError(reduceTypeErrorMessage);
                     }
                 }
 
-                if (!kPresent) {
-                    throw new base.TypeError.Ctr(reduceTypeErrorMessage);
-                }
-            }
+                while (index &lt; length) {
+                    if (index in object) {
+                        accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    }
 
-            while (index &lt; length) {
-                if (index in object) {
-                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    index += 1;
                 }
 
-                index += 1;
-            }
-
-            return accumulator;
-        };
+                return accumulator;
+            };
+        }(
+            base.TypeError.Ctr
+        ));
 
         $.Array.reduce = toMethod($.Array.prototype.reduce);
     }
@@ -5854,48 +5920,55 @@
             throw new Error();
         }
     } catch (eReduceRight) {
-        reduceRightTypeErrorMessage = 'reduceRight of empty array with no initial value';
-        $.Array.prototype.reduceRight = function (fn, initialValue) {
-            var object = toObjectFixIndexedAccess(this),
-                accumulator,
-                length,
-                kPresent,
-                index;
+        (function (
+            TypeError
+        ) {
+            var reduceRightTypeErrorMessage = 'reduceRight of empty array with no initial value';
 
-            throwIfNotAFunction(fn);
-            length = toLength(object.length);
-            if (!length &amp;&amp; arguments.length === 1) {
-                throw new base.TypeError.Ctr(reduceRightTypeErrorMessage);
-            }
+            $.Array.prototype.reduceRight = function (fn, initialValue) {
+                var object = toObjectFixIndexedAccess(this),
+                    accumulator,
+                    length,
+                    kPresent,
+                    index;
 
-            index = length - 1;
-            if (arguments.length > 1) {
-                accumulator = initialValue;
-            } else {
-                kPresent = false;
-                while (!kPresent &amp;&amp; index >= 0) {
-                    kPresent = index in object;
-                    if (kPresent) {
-                        accumulator = object[index];
-                        index -= 1;
+                throwIfNotAFunction(fn);
+                length = toLength(object.length);
+                if (!length &amp;&amp; arguments.length === 1) {
+                    throw new TypeError(reduceRightTypeErrorMessage);
+                }
+
+                index = length - 1;
+                if (arguments.length > 1) {
+                    accumulator = initialValue;
+                } else {
+                    kPresent = false;
+                    while (!kPresent &amp;&amp; index >= 0) {
+                        kPresent = index in object;
+                        if (kPresent) {
+                            accumulator = object[index];
+                            index -= 1;
+                        }
+                    }
+
+                    if (!kPresent) {
+                        throw new TypeError(reduceRightTypeErrorMessage);
                     }
                 }
 
-                if (!kPresent) {
-                    throw new base.TypeError.Ctr(reduceRightTypeErrorMessage);
-                }
-            }
+                while (index >= 0) {
+                    if (index in object) {
+                        accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    }
 
-            while (index >= 0) {
-                if (index in object) {
-                    accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    index -= 1;
                 }
 
-                index -= 1;
-            }
-
-            return accumulator;
-        };
+                return accumulator;
+            };
+        }(
+            base.TypeError.Ctr
+        ));
 
         $.Array.reduceRight = toMethod($.Array.prototype.reduceRight);
     }
@@ -6194,43 +6267,51 @@
             base.Number.toFixed.call(1000000000000000128, 0) !== '1000000000000000128') {
 
         // Hide these variables and functions
-        (function (floor, strSlice, toString, RangeError) {
+        (function (
+            RangeError
+        ) {
             var baseNum = 1e7,
                 data = [0, 0, 0, 0, 0, 0],
                 size = data.length,
                 last = size - 1;
 
             function multiply(n, c) {
-                iter(data, false, 0, size, false, function (it, idx, obj) {
-                    c += n * it;
-                    obj[idx] = c % baseNum;
+                var index;
+
+                for (index = 0; index &lt; size; index += 1) {
+                    c += n * data[index];
+                    data[index] = c % baseNum;
                     c = floor(c / baseNum);
-                });
+                }
             }
 
             function divide(n) {
-                var c = 0;
+                var c = 0,
+                    index;
 
-                iter(data, true, last, 0, true, function (it, idx, obj) {
-                    c += it;
-                    obj[idx] = floor(c / n);
+                for (index = last; index >= 0; index -= 1) {
+                    c += data[index];
+                    data[index] = floor(c / n);
                     c = (c % n) * baseNum;
-                });
+                }
             }
 
             function numToString() {
-                var s = '';
+                var s = '',
+                    index,
+                    it;
 
-                iter(data, true, last, 0, true, function (it, idx) {
-                    if (s || !idx || it) {
-                        it = this(it);
+                for (index = last; index >= 0; index -= 1) {
+                    it = data[index];
+                    if (s || !index || it) {
+                        it = toString(it);
                         if (!s) {
                             s = it;
                         } else {
                             s += strSlice('0000000', 0, 7 - it.length) + it;
                         }
                     }
-                }, toString);
+                }
 
                 return s;
             }
@@ -6359,7 +6440,9 @@
 
                 return m;
             };
-        }(floor, strSlice, toString, base.RangeError.Ctr));
+        }(
+            base.RangeError.Ctr
+        ));
     } else {
         $.Number.prototype.toFixed = base.Number.toFixed;
     }
@@ -6387,7 +6470,8 @@
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
                 length = toLength(object.length),
-                val = -1;
+                val = -1,
+                index;
 
             if (length) {
                 if (arguments.length > 1) {
@@ -6404,13 +6488,12 @@
                         }
                     }
 
-                    iter(object, true, fromIndex, length, false, function (it, idx) {
-                        if (searchElement === it) {
-                            val = idx;
+                    for (index = fromIndex; index &lt; length; index += 1) {
+                        if (index in object &amp;&amp; searchElement === object[index]) {
+                            val = index;
+                            break;
                         }
-
-                        return val === idx;
-                    });
+                    }
                 }
             }
 
@@ -6419,61 +6502,6 @@
 
         $.Array.indexOf = toMethod($.Array.prototype.indexOf);
     }
-
-    /**
-     * Returns true if the specified searchElement is in the specified array.
-     * Using strict equality (the same method used by the === comparison operator).
-     * @memberof utilx.Array
-     * @name contains
-     * @function
-     * @param {ArrayLike} array
-     * @throws {TypeError} if array is {@link null} or {@link undefined}
-     * @param {Object} searchElement
-     * @param {number} [fromIndex]
-     * @returns {boolean}
-     */
-    if (!testShims &amp;&amp; isNative(base.Array.indexOf) &amp;&amp; base.Array.indexOf.call([0, 1], 1, 2) === -1) {
-        $.Array.prototype.contains = function (searchElement, fromIndex) {
-            /*jslint unparam: true */
-            /*jshint unused: false */
-            return base.Array.indexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
-        };
-    } else {
-        $.Array.prototype.contains = function (searchElement, fromIndex) {
-            var object = toObjectFixIndexedAccess(this),
-                length = toLength(object.length),
-                val = false;
-
-            if (length) {
-                if (arguments.length > 1) {
-                    fromIndex = toInteger(fromIndex);
-                } else {
-                    fromIndex = 0;
-                }
-
-                if (fromIndex &lt; length) {
-                    if (fromIndex &lt; 0) {
-                        fromIndex = length - abs(fromIndex);
-                        if (fromIndex &lt; 0) {
-                            fromIndex = 0;
-                        }
-                    }
-
-                    iter(object, true, fromIndex, length, false, function (it) {
-                        if (searchElement === it) {
-                            val = true;
-                        }
-
-                        return val;
-                    });
-                }
-            }
-
-            return val;
-        };
-    }
-
-    $.Array.contains = toMethod($.Array.prototype.contains);
 
     /**
      * This {@link boundPrototypalFunction method} returns the first index at which a given element
@@ -6494,7 +6522,8 @@
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
                 length = toLength(object.length),
-                val = -1;
+                val = -1,
+                index;
 
             if (length) {
                 if (arguments.length > 1) {
@@ -6509,14 +6538,12 @@
                     fromIndex = length - abs(fromIndex);
                 }
 
-                iter(object, true, fromIndex, 0, true, function (it, idx) {
-                    if (searchElement === it) {
-                        val = idx;
-
+                for (index = fromIndex; index >= 0; index -= 1) {
+                    if (index in object &amp;&amp; searchElement === object[index]) {
+                        val = index;
+                        break;
                     }
-
-                    return val === idx;
-                });
+                }
             }
 
             return val;
@@ -6548,7 +6575,8 @@
                 relativeStart = toInteger(start),
                 type = typeof end,
                 relativeEnd,
-                finalEnd;
+                finalEnd,
+                index;
 
             if (start &lt; 0) {
                 relativeStart = mMax(length + relativeStart, 0);
@@ -6568,11 +6596,9 @@
                 finalEnd = mMin(relativeEnd, length);
             }
 
-            iter(object, false, relativeStart, finalEnd, false, function (unused, idx, obj) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                put(obj, idx, value);
-            });
+            for (index = relativeStart; index &lt; finalEnd; index += 1) {
+                object[index] = value;
+            }
 
             return object;
         };
@@ -6607,7 +6633,8 @@
                 from,
                 finalEnd,
                 count,
-                direction;
+                direction,
+                index;
 
             if (relativeTarget &lt; 0) {
                 to = mMax(length + relativeTarget, 0);
@@ -6642,18 +6669,16 @@
                 direction = 1;
             }
 
-            iter(object, false, count, 1, true, function (unused1, unused2, obj) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                if (hasOwnProp(obj, from)) {
-                    put(obj, to, obj[from]);
+            for (index = count; index >= 1; index -= 1) {
+                if (hasOwnProp(object, from)) {
+                    object[to] = object[from];
                 } else {
-                    delete obj[to];
+                    delete object[to];
                 }
 
                 from += direction;
                 to += direction;
-            });
+            }
 
             return object;
         };
@@ -6672,15 +6697,17 @@
         return key !== this;
     };
 
-    enumer(base.Error.proto, false, function (unused, prop) {
-        /*jslint unparam: true */
-        /*jshint unused: false */
-        if (this.contains(base.props.unwantedError, prop)) {
-            hasErrorProps = true;
-        } else {
-            base.props.unwantedError = this.filter(base.props.unwantedError, unwantedErrorPropsFilter, prop);
+    (function () {
+        var prop;
+
+        for (prop in base.Error.proto) {
+            if ($.Array.contains(base.props.unwantedError, prop)) {
+                hasErrorProps = true;
+            } else {
+                base.props.unwantedError = $.Array.filter(base.props.unwantedError, unwantedErrorPropsFilter, prop);
+            }
         }
-    }, $.Array);
+    }());
 
     /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
@@ -6757,22 +6784,36 @@
 
             var skipProto = hasFuncProtoBug &amp;&amp; isFunction(object),
                 skipErrorProps = hasErrorProps &amp;&amp; isErrorTypePrototype(object),
-                props = enumer(object, false, function (unused, prop, obj) {
-                    /*jslint unparam: true */
-                    /*jshint unused: false */
-                    if (!(skipProto &amp;&amp; prop === 'prototype') &amp;&amp;
-                            !(skipErrorProps &amp;&amp; $.Array.contains(base.props.unwantedError, prop)) &amp;&amp;
-                            hasOwnProp(obj, prop)) {
-
-                        push(this, prop);
-                    }
-                }, []),
+                props = [],
+                next = 0,
+                prop,
                 ctor,
                 isProto,
-                nonEnum;
+                nonEnum,
+                length,
+                index;
 
+            for (prop in object) {
+                if (!(skipProto &amp;&amp; prop === 'prototype') &amp;&amp;
+                        !(skipErrorProps &amp;&amp; $.Array.contains(base.props.unwantedError, prop)) &amp;&amp;
+                        hasOwnProp(object, prop)) {
+
+                    props[next] = prop;
+                    next += 1;
+                }
+            }
+
+            props.length = next;
             if (!base.Array.canEnumerArgs &amp;&amp; isArguments(object)) {
-                props = concat(props, slice(object));
+                length = object.length;
+                for (index = 0; index &lt; length; index += 1) {
+                    if (index in object) {
+                        props[next] = index;
+                        next += 1;
+                    }
+                }
+
+                props.length = next;
             }
 
             if (hasDontEnumBug &amp;&amp; object !== base.Object.proto) {
@@ -6816,16 +6857,19 @@
      */
     $.Object.forKeys = function (object, fn, thisArg) {
         var obj = toObjectFixIndexedAccess(object),
-            keys = $.Object.keys(obj),
-            val = false;
+            keys,
+            length,
+            val,
+            index,
+            it;
 
-        iter(keys, true, 0, toLength(keys.length), false, function (it) {
-            if (this.call(thisArg, obj[it], it, obj)) {
+        throwIfNotAFunction(fn);
+        for (keys = $.Object.keys(obj), val = false, index = 0, length = keys.length; index &lt; length; index += 1) {
+            it = keys[index];
+            if (fn.call(thisArg, obj[it], it, obj)) {
                 val = true;
             }
-
-            return val;
-        }, throwIfNotAFunction(fn));
+        }
 
         return val;
     };
@@ -7452,7 +7496,7 @@
      * @returns {boolean}
      * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
      */
-    $.Object.deepEqual = function (a, b) {
+    $.Object.deepEqual = deepEqual = function (a, b) {
         if (a === b) {
             return true;
         }
@@ -7483,12 +7527,14 @@
                 return false;
             }
 
-            return $.Object.deepEqual(slice(a), slice(b));
+            return deepEqual(slice(a), slice(b));
         }
 
         var ka,
             kb,
-            status;
+            length,
+            index,
+            it;
 
         try {
             ka = $.Object.keys(a);
@@ -7497,7 +7543,8 @@
             return false;
         }
 
-        if (ka.length !== kb.length) {
+        length = ka.length;
+        if (length !== kb.length) {
             if (isArray(a) &amp;&amp; isArray(b)) {
                 if (a.length !== b.length) {
                     return false;
@@ -7508,25 +7555,18 @@
         } else {
             $.Array.stableSort(ka);
             $.Array.stableSort(kb);
-            iter(ka, false, 0, ka.length, false, function (it, idx) {
-                status = it !== this[idx];
-
-                return status;
-            }, kb);
-
-            if (status) {
-                return false;
+            for (index = 0; index &lt; length; index += 1) {
+                if (ka[index] !== kb[index]) {
+                    return false;
+                }
             }
         }
 
-        iter(ka, false, 0, ka.length, false, function (it) {
-            status = !this(a[it], b[it]);
-
-            return status;
-        }, $.Object.deepEqual);
-
-        if (status) {
-            return false;
+        for (index = 0; index &lt; length; index += 1) {
+            it = ka[index];
+            if (!deepEqual(a[it], b[it])) {
+                return false;
+            }
         }
 
         return true;
@@ -7541,7 +7581,7 @@
      * @param {*} b
      * @returns {boolean}
      */
-    $.Object.deepStrictEqual = function (a, b) {
+    $.Object.deepStrictEqual = deepStrictEqual = function (a, b) {
         if (a === b) {
             return true;
         }
@@ -7572,12 +7612,14 @@
                 return false;
             }
 
-            return $.Object.deepStrictEqual(slice(a), slice(b));
+            return deepStrictEqual(slice(a), slice(b));
         }
 
         var ka,
             kb,
-            status;
+            length,
+            index,
+            it;
 
         try {
             ka = $.Object.keys(a);
@@ -7586,7 +7628,8 @@
             return false;
         }
 
-        if (ka.length !== kb.length) {
+        length = ka.length;
+        if (length !== kb.length) {
             if (isArray(a) &amp;&amp; isArray(b)) {
                 if (a.length !== b.length) {
                     return false;
@@ -7597,25 +7640,18 @@
         } else {
             $.Array.stableSort(ka);
             $.Array.stableSort(kb);
-            iter(ka, false, 0, ka.length, false, function (it, idx) {
-                status = it !== this[idx];
-
-                return status;
-            }, kb);
-
-            if (status) {
-                return false;
+            for (index = 0; index &lt; length; index += 1) {
+                if (ka[index] !== kb[index]) {
+                    return false;
+                }
             }
         }
 
-        iter(ka, false, 0, ka.length, false, function (it) {
-            status = !this(a[it], b[it]);
-
-            return status;
-        }, $.Object.deepStrictEqual);
-
-        if (status) {
-            return false;
+        for (index = 0; index &lt; length; index += 1) {
+            it = ka[index];
+            if (!deepStrictEqual(a[it], b[it])) {
+                return false;
+            }
         }
 
         return true;
@@ -8145,23 +8181,29 @@
     $.Array.prototype.shuffle = function (rounds) {
         var object = cObject(checkObjectCoercible(this)),
             isString = toClass(object) === base.classString.string,
-            length;
+            inLen,
+            outLen,
+            inIndex,
+            outIndex,
+            rand,
+            tempVal;
 
         if (isString) {
             object = split(object, '');
         }
 
-        length = toLength(object.length);
-        if (length > 1) {
-            iter(null, false, 0, mMin(mMax(toInteger(rounds), 1), MAX_SAFE_INTEGER), false, function () {
-                iter(object, false, 0, length, false, function (unused, idx, obj) {
-                    /*jslint unparam: true */
-                    /*jshint unused: false */
-                    this(obj, idx, $.Number.randomInt(0, idx));
-                }, this);
-            }, $.Object.swapItems);
-
-            object.length = length;
+        inLen = toLength(object.length);
+        if (inLen > 1) {
+            object.length = inLen;
+            outLen = mMin(mMax(toInteger(rounds), 1), MAX_SAFE_INTEGER);
+            for (outIndex = 0; outIndex &lt; outLen; outIndex += 1) {
+                for (inIndex = 0; inIndex &lt; inLen; inIndex += 1) {
+                    rand = floor(random() * inIndex);
+                    tempVal = object[inIndex];
+                    object[inIndex] = object[rand];
+                    object[rand] = tempVal;
+                }
+            }
         }
 
         if (isString) {
@@ -8805,14 +8847,18 @@
         }, base.properties.notEnumerable));
     }
 
-    enumer(testTemp, true, function (unused, prop) {
-        /*jslint unparam: true */
-        /*jshint unused : false */
-        testTemp[prop] = null;
-        delete testTemp[prop];
-    });
+    // Cleanup the tempory testing object
+    (function () {
+        var prop;
 
-    testTemp = null;
+        for (prop in testTemp) {
+            if (hasOwn(testTemp, prop)) {
+                testTemp[prop] = null;
+            }
+        }
+
+        testTemp = null;
+    }());
 
     /**
      * The window object represents a window containing a DOM document;
@@ -8842,7 +8888,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Wed Jun 11 2014 04:15:43 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Wed Jun 11 2014 22:06:59 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

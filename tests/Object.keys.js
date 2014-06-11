@@ -132,7 +132,7 @@
         });
 
         it('should work with arguments object', function () {
-            var testValue = ['0', '1'],
+            var testValue = [0, 1],
                 theArgs = utilx.Function.returnArgs(1, 2),
                 theKeys;
 
