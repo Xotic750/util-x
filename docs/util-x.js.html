@@ -811,10 +811,11 @@
         if (inputArg !== null) {
             type = typeof inputArg;
             if ((type === 'function' || type === 'object') &amp;&amp;
-                    'constructor' in inputArg &amp;&amp;
-                    'call' in inputArg &amp;&amp;
-                    'apply' in inputArg &amp;&amp;
-                    'length' in inputArg) {
+                    ('constructor' in inputArg) &amp;&amp;
+                    ('call' in inputArg) &amp;&amp;
+                    ('apply' in inputArg) &amp;&amp;
+                    ('length' in inputArg) &amp;&amp;
+                    typeof inputArg.length === 'number') {
 
                 isFn = true;
             }
@@ -1032,7 +1033,7 @@
          * @function createListFromArrayLike
          * @param {ArrayLike} inputArg
          * @throws {TypeError} if inputArg is not an {@link Object object}.
-         * @returns {Array}
+         * @returns {Object}
          * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-createlistfromarraylike
          */
         /*
@@ -1042,21 +1043,109 @@
             }
 
             var length = toLength(inputArg.length),
-                list = [],
-                next = 0,
+                list = {},
                 index;
 
+            list.length = length;
             for (index = 0; index &lt; length; index += 1) {
-                list[next] = inputArg[index];
-                next += 1;
-                if (next > list.length) {
-                    list.length = next;
-                }
+                list[index] = inputArg[index];
             }
 
             return list;
         },
         */
+
+        /**
+         * @private
+         * @name toClass
+         * @function
+         * @param {*} inputArg
+         * @returns {string}
+         */
+        toClass = (function () {
+            try {
+                if (testShims ||
+                        base.Object.toString.call() !== base.classString.Undefined ||
+                        base.Object.toString.call(null) !== base.classString.Null ||
+                        base.Object.toString.call(base.RegExp.proto) !== base.classString.regexp ||
+                        base.Object.toString.call(base.String.proto) !== base.classString.string ||
+                        base.Object.toString.call(base.Error.proto) !== base.classString.error ||
+                        base.Object.toString.call(returnArgs()) !== base.classString.arguments) {
+
+                    throw new Error();
+                }
+
+                return function (inputArg) {
+                    return base.Object.toString.call(inputArg);
+                };
+            } catch (eClass) {
+                return function (inputArg) {
+                    var type = typeof inputArg,
+                        val;
+
+                    if (type === 'undefined') {
+                        val = base.classString.Undefined;
+                    } else if (inputArg === null) {
+                        val = base.classString.Null;
+                    } else if (type === 'object' &amp;&amp;
+                            !('arguments' in inputArg) &amp;&amp;
+                            ('callee' in inputArg) &amp;&amp;
+                            ('length' in inputArg) &amp;&amp;
+                            typeof inputArg.length === 'number') {
+
+                        val = base.classString.arguments;
+                    } else if (inputArg === base.Number.proto) {
+                        val = base.classString.number;
+                    } else if (inputArg === base.Boolean.proto) {
+                        val = base.classString.Boolean;
+                    } else if (inputArg === base.Object.proto) {
+                        val = base.classString.object;
+                    } else if (inputArg === base.Function.proto) {
+                        val = base.classString.Function;
+                    } else if (inputArg === base.String.proto) {
+                        val = base.classString.string;
+                    } else if (inputArg === base.Date.proto) {
+                        val = base.classString.date;
+                    } else if (inputArg === base.RegExp.proto) {
+                        val = base.classString.regexp;
+                    } else if (isErrorTypePrototype(inputArg)) {
+                        val = base.classString.error;
+                    } else {
+                        val = base.Object.toString.call(inputArg);
+                    }
+
+                    return val;
+                };
+            }
+        }()),
+
+        /**
+         * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+         * @private
+         * @name toObjectFixIndexedAccess
+         * @function
+         * @param {*} inputArg
+         * @returns {Object}
+         * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+         */
+        toObjectFixIndexedAccess = (function () {
+            var objg = cObject('g'),
+                shouldSplitString = objg[0] !== 'g' || !('0' in objg);
+
+            return function (inputArg) {
+                var object = cObject(checkObjectCoercible(inputArg)),
+                    length,
+                    index;
+
+                if (shouldSplitString &amp;&amp; toClass(object) === base.classString.string) {
+                    for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+                        object[index] = base.String.charAt.call(object, index);
+                    }
+                }
+
+                return object;
+            };
+        }()),
 
         /**
          * @private
@@ -1068,21 +1157,45 @@
          * @returns {Array}
          */
         argSlice = function (args, start, end) {
-            var list = [],
-                index,
-                relIdx;
+            var object = toObjectFixIndexedAccess(args),
+                length = toLength(object.length),
+                relativeStart = toInteger(start),
+                val = [],
+                next = 0,
+                type = typeof end,
+                relativeEnd,
+                finalEnd,
+                k;
 
-            for (start = start || 0, end = end || args.length, index = start; index &lt; end; index += 1) {
-                if (index in args) {
-                    relIdx = index - start;
-                    list[relIdx] = args[index];
-                    if (relIdx + 1 > list.length) {
-                        list.length = relIdx + 1;
-                    }
-                }
+            if (relativeStart &lt; 0) {
+                k = mMax(length + relativeStart, 0);
+            } else {
+                k = mMin(relativeStart, length);
             }
 
-            return list;
+            if (type === 'undefined') {
+                relativeEnd = length;
+            } else {
+                relativeEnd = toInteger(end);
+            }
+
+            if (relativeEnd &lt; 0) {
+                finalEnd = mMax(length + relativeEnd, 0);
+            } else {
+                finalEnd = mMin(relativeEnd, length);
+            }
+
+            val.length = mMax(finalEnd - k, 0);
+            while (k &lt; finalEnd) {
+                if (k in object) {
+                    val[next] = object[k];
+                }
+
+                next += 1;
+                k += 1;
+            }
+
+            return val;
         },
 
         /**
@@ -1190,28 +1303,6 @@
 
         /**
          * @private
-         * @name call
-         * @function
-         * @param {Function} fn
-         * @param {*} thisArg
-         * @param {...*} [varArgs]
-         * @returns {*}
-         */
-        //call = toMethod(base.Function.call),
-
-        /**
-         * @private
-         * @name apply
-         * @function
-         * @param {Function} fn
-         * @param {*} thisArg
-         * @param {ArrayLike} [argsArray]
-         * @returns {*}
-         */
-        //apply = toMethod(base.Function.apply),
-
-        /**
-         * @private
          * @name hasOwn
          * @function
          * @param {Object} object
@@ -1219,93 +1310,6 @@
          * @returns {boolean}
          */
         hasOwn = toMethod(base.Object.hasOwn),
-
-        /**
-         * @private
-         * @name isEnumerable
-         * @function
-         * @param {Object} object
-         * @param {string} property
-         * @returns {boolean}
-         */
-        isEnumerable = toMethod(base.Object.propertyIsEnumerable),
-
-        /**
-         * @private
-         * @name toClass
-         * @function
-         * @param {*} inputArg
-         * @returns {string}
-         */
-        toClass = (function () {
-            try {
-                if (testShims ||
-                        base.Object.toString.call() !== base.classString.Undefined ||
-                        base.Object.toString.call(null) !== base.classString.Null ||
-                        base.Object.toString.call(base.RegExp.proto) !== base.classString.regexp ||
-                        base.Object.toString.call(base.String.proto) !== base.classString.string ||
-                        base.Object.toString.call(base.Error.proto) !== base.classString.error ||
-                        base.Object.toString.call(returnArgs()) !== base.classString.arguments) {
-
-                    throw new Error();
-                }
-
-                return toMethod(base.Object.toString, function (inputArg) {
-                    return inputArg;
-                });
-            } catch (eClass) {
-                return function (inputArg) {
-                    var type = typeof inputArg,
-                        val;
-
-                    if (type === 'undefined') {
-                        val = base.classString.Undefined;
-                    } else if (inputArg === null) {
-                        val = base.classString.Null;
-                    } else if (type === 'object' &amp;&amp;
-                            !hasOwn(inputArg, 'arguments') &amp;&amp;
-                            hasOwn(inputArg, 'callee') &amp;&amp;
-                            !isEnumerable(inputArg, 'callee') &amp;&amp;
-                            hasOwn(inputArg, 'length') &amp;&amp;
-                            !isEnumerable(inputArg, 'length') &amp;&amp;
-                            typeof inputArg.length === 'number') {
-
-                        val = base.classString.arguments;
-                    } else if (inputArg === base.Number.proto) {
-                        val = base.classString.number;
-                    } else if (inputArg === base.Boolean.proto) {
-                        val = base.classString.Boolean;
-                    } else if (inputArg === base.Object.proto) {
-                        val = base.classString.object;
-                    } else if (inputArg === base.Function.proto) {
-                        val = base.classString.Function;
-                    } else if (inputArg === base.String.proto) {
-                        val = base.classString.string;
-                    } else if (inputArg === base.Date.proto) {
-                        val = base.classString.date;
-                    } else if (inputArg === base.RegExp.proto) {
-                        val = base.classString.regexp;
-                    } else if (isErrorTypePrototype(inputArg)) {
-                        val = base.classString.error;
-                    } else {
-                        val = base.Object.toString.call(inputArg);
-                    }
-
-                    return val;
-                };
-            }
-        }()),
-
-        /**
-         * @private
-         * @name splice
-         * @param {ArrayLike} array
-         * @param {number} start
-         * @param {number} [deleteCount]
-         * @param {...*} [element]
-         * @returns {Array}
-         */
-        splice = toMethod(base.Array.splice),
 
         /**
          * @private
@@ -1374,7 +1378,7 @@
          * @param {NumberLike} [end]
          * @returns {Array}
          */
-        slice = toMethod(base.Array.slice),
+        slice,
 
         /**
          * @private
@@ -1480,11 +1484,9 @@
 
         hasOwnProp,
         toString,
-        toObjectFixIndexedAccess,
         isPrimitive,
         isNotPrimitive,
         isNative,
-        internalSlice,
         isArguments,
         isTypeObject,
         isRegExp,
@@ -2670,17 +2672,6 @@
 
     /**
      * @private
-     * @name safeSlice
-     * @function
-     */
-    function safeSlice(inputArg, start, end) {
-        return iter(inputArg, true, toLength(start), toLength(end), false, function (it) {
-            push(this, it);
-        }, []);
-    }
-
-    /**
-     * @private
      * @name enumer
      * @function
      */
@@ -2873,8 +2864,6 @@
         return cObject(checkObjectCoercible(inputArg));
     };
 
-    //toObject = $.Object.ToObject;
-
     /**
      * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
      * @memberof utilx.Object
@@ -2884,26 +2873,7 @@
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
-    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess = (function (
-        classString
-    ) {
-        var objg = cObject('g'),
-            shouldSplitString = objg[0] !== 'g' || !('0' in objg);
-
-        return function (inputArg) {
-            var object = cObject(checkObjectCoercible(inputArg));
-
-            if (shouldSplitString &amp;&amp; toClass(object) === classString) {
-                iter(object, false, 0, object.length, false, function (it, idx, obj) {
-                    obj[idx] = it;
-                });
-            }
-
-            return object;
-        };
-    }(
-        base.classString.string
-    ));
+    $.Object.ToObjectFixIndexedAccess = toObjectFixIndexedAccess;
 
     /**
      * Returns true if the specified property is in the specified object.
@@ -2938,8 +2908,8 @@
          * @returns {boolean}
          */
         function isFunctionBasic(inputArg) {
-            return toClass(inputArg) === classString ||
-                    (typeof inputArg === 'function' &amp;&amp; inputArg.call &amp;&amp; inputArg.apply);
+            return toClass(inputArg) === classString || isFunctionFallback(inputArg);
+                    //(typeof inputArg === 'function' &amp;&amp; inputArg.call &amp;&amp; inputArg.apply);
         }
 
         try {
@@ -3120,6 +3090,58 @@
     }(
         base.classString.Function
     ));
+
+    /**
+     * Creates a new array from arguments, starting at start and ending at end.
+     * @memberof utilx.Array
+     * @name slice
+     * @function
+     * @param {ArrayLike} array
+     * @param {NumberLike} [start]
+     * @param {NumberLike} [end]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    try {
+        testTemp.someArgs = returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
+        if (testShims ||
+                !isNative(base.Array.slice) ||
+                base.Array.slice.call(testTemp.someArgs).toString() !== ',,1,a,2,b,,' ||
+                base.Array.slice.call(testTemp.someArgs, Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
+                base.Array.slice.call(testTemp.someArgs, -1).length !== 1 ||
+                base.Array.slice.call(testTemp.someArgs, 0).toString() !== ',,1,a,2,b,,' ||
+                base.Array.slice.call(testTemp.someArgs, 3).toString() !== 'a,2,b,,' ||
+                base.Array.slice.call(testTemp.someArgs, -1, 4).length ||
+                base.Array.slice.call(testTemp.someArgs, 0, 4).toString() !== ',,1,a' ||
+                base.Array.slice.call(testTemp.someArgs, 3, 6).toString() !== 'a,2,b') {
+
+            throw new Error();
+        }
+
+        $.Array.prototype.slice = function () {
+            var section;
+
+            try {
+                section = base.Array.slice.apply(this, arguments);
+            } catch (eSliceFB) {
+                unshift(arguments, this);
+
+                section = argSlice.apply(Undefined, arguments);
+            }
+
+            return section;
+        };
+    } catch (eSlice) {
+        $.Array.prototype.slice = function () {
+            var args = argSlice(arguments);
+
+            unshift(args, this);
+
+            return argSlice.apply(Undefined, args);
+        };
+    }
+
+    $.Array.slice = slice = toMethod($.Array.prototype.slice);
 
     /**
      * Returns true if argument is an object that has own property of length which is a number of uint32
@@ -3334,11 +3356,11 @@
                 /*jslint unparam:true */
                 /*jshint unused:false */
                 var fn = throwIfNotAFunction(this),
-                    args = argSlice(arguments, 1),
+                    args = slice(arguments, 1),
                     bound = base.Function.Ctr('binder', 'return function(' +
                                               bindArgs(fn.length - args.length) +
                         '){return binder.apply(this,arguments);}')(function () {
-                        var binderArgs = concat(args, argSlice(arguments)),
+                        var binderArgs = concat(args, slice(arguments)),
                             result;
 
                         if (this instanceof bound) {
@@ -3986,7 +4008,7 @@
         $.Array.unshift = toMethod($.Array.prototype.unshift);
     }
 
-    $.Array.unshift = unshift;
+    unshift = $.Array.unshift;
 
     /**
      * Returns an integer clamped to the range set by min and max.
@@ -4366,7 +4388,7 @@
                 // Stringifying `this` fixes a bug in IE &lt; 9 where the last argument in replacement
                 // functions isn't type-converted to a string
                 result = replace(str, search, function () {
-                    var args = argSlice(arguments);
+                    var args = slice(arguments);
 
                     // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                     // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
@@ -4383,7 +4405,7 @@
                 // while still throwing on `null` or `undefined` context
                 result = replace(str, search, function () {
                     // Keep this function's `arguments` available through closure
-                    var args = argSlice(arguments),
+                    var args = slice(arguments),
                         length = args.length;
 
                     return replace(toString(replacement), replacementToken, function ($0, $1, $2) {
@@ -5112,9 +5134,9 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
-    if (!testShims &amp;&amp; isNative(base.Array.splice) &amp;&amp; splice([1, 2], 0).length === 2) {
+    if (!testShims &amp;&amp; isNative(base.Array.splice) &amp;&amp; base.Array.splice([1, 2], 0).length === 2) {
         try {
-            if (!splice([1, 2]).length) {
+            if (!base.Array.splice.call([1, 2]).length) {
                 $.Array.splice = toMethod(base.Array.splice);
             } else {
                 throw new Error();
@@ -5145,7 +5167,7 @@
                 k = 0,
                 from,
                 argLength = arguments.length,
-                args = argSlice(arguments),
+                args = slice(arguments),
                 item = 2,
                 itemCount = mMax(argLength - item, 0),
                 to,
@@ -5225,8 +5247,6 @@
 
         $.Array.splice = toMethod($.Array.prototype.splice);
     }
-
-    splice = $.Array.splice;
 
     /**
      * Checks if the supplied function suffers from the V8 strict mode bug.
@@ -5390,8 +5410,6 @@
         $.Array.some = toMethod($.Array.prototype.some);
     }
 
-    //some = $.Array.some;
-
     /**
      * The find method executes the callback function once for each element present in the array until it
      * finds one where callback returns a true value.
@@ -5484,24 +5502,6 @@
         };
 
         $.Array.findIndex = toMethod($.Array.prototype.findIndex);
-    }
-
-    /**
-     * This method creates a new Array instance with a variable number of arguments,
-     * regardless of number or type of the arguments.
-     * @memberof utilx.Array
-     * @name of
-     * @function
-     * @param {...*} [varArgs]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/of
-     */
-    if (!testShims &amp;&amp; isNative(base.Array.of)) {
-        $.Array.of = base.Array.of;
-    } else {
-        $.Array.of = function () {
-            return argSlice(arguments);
-        };
     }
 
     /**
@@ -5617,8 +5617,6 @@
         $.Array.every = toMethod($.Array.prototype.every);
     }
 
-    //every = $.Array.every;
-
     /**
      * map calls a provided callback function once for each element in an arrayLike object, in order,
      * and constructs a new array from the results.
@@ -5680,109 +5678,22 @@
     map = $.Array.map;
 
     /**
-     * Returns some args for testing purposes.
-     * @private
-     * @function someArgs
-     * @returns {Arguments}
-     */
-    function someArgs() {
-        return returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
-    }
-
-    /**
-     * Creates a new array from arguments, starting at start and ending at end.
-     * @private
-     * @function internalSlice
-     * @param {ArrayLike} array
-     * @param {NumberLike} [start]
-     * @param {NumberLike} [end]
-     * @returns {Array}
-     */
-    internalSlice = function (start, end) {
-        var object = toObjectFixIndexedAccess(this),
-            length = toLength(object.length),
-            relativeStart = toInteger(start),
-            val = [],
-            next = 0,
-            type = typeof end,
-            relativeEnd,
-            finalEnd,
-            k;
-
-        if (relativeStart &lt; 0) {
-            k = mMax(length + relativeStart, 0);
-        } else {
-            k = mMin(relativeStart, length);
-        }
-
-        if (type === 'undefined') {
-            relativeEnd = length;
-        } else {
-            relativeEnd = toInteger(end);
-        }
-
-        if (relativeEnd &lt; 0) {
-            finalEnd = mMax(length + relativeEnd, 0);
-        } else {
-            finalEnd = mMin(relativeEnd, length);
-        }
-
-        val.length = mMax(finalEnd - k, 0);
-        while (k &lt; finalEnd) {
-            if ((!base.Array.canEnumerArgs &amp;&amp; isArguments(object)) || k in object) {
-                put(val, next, object[k]);
-            }
-
-            next += 1;
-            k += 1;
-        }
-
-        return val;
-    };
-
-    /**
-     * Creates a new array from arguments, starting at start and ending at end.
+     * This method creates a new Array instance with a variable number of arguments,
+     * regardless of number or type of the arguments.
      * @memberof utilx.Array
-     * @name slice
+     * @name of
      * @function
-     * @param {ArrayLike} array
-     * @param {NumberLike} [start]
-     * @param {NumberLike} [end]
+     * @param {...*} [varArgs]
      * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/of
      */
-    try {
-        if (testShims ||
-                !isNative(base.Array.slice) ||
-                slice(someArgs()).toString() !== ',,1,a,2,b,,' ||
-                slice(someArgs(), Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
-                slice(someArgs(), -1).length !== 1 ||
-                slice(someArgs(), 0).toString() !== ',,1,a,2,b,,' ||
-                slice(someArgs(), 3).toString() !== 'a,2,b,,' ||
-                slice(someArgs(), -1, 4).length ||
-                slice(someArgs(), 0, 4).toString() !== ',,1,a' ||
-                slice(someArgs(), 3, 6).toString() !== 'a,2,b') {
-
-            throw new Error();
-        }
-
-        $.Array.prototype.slice = function () {
-            var args = argSlice(arguments),
-                section;
-
-            try {
-                section = base.Array.slice.apply(this, args);
-            } catch (eSliceFB) {
-                section = internalSlice.apply(this, args);
-            }
-
-            return section;
+    if (!testShims &amp;&amp; isNative(base.Array.of)) {
+        $.Array.of = base.Array.of;
+    } else {
+        $.Array.of = function () {
+            return slice(arguments);
         };
-    } catch (eSlice) {
-        $.Array.prototype.slice = internalSlice;
     }
-
-    $.Array.slice = toMethod($.Array.prototype.slice);
 
     /**
      * Creates a new array with all elements that pass the test implemented by the provided function.
@@ -5988,8 +5899,6 @@
 
         $.Array.reduceRight = toMethod($.Array.prototype.reduceRight);
     }
-
-    //reduceRight = $.Array.reduceRight;
 
     /**
      * Returns a random integer between the supplied min and max arguments.
@@ -6209,8 +6118,6 @@
 
         $.String.trim = toMethod($.String.prototype.trim);
     }
-
-    //trim = $.String.trim;
 
     /**
      * This function parses a string argument and returns an integer of the specified radix or base.
@@ -6512,8 +6419,6 @@
 
         $.Array.indexOf = toMethod($.Array.prototype.indexOf);
     }
-
-    //indexOf = $.Array.indexOf;
 
     /**
      * Returns true if the specified searchElement is in the specified array.
@@ -6867,7 +6772,7 @@
                 nonEnum;
 
             if (!base.Array.canEnumerArgs &amp;&amp; isArguments(object)) {
-                props = concat(props, argSlice(object));
+                props = concat(props, slice(object));
             }
 
             if (hasDontEnumBug &amp;&amp; object !== base.Object.proto) {
@@ -7364,7 +7269,7 @@
         $.Object.assign = function (target) {
             var object = cObject(checkObjectCoercible(target));
 
-            forEach(argSlice(arguments, 1), function (source) {
+            forEach(slice(arguments, 1), function (source) {
                 forEach(this(toObjectFixIndexedAccess(source)), function (key) {
                     this(object, key, source[key]);
                 }, put);
@@ -7578,7 +7483,7 @@
                 return false;
             }
 
-            return $.Object.deepEqual(argSlice(a), argSlice(b));
+            return $.Object.deepEqual(slice(a), slice(b));
         }
 
         var ka,
@@ -7667,7 +7572,7 @@
                 return false;
             }
 
-            return $.Object.deepStrictEqual(argSlice(a), argSlice(b));
+            return $.Object.deepStrictEqual(slice(a), slice(b));
         }
 
         var ka,
@@ -8680,7 +8585,7 @@
      */
     $.Array.prototype.powerSet = function () {
         var thiObj = toObjectFixIndexedAccess(this),
-            object = safeSlice(thiObj, 0, toLength(thiObj.length)),
+            object = slice(thiObj),
             lastElement,
             val;
 
@@ -8694,7 +8599,7 @@
             lastElement = pop(object);
             val = reduce($.Array.powerSet(object), function (previous, element) {
                 push(previous, element);
-                element = safeSlice(element, 0, element.length);
+                element = slice(element);
                 push(element, lastElement);
                 push(previous, element);
 
@@ -8937,7 +8842,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Wed Jun 11 2014 02:17:40 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Wed Jun 11 2014 04:15:43 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
