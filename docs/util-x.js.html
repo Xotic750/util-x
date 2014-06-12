@@ -1170,78 +1170,6 @@
         },
 
         /**
-         * This method calls a function with a given this value and arguments provided individually.
-         * @private
-         * @name callProto
-         * @function
-         * @param {*} thisArg
-         * @param {...*} [varArgs]
-         * @returns {*}
-         */
-        /*
-        callProto = function (thisArg) {
-            throwIfNotAFunction(this);
-
-            var argsArray = createListFromArrayLike(arguments),
-                applyFn = 'apply:' + this,
-                type,
-                val;
-
-            if (returnThis()) {
-                type = typeof thisArg;
-                if (type === 'boolean' || type === 'number' || type === 'string') {
-                    thisArg = cObject(thisArg);
-                }
-            }
-
-            this[applyFn] = base.Function.apply;
-            val = this[applyFn](thisArg, argSlice(argsArray, 1));
-            delete this[applyFn];
-
-            return val;
-        },
-        */
-
-        /**
-         * This method calls a function with a given this value and arguments provided individually.
-         * @private
-         * @name applyProto
-         * @function
-         * @param {*} thisArg
-         * @param {ArrayLike} [argsArray]
-         * @returns {*}
-         */
-        /*
-        applyProto = function (thisArg, argsArray) {
-            throwIfNotAFunction(this);
-
-            var applyFn = 'apply:' + this,
-                type,
-                val;
-
-            if (returnThis()) {
-                type = typeof thisArg;
-                if (type === 'boolean' || type === 'number' || type === 'string') {
-                    thisArg = cObject(thisArg);
-                }
-            }
-
-            type = typeof argsArray;
-            if (type === 'undefined' || argsArray === null) {
-                argsArray = [];
-            } else {
-                argsArray = createListFromArrayLike(argsArray);
-            }
-
-            this[applyFn] = base.Function.apply;
-            val = this[applyFn](thisArg, argsArray);
-            delete this[applyFn];
-
-            return val;
-        },
-        */
-
-        /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
          * Overwritten later by the improved version.
          * @private
@@ -1456,15 +1384,26 @@
         isInteger,
         isSafeInteger,
         isNumeric,
+        isPlainObject,
+        isErrorTypeConstructor,
         getPrototypeOf,
         modulo,
-        put,
         forEach,
         map,
         reduce,
         filter,
         deepEqual,
         deepStrictEqual,
+        defineProperty,
+        defineProperties,
+        assign,
+        create,
+        instanceOf,
+        objectKeys,
+        stringify,
+        truncate,
+        inherits,
+        stableSort,
 
         /**
          * Indicates if object suffers the don'r enum bug
@@ -1504,6 +1443,8 @@
                 index += 1;
                 /*jslint forin: true */
             }
+
+            base.props.unwantedError = index;
 
             return !!index;
         }()),
@@ -4122,7 +4063,7 @@
     function copyRegExp(regExpArg, options) {
         throwIfIsNotRegExp(regExpArg);
 
-        if (!$.Object.isPlainObject(options)) {
+        if (!isPlainObject(options)) {
             options = {};
         }
 
@@ -4904,7 +4845,7 @@
      * @param {Object} object
      * @returns {boolean}
      */
-    $.Object.isPlainObject = function (object) {
+    $.Object.isPlainObject = isPlainObject = function (object) {
         return toClass(object) === base.classString.object &amp;&amp;
                 !isFunction(object) &amp;&amp;
                 getPrototypeOf(object) === base.Object.proto;
@@ -5081,7 +5022,7 @@
         new RegExp('^[1-9]\\d*$')
     ));
 
-    $.Array.assign = put = toMethod($.Array.prototype.assign);
+    $.Array.assign = toMethod($.Array.prototype.assign);
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -6100,14 +6041,14 @@
         throwIfNotAFunction(comparefn);
         if (toLength(object.length) > 1) {
             forEach(mergeSort(object, comparefn), function (value, index) {
-                put(object, index, value);
+                object[index] = value;
             });
         }
 
         return object;
     };
 
-    $.Array.stableSort = toMethod($.Array.prototype.stableSort);
+    $.Array.stableSort = stableSort = toMethod($.Array.prototype.stableSort);
 
     /**
      * This {@link boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
@@ -6709,11 +6650,11 @@
 
                 if (hasErrorProps) {
                     $.Object.keys = function (object) {
-                        if (!keysWorksWithArguments &amp;&amp; isArguments(object)) {
-                            object = slice(object);
-                        }
-
                         var keys = oKeys(object);
+
+                        if (!keysWorksWithArguments &amp;&amp; isArguments(object)) {
+                            keys = concat(oKeys(slice(object)));
+                        }
 
                         if (isErrorTypePrototype(object)) {
                             keys = filter(keys, function (key) {
@@ -6725,11 +6666,13 @@
                     };
                 } else if (!keysWorksWithArguments) {
                     $.Object.keys = function (object) {
+                        var keys = oKeys(object);
+
                         if (isArguments(object)) {
-                            object = slice(object);
+                            keys = concat(oKeys(slice(object)));
                         }
 
-                        return oKeys(object);
+                        return keys;
                     };
                 } else {
                     $.Object.keys = oKeys;
@@ -6758,12 +6701,13 @@
                 index;
 
             for (prop in object) {
-                if (!(skipProto &amp;&amp; prop === 'prototype') &amp;&amp;
-                        !(skipErrorProps &amp;&amp; $.Array.contains(base.props.unwantedError, prop)) &amp;&amp;
-                        hasOwnProp(object, prop)) {
-
-                    props[next] = prop;
-                    next += 1;
+                if (!(skipProto &amp;&amp; prop === 'prototype')) {
+                    if (!(skipErrorProps &amp;&amp; $.Array.contains(base.props.unwantedError, prop))) {
+                        if (hasOwnProp(object, prop)) {
+                            props[next] = prop;
+                            next += 1;
+                        }
+                    }
                 }
             }
 
@@ -6796,6 +6740,8 @@
             return props;
         };
     }
+
+    objectKeys = $.Object.keys;
 
     /**
      * forKeys executes the callback function once for each own property present in the object until it finds one
@@ -6830,7 +6776,7 @@
             it;
 
         throwIfNotAFunction(fn);
-        for (keys = $.Object.keys(obj), val = false, index = 0, length = keys.length; index &lt; length; index += 1) {
+        for (keys = objectKeys(obj), val = false, index = 0, length = keys.length; index &lt; length; index += 1) {
             it = keys[index];
             if (fn.call(thisArg, obj[it], it, obj)) {
                 val = true;
@@ -6862,7 +6808,7 @@
      * @returns {boolean}
      */
     $.Object.isEmpty = function (inputArg) {
-        return !$.Object.keys(inputArg).length;
+        return !objectKeys(inputArg).length;
     };
 
     /**
@@ -6894,7 +6840,6 @@
      */
     try {
         (function (
-            keys,
             noop,
             isUint32,
             defineProp,
@@ -6949,7 +6894,8 @@
                     }
 
                     if (definePropertyPatch2 &amp;&amp; isA &amp;&amp; (isB || !hasOwnProp(object, property))) {
-                        put(object, property, descriptor.value);
+                        object[property] = descriptor.value;
+                        //ut(object, property, descriptor.value);
                     }
 
                     if (definePropertyPatch3 &amp;&amp; isA &amp;&amp; !isB) {
@@ -6969,9 +6915,9 @@
                 jkl: noop
             };
 
-            forEach(keys(testTemp.dpObject), function (key) {
-                this(testTemp.dpObject, key, notEnumerable);
-            }, $.Object.defineProperty);
+            forEach(objectKeys(testTemp.dpObject), function (key) {
+                defineProperty(testTemp.dpObject, key, notEnumerable);
+            });
 
             if (testTemp.dpObject.abc !== 0 ||
                     testTemp.dpObject.def !==  '' ||
@@ -6982,9 +6928,9 @@
             }
 
             testTemp.dpArray = [10, true, '', noop];
-            forEach(keys(testTemp.dpArray), function (key) {
-                this(testTemp.dpArray, key, notEnumerable);
-            }, $.Object.defineProperty);
+            forEach(objectKeys(testTemp.dpArray), function (key) {
+                defineProperty(testTemp.dpArray, key, notEnumerable);
+            });
 
             if (testTemp.dpArray[0] !== 10 ||
                     testTemp.dpArray[1] !== true ||
@@ -6994,7 +6940,6 @@
                 throw new Error();
             }
         }(
-            $.Object.keys,
             $.Function.noop,
             $.Number.isUint32,
             base.Object.defineProperty,
@@ -7057,7 +7002,7 @@
                             } catch (ignore) {}
                             */
 
-                            put(object, index, descriptor.value);
+                            object[index] = descriptor.value;
                             type = typeof prototype;
                             if (type === 'undefined') {
                                 delete object[proto];
@@ -7065,7 +7010,7 @@
                                 object[proto] = prototype;
                             }
                         } else {
-                            put(object, index, descriptor.value);
+                            object[index] = descriptor.value;
                         }
                     }
                 } else {
@@ -7093,6 +7038,8 @@
         ));
     }
 
+    defineProperty = $.Object.defineProperty;
+
     /**
      * Defines new or modifies existing properties directly on an object, returning the object.
      * @memberof utilx.Object
@@ -7103,15 +7050,15 @@
      * @returns {Object}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties
      */
-    $.Object.defineProperties = function (object, props) {
+    $.Object.defineProperties = defineProperties = function (object, props) {
         throwIfIsPrimitive(object);
         if (isPrimitive(props)) {
             throw new base.TypeError.Ctr('Property description must be an object');
         }
 
-        forEach($.Object.keys(props), function (key) {
-            this(object, key, props[key]);
-        }, $.Object.defineProperty);
+        forEach(objectKeys(props), function (key) {
+            defineProperty(object, key, props[key]);
+        });
 
         return object;
     };
@@ -7191,7 +7138,7 @@
      */
     $.Object.deepFreeze = function (object) {
         $.Object.freeze(object);
-        forEach($.Object.keys(object), function (propKey) {
+        forEach(objectKeys(object), function (propKey) {
             var prop = object[propKey],
                 type = typeof prop;
 
@@ -7200,11 +7147,11 @@
                     type !== 'boolean' &amp;&amp;
                     type !== 'string' &amp;&amp;
                     type !== 'number' &amp;&amp;
-                    !this.isFrozen(prop)) {
+                    !$.Object.isFrozen(prop)) {
 
-                this.deepFreeze(prop);
+                $.Object.deepFreeze(prop);
             }
-        }, $.Object);
+        });
 
         return object;
     };
@@ -7262,6 +7209,8 @@
         };
     }
 
+    instanceOf = $.Object.instanceOf;
+
     /**
      * The assign function is used to copy the values of all of the enumerable own properties from a
      * source object to a target object.
@@ -7277,26 +7226,33 @@
         $.Object.assign = base.Object.assign;
     } else {
         $.Object.assign = function (target) {
-            var object = cObject(checkObjectCoercible(target));
+            var to = cObject(checkObjectCoercible(target)),
+                length = toLength(arguments.length),
+                from,
+                index,
+                keysArray,
+                len,
+                nextIndex,
+                nextKey;
 
-            forEach(slice(arguments, 1), function (source) {
-                forEach(this(toObjectFixIndexedAccess(source)), function (key) {
-                    this(object, key, source[key]);
-                }, put);
-            }, $.Object.keys);
+            if (length >= 2) {
+                for (index = 1; index &lt; length; index += 1) {
+                    from = cObject(checkObjectCoercible(arguments[index]));
+                    keysArray = objectKeys(from);
+                    for (nextIndex = 0, len = keysArray.length; nextIndex &lt; len; nextIndex += 1) {
+                        nextKey = keysArray[nextIndex];
+                        if (hasOwnProp(from, nextKey)) {
+                            to[nextKey] = from[nextKey];
+                        }
+                    }
+                }
+            }
 
-            return object;
+            return to;
         };
     }
 
-    /**
-     * The constructor used by $.Object.create if shimmed.
-     * @private
-     * @constructor ObjectCreateFunc
-     */
-    function ObjectCreateFunc() {
-        return;
-    }
+    assign = $.Object.assign;
 
     /**
      * The $.Object.create method creates a new object with the specified prototype object and properties.
@@ -7312,12 +7268,16 @@
             throw new Error();
         }
 
-        testTemp.created = base.Object.create(ObjectCreateFunc.prototype, {
-            constructor: $.Object.assign({
-                value: ObjectCreateFunc
+        testTemp.createFn = function () {
+            return;
+        };
+
+        testTemp.created = base.Object.create(testTemp.createFn.prototype, {
+            constructor: assign({
+                value: testTemp.createFn
             }, base.properties.notEnumerable),
 
-            foo: $.Object.assign({
+            foo: assign({
                 value: 'test'
             }, base.properties.notEnumerable)
         });
@@ -7328,22 +7288,35 @@
 
         $.Object.create = base.Object.create;
     } catch (eCreate) {
-        $.Object.create = function (prototype, propertiesObject) {
-            ObjectCreateFunc.prototype = throwIfIsPrimitive(prototype);
-
-            var newObject = new ObjectCreateFunc();
-
-            $.Object.defineProperty(newObject, base.str.proto, $.Object.assign({
-                value: prototype
-            }, base.properties.notEnumerable));
-
-            if ($.Object.isPlainObject(propertiesObject)) {
-                $.Object.defineProperties(newObject, propertiesObject);
+        (function () {
+            /**
+             * The constructor used by $.Object.create if shimmed.
+             * @private
+             * @constructor ObjectCreateFunc
+             */
+            function ObjectCreateFunc() {
+                return;
             }
 
-            return newObject;
-        };
+            $.Object.create = function (prototype, propertiesObject) {
+                ObjectCreateFunc.prototype = throwIfIsPrimitive(prototype);
+
+                var newObject = new ObjectCreateFunc();
+
+                defineProperty(newObject, base.str.proto, assign({
+                    value: prototype
+                }, base.properties.notEnumerable));
+
+                if (isPlainObject(propertiesObject)) {
+                    defineProperties(newObject, propertiesObject);
+                }
+
+                return newObject;
+            };
+        }());
     }
+
+    create = $.Object.create;
 
     /**
      * This {@link boundPrototypalFunction method} returns true if the operand inputArg is a Date object and is valid.
@@ -7434,7 +7407,8 @@
      */
     $.String.prototype.replaceAll = function (pattern, characters) {
         if (toClass(pattern) === base.classString.string) {
-            pattern = new base.RegExp.Ctr($.String.escapeRegex(pattern), 'g');
+            pattern = new base.RegExp.Ctr(replace(onlyCoercibleToString(pattern),
+                                                  base.RegExp.escapeThese, '\\$&amp;'), 'g');
         } else if (isRegExp(pattern)) {
             pattern = copyRegExp(pattern, {
                 add: 'g'
@@ -7503,8 +7477,8 @@
             it;
 
         try {
-            ka = $.Object.keys(a);
-            kb = $.Object.keys(b);
+            ka = objectKeys(a);
+            kb = objectKeys(b);
         } catch (eDE) {
             return false;
         }
@@ -7519,8 +7493,8 @@
                 return false;
             }
         } else {
-            $.Array.stableSort(ka);
-            $.Array.stableSort(kb);
+            stableSort(ka);
+            stableSort(kb);
             for (index = 0; index &lt; length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;
@@ -7588,8 +7562,8 @@
             it;
 
         try {
-            ka = $.Object.keys(a);
-            kb = $.Object.keys(b);
+            ka = objectKeys(a);
+            kb = objectKeys(b);
         } catch (eDE) {
             return false;
         }
@@ -7604,8 +7578,8 @@
                 return false;
             }
         } else {
-            $.Array.stableSort(ka);
-            $.Array.stableSort(kb);
+            stableSort(ka);
+            stableSort(kb);
             for (index = 0; index &lt; length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;
@@ -7646,7 +7620,7 @@
         return s;
     };
 
-    $.String.truncate = toMethod($.String.prototype.truncate);
+    $.String.truncate = truncate = toMethod($.String.prototype.truncate);
 
     /**
      * This {@link boundPrototypalFunction method} inherits the prototype methods from one constructor into another.
@@ -7661,13 +7635,13 @@
         throwIfNotAFunction(this);
         throwIfNotAFunction(superCtor);
         this.superCtor = superCtor;
-        this.prototype = $.Object.create(superCtor.prototype);
-        $.Object.defineProperty(this.prototype, 'constructor', $.Object.assign({
+        this.prototype = create(superCtor.prototype);
+        defineProperty(this.prototype, 'constructor', assign({
             value: this
         }, base.properties.notEnumerable));
     };
 
-    $.Function.inherits = toMethod($.Function.prototype.inherits);
+    $.Function.inherits = inherits = toMethod($.Function.prototype.inherits);
 
     /**
      * Tests to see if the argument is one of the seven standard Error type constructors.
@@ -7677,7 +7651,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Error.isErrorTypeConstructor = function (inputArg) {
+    $.Error.isErrorTypeConstructor = isErrorTypeConstructor = function (inputArg) {
         var result;
 
         switch (inputArg) {
@@ -7738,8 +7712,6 @@
         Error,
         proto,
         classString,
-        defineProperties,
-        assign,
         notEnumerable
     ) {
 
@@ -7815,8 +7787,6 @@
         base.Error.Ctr,
         base.Error.proto,
         base.classString.error,
-        $.Object.defineProperties,
-        $.Object.assign,
         base.properties.notEnumerable
     ));
 
@@ -7834,7 +7804,7 @@
             throw new base.TypeError.Ctr('"name" was not a valid string: ' + toString(name));
         }
 
-        if (!$.Error.isErrorTypeConstructor(ErrorConstructor)) {
+        if (!isErrorTypeConstructor(ErrorConstructor)) {
             throw new base.TypeError.Ctr('"ErrorConstructor" was not an Error type');
         }
 
@@ -7852,10 +7822,10 @@
             var err;
 
             if (typeof message !== 'string') {
-                message = $.String.truncate($.JSON.stringify(message, $.customErrorReplacer),  maxMessageLength);
+                message = truncate(stringify(message, $.customErrorReplacer),  maxMessageLength);
             }
 
-            $.Object.defineProperty(this, 'message', $.Object.assign({
+            defineProperty(this, 'message', assign({
                 value: message
             }, base.properties.notEnumerable));
 
@@ -7869,25 +7839,25 @@
             } else {
                 err = ErrorConstructor.call(this);
                 if (typeof err.stack === 'string') {
-                    $.Object.defineProperty(this, 'stack', $.Object.assign({
+                    defineProperty(this, 'stack', assign({
                         value: err.stack
                     }, base.properties.notEnumerable));
                 } else if (typeof err.stacktrace === 'string') {
-                    $.Object.defineProperty(this, 'stack', $.Object.assign({
+                    defineProperty(this, 'stack', assign({
                         value: err.stacktrace
                     }, base.properties.notEnumerable));
                 }
             }
         }
 
-        $.Function.inherits(CustomError, ErrorConstructor);
+        inherits(CustomError, ErrorConstructor);
 
-        $.Object.defineProperties(CustomError.prototype, {
-            name: $.Object.assign({
+        defineProperties(CustomError.prototype, {
+            name: assign({
                 value: name
             }, base.properties.notEnumerable),
 
-            toString: $.Object.assign({
+            toString: assign({
                 value: function () {
                     var arr = split(this.message, base.RegExp.splitNewLine),
                         messageToString = this.name + ': ';
@@ -7930,10 +7900,8 @@
      * @returns {Function}
      */
     $.customError = (function (
-        instanceOf,
         TypeError,
-        SyntaxError,
-        isErrorTypeConstructor
+        SyntaxError
     ) {
         var isOkToUseOtherErrors,
             Custom;
@@ -7972,10 +7940,8 @@
             return makeCustomError(name, ErrorConstructor, maxMessageLength);
         };
     }(
-        $.Object.instanceOf,
         base.TypeError.Ctr,
-        base.SyntaxError.Ctr,
-        $.Error.isErrorTypeConstructor
+        base.SyntaxError.Ctr
     ));
 
     /*jslint maxlen: 125 */
@@ -8098,7 +8064,7 @@
             num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc &amp;&amp; hasValidLength(object) &amp;&amp; toString(num) === prop2;
-            if (!$.Object.isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
+            if (!isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
                 if (cond1 &amp;&amp; num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -8109,24 +8075,24 @@
                     object.length += 1;
                 }
 
-                $.Object.defineProperty(object, prop2, temp1);
+                defineProperty(object, prop2, temp1);
             }
 
             num = toLength(prop1);
             cond2 = notFunc &amp;&amp; hasValidLength(object) &amp;&amp; toString(num) === prop1;
-            if (!$.Object.isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
+            if (!isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if (cond2 &amp;&amp; num === object.length - 1) {
                     object.length -= 1;
                 }
 
                 delete object[prop1];
             } else {
-                $.Object.defineProperty(object, prop1, temp2);
+                defineProperty(object, prop1, temp2);
                 if (cond2 &amp;&amp; num === object.length) {
                     object.length += 1;
                 }
 
-                $.Object.defineProperty(object, prop1, temp2);
+                defineProperty(object, prop1, temp2);
             }
         }
 
@@ -8269,7 +8235,6 @@
     } else {
         $.JSON.stringify = (function (
             repeat,
-            keys,
             Error
         ) {
 
@@ -8389,7 +8354,7 @@
                             return prev;
                         }, []);
                     } else {
-                        partial = reduce(keys(value), function (prev, k) {
+                        partial = reduce(objectKeys(value), function (prev, k) {
                             var v = stringifyToString(k, value),
                                 typev = typeof v;
 
@@ -8444,7 +8409,6 @@
             };
         }(
             $.String.repeat,
-            $.Object.keys,
             base.Error.Ctr
         ));
     }
@@ -8495,7 +8459,7 @@
         try {
             base.JSON.parse();
         } catch (eParse) {
-            testTemp.parseSupport = $.Object.instanceOf(eParse, base.SyntaxError.Ctr);
+            testTemp.parseSupport = instanceOf(eParse, base.SyntaxError.Ctr);
         }
 
         if (testTemp.parseSupport) {
@@ -8512,9 +8476,7 @@
             };
         }
     } else {
-        $.JSON.parse = (function (
-            keys
-        ) {
+        $.JSON.parse = (function () {
             var parseProtect1 = new RegExp('^[\\],:{}\\s]*$'),
                 parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g'),
                 parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
@@ -8529,8 +8491,8 @@
                 var value = holder[key];
 
                 if (isTypeObject(value)) {
-                    forEach(keys(value), function (k) {
-                        var v = this(value, k),
+                    forEach(objectKeys(value), function (k) {
+                        var v = walk(value, k),
                             type = typeof v;
 
                         if (type !== 'undefined') {
@@ -8538,7 +8500,7 @@
                         } else {
                             delete value[k];
                         }
-                    }, walk);
+                    });
                 }
 
                 return reviver.call(holder, key, value);
@@ -8576,10 +8538,10 @@
 
                 throw new base.SyntaxError.Ctr('JSON.parse');
             };
-        }(
-            $.Object.keys
-        ));
+        }());
     }
+
+    stringify = $.JSON.stringify;
 
     /**
      * This {@link boundPrototypalFunction method} calculates the Power Set of a given array.
@@ -8651,53 +8613,53 @@
     function factory() {
         var utilx = {};
 
-        forEach($.Object.keys($), function (key1) {
+        forEach(objectKeys($), function (key1) {
             if (!hasOwn(utilx, 'methods')) {
-                this.defineProperty(utilx, 'methods', this.assign({
+                defineProperty(utilx, 'methods', assign({
                     value: []
                 }, base.properties.notEnumerable));
             }
 
-            this.defineProperty(utilx, key1, this.assign({
+            defineProperty(utilx, key1, assign({
                 value: $[key1]
             }, base.properties.notEnumerable));
 
-            if (this.isPlainObject($[key1])) {
+            if (isPlainObject($[key1])) {
                 if (!hasOwn(utilx[key1], 'methods')) {
-                    this.defineProperty(utilx[key1], 'methods', this.assign({
+                    defineProperty(utilx[key1], 'methods', assign({
                         value: []
                     }, base.properties.notEnumerable));
                 }
 
-                forEach(this.keys($[key1]), function (key2) {
-                    this.defineProperty(utilx[key1], key2, this.assign({
+                forEach(objectKeys($[key1]), function (key2) {
+                    defineProperty(utilx[key1], key2, assign({
                         value: $[key1][key2]
                     }, base.properties.notEnumerable));
 
-                    if (this.isPlainObject($[key1][key2])) {
+                    if (isPlainObject($[key1][key2])) {
                         if (!hasOwn(utilx[key1][key2], 'methods')) {
-                            this.defineProperty(utilx[key1][key2], 'methods', this.assign({
+                            defineProperty(utilx[key1][key2], 'methods', assign({
                                 value: []
                             }, base.properties.notEnumerable));
                         }
 
-                        forEach(this.keys($[key1][key2]), function (key3) {
-                            this.defineProperty(utilx[key1][key2], key3, this.assign({
+                        forEach(objectKeys($[key1][key2]), function (key3) {
+                            defineProperty(utilx[key1][key2], key3, assign({
                                 value: $[key1][key2][key3]
                             }, base.properties.notEnumerable));
 
                             push(utilx[key1][key2].methods, key3);
-                        }, this);
+                        });
                     } else {
                         push(utilx[key1].methods, key2);
                     }
-                }, this);
+                });
             } else {
                 push(utilx.methods, key1);
             }
-        }, $.Object);
+        });
 
-        $.Object.defineProperties(utilx.Number, {
+        defineProperties(utilx.Number, {
             POSITIVE_ZERO: base.properties.constant,
 
             NEGATIVE_ZERO: base.properties.constant,
@@ -8764,9 +8726,9 @@
         throw new TypeError('Invalid global context');
     }
 
-    publicUtil = $.Object.defineProperty(factory(), 'factory', $.Object.assign({
+    publicUtil = defineProperty(factory(), 'factory', assign({
         value: function () {
-            return $.Object.defineProperty(factory(), 'factory', $.Object.assign({
+            return defineProperty(factory(), 'factory', assign({
                 value: publicUtil.factory
             }, base.properties.notEnumerable));
         }
@@ -8794,7 +8756,7 @@
      */
 
     if (isTypeObject(module) &amp;&amp; isTypeObject(module.exports)) {
-        $.Object.defineProperty(module, 'exports', $.Object.assign({
+        defineProperty(module, 'exports', assign({
             value: publicUtil
         }, base.properties.notEnumerable));
     } else if (isFunction(define) &amp;&amp; isTypeObject(define.amd)) {
@@ -8802,13 +8764,12 @@
             return publicUtil;
         });
     } else {
-
         /**
          * Only global if a module loader is not used to export the module.
          * @name utilx
          * @global
          */
-        $.Object.defineProperty(globalThis, 'utilx', $.Object.assign({
+        defineProperty(globalThis, 'utilx', assign({
             value: publicUtil
         }, base.properties.notEnumerable));
     }
@@ -8854,7 +8815,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu Jun 12 2014 00:29:56 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Thu Jun 12 2014 04:15:22 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
