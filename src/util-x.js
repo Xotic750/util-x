@@ -668,6 +668,19 @@
     };
 
     /**
+     * Returns the first argument unchanged.
+     * Primary use with ToMethod.
+     * @private
+     * @name justArg
+     * @function
+     * @argument {*} [arg]
+     * @returns {*}
+     */
+    function justArg(arg) {
+        return arg;
+    }
+
+    /**
      * Returns an arguments object of the arguments supplied.
      * @private
      * @name returnArgs
@@ -1144,16 +1157,16 @@
 
         /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
-         * Overwritten later by the improved version.
+         * Default this check is to {@link checkObjectCoercible}
          * @private
-         * @name ToMethod
+         * @name toMethod
          * @function
          * @param {prototypalFunction} protoFn
+         * @param {Function} [checkThisArgFn]
          * @returns {boundPrototypalFunction}
          */
         toMethod = function (protoFn, checkThisArgFn) {
             throwIfNotAFunction(protoFn);
-
             if (!isFun(checkThisArgFn)) {
                 checkThisArgFn = checkObjectCoercible;
             }
@@ -1373,10 +1386,13 @@
         create,
         instanceOf,
         objectKeys,
+        objectIs,
         stringify,
         truncate,
         inherits,
         stableSort,
+        contains,
+        stringContains,
 
         /**
          * Indicates if object suffers the don'r enum bug
@@ -3089,6 +3105,7 @@
 
     /**
      * The function takes one argument protoFn, and returns the bound function as a stand alone method.
+     * Default this check is to {@link checkObjectCoercible}.
      * @memberof utilx.Function
      * @name ToMethod
      * @function
@@ -3383,6 +3400,8 @@
         };
     }
 
+    objectIs = $.Object.is;
+
     /**
      * Determines whether two values are not the same value.
      * @memberof utilx.Object
@@ -3394,7 +3413,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
      */
     $.Object.isnt = function (x, y) {
-        return !$.Object.is(x, y);
+        return !objectIs(x, y);
     };
 
     /**
@@ -3582,9 +3601,7 @@
         return this - divisor * floor(this / divisor);
     };
 
-    $.Number.modulo = modulo = toMethod($.Number.prototype.modulo, function (dividend) {
-        return dividend;
-    });
+    $.Number.modulo = modulo = toMethod($.Number.prototype.modulo, justArg);
 
     /**
      * The Number.isOdd returns true if the integer is odd otherwise false.
@@ -4007,7 +4024,7 @@
         };
     }
 
-    $.Array.contains = toMethod($.Array.prototype.contains);
+    $.Array.contains = contains = toMethod($.Array.prototype.contains);
 
     /**
      * Throws a TypeError if the argument is not a RegExp.
@@ -4081,7 +4098,7 @@
             // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
             // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
             // older IEs. IE 9 in standards mode follows the spec
-            if (!correctExecNpcg && match.length > 1 && $.Array.contains(match, '')) {
+            if (!correctExecNpcg && match.length > 1 && contains(match, '')) {
                 r2 = copyRegExp(this, {remove: 'g'});
                 // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                 // matching due to characters outside the match
@@ -4720,6 +4737,8 @@
         $.String.contains = toMethod($.String.prototype.contains);
     }
 
+    stringContains = $.String.contains;
+
     /**
      * When it comes to inheritance, JavaScript only has one construct: objects.
      * Each object has an internal link to another object called its prototype.
@@ -4837,8 +4856,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     (function (
-        contains,
-        is,
         shadowed
     ) {
         if (hasDontEnumBug) {
@@ -4846,7 +4863,9 @@
                 var prop = toString(property);
 
                 return hasOwn(this, prop) ||
-                        ((prop in this) && contains(shadowed, prop) && !is(this[prop], getPrototypeOf(this)[prop]));
+                        ((prop in this) &&
+                            contains(shadowed, prop) &&
+                            !objectIs(this[prop], getPrototypeOf(this)[prop]));
             };
 
             $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
@@ -4862,8 +4881,6 @@
             $.Object.hasOwn = hasOwnProp = hasOwn;
         }
     }(
-        $.Array.contains,
-        $.Object.is,
         base.props.shadowed
     ));
 
@@ -5022,19 +5039,40 @@
      * @returns {Array}
      */
     $.Array.prototype.unique = function (equalFn, thisArg) {
-        var type = typeof equalFn;
+        var object = toObjectFixIndexedAccess(this),
+            type = typeof equalFn,
+            length,
+            index,
+            next,
+            arr,
+            idx,
+            val,
+            it;
 
         if (type === 'undefined') {
             equalFn = $.Object.strictEqual;
         }
 
         throwIfNotAFunction(equalFn);
+        for (arr = [], next = 0, index = 0, length = toLength(object.length); index < length; index += 1) {
+            if (index in object) {
+                for (it = object[index], val = true, idx = 0; idx < length; idx += 1) {
+                    if (idx < index && idx in object && equalFn.call(thisArg, it, object[idx])) {
+                        val = false;
+                        break;
+                    }
+                }
 
-        return $.Array.filter(this, function (element, index, obj) {
-            return !$.Array.some(obj, function (ele, idx) {
-                return idx < index && equalFn.call(thisArg, element, ele);
-            });
-        });
+                if (val) {
+                    arr[next] = it;
+                    next += 1;
+                }
+            }
+        }
+
+        arr.length = next;
+
+        return arr;
     };
 
     $.Array.unique = toMethod($.Array.prototype.unique);
@@ -5944,23 +5982,30 @@
      * @returns {Array}
      */
     function merge(left, right, comparison) {
-        var result = [];
+        var result = [],
+            next = 0;
 
         while (left.length && right.length) {
             if (comparison(left[0], right[0]) <= 0) {
-                push(result, shift(left));
+                result[next] = shift(left);
             } else {
-                push(result, shift(right));
+                result[next] = shift(right);
             }
+
+            next += 1;
         }
 
         while (left.length) {
-            push(result, shift(left));
+            result[next] = shift(left);
+            next += 1;
         }
 
         while (right.length) {
-            push(result, shift(right));
+            result[next] = shift(right);
+            next += 1;
         }
+
+        result.length = next;
 
         return result;
     }
@@ -5974,16 +6019,19 @@
      * @returns {Array}
      */
     function mergeSort(array, comparefn) {
-        var length = toLength(array.length),
+        var length = array.length,
             middle,
+            front,
+            back,
             val;
 
         if (length < 2) {
             val = slice(array);
         } else {
             middle = ceil(length / 2);
-            val = merge(mergeSort(slice(array, 0, middle), comparefn),
-                        mergeSort(slice(array, middle), comparefn), comparefn);
+            front = slice(array, 0, middle);
+            back = slice(array, middle);
+            val = merge(mergeSort(front, comparefn), mergeSort(back, comparefn), comparefn);
         }
 
         return val;
@@ -6005,17 +6053,22 @@
      */
     $.Array.prototype.stableSort = function (comparefn) {
         var object = toObjectFixIndexedAccess(this),
-            type = typeof comparefn;
+            length = toLength(object.length),
+            type = typeof comparefn,
+            index,
+            sorted;
 
         if (type === 'undefined') {
             comparefn = defaultComparison;
         }
 
         throwIfNotAFunction(comparefn);
-        if (toLength(object.length) > 1) {
-            forEach(mergeSort(object, comparefn), function (value, index) {
-                object[index] = value;
-            });
+        if (length > 1) {
+            sorted = mergeSort(object, comparefn);
+            for (index = 0; index < length; index += 1) {
+                object[index] = sorted[index];
+            }
+
         }
 
         return object;
@@ -6350,9 +6403,7 @@
         $.Number.prototype.toFixed = base.Number.toFixed;
     }
 
-    $.Number.toFixed = toMethod($.Number.prototype.toFixed, function (num) {
-        return num;
-    });
+    $.Number.toFixed = toMethod($.Number.prototype.toFixed, justArg);
 
     /**
      * This {@link boundPrototypalFunction method} returns the first index at which a given element can
@@ -6616,7 +6667,6 @@
         if (!testShims && isNative(base.Object.keys)) {
             (function (
                 oKeys,
-                contains,
                 unwantedError
             ) {
                 var keysWorksWithArguments = oKeys(returnArgs(1, 2)).length === 2;
@@ -6652,7 +6702,6 @@
                 }
             }(
                 base.Object.keys,
-                $.Array.contains,
                 base.props.unwantedError
             ));
         } else {
@@ -6675,7 +6724,7 @@
 
             for (prop in object) {
                 if (!(skipProto && prop === 'prototype')) {
-                    if (!(skipErrorProps && $.Array.contains(base.props.unwantedError, prop))) {
+                    if (!(skipErrorProps && contains(base.props.unwantedError, prop))) {
                         if (hasOwnProp(object, prop)) {
                             props[next] = prop;
                             next += 1;
@@ -6828,7 +6877,8 @@
 
             var definePropertyPatch1,
                 definePropertyPatch2,
-                definePropertyPatch3;
+                definePropertyPatch3,
+                testProp;
 
             // Test string integer
             try {
@@ -6888,9 +6938,11 @@
                 jkl: noop
             };
 
-            forEach(objectKeys(testTemp.dpObject), function (key) {
-                defineProperty(testTemp.dpObject, key, notEnumerable);
-            });
+            for (testProp in testTemp.dpObject) {
+                if (hasOwn(testTemp.dpObject, testProp)) {
+                    defineProperty(testTemp.dpObject, testProp, notEnumerable);
+                }
+            }
 
             if (testTemp.dpObject.abc !== 0 ||
                     testTemp.dpObject.def !==  '' ||
@@ -6901,9 +6953,11 @@
             }
 
             testTemp.dpArray = [10, true, '', noop];
-            forEach(objectKeys(testTemp.dpArray), function (key) {
-                defineProperty(testTemp.dpArray, key, notEnumerable);
-            });
+            for (testProp in testTemp.dpArray) {
+                if (hasOwn(testTemp.dpArray, testProp)) {
+                    defineProperty(testTemp.dpArray, testProp, notEnumerable);
+                }
+            }
 
             if (testTemp.dpArray[0] !== 10 ||
                     testTemp.dpArray[1] !== true ||
@@ -7029,9 +7083,15 @@
             throw new base.TypeError.Ctr('Property description must be an object');
         }
 
-        forEach(objectKeys(props), function (key) {
+        var keys = objectKeys(props),
+            length = keys.length,
+            key,
+            index;
+
+        for (index = 0; index < length; index += 1) {
+            key = keys[index];
             defineProperty(object, key, props[key]);
-        });
+        }
 
         return object;
     };
@@ -7110,21 +7170,26 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
      */
     $.Object.deepFreeze = function (object) {
-        $.Object.freeze(object);
-        forEach(objectKeys(object), function (propKey) {
-            var prop = object[propKey],
-                type = typeof prop;
+        var propKey,
+            propVal,
+            type;
 
+        $.Object.freeze(object);
+        for (propKey in object) {
+            /*jslint forin: false*/
+            propVal = object[propKey];
+            type = typeof propVal;
             if (type !== 'undefined' &&
-                    prop !== null &&
+                    propVal !== null &&
                     type !== 'boolean' &&
                     type !== 'string' &&
                     type !== 'number' &&
-                    !$.Object.isFrozen(prop)) {
+                    !$.Object.isFrozen(propVal)) {
 
-                $.Object.deepFreeze(prop);
+                $.Object.deepFreeze(propVal);
             }
-        });
+            /*jslint forin: true*/
+        }
 
         return object;
     };
@@ -7839,13 +7904,12 @@
                         arr = filter(arr, function (element) {
                             var val;
 
-                            if (!this(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-
+                            if (!stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
                                 val = element;
                             }
 
                             return val;
-                        }, $.String.contains);
+                        });
 
                         messageToString += join(arr, '\n');
                     } else {
@@ -8461,19 +8525,27 @@
                                                 '\\ufff0-\\uffff]', 'g');
 
             function walk(holder, key, reviver) {
-                var value = holder[key];
+                var value = holder[key],
+                    keys,
+                    length,
+                    index,
+                    type,
+                    k,
+                    v;
 
                 if (isTypeObject(value)) {
-                    forEach(objectKeys(value), function (k) {
-                        var v = walk(value, k),
-                            type = typeof v;
-
+                    keys = objectKeys(value);
+                    length = keys.length;
+                    for (index = 0; index < length; index += 1) {
+                        k = keys[index];
+                        v = walk(value, k);
+                        type = typeof v;
                         if (type !== 'undefined') {
                             value[k] = v;
                         } else {
                             delete value[k];
                         }
-                    });
+                    }
                 }
 
                 return reviver.call(holder, key, value);

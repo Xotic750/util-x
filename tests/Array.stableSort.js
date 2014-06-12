@@ -5,7 +5,8 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        create = required.Array.create;
 
     describe('Array.stableSort', function () {
         var testArray,
@@ -138,6 +139,14 @@
             expect(testArray).to.eql(['a', 'b', 'c', 'd', 'e', 'f']);
         });
 
+        it('sorting [f,e,d,,,,a,c,b] ascending should result in [a,b,c,d,e,f,undefined,undefined]', function () {
+            testArray = ['f', 'e', 'd', 1, 2, 'a', 'c', 'b'];
+            delete testArray[3];
+            delete testArray[4];
+            utilx.Array.stableSort(testArray);
+            expect(testArray).to.eql(create('a', 'b', 'c', 'd', 'e', 'f', undefined, undefined));
+        });
+
         it('sorting [] ascending should result in []', function () {
             testArray = [];
             utilx.Array.stableSort(testArray);
@@ -187,6 +196,14 @@
             expect(testArray).to.eql(['f', 'e', 'd', 'c', 'b', 'a']);
         });
 
+        it('sorting [f,e,d,,,a,c,b] descending should result in [undefined undefined,f,e,d,c,b,a]', function () {
+            testArray = ['f', 'e', 'd', 1, 2, 'a', 'c', 'b'];
+            delete testArray[3];
+            delete testArray[4];
+            utilx.Array.stableSort(testArray, descending);
+            expect(testArray).to.eql(create(undefined, undefined, 'f', 'e', 'd', 'c', 'b', 'a'));
+        });
+
         it('sorting [] descending should result in []', function () {
             testArray = [];
             utilx.Array.stableSort(testArray, descending);
@@ -204,6 +221,11 @@
             for (i = 0; i < testArray2.length - 1; i += 1) {
                 expect(testArray2[i] >= testArray2[i + 1]).to.be.ok();
             }
+        });
+
+        it('returned value should be source', function () {
+            testArray = [1, 3, 2];
+            expect(utilx.Array.stableSort(testArray)).to.be(testArray);
         });
 
         it('sorting should work with objects', function () {
