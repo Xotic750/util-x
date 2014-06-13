@@ -38,7 +38,6 @@
         "doc": "docs"
     },
     "dependencies": {
-        "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "devDependencies": {
         "uglify-js": "latest",
@@ -61,24 +60,6 @@
         "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "optionalDependencies": {
-        "uglify-js": "latest",
-        "grunt": "latest",
-        "jsdoc": "latest",
-        "mocha": "latest",
-        "mocha-lcov-reporter": "latest",
-        "expect.js": "latest",
-        "grunt-cli": "latest",
-        "grunt-contrib-jshint": "latest",
-        "grunt-contrib-uglify": "latest",
-        "grunt-lib-legacyhelpers": "latest",
-        "grunt-contrib-clean": "latest",
-        "grunt-jsdoc": "latest",
-        "grunt-replace": "latest",
-        "coveralls": "latest",
-        "grunt-shell": "latest",
-        "istanbul": "latest",
-        "browserify": "latest",
-        "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "browser": {
         "../lib/util-x.min": false,

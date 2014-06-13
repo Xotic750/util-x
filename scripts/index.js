@@ -85,8 +85,9 @@
 
         if (!ok) {
             err = new Error(fmsg.call(this));
+            err.stack = null;
             if (typeof err.stack !== 'string') {
-                err.stack = required.stack().join('\n');
+                err.stack = err.name + ': ' + err.message + '\n    ' + required.stack().join('\n    ');
             }
 
             if (err.message.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
