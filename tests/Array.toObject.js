@@ -94,5 +94,16 @@
                 4: 5
             })).to.eql({length: 0});
         });
+
+        it('strings', function () {
+            expect(utilx.Array.toObject('12345')).to.eql({
+                0: '1',
+                1: '2',
+                2: '3',
+                3: '4',
+                4: '5',
+                length: 5
+            });
+        });
     });
 }());
