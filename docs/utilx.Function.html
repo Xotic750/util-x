@@ -40,6 +40,8 @@
 
     
         
+            <div class="description">utilx.Function</div>
+        
 
         
 <dl class="details">
@@ -64,7 +66,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1455">line 1455</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1448">line 1448</a>
     </li></ul></dd>
     
 
@@ -88,6 +90,8 @@
 
     
 
+     
+
     
 
     
@@ -98,7 +102,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="apply"><span class="type-signature">&lt;static> </span>apply<span class="signature">(fn, thisArg, <span class="optional">argsArray</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="apply"><span class="type-signature">(static) </span>apply<span class="signature">(fn, thisArg, argsArray<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -128,7 +132,7 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -210,7 +214,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -261,7 +265,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3085">line 3085</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3078">line 3078</a>
     </li></ul></dd>
     
 
@@ -309,7 +313,7 @@
         
             
 <dt>
-    <h4 class="name" id="bind"><span class="type-signature">&lt;static> </span>bind<span class="signature">(fn, thisArg, <span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#boundFunction">boundFunction</a>}</span></h4>
+    <h4 class="name" id="bind"><span class="type-signature">(static) </span>bind<span class="signature">(fn, thisArg, &hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boundFunction}</span></h4>
 
     
 </dt>
@@ -317,10 +321,7 @@
 
     
     <div class="description">
-        The bind() function creates a new function (a bound function) with the same function body
-(internal call property in ECMAScript 5 terms) as the function it is being called on
-(the bound function's target function) with the this value bound to thisArg,
-which cannot be overridden.
+        if fn is not a function.
     </div>
     
 
@@ -342,7 +343,7 @@ which cannot be overridden.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -362,7 +363,7 @@ which cannot be overridden.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#bindTargetFunction">bindTargetFunction</a></span>
+<span class="param-type">bindTargetFunction</span>
 
 
             
@@ -477,7 +478,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3142">line 3142</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3135">line 3135</a>
     </li></ul></dd>
     
 
@@ -512,7 +513,7 @@ which cannot be overridden.
 <dl>
     <dt>
         <div class="param-desc">
-        if fn is not a <a href="global.html#Function">function</a>.
+        if fn is not a function.
         </div>
     </dt>
     <dt>
@@ -522,7 +523,7 @@ which cannot be overridden.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -549,7 +550,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boundFunction">boundFunction</a></span>
+<span class="param-type">boundFunction</span>
 
 
     </dd>
@@ -563,7 +564,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="call"><span class="type-signature">&lt;static> </span>call<span class="signature">(fn, thisArg, <span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="call"><span class="type-signature">(static) </span>call<span class="signature">(fn, thisArg, &hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -593,7 +594,7 @@ which cannot be overridden.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -728,7 +729,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3066">line 3066</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3059">line 3059</a>
     </li></ul></dd>
     
 
@@ -776,7 +777,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="inherits"><span class="type-signature">&lt;static> </span>inherits<span class="signature">(ctor, superCtor)</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
+    <h4 class="name" id="inherits"><span class="type-signature">(static) </span>inherits<span class="signature">(ctor, superCtor)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
 
     
 </dt>
@@ -784,7 +785,7 @@ which cannot be overridden.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> inherits the prototype methods from one constructor into another.
+        This method inherits the prototype methods from one constructor into another.
     </div>
     
 
@@ -888,7 +889,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7607">line 7607</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line7587">line 7587</a>
     </li></ul></dd>
     
 
@@ -922,7 +923,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#undefined">undefined</a></span>
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -936,7 +937,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="isFunction"><span class="type-signature">&lt;static> </span>isFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="isFunction"><span class="type-signature">(static) </span>isFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -1025,7 +1026,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2925">line 2925</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2918">line 2918</a>
     </li></ul></dd>
     
 
@@ -1066,7 +1067,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -1080,7 +1081,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="isNativeFunction"><span class="type-signature">&lt;static> </span>isNativeFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="isNativeFunction"><span class="type-signature">(static) </span>isNativeFunction<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -1169,7 +1170,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2907">line 2907</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2900">line 2900</a>
     </li></ul></dd>
     
 
@@ -1203,7 +1204,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -1217,7 +1218,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="noop"><span class="type-signature">&lt;static> </span>noop<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
+    <h4 class="name" id="noop"><span class="type-signature">(static) </span>noop<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
 
     
 </dt>
@@ -1226,7 +1227,7 @@ which cannot be overridden.
     
     <div class="description">
         Returns the <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2">primitive</a> value
-<a href="global.html#undefined">undefined</a>.
+undefined.
     </div>
     
 
@@ -1259,7 +1260,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1729">line 1729</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1722">line 1722</a>
     </li></ul></dd>
     
 
@@ -1293,7 +1294,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#undefined">undefined</a></span>
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -1307,7 +1308,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="returnArgs"><span class="type-signature">&lt;static> </span>returnArgs<span class="signature">(<span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Arguments">Arguments</a>}</span></h4>
+    <h4 class="name" id="returnArgs"><span class="type-signature">(static) </span>returnArgs<span class="signature">(&hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Arguments}</span></h4>
 
     
 </dt>
@@ -1337,7 +1338,7 @@ which cannot be overridden.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -1410,7 +1411,7 @@ which cannot be overridden.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1741">line 1741</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1734">line 1734</a>
     </li></ul></dd>
     
 
@@ -1444,7 +1445,7 @@ which cannot be overridden.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Arguments">Arguments</a></span>
+<span class="param-type">Arguments</span>
 
 
     </dd>
@@ -1458,7 +1459,7 @@ which cannot be overridden.
         
             
 <dt>
-    <h4 class="name" id="ToMethod"><span class="type-signature">&lt;static> </span>ToMethod<span class="signature">(protoFn, checkThisArgFn)</span><span class="type-signature"> &rarr; {<a href="global.html#boundPrototypalFunction">boundPrototypalFunction</a>}</span></h4>
+    <h4 class="name" id="ToMethod"><span class="type-signature">(static) </span>ToMethod<span class="signature">(protoFn, checkThisArgFn)</span><span class="type-signature"> &rarr; {boundPrototypalFunction}</span></h4>
 
     
 </dt>
@@ -1466,8 +1467,7 @@ which cannot be overridden.
 
     
     <div class="description">
-        The function takes one argument protoFn, and returns the bound function as a stand alone method.
-Default this check is to checkObjectCoercible.
+        if protoFn is not a function.
     </div>
     
 
@@ -1507,7 +1507,7 @@ Default this check is to checkObjectCoercible.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#prototypalFunction">prototypalFunction</a></span>
+<span class="param-type">prototypalFunction</span>
 
 
             
@@ -1571,7 +1571,7 @@ Default this check is to checkObjectCoercible.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3029">line 3029</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3022">line 3022</a>
     </li></ul></dd>
     
 
@@ -1599,7 +1599,7 @@ Default this check is to checkObjectCoercible.
 <dl>
     <dt>
         <div class="param-desc">
-        if protoFn is not a <a href="global.html#Function">function</a>.
+        if protoFn is not a function.
         </div>
     </dt>
     <dt>
@@ -1609,7 +1609,7 @@ Default this check is to checkObjectCoercible.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1632,7 +1632,7 @@ Default this check is to checkObjectCoercible.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boundPrototypalFunction">boundPrototypalFunction</a></span>
+<span class="param-type">boundPrototypalFunction</span>
 
 
     </dd>
@@ -1659,13 +1659,13 @@ Default this check is to checkObjectCoercible.
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="global.html#utilx">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-util-x-utilx.html">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3>Global</h3><ul><li><a href="global.html#utilx">utilx</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Fri Jun 13 2014 11:02:15 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Sat Jun 14 2014 01:24:47 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

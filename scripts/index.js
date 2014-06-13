@@ -1,17 +1,15 @@
-/*global module, require, process, window */
+/*global module, require, process */
 
 (function () {
     'use strict';
 
     var required = {
+            stack: require('stacktrace-js'),
             expect: require('expect.js'),
             Array: {},
             log: {}
         },
-        logit = false,
-        assert = required.expect.Assertion.prototype.assert,
-        type,
-        str;
+        message = 'test if we see info';
 
     if ('1' === process.env.UTILX_WHICH) {
         required.utilx = require('../lib/util-x.min');
@@ -70,45 +68,63 @@
     };
 
     try {
-        type = typeof window;
-        if (type !== 'undefined' &&
-                window !== null &&
-                type !== 'boolean' &&
-                type !== 'string' &&
-                type !== 'number' &&
-                window.alert) {
-
-            Function.prototype.toString.call(window.alert);
+        throw new Error(message);
+    } catch (ePatch) {
+        if (ePatch.message === message && ePatch.toString() === '[object object]') {
+            /*jshint freeze: false */
+            Error.prototype.toString = function () {
+                return this.name + ': ' + this.message;
+            };
         }
-    } catch (e) {
-        logit = true;
-    }
-
-    try {
-        throw new Error('test if we see info');
-    } catch (e) {
-        type = typeof console;
-        str = e.toString();
-        logit = (logit || typeof e.stack !== 'string' || str.indexOf('test if we see info') === -1) &&
-            type !== 'undefined' &&
-            console !== null &&
-            type !== 'boolean' &&
-            type !== 'string' &&
-            type !== 'number' &&
-            console.log;
     }
 
     required.expect.Assertion.prototype.assert = function (truth, msg, error, expected) {
-        /*jslint unparam: true */
-        /*jshint unused: false */
         var fmsg = this.flags.not ? error : msg,
-            ok = this.flags.not ? !truth : truth;
+            ok = this.flags.not ? !truth : truth,
+            err;
 
-        if (!ok && logit) {
-            console.log(fmsg.call(this));
+        if (!ok) {
+            err = new Error(fmsg.call(this));
+            if (typeof err.stack !== 'string') {
+                err.stack = required.stack().join('\n');
+            }
+
+            if (err.message.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
+                err.toString = function () {
+                    var arr = this.message.split(new RegExp('\\r\\n|\\n')),
+                        messageToString = this.name + ': ',
+                        length = arr.length,
+                        tempArr,
+                        element,
+                        index;
+
+                    if (length > 1) {
+                        for (tempArr = [], index = 0; index < length; index += 1) {
+                            element = arr[index];
+                            if (element.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
+                                tempArr.push(element);
+                            }
+                        }
+
+                        messageToString += tempArr.join('\n');
+                    } else {
+                        messageToString += this.message;
+                    }
+
+                    return messageToString;
+                };
+            }
+
+            if (arguments.length > 3) {
+                err.actual = this.obj;
+                err.expected = expected;
+                err.showDiff = true;
+            }
+
+            throw err;
         }
 
-        assert.apply(this, arguments);
+        this.and = new required.expect.Assertion(this.obj);
     };
 
     module.exports = required;

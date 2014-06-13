@@ -56,7 +56,8 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "latest",
+        "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "optionalDependencies": {
         "uglify-js": "latest",
@@ -75,7 +76,8 @@
         "coveralls": "latest",
         "grunt-shell": "latest",
         "istanbul": "latest",
-        "browserify": "latest"
+        "browserify": "latest",
+        "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "browser": {
         "../lib/util-x.min": false,

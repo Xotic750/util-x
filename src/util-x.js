@@ -1283,9 +1283,6 @@
         getPrototypeOf,
         modulo,
         forEach,
-        map,
-        reduce,
-        filter,
         deepEqual,
         deepStrictEqual,
         defineProperty,
@@ -1331,19 +1328,15 @@
          * @type {boolean}
          */
         hasErrorProps = (function () {
-            var index = 0,
-                prop;
+            var prop;
 
             for (prop in base.Error.proto) {
                 /*jslint forin: false */
-                base.props.unwantedError[index] = prop;
-                index += 1;
+                pPush.call(base.props.unwantedError, prop);
                 /*jslint forin: true */
             }
 
-            base.props.unwantedError = index;
-
-            return !!index;
+            return !!base.props.unwantedError.length;
         }()),
 
         /**
@@ -5605,8 +5598,6 @@
         $.Array.map = toMethod($.Array.prototype.map);
     }
 
-    map = $.Array.map;
-
     /**
      * This method creates a new Array instance with a variable number of arguments,
      * regardless of number or type of the arguments.
@@ -5676,8 +5667,6 @@
 
         $.Array.filter = toMethod($.Array.prototype.filter);
     }
-
-    filter = $.Array.filter;
 
     /**
      * Apply a function against an accumulator and each value of the array (from left-to-right)
@@ -5762,8 +5751,6 @@
 
         $.Array.reduce = toMethod($.Array.prototype.reduce);
     }
-
-    reduce = $.Array.reduce;
 
     /**
      * This {@link boundPrototypalFunction method} applies a function against an accumulator and
@@ -6034,22 +6021,6 @@
     $.Array.sort = toMethod($.Array.prototype.sort);
 
     /**
-     * Builds the test string used to determine if native trim is ES5.
-     * @private
-     * @function buildTestString
-     * @param {string} previous
-     * @param {string} element
-     * @returns {string}
-     */
-    function buildTestString(previous, element) {
-        return previous + base.String.fromCharCode(element);
-    }
-
-    base.String.wsStr = reduce(base.String.whiteSpaces, function (previous, element) {
-        return previous + '\\u' + $.String.padLeadingChar(element.toString(16), '0', 4);
-    }, '');
-
-    /**
      * This {@link boundPrototypalFunction method} removes whitespace from both ends of the string.
      * @memberof utilx.String
      * @name trim
@@ -6058,11 +6029,20 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
      */
-    try {
-        if (!testShims &&
-                isNative(pTrim) &&
-                !pTrim.call(reduce(base.String.whiteSpaces, buildTestString, '')).length) {
+    (function () {
+        var length = base.String.whiteSpaces.length,
+            index,
+            hex;
 
+        for (base.String.wsStr = testTemp.trimString = '', index = 0; index < length; index += 1) {
+            hex = base.Number.toString.call(base.String.whiteSpaces[index], 16);
+            base.String.wsStr += '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
+            testTemp.trimString += base.String.fromCharCode(base.String.whiteSpaces[index]);
+        }
+    }());
+
+    try {
+        if (!testShims && isNative(pTrim) && !pTrim.call(testTemp.trimString).length) {
             $.String.trim = toMethod(pTrim);
         } else {
             throw new Error();
@@ -6088,14 +6068,14 @@
      */
     if (testShims ||
             !isNative(base.Number.parseInt) ||
-            base.Number.parseInt(base.String.wsStr + '08') !== 8 ||
-            base.Number.parseInt(base.String.wsStr + '0x16') !== 22 ||
-            base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
+            base.Number.parseInt(testTemp.trimString + '08') !== 8 ||
+            base.Number.parseInt(testTemp.trimString + '0x16') !== 22 ||
+            base.Number.parseInt(testTemp.trimString + '0x16', 10) === 0) {
 
         if (testShims ||
-                base.parseInt(base.String.wsStr + '08') !== 8 ||
-                base.parseInt(base.String.wsStr + '0x16') !== 22 ||
-                base.Number.parseInt(base.String.wsStr + '0x16', 10) === 0) {
+                base.parseInt(testTemp.trimString + '08') !== 8 ||
+                base.parseInt(testTemp.trimString + '0x16') !== 22 ||
+                base.Number.parseInt(testTemp.trimString + '0x16', 10) === 0) {
 
             base.RegExp.hex = new RegExp('^0[xX]');
             $.Number.parseInt = function (str, radix) {
@@ -7842,20 +7822,21 @@
             toString: assign({
                 value: function () {
                     var arr = split(this.message, base.RegExp.splitNewLine),
-                        messageToString = this.name + ': ';
+                        messageToString = this.name + ': ',
+                        length = arr.length,
+                        tempArr,
+                        element,
+                        index;
 
-                    if (arr.length > 1) {
-                        arr = filter(arr, function (element) {
-                            var val;
-
+                    if (length > 1) {
+                        for (tempArr = [], index = 0; index < length; index += 1) {
+                            element = arr[index];
                             if (!stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-                                val = element;
+                                pPush.call(tempArr, element);
                             }
+                        }
 
-                            return val;
-                        });
-
-                        messageToString += pJoin.call(arr, '\n');
+                        messageToString += pJoin.call(tempArr, '\n');
                     } else {
                         messageToString += this.message;
                     }
@@ -8277,7 +8258,12 @@
                     partial,
                     value = holder[key],
                     type = typeof value,
-                    theGap;
+                    element,
+                    theGap,
+                    length,
+                    index,
+                    keys,
+                    v;
 
                 if (type !== 'undefined' &&
                         value !== null &&
@@ -8312,11 +8298,9 @@
 
                     sfyGap += sfyIndent;
                     if (isArray(value)) {
-                        partial = map(value, function (unused, idx, obj) {
-                            /*jslint unparam: true */
-                            /*jshint unused : false */
-                            return stringifyToString(idx, obj) || 'null';
-                        });
+                        for (partial = [], index = 0, length = value.length; index < length; index += 1) {
+                            pPush.call(partial, stringifyToString(index, value) || 'null');
+                        }
 
                         if (!partial.length) {
                             member = '[]';
@@ -8337,32 +8321,27 @@
                         theGap = ':';
                     }
 
+                    partial = [];
                     if (isArray(sfyReplacer)) {
-                        partial = reduce(sfyReplacer, function (prev, element) {
-                            var v,
-                                typev;
-
+                        for (partial = [], index = 0, length = sfyReplacer.length; index < length; index += 1) {
+                            element = sfyReplacer[index];
                             if (typeof element === 'string') {
                                 v = stringifyToString(element, value);
-                                typev = typeof v;
-                                if (typev !== 'undefined') {
-                                    pPush.call(prev, stringifyQuote(element) + theGap + v);
+                                type = typeof v;
+                                if (type !== 'undefined') {
+                                    pPush.call(partial, stringifyQuote(element) + theGap + v);
                                 }
                             }
-
-                            return prev;
-                        }, []);
+                        }
                     } else {
-                        partial = reduce(objectKeys(value), function (prev, k) {
-                            var v = stringifyToString(k, value),
-                                typev = typeof v;
-
-                            if (typev !== 'undefined') {
-                                pPush.call(prev, stringifyQuote(k) + theGap + v);
+                        for (index = 0, keys = objectKeys(value), length = keys.length; index < length; index += 1) {
+                            element = keys[index];
+                            v = stringifyToString(element, value);
+                            type = typeof v;
+                            if (type !== 'undefined') {
+                                pPush.call(partial, stringifyQuote(element) + theGap + v);
                             }
-
-                            return prev;
-                        }, []);
+                        }
                     }
 
                     if (!partial.length) {

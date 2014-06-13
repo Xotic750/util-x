@@ -151,12 +151,8 @@
 
             Constructor.prototype.constructor = 1;
 
-            expect(utilx.Object.keys(Constructor).length).to.be(0);
-            if (!utilx.Number.isZero(utilx.Object.keys(Constructor.prototype).length)) {
-                expect(utilx.Object.keys(Constructor.prototype).length).to.be(1);
-            } else {
-                expect(utilx.Object.keys(Constructor.prototype).length).to.be(0);
-            }
+            expect(utilx.Object.keys(Constructor)).to.eql([]);
+            expect(utilx.Object.keys(Constructor.prototype)).to.eql([]);
         });
 
         it('should list prototype and constructor', function () {
@@ -165,20 +161,20 @@
             }
 
             Constructor.prototype.constructor = 1;
-            expect(utilx.Object.keys(new Constructor()).length).to.be(2);
+            expect(utilx.Object.keys(new Constructor()).sort()).to.eql(['constructor', 'prototype']);
         });
 
         it('should not list', function () {
-            expect(utilx.Object.keys(Object.prototype).length).to.be(0);
-            expect(utilx.Object.keys(Function.prototype).length).to.be(0);
-            expect(utilx.Object.keys(Boolean.prototype).length).to.be(0);
-            expect(utilx.Object.keys(String.prototype).length).to.be(0);
-            expect(utilx.Object.keys(Number.prototype).length).to.be(0);
-            expect(utilx.Object.keys(Error.prototype).length).to.be(0);
-            expect(utilx.Object.keys(TypeError.prototype).length).to.be(0);
-            expect(utilx.Object.keys(SyntaxError.prototype).length).to.be(0);
-            expect(utilx.Object.keys(Date.prototype).length).to.be(0);
-            expect(utilx.Object.keys(RegExp.prototype).length).to.be(0);
+            expect(utilx.Object.keys(Object.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Boolean.prototype)).to.eql([]);
+            expect(utilx.Object.keys(String.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Number.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Error.prototype)).to.eql([]);
+            expect(utilx.Object.keys(TypeError.prototype)).to.eql([]);
+            expect(utilx.Object.keys(SyntaxError.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Date.prototype)).to.eql([]);
+            expect(utilx.Object.keys(RegExp.prototype)).to.eql([]);
         });
     });
 }());

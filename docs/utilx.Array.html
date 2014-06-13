@@ -40,6 +40,8 @@
 
     
         
+            <div class="description">utilx.Array</div>
+        
 
         
 <dl class="details">
@@ -64,7 +66,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1443">line 1443</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line1436">line 1436</a>
     </li></ul></dd>
     
 
@@ -88,6 +90,8 @@
 
     
 
+     
+
     
 
     
@@ -98,7 +102,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="assign"><span class="type-signature">&lt;static> </span>assign<span class="signature">(array, index, value)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>|<a href="global.html#undefined">undefined</a>}</span></h4>
+    <h4 class="name" id="assign"><span class="type-signature">(static) </span>assign<span class="signature">(array, index, value)</span><span class="type-signature"> &rarr; {number|undefined}</span></h4>
 
     
 </dt>
@@ -147,7 +151,7 @@ returns the new length of the array.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -170,7 +174,7 @@ returns the new length of the array.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#NumberLike">NumberLike</a></span>
+<span class="param-type">NumberLike</span>
 
 
             
@@ -234,7 +238,7 @@ returns the new length of the array.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4886">line 4886</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4879">line 4879</a>
     </li></ul></dd>
     
 
@@ -268,10 +272,10 @@ returns the new length of the array.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 |
 
-<span class="param-type"><a href="global.html#undefined">undefined</a></span>
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -285,7 +289,7 @@ returns the new length of the array.
         
             
 <dt>
-    <h4 class="name" id="contains"><span class="type-signature">&lt;static> </span>contains<span class="signature">(array, searchElement, <span class="optional">fromIndex</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="contains"><span class="type-signature">(static) </span>contains<span class="signature">(array, searchElement, fromIndex<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -293,8 +297,7 @@ returns the new length of the array.
 
     
     <div class="description">
-        Returns true if the specified searchElement is in the specified array.
-Using strict equality (the same method used by the === comparison operator).
+        if array is null or {@link undefined}
     </div>
     
 
@@ -316,7 +319,7 @@ Using strict equality (the same method used by the === comparison operator).
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -336,7 +339,7 @@ Using strict equality (the same method used by the === comparison operator).
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -367,7 +370,7 @@ Using strict equality (the same method used by the === comparison operator).
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#Object">Object</a></span>
+<span class="param-type">Object</span>
 
 
             
@@ -398,7 +401,7 @@ Using strict equality (the same method used by the === comparison operator).
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -449,7 +452,7 @@ Using strict equality (the same method used by the === comparison operator).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3891">line 3891</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3884">line 3884</a>
     </li></ul></dd>
     
 
@@ -477,7 +480,7 @@ Using strict equality (the same method used by the === comparison operator).
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -487,7 +490,7 @@ Using strict equality (the same method used by the === comparison operator).
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -510,7 +513,7 @@ Using strict equality (the same method used by the === comparison operator).
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -524,7 +527,7 @@ Using strict equality (the same method used by the === comparison operator).
         
             
 <dt>
-    <h4 class="name" id="copyWithin"><span class="type-signature">&lt;static> </span>copyWithin<span class="signature">(array, target, <span class="optional">start</span>, <span class="optional">end</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="copyWithin"><span class="type-signature">(static) </span>copyWithin<span class="signature">(array, target, start<span class="signature-attributes">opt</span>, end<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -532,8 +535,7 @@ Using strict equality (the same method used by the === comparison operator).
 
     
     <div class="description">
-        With this <a href="global.html#boundPrototypalFunction">method</a>, every element of array from start up to but
-not including end is assigned value.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -555,7 +557,7 @@ not including end is assigned value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -575,7 +577,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -606,7 +608,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -637,7 +639,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -670,7 +672,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -721,7 +723,7 @@ not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6491">line 6491</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6471">line 6471</a>
     </li></ul></dd>
     
 
@@ -749,7 +751,7 @@ not including end is assigned value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -759,7 +761,7 @@ not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -782,7 +784,7 @@ not including end is assigned value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -796,7 +798,7 @@ not including end is assigned value.
         
             
 <dt>
-    <h4 class="name" id="every"><span class="type-signature">&lt;static> </span>every<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="every"><span class="type-signature">(static) </span>every<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -804,7 +806,7 @@ not including end is assigned value.
 
     
     <div class="description">
-        Tests whether all elements in the array pass the test implemented by the provided function.
+        if fn is not a function
     </div>
     
 
@@ -826,7 +828,7 @@ not including end is assigned value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -846,7 +848,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -877,7 +879,7 @@ not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#everyCallback">everyCallback</a></span>
+<span class="param-type">everyCallback</span>
 
 
             
@@ -959,7 +961,7 @@ not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5493">line 5493</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5486">line 5486</a>
     </li></ul></dd>
     
 
@@ -994,7 +996,7 @@ not including end is assigned value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -1004,7 +1006,7 @@ not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1029,7 +1031,7 @@ not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1052,7 +1054,7 @@ not including end is assigned value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -1066,7 +1068,7 @@ not including end is assigned value.
         
             
 <dt>
-    <h4 class="name" id="fill"><span class="type-signature">&lt;static> </span>fill<span class="signature">(array, value, <span class="optional">start</span>, <span class="optional">end</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="fill"><span class="type-signature">(static) </span>fill<span class="signature">(array, value, start<span class="signature-attributes">opt</span>, end<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -1074,8 +1076,7 @@ not including end is assigned value.
 
     
     <div class="description">
-        With this <a href="global.html#boundPrototypalFunction">method</a>, fill every element of array from start up
-to but not including end is assigned value.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -1097,7 +1098,7 @@ to but not including end is assigned value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -1117,7 +1118,7 @@ to but not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -1179,7 +1180,7 @@ to but not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -1212,7 +1213,7 @@ to but not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -1263,7 +1264,7 @@ to but not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6437">line 6437</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6417">line 6417</a>
     </li></ul></dd>
     
 
@@ -1298,7 +1299,7 @@ to but not including end is assigned value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -1308,7 +1309,7 @@ to but not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1331,7 +1332,7 @@ to but not including end is assigned value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -1345,7 +1346,7 @@ to but not including end is assigned value.
         
             
 <dt>
-    <h4 class="name" id="filter"><span class="type-signature">&lt;static> </span>filter<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="filter"><span class="type-signature">(static) </span>filter<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -1353,7 +1354,7 @@ to but not including end is assigned value.
 
     
     <div class="description">
-        Creates a new array with all elements that pass the test implemented by the provided function.
+        if fn is not a function
     </div>
     
 
@@ -1375,7 +1376,7 @@ to but not including end is assigned value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -1395,7 +1396,7 @@ to but not including end is assigned value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -1508,7 +1509,7 @@ to but not including end is assigned value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5628">line 5628</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5619">line 5619</a>
     </li></ul></dd>
     
 
@@ -1543,7 +1544,7 @@ to but not including end is assigned value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -1553,7 +1554,7 @@ to but not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1578,7 +1579,7 @@ to but not including end is assigned value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1601,7 +1602,7 @@ to but not including end is assigned value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -1615,7 +1616,7 @@ to but not including end is assigned value.
         
             
 <dt>
-    <h4 class="name" id="find"><span class="type-signature">&lt;static> </span>find<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="find"><span class="type-signature">(static) </span>find<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -1623,8 +1624,7 @@ to but not including end is assigned value.
 
     
     <div class="description">
-        This method returns a value in the array, if an element in the array satisfies the provided testing function.
-Otherwise undefined is returned.
+        if fn is not a function
     </div>
     
 
@@ -1646,7 +1646,7 @@ Otherwise undefined is returned.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -1666,7 +1666,7 @@ Otherwise undefined is returned.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -1697,7 +1697,7 @@ Otherwise undefined is returned.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#findCallback">findCallback</a></span>
+<span class="param-type">findCallback</span>
 
 
             
@@ -1779,7 +1779,7 @@ Otherwise undefined is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5334">line 5334</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5327">line 5327</a>
     </li></ul></dd>
     
 
@@ -1814,7 +1814,7 @@ Otherwise undefined is returned.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -1824,7 +1824,7 @@ Otherwise undefined is returned.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1849,7 +1849,7 @@ Otherwise undefined is returned.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -1886,7 +1886,7 @@ Otherwise undefined is returned.
         
             
 <dt>
-    <h4 class="name" id="findIndex"><span class="type-signature">&lt;static> </span>findIndex<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>}</span></h4>
+    <h4 class="name" id="findIndex"><span class="type-signature">(static) </span>findIndex<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 </dt>
@@ -1894,8 +1894,7 @@ Otherwise undefined is returned.
 
     
     <div class="description">
-        This method returns an index in the array, if an element in the array satisfies the provided testing function.
-Otherwise -1 is returned.
+        if fn is not a function
     </div>
     
 
@@ -1917,7 +1916,7 @@ Otherwise -1 is returned.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -1937,7 +1936,7 @@ Otherwise -1 is returned.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -1968,7 +1967,7 @@ Otherwise -1 is returned.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#findIndexCallback">findIndexCallback</a></span>
+<span class="param-type">findIndexCallback</span>
 
 
             
@@ -2050,7 +2049,7 @@ Otherwise -1 is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5387">line 5387</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5380">line 5380</a>
     </li></ul></dd>
     
 
@@ -2085,7 +2084,7 @@ Otherwise -1 is returned.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -2095,7 +2094,7 @@ Otherwise -1 is returned.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2120,7 +2119,7 @@ Otherwise -1 is returned.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2143,7 +2142,7 @@ Otherwise -1 is returned.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -2157,7 +2156,7 @@ Otherwise -1 is returned.
         
             
 <dt>
-    <h4 class="name" id="first"><span class="type-signature">&lt;static> </span>first<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="first"><span class="type-signature">(static) </span>first<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -2205,7 +2204,7 @@ Otherwise -1 is returned.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -2246,7 +2245,7 @@ Otherwise -1 is returned.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4844">line 4844</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4837">line 4837</a>
     </li></ul></dd>
     
 
@@ -2294,7 +2293,7 @@ Otherwise -1 is returned.
         
             
 <dt>
-    <h4 class="name" id="forAll"><span class="type-signature">&lt;static> </span>forAll<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
+    <h4 class="name" id="forAll"><span class="type-signature">(static) </span>forAll<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
 
     
 </dt>
@@ -2302,8 +2301,7 @@ Otherwise -1 is returned.
 
     
     <div class="description">
-        Executes a provided function once per array element position.
-Unlike forEach, this method treats the array as dense and allows a some like break.
+        if fn is not a function
     </div>
     
 
@@ -2325,7 +2323,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -2345,7 +2343,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -2376,7 +2374,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#someCallback">someCallback</a></span>
+<span class="param-type">someCallback</span>
 
 
             
@@ -2458,7 +2456,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5225">line 5225</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5218">line 5218</a>
     </li></ul></dd>
     
 
@@ -2486,7 +2484,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -2496,7 +2494,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2521,7 +2519,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2544,7 +2542,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#undefined">undefined</a></span>
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -2558,7 +2556,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
         
             
 <dt>
-    <h4 class="name" id="forEach"><span class="type-signature">&lt;static> </span>forEach<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#undefined">undefined</a>}</span></h4>
+    <h4 class="name" id="forEach"><span class="type-signature">(static) </span>forEach<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
 
     
 </dt>
@@ -2566,7 +2564,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
 
     
     <div class="description">
-        Executes a provided function once per array element.
+        if fn is not a function
     </div>
     
 
@@ -2588,7 +2586,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -2608,7 +2606,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -2639,7 +2637,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#forEachCallback">forEachCallback</a></span>
+<span class="param-type">forEachCallback</span>
 
 
             
@@ -2721,7 +2719,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5176">line 5176</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5169">line 5169</a>
     </li></ul></dd>
     
 
@@ -2756,7 +2754,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -2766,7 +2764,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2791,7 +2789,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -2814,7 +2812,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#undefined">undefined</a></span>
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -2828,7 +2826,7 @@ Unlike forEach, this method treats the array as dense and allows a some like bre
         
             
 <dt>
-    <h4 class="name" id="from"><span class="type-signature">&lt;static> </span>from<span class="signature">(arrayLike, <span class="optional">mapfn</span>, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="from"><span class="type-signature">(static) </span>from<span class="signature">(arrayLike, mapfn<span class="signature-attributes">opt</span>, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -2859,7 +2857,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -2879,7 +2877,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -2910,7 +2908,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#fromCallback">fromCallback</a></span>
+<span class="param-type">fromCallback</span>
 
 
             
@@ -2994,7 +2992,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5433">line 5433</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5426">line 5426</a>
     </li></ul></dd>
     
 
@@ -3028,7 +3026,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -3042,7 +3040,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
         
             
 <dt>
-    <h4 class="name" id="indexOf"><span class="type-signature">&lt;static> </span>indexOf<span class="signature">(array, searchElement, <span class="optional">fromIndex</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>}</span></h4>
+    <h4 class="name" id="indexOf"><span class="type-signature">(static) </span>indexOf<span class="signature">(array, searchElement, fromIndex<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 </dt>
@@ -3050,8 +3048,7 @@ DOMTokenList (used by classList), NamedNodeMap (used by attributes property)) in
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> returns the first index at which a given element can
-be found in the array, or -1 if it is not present.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -3073,7 +3070,7 @@ be found in the array, or -1 if it is not present.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -3093,7 +3090,7 @@ be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -3124,7 +3121,7 @@ be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#Object">Object</a></span>
+<span class="param-type">Object</span>
 
 
             
@@ -3155,7 +3152,7 @@ be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -3206,7 +3203,7 @@ be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6336">line 6336</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6316">line 6316</a>
     </li></ul></dd>
     
 
@@ -3241,7 +3238,7 @@ be found in the array, or -1 if it is not present.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -3251,7 +3248,7 @@ be found in the array, or -1 if it is not present.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -3274,7 +3271,7 @@ be found in the array, or -1 if it is not present.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -3288,7 +3285,7 @@ be found in the array, or -1 if it is not present.
         
             
 <dt>
-    <h4 class="name" id="isArray"><span class="type-signature">&lt;static> </span>isArray<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="isArray"><span class="type-signature">(static) </span>isArray<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -3378,7 +3375,7 @@ whose class internal property is "Array"; otherwise it returns false.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3249">line 3249</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3242">line 3242</a>
     </li></ul></dd>
     
 
@@ -3419,7 +3416,7 @@ whose class internal property is "Array"; otherwise it returns false.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -3433,7 +3430,7 @@ whose class internal property is "Array"; otherwise it returns false.
         
             
 <dt>
-    <h4 class="name" id="isEmpty"><span class="type-signature">&lt;static> </span>isEmpty<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>|<a href="global.html#null">null</a>}</span></h4>
+    <h4 class="name" id="isEmpty"><span class="type-signature">(static) </span>isEmpty<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {boolean|null}</span></h4>
 
     
 </dt>
@@ -3484,7 +3481,7 @@ Otherwise returns null if the argument does not match the rquirements.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -3525,7 +3522,7 @@ Otherwise returns null if the argument does not match the rquirements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4829">line 4829</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4822">line 4822</a>
     </li></ul></dd>
     
 
@@ -3559,10 +3556,10 @@ Otherwise returns null if the argument does not match the rquirements.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 |
 
-<span class="param-type"><a href="global.html#null">null</a></span>
+<span class="param-type">null</span>
 
 
     </dd>
@@ -3576,7 +3573,7 @@ Otherwise returns null if the argument does not match the rquirements.
         
             
 <dt>
-    <h4 class="name" id="join"><span class="type-signature">&lt;static> </span>join<span class="signature">(inputArg, <span class="optional">separator</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#string">string</a>}</span></h4>
+    <h4 class="name" id="join"><span class="type-signature">(static) </span>join<span class="signature">(inputArg, separator<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 </dt>
@@ -3584,9 +3581,7 @@ Otherwise returns null if the argument does not match the rquirements.
 
     
     <div class="description">
-        The arrayJoin() method joins all elements of an array into a string.
-The separator is converted to a string if necessary.
-If omitted, the array elements are separated with a comma.
+        if inputArg is null or {@link undefined}.
     </div>
     
 
@@ -3608,7 +3603,7 @@ If omitted, the array elements are separated with a comma.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -3628,7 +3623,7 @@ If omitted, the array elements are separated with a comma.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -3659,7 +3654,7 @@ If omitted, the array elements are separated with a comma.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#string">string</a></span>
+<span class="param-type">string</span>
 
 
             
@@ -3710,7 +3705,7 @@ If omitted, the array elements are separated with a comma.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3267">line 3267</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3260">line 3260</a>
     </li></ul></dd>
     
 
@@ -3745,7 +3740,7 @@ If omitted, the array elements are separated with a comma.
 <dl>
     <dt>
         <div class="param-desc">
-        if inputArg is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>.
+        if inputArg is null or {@link undefined}.
         </div>
     </dt>
     <dt>
@@ -3755,7 +3750,7 @@ If omitted, the array elements are separated with a comma.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -3778,7 +3773,7 @@ If omitted, the array elements are separated with a comma.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#string">string</a></span>
+<span class="param-type">string</span>
 
 
     </dd>
@@ -3792,7 +3787,7 @@ If omitted, the array elements are separated with a comma.
         
             
 <dt>
-    <h4 class="name" id="last"><span class="type-signature">&lt;static> </span>last<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="last"><span class="type-signature">(static) </span>last<span class="signature">(inputArg)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -3840,7 +3835,7 @@ If omitted, the array elements are separated with a comma.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -3881,7 +3876,7 @@ If omitted, the array elements are separated with a comma.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4858">line 4858</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4851">line 4851</a>
     </li></ul></dd>
     
 
@@ -3929,7 +3924,7 @@ If omitted, the array elements are separated with a comma.
         
             
 <dt>
-    <h4 class="name" id="lastIndexOf"><span class="type-signature">&lt;static> </span>lastIndexOf<span class="signature">(array, searchElement, <span class="optional">fromIndex</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>}</span></h4>
+    <h4 class="name" id="lastIndexOf"><span class="type-signature">(static) </span>lastIndexOf<span class="signature">(array, searchElement, fromIndex<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 </dt>
@@ -3937,8 +3932,7 @@ If omitted, the array elements are separated with a comma.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> returns the first index at which a given element
-can be found in the array, or -1 if it is not present.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -3960,7 +3954,7 @@ can be found in the array, or -1 if it is not present.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -3980,7 +3974,7 @@ can be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -4011,7 +4005,7 @@ can be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#Object">Object</a></span>
+<span class="param-type">Object</span>
 
 
             
@@ -4042,7 +4036,7 @@ can be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -4093,7 +4087,7 @@ can be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6388">line 6388</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6368">line 6368</a>
     </li></ul></dd>
     
 
@@ -4128,7 +4122,7 @@ can be found in the array, or -1 if it is not present.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -4138,7 +4132,7 @@ can be found in the array, or -1 if it is not present.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -4161,7 +4155,7 @@ can be found in the array, or -1 if it is not present.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -4175,7 +4169,7 @@ can be found in the array, or -1 if it is not present.
         
             
 <dt>
-    <h4 class="name" id="map"><span class="type-signature">&lt;static> </span>map<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="map"><span class="type-signature">(static) </span>map<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -4183,7 +4177,7 @@ can be found in the array, or -1 if it is not present.
 
     
     <div class="description">
-        Creates a new array with the results of calling a provided function on every element in this array.
+        if fn is not a function
     </div>
     
 
@@ -4205,7 +4199,7 @@ can be found in the array, or -1 if it is not present.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -4225,7 +4219,7 @@ can be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -4256,7 +4250,7 @@ can be found in the array, or -1 if it is not present.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#mapCallback">mapCallback</a></span>
+<span class="param-type">mapCallback</span>
 
 
             
@@ -4338,7 +4332,7 @@ can be found in the array, or -1 if it is not present.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5558">line 5558</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5551">line 5551</a>
     </li></ul></dd>
     
 
@@ -4373,7 +4367,7 @@ can be found in the array, or -1 if it is not present.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -4383,7 +4377,7 @@ can be found in the array, or -1 if it is not present.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -4408,7 +4402,7 @@ can be found in the array, or -1 if it is not present.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -4431,7 +4425,7 @@ can be found in the array, or -1 if it is not present.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -4445,7 +4439,7 @@ can be found in the array, or -1 if it is not present.
         
             
 <dt>
-    <h4 class="name" id="of"><span class="type-signature">&lt;static> </span>of<span class="signature">(<span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="of"><span class="type-signature">(static) </span>of<span class="signature">(&hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -4476,7 +4470,7 @@ regardless of number or type of the arguments.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -4549,7 +4543,7 @@ regardless of number or type of the arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5610">line 5610</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5601">line 5601</a>
     </li></ul></dd>
     
 
@@ -4590,7 +4584,7 @@ regardless of number or type of the arguments.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -4604,7 +4598,7 @@ regardless of number or type of the arguments.
         
             
 <dt>
-    <h4 class="name" id="powerSet"><span class="type-signature">&lt;static> </span>powerSet<span class="signature">(array)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>.&lt;<a href="global.html#Array">Array</a>>}</span></h4>
+    <h4 class="name" id="powerSet"><span class="type-signature">(static) </span>powerSet<span class="signature">(array)</span><span class="type-signature"> &rarr; {Array.&lt;Array>}</span></h4>
 
     
 </dt>
@@ -4612,7 +4606,7 @@ regardless of number or type of the arguments.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> calculates the Power Set of a given array.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -4652,10 +4646,10 @@ regardless of number or type of the arguments.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 |
 
-<span class="param-type"><a href="global.html#string">string</a></span>
+<span class="param-type">string</span>
 
 
             
@@ -4696,7 +4690,7 @@ regardless of number or type of the arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8552">line 8552</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8531">line 8531</a>
     </li></ul></dd>
     
 
@@ -4731,7 +4725,7 @@ regardless of number or type of the arguments.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -4741,7 +4735,7 @@ regardless of number or type of the arguments.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -4764,7 +4758,7 @@ regardless of number or type of the arguments.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a>.&lt;<a href="global.html#Array">Array</a>></span>
+<span class="param-type">Array.&lt;Array></span>
 
 
     </dd>
@@ -4778,7 +4772,7 @@ regardless of number or type of the arguments.
         
             
 <dt>
-    <h4 class="name" id="push"><span class="type-signature">&lt;static> </span>push<span class="signature">(array, <span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>}</span></h4>
+    <h4 class="name" id="push"><span class="type-signature">(static) </span>push<span class="signature">(array, &hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 </dt>
@@ -4786,7 +4780,7 @@ regardless of number or type of the arguments.
 
     
     <div class="description">
-        The Array.push() <a href="global.html#boundPrototypalFunction">method</a> adds one or more elements to the end of an array and
+        The Array.push() method adds one or more elements to the end of an array and
 returns the new length of the array.
     </div>
     
@@ -4809,7 +4803,7 @@ returns the new length of the array.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -4829,7 +4823,7 @@ returns the new length of the array.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -4913,7 +4907,7 @@ returns the new length of the array.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3799">line 3799</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3792">line 3792</a>
     </li></ul></dd>
     
 
@@ -4954,7 +4948,7 @@ returns the new length of the array.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -4968,7 +4962,7 @@ returns the new length of the array.
         
             
 <dt>
-    <h4 class="name" id="reduce"><span class="type-signature">&lt;static> </span>reduce<span class="signature">(array, fn, <span class="optional">initialValue</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="reduce"><span class="type-signature">(static) </span>reduce<span class="signature">(array, fn, initialValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -4976,8 +4970,7 @@ returns the new length of the array.
 
     
     <div class="description">
-        Apply a function against an accumulator and each value of the array (from left-to-right)
-as to reduce it to a single value.
+        if fn is not a function
     </div>
     
 
@@ -4999,7 +4992,7 @@ as to reduce it to a single value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -5019,7 +5012,7 @@ as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -5132,7 +5125,7 @@ as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5682">line 5682</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5671">line 5671</a>
     </li></ul></dd>
     
 
@@ -5167,7 +5160,7 @@ as to reduce it to a single value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -5177,7 +5170,7 @@ as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -5202,7 +5195,7 @@ as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -5239,7 +5232,7 @@ as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="reduceRight"><span class="type-signature">&lt;static> </span>reduceRight<span class="signature">(array, fn, <span class="optional">initialValue</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    <h4 class="name" id="reduceRight"><span class="type-signature">(static) </span>reduceRight<span class="signature">(array, fn, initialValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
 </dt>
@@ -5247,8 +5240,7 @@ as to reduce it to a single value.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> applies a function against an accumulator and
-each value of the array (from left-to-right) as to reduce it to a single value.
+        if fn is not a function
     </div>
     
 
@@ -5270,7 +5262,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -5290,7 +5282,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -5403,7 +5395,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5768">line 5768</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5755">line 5755</a>
     </li></ul></dd>
     
 
@@ -5438,7 +5430,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -5448,7 +5440,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -5473,7 +5465,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -5510,7 +5502,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="shuffle"><span class="type-signature">&lt;static> </span>shuffle<span class="signature">(array, <span class="optional">rounds</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="shuffle"><span class="type-signature">(static) </span>shuffle<span class="signature">(array, rounds<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -5518,7 +5510,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> performs Fisher-Yates shuffle for randomly shuffling a set.
+        if array is null or {@link undefined}
     </div>
     
 
@@ -5540,7 +5532,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -5560,7 +5552,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -5591,7 +5583,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#NumberLike">NumberLike</a></span>
+<span class="param-type">NumberLike</span>
 
 
             
@@ -5642,7 +5634,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8083">line 8083</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8064">line 8064</a>
     </li></ul></dd>
     
 
@@ -5677,7 +5669,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -5687,7 +5679,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -5710,7 +5702,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -5724,7 +5716,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="slice"><span class="type-signature">&lt;static> </span>slice<span class="signature">(array, <span class="optional">start</span>, <span class="optional">end</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="slice"><span class="type-signature">(static) </span>slice<span class="signature">(array, start<span class="signature-attributes">opt</span>, end<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -5754,7 +5746,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -5774,7 +5766,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -5805,7 +5797,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#NumberLike">NumberLike</a></span>
+<span class="param-type">NumberLike</span>
 
 
             
@@ -5838,7 +5830,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#NumberLike">NumberLike</a></span>
+<span class="param-type">NumberLike</span>
 
 
             
@@ -5889,7 +5881,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2948">line 2948</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line2941">line 2941</a>
     </li></ul></dd>
     
 
@@ -5930,7 +5922,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -5944,7 +5936,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="some"><span class="type-signature">&lt;static> </span>some<span class="signature">(array, fn, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#boolean">boolean</a>}</span></h4>
+    <h4 class="name" id="some"><span class="type-signature">(static) </span>some<span class="signature">(array, fn, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 </dt>
@@ -5952,7 +5944,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 
     
     <div class="description">
-        Tests whether some element in the array passes the test implemented by the provided function.
+        if fn is not a function
     </div>
     
 
@@ -5974,7 +5966,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -5994,7 +5986,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -6025,7 +6017,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#someCallback">someCallback</a></span>
+<span class="param-type">someCallback</span>
 
 
             
@@ -6107,7 +6099,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5269">line 5269</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5262">line 5262</a>
     </li></ul></dd>
     
 
@@ -6142,7 +6134,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -6152,7 +6144,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6177,7 +6169,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6200,7 +6192,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#boolean">boolean</a></span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -6214,7 +6206,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
         
             
 <dt>
-    <h4 class="name" id="sort"><span class="type-signature">&lt;static> </span>sort<span class="signature">(array, <span class="optional">compareFN</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#ArrayLike">ArrayLike</a>}</span></h4>
+    <h4 class="name" id="sort"><span class="type-signature">(static) </span>sort<span class="signature">(array, compareFN<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {ArrayLike}</span></h4>
 
     
 </dt>
@@ -6222,8 +6214,7 @@ each value of the array (from left-to-right) as to reduce it to a single value.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> sorts the elements of an array in place and returns the array.
-The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
+        if compareFN is defined and is not a function
     </div>
     
 
@@ -6245,7 +6236,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -6265,7 +6256,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -6347,7 +6338,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line6007">line 6007</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5994">line 5994</a>
     </li></ul></dd>
     
 
@@ -6382,7 +6373,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -6392,7 +6383,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6417,7 +6408,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6444,7 +6435,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
     </dd>
@@ -6458,7 +6449,7 @@ The sort may be unstable depending on the browser. The default sort order is lex
         
             
 <dt>
-    <h4 class="name" id="splice"><span class="type-signature">&lt;static> </span>splice<span class="signature">(array, start, <span class="optional">deleteCount</span>, <span class="optional">element</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="splice"><span class="type-signature">(static) </span>splice<span class="signature">(array, start, deleteCount<span class="signature-attributes">opt</span>, &hellip;element<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -6489,7 +6480,7 @@ adding new elements while removing old elements.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -6509,7 +6500,7 @@ adding new elements while removing old elements.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -6540,7 +6531,7 @@ adding new elements while removing old elements.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -6571,7 +6562,7 @@ adding new elements while removing old elements.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -6657,7 +6648,7 @@ adding new elements while removing old elements.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5018">line 5018</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5011">line 5011</a>
     </li></ul></dd>
     
 
@@ -6698,7 +6689,7 @@ adding new elements while removing old elements.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -6712,7 +6703,7 @@ adding new elements while removing old elements.
         
             
 <dt>
-    <h4 class="name" id="stableSort"><span class="type-signature">&lt;static> </span>stableSort<span class="signature">(array, <span class="optional">compareFN</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#ArrayLike">ArrayLike</a>}</span></h4>
+    <h4 class="name" id="stableSort"><span class="type-signature">(static) </span>stableSort<span class="signature">(array, compareFN<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {ArrayLike}</span></h4>
 
     
 </dt>
@@ -6720,8 +6711,7 @@ adding new elements while removing old elements.
 
     
     <div class="description">
-        This <a href="global.html#boundPrototypalFunction">method</a> method sorts the elements of an array in place and returns the array.
-This is a stable sort. The default sort order is lexicographic (not numeric).
+        if compareFN is defined and is not a function
     </div>
     
 
@@ -6743,7 +6733,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -6763,7 +6753,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -6845,7 +6835,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5968">line 5968</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line5955">line 5955</a>
     </li></ul></dd>
     
 
@@ -6882,7 +6872,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>
+        if array is null or {@link undefined}
         </div>
     </dt>
     <dt>
@@ -6892,7 +6882,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6917,7 +6907,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -6944,7 +6934,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
     </dd>
@@ -6958,7 +6948,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
         
             
 <dt>
-    <h4 class="name" id="toObject"><span class="type-signature">&lt;static> </span>toObject<span class="signature">(array)</span><span class="type-signature"> &rarr; {<a href="global.html#Object">Object</a>}</span></h4>
+    <h4 class="name" id="toObject"><span class="type-signature">(static) </span>toObject<span class="signature">(array)</span><span class="type-signature"> &rarr; {Object}</span></h4>
 
     
 </dt>
@@ -7006,7 +6996,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -7047,7 +7037,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8604">line 8604</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line8583">line 8583</a>
     </li></ul></dd>
     
 
@@ -7081,7 +7071,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Object">Object</a></span>
+<span class="param-type">Object</span>
 
 
     </dd>
@@ -7095,7 +7085,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
         
             
 <dt>
-    <h4 class="name" id="unique"><span class="type-signature">&lt;static> </span>unique<span class="signature">(array, <span class="optional">equalFn</span>, <span class="optional">thisArg</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#Array">Array</a>}</span></h4>
+    <h4 class="name" id="unique"><span class="type-signature">(static) </span>unique<span class="signature">(array, equalFn<span class="signature-attributes">opt</span>, thisArg<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
 
     
 </dt>
@@ -7103,10 +7093,7 @@ This is a stable sort. The default sort order is lexicographic (not numeric).
 
     
     <div class="description">
-        This method creates a new array of unique occurences using
-the <a href="utilx.Object.html#strictEqual">strictEqual</a> comparison.
-The new array is ordered as per the original array.
-A function can be provided as an alternative comparison method.
+        if equalFn is not a function.
     </div>
     
 
@@ -7128,7 +7115,7 @@ A function can be provided as an alternative comparison method.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -7148,7 +7135,7 @@ A function can be provided as an alternative comparison method.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -7179,7 +7166,7 @@ A function can be provided as an alternative comparison method.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#equalityFn">equalityFn</a></span>
+<span class="param-type">equalityFn</span>
 
 
             
@@ -7263,7 +7250,7 @@ A function can be provided as an alternative comparison method.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4968">line 4968</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line4961">line 4961</a>
     </li></ul></dd>
     
 
@@ -7291,7 +7278,7 @@ A function can be provided as an alternative comparison method.
 <dl>
     <dt>
         <div class="param-desc">
-        if array is <a href="global.html#null">null</a> or <a href="global.html#undefined">undefined</a>.
+        if array is null or {@link undefined}.
         </div>
     </dt>
     <dt>
@@ -7301,7 +7288,7 @@ A function can be provided as an alternative comparison method.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -7316,7 +7303,7 @@ A function can be provided as an alternative comparison method.
 <dl>
     <dt>
         <div class="param-desc">
-        if equalFn is not a <a href="global.html#Function">function</a>.
+        if equalFn is not a function.
         </div>
     </dt>
     <dt>
@@ -7326,7 +7313,7 @@ A function can be provided as an alternative comparison method.
             </dt>
             <dd>
                 
-<span class="param-type"><a href="global.html#TypeError">TypeError</a></span>
+<span class="param-type">TypeError</span>
 
 
             </dd>
@@ -7349,7 +7336,7 @@ A function can be provided as an alternative comparison method.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#Array">Array</a></span>
+<span class="param-type">Array</span>
 
 
     </dd>
@@ -7363,7 +7350,7 @@ A function can be provided as an alternative comparison method.
         
             
 <dt>
-    <h4 class="name" id="unshift"><span class="type-signature">&lt;static> </span>unshift<span class="signature">(array, <span class="optional">varArgs</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#number">number</a>}</span></h4>
+    <h4 class="name" id="unshift"><span class="type-signature">(static) </span>unshift<span class="signature">(array, &hellip;varArgs<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 </dt>
@@ -7394,7 +7381,7 @@ returns the new length of the array.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -7414,7 +7401,7 @@ returns the new length of the array.
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#ArrayLike">ArrayLike</a></span>
+<span class="param-type">ArrayLike</span>
 
 
             
@@ -7498,7 +7485,7 @@ returns the new length of the array.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3832">line 3832</a>
+        <a href="util-x.js.html">util-x.js</a>, <a href="util-x.js.html#line3825">line 3825</a>
     </li></ul></dd>
     
 
@@ -7539,7 +7526,7 @@ returns the new length of the array.
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#number">number</a></span>
+<span class="param-type">number</span>
 
 
     </dd>
@@ -7566,13 +7553,13 @@ returns the new length of the array.
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="global.html#utilx">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-util-x.html">util-x</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-util-x-utilx.html">utilx</a></li><li><a href="utilx.Array.html">Array</a></li><li><a href="utilx.Boolean.html">Boolean</a></li><li><a href="utilx.Date.html">Date</a></li><li><a href="utilx.Error.html">Error</a></li><li><a href="utilx.Function.html">Function</a></li><li><a href="utilx.JSON.html">JSON</a></li><li><a href="utilx.Math.html">Math</a></li><li><a href="utilx.Number.html">Number</a></li><li><a href="utilx.Object.html">Object</a></li><li><a href="utilx.RegExp.html">RegExp</a></li><li><a href="utilx.String.html">String</a></li></ul><h3>Global</h3><ul><li><a href="global.html#utilx">utilx</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha5</a> on Fri Jun 13 2014 11:02:15 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Sat Jun 14 2014 01:24:47 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
