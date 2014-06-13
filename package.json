@@ -38,6 +38,7 @@
         "doc": "docs"
     },
     "dependencies": {
+        "stacktrace": "git://github.com/stacktracejs/stacktrace.js.git"
     },
     "devDependencies": {
         "uglify-js": "latest",
