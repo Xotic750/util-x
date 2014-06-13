@@ -743,34 +743,6 @@
      * @returns {*}
      */
 
-    /**
-     * To be used when isFunction has not yet been defined
-     * @private
-     * @name isFunctionFallback
-     * @function
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isFunctionFallback(inputArg) {
-        var isFn = false,
-            type;
-
-        if (inputArg !== null) {
-            type = typeof inputArg;
-            if ((type === 'function' || type === 'object') &&
-                    ('constructor' in inputArg) &&
-                    ('call' in inputArg) &&
-                    ('apply' in inputArg) &&
-                    ('length' in inputArg) &&
-                    typeof inputArg.length === 'number') {
-
-                isFn = true;
-            }
-        }
-
-        return isFn;
-    }
-
     var testShims = true,
 
         // constants
@@ -878,18 +850,24 @@
          * @returns {boolean}
          * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
          */
-        isFunction,
+        isFunction = function (inputArg) {
+            var isFn = false,
+                type;
 
-        /**
-         * Uses isFunction if defined otherwise isFunctionFallback
-         * @private
-         * @name isFun
-         * @function
-         * @param {*} inputArg
-         * @returns {boolean}
-         */
-        isFun = function (inputArg) {
-            return (isFunction && isFunction(inputArg)) || (!isFunction && isFunctionFallback(inputArg));
+            if (inputArg !== null) {
+                type = typeof inputArg;
+                if ((type === 'function' || type === 'object') &&
+                        ('constructor' in inputArg) &&
+                        ('call' in inputArg) &&
+                        ('apply' in inputArg) &&
+                        ('length' in inputArg) &&
+                        typeof inputArg.length === 'number') {
+
+                    isFn = true;
+                }
+            }
+
+            return isFn;
         },
 
         /**
@@ -901,7 +879,7 @@
          * @returns {Function}
          */
         throwIfNotAFunction = function (inputArg) {
-            if (!isFun(inputArg)) {
+            if (!isFunction(inputArg)) {
                 throw new base.TypeError.Ctr('Argument is not a function: ' + inputArg);
             }
 
@@ -985,7 +963,7 @@
          */
         /*
         createListFromArrayLike = function (inputArg) {
-            if (inputArg === null || typeof inputArg !== 'object' || isFun(inputArg)) {
+            if (inputArg === null || typeof inputArg !== 'object' || isFunction(inputArg)) {
                 throw new base.TypeError.Ctr('Arguments list has wrong type: ' + inputArg);
             }
 
@@ -1167,7 +1145,7 @@
          */
         toMethod = function (protoFn, checkThisArgFn) {
             throwIfNotAFunction(protoFn);
-            if (!isFun(checkThisArgFn)) {
+            if (!isFunction(checkThisArgFn)) {
                 checkThisArgFn = checkObjectCoercible;
             }
 
@@ -1188,64 +1166,6 @@
 
         /**
          * @private
-         * @name concat
-         * @function
-         * @param {...Array} varArgs
-         * @returns {Array}
-         */
-        concat = toMethod(base.Array.concat),
-
-        /**
-         * @private
-         * @name push
-         * @function
-         * @param {ArrayLike} array
-         * @param {...*} [varArgs]
-         * @returns {number}
-         */
-        push = toMethod(base.Array.push),
-
-        /**
-         * @private
-         * @name join
-         * @function
-         * @param {ArrayLike} inputArg
-         * @throws {TypeError} if inputArg is {@link null} or {@link undefined}.
-         * @param {string} [separator]
-         * @returns {string}
-         */
-        join = toMethod(base.Array.join),
-
-        /**
-         * @private
-         * @name unshift
-         * @function
-         * @param {ArrayLike} array
-         * @param {...*} [varArgs]
-         * @returns {number}
-         */
-        unshift = toMethod(base.Array.unshift),
-
-        /**
-         * @private
-         * @name shift
-         * @function
-         * @param {arraylike} inputArg
-         * @returns {*}
-         */
-        shift = toMethod(base.Array.shift),
-
-        /**
-         * @private
-         * @name pop
-         * @function
-         * @param {ArrayLike} inputArg
-         * @returns {*}
-         */
-        pop = toMethod(base.Array.pop),
-
-        /**
-         * @private
          * @name slice
          * @function
          * @param {ArrayLike} array
@@ -1257,18 +1177,6 @@
 
         /**
          * @private
-         * @name sort
-         * @function
-         * @param {ArrayLike} array
-         * @throws {TypeError} if array is {@link null} or {@link undefined}
-         * @param {Function} [compareFN]
-         * @throws {TypeError} if compareFN is defined and is not a function
-         * @returns {ArrayLike} same type as supplied array argument.
-         */
-        sort = base.Array.sort,
-
-        /**
-         * @private
          * @name split
          * @function
          * @param {string} stringArg
@@ -1276,7 +1184,7 @@
          * @param {number} [limit]
          * @returns {Array.<string>}
          */
-        split = toMethod(base.String.split),
+        split,
 
         /**
          * @private
@@ -1290,37 +1198,6 @@
 
         /**
          * @private
-         * @name charAt
-         * @function
-         * @param {string} string
-         * @param {NumberLike} position
-         * @returns {string}
-         */
-        charAt = toMethod(base.String.charAt),
-
-        /**
-         * @private
-         * @name charCodeAt
-         * @function
-         * @param {string} string
-         * @param {NumberLike} position
-         * @returns {number}
-         */
-        charCodeAt = toMethod(base.String.charCodeAt),
-
-        /**
-         * @private
-         * @name strSlice
-         * @function
-         * @param {string} string
-         * @param {NumberLike} [start]
-         * @param {NumberLike} [end]
-         * @returns {string}
-         */
-        strSlice = toMethod(base.String.slice),
-
-        /**
-         * @private
          * @name test
          * @function
          * @param {RegExp} regex
@@ -1328,15 +1205,6 @@
          * @returns {boolean}
          */
         test = toMethod(base.RegExp.test),
-
-        /**
-         * @private
-         * @name getTime
-         * @function
-         * @param {Date} date
-         * @returns {number}
-         */
-        getTime = toMethod(base.Date.getTime),
 
         /**
          * @private
@@ -1358,9 +1226,49 @@
         isStrictMode = !returnThis(),
 
         // shortcuts
+        pSlice = base.Array.slice,
+        pPush = base.Array.push,
+        pUnshift = base.Array.unshift,
+        pJoin = base.Array.join,
+        pConcat = base.Array.concat,
+        pPop = base.Array.pop,
+        pShift = base.Array.shift,
+        pSplice = base.Array.splice,
+        pIndexOf = base.Array.indexOf,
+        pLastIndexOf = base.Array.lastIndexOf,
+        pForEach = base.Array.forEach,
+        pSort = base.Array.sort,
+        pFind = base.Array.find,
+        pFindIndex = base.Array.findIndex,
+        pCopyWithin = base.Array.copyWithin,
+        pSome = base.Array.some,
+        pEvery = base.Array.every,
+        pMap = base.Array.map,
+        pFilter = base.Array.filter,
+        pReduce = base.Array.reduce,
+        pReduceRight = base.Array.reduceRight,
+        pFill = base.Array.fill,
+
+        mIsArray = base.Array.isArray,
+        mOf = base.Array.of,
+        mFrom = base.Array.from,
+
+        cString = base.String.Ctr,
+        pMatch = base.String.match,
+        pSplit = base.String.split,
+        pTrim = base.String.trim,
+        pStartsWith = base.String.startsWith,
+        pEndsWith = base.String.endsWith,
+        pContains = base.String.contains,
+        pCharAt = base.String.charAt,
+        pCharCodeAt = base.String.charCodeAt,
+        pSSlice = base.String.slice,
+        pSIndexOf = base.String.indexOf,
+        pSRepeat = base.String.repeat,
+        pSValueOf = base.String.valueOf,
+
         hasOwnProp,
         toString,
-        isPrimitive,
         isNotPrimitive,
         isNative,
         isArguments,
@@ -1391,8 +1299,8 @@
         truncate,
         inherits,
         stableSort,
-        contains,
         stringContains,
+        powerSet,
 
         /**
          * Indicates if object suffers the don'r enum bug
@@ -2190,7 +2098,7 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
      */
-    $.Object.isPrimitive = isPrimitive = function (inputArg) {
+    $.Object.isPrimitive = function (inputArg) {
         var type = typeof inputArg;
 
         return type === 'undefined' ||
@@ -2210,7 +2118,9 @@
      * @returns {(Object|Function)}
      */
     function throwIfIsPrimitive(inputArg) {
-        if (isPrimitive(inputArg)) {
+        var type = typeof inputArg;
+
+        if (type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number') {
             throw new base.TypeError.Ctr('called on non-object: ' + typeof inputArg);
         }
 
@@ -2395,7 +2305,7 @@
             isEm;
 
         if (isStr) {
-            isEm = !base.String.valueOf.call(inputArg);
+            isEm = !pSValueOf.call(inputArg);
         }
 
         return isEm;
@@ -2414,7 +2324,7 @@
             isEm;
 
         if (isStr) {
-            isEm = !base.String.valueOf.call(inputArg);
+            isEm = !pSValueOf.call(inputArg);
         }
 
         return isEm;
@@ -2452,7 +2362,7 @@
             isEm;
 
         if (isStr) {
-            isEm = !!base.String.valueOf.call(inputArg);
+            isEm = !!pSValueOf.call(inputArg);
         }
 
         return isEm;
@@ -2471,7 +2381,7 @@
             isEm;
 
         if (isStr) {
-            isEm = !!base.String.valueOf.call(inputArg);
+            isEm = !!pSValueOf.call(inputArg);
         }
 
         return isEm;
@@ -2558,14 +2468,14 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
      */
     try {
-        testTemp.tsS1 = base.String.Ctr();
-        testTemp.tsS2 = base.String.Ctr(Undefined);
-        testTemp.tsS3 = base.String.Ctr(null);
+        testTemp.tsS1 = cString();
+        testTemp.tsS2 = cString(Undefined);
+        testTemp.tsS3 = cString(null);
         if (testShims || testTemp.tsS1 !== 'undefined' || testTemp.tsS2 !== 'undefined' || testTemp.tsS3 === 'null') {
             throw new Error();
         }
 
-        $.String.ToString = base.String.Ctr;
+        $.String.ToString = cString;
     } catch (eToString) {
         $.String.ToString = function (inputArg) {
             var type = typeof inputArg,
@@ -2576,7 +2486,7 @@
             } else if (inputArg === null) {
                 val = 'null';
             } else {
-                val = base.String.Ctr(inputArg);
+                val = cString(inputArg);
             }
 
             return val;
@@ -2838,8 +2748,23 @@
          * @returns {boolean}
          */
         function isFunctionBasic(inputArg) {
-            return toClass(inputArg) === classString || isFunctionFallback(inputArg);
-                    //(typeof inputArg === 'function' && inputArg.call && inputArg.apply);
+            var isFn = toClass(inputArg) === classString,
+                type;
+
+            if (!isFn && inputArg !== null) {
+                type = typeof inputArg;
+                if ((type === 'function' || type === 'object') &&
+                        ('constructor' in inputArg) &&
+                        ('call' in inputArg) &&
+                        ('apply' in inputArg) &&
+                        ('length' in inputArg) &&
+                        typeof inputArg.length === 'number') {
+
+                    isFn = true;
+                }
+            }
+
+            return isFn;
         }
 
         try {
@@ -2847,7 +2772,6 @@
             // to native Function.prototype.toString
             // as scope to evaluate ... only IE, sure
             if (isNotPrimitive(window) && window.alert) {
-                //base.Function.toString.call(window.alert);
                 base.Function.toString.call(window.alert);
             }
         } catch (eRunIENativeFunction) {
@@ -3035,15 +2959,15 @@
     try {
         testTemp.someArgs = returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined);
         if (testShims ||
-                !isNative(base.Array.slice) ||
-                base.Array.slice.call(testTemp.someArgs).toString() !== ',,1,a,2,b,,' ||
-                base.Array.slice.call(testTemp.someArgs, Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
-                base.Array.slice.call(testTemp.someArgs, -1).length !== 1 ||
-                base.Array.slice.call(testTemp.someArgs, 0).toString() !== ',,1,a,2,b,,' ||
-                base.Array.slice.call(testTemp.someArgs, 3).toString() !== 'a,2,b,,' ||
-                base.Array.slice.call(testTemp.someArgs, -1, 4).length ||
-                base.Array.slice.call(testTemp.someArgs, 0, 4).toString() !== ',,1,a' ||
-                base.Array.slice.call(testTemp.someArgs, 3, 6).toString() !== 'a,2,b') {
+                !isNative(pSlice) ||
+                pSlice.call(testTemp.someArgs).toString() !== ',,1,a,2,b,,' ||
+                pSlice.call(testTemp.someArgs, Undefined, Undefined).toString() !== ',,1,a,2,b,,' ||
+                pSlice.call(testTemp.someArgs, -1).length !== 1 ||
+                pSlice.call(testTemp.someArgs, 0).toString() !== ',,1,a,2,b,,' ||
+                pSlice.call(testTemp.someArgs, 3).toString() !== 'a,2,b,,' ||
+                pSlice.call(testTemp.someArgs, -1, 4).length ||
+                pSlice.call(testTemp.someArgs, 0, 4).toString() !== ',,1,a' ||
+                pSlice.call(testTemp.someArgs, 3, 6).toString() !== 'a,2,b') {
 
             throw new Error();
         }
@@ -3052,10 +2976,9 @@
             var section;
 
             try {
-                section = base.Array.slice.apply(this, arguments);
+                section = pSlice.apply(this, arguments);
             } catch (eSliceFB) {
-                unshift(arguments, this);
-
+                pUnshift.call(arguments, this);
                 section = argSlice.apply(Undefined, arguments);
             }
 
@@ -3065,7 +2988,7 @@
         $.Array.prototype.slice = function () {
             var args = argSlice(arguments);
 
-            unshift(args, this);
+            pUnshift.call(args, this);
 
             return argSlice.apply(Undefined, args);
         };
@@ -3284,7 +3207,7 @@
                     args[index] = '$' + index;
                 }
 
-                return join(args, ',');
+                return pJoin.call(args, ',');
             }
 
             return function (thisArg, varArgs) {
@@ -3295,7 +3218,7 @@
                     bound = base.Function.Ctr('binder', 'return function(' +
                                               bindArgs(fn.length - args.length) +
                         '){return binder.apply(this,arguments);}')(function () {
-                        var binderArgs = concat(args, slice(arguments)),
+                        var binderArgs = pConcat.call(args, slice(arguments)),
                             result;
 
                         if (this instanceof bound) {
@@ -3333,8 +3256,8 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
      */
-    if (!testShims && isNative(base.Array.isArray)) {
-        $.Array.isArray = isArray = base.Array.isArray;
+    if (!testShims && isNative(mIsArray)) {
+        $.Array.isArray = isArray = mIsArray;
     } else {
         $.Array.isArray = isArray = function (inputArg) {
             return inputArg !== null && typeof inputArg === 'object' && toClass(inputArg) === base.classString.array;
@@ -3354,10 +3277,10 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
      */
-    $.Array.prototype.join = (function (
-        join
-    ) {
-        return function (separator) {
+    if (!testShims && pJoin.call([1, 2]) === '1,2') {
+        $.Array.prototype.join = pJoin;
+    } else {
+        $.Array.prototype.join = function (separator) {
             checkObjectCoercible(this);
 
             var type = typeof separator;
@@ -3366,13 +3289,11 @@
                 separator = ',';
             }
 
-            return join(this, separator);
+            return pJoin.call(this, separator);
         };
-    }(
-        join
-    ));
+    }
 
-    $.Array.join = join = toMethod($.Array.prototype.join);
+    $.Array.join = toMethod($.Array.prototype.join);
 
     /**
      * Determines whether two values are the same value.
@@ -3889,26 +3810,24 @@
     testTemp.pushArr = [];
     testTemp.pushObj = {};
     if (!testShims &&
-            push(testTemp.pushArr, 0) === 1 &&
+            pPush.call(testTemp.pushArr, 0) === 1 &&
             testTemp.pushArr[0] === 0 &&
-            push(testTemp.pushObj, 0) === 1 &&
+            pPush.call(testTemp.pushObj, 0) === 1 &&
             testTemp.pushObj[0] === 0) {
 
-        $.Array.push = toMethod(base.Array.push);
+        $.Array.push = toMethod(pPush);
     } else {
         $.Array.prototype.push = function () {
             var object = toObjectFixIndexedAccess(this);
 
             object.length = toLength(object.length);
-            base.Array.push.apply(object, arguments);
+            pPush.apply(object, arguments);
 
             return object.length;
         };
 
         $.Array.push = toMethod($.Array.prototype.push);
     }
-
-    push = $.Array.push;
 
     /**
      * The Array.unshift() method adds one or more elements to the beginning of an array and
@@ -3924,26 +3843,24 @@
     testTemp.unshiftArr = [];
     testTemp.unshiftObj = {};
     if (!testShims &&
-            unshift(testTemp.unshiftArr, 0) === 1 &&
+            pUnshift.call(testTemp.unshiftArr, 0) === 1 &&
             testTemp.unshiftArr[0] === 0 &&
-            unshift(testTemp.unshiftObj, 0) === 1 &&
+            pUnshift.call(testTemp.unshiftObj, 0) === 1 &&
             testTemp.unshiftObj[0] === 0) {
 
-        $.Array.unshift = toMethod(base.Array.unshift);
+        $.Array.unshift = toMethod(pUnshift);
     } else {
         $.Array.prototype.unshift = function () {
             var object = toObjectFixIndexedAccess(this);
 
             object.length = toLength(object.length);
-            base.Array.unshift.apply(object, arguments);
+            pUnshift.apply(object, arguments);
 
             return object.length;
         };
 
         $.Array.unshift = toMethod($.Array.prototype.unshift);
     }
-
-    unshift = $.Array.unshift;
 
     /**
      * Returns an integer clamped to the range set by min and max.
@@ -3983,11 +3900,11 @@
      * @param {number} [fromIndex]
      * @returns {boolean}
      */
-    if (!testShims && isNative(base.Array.indexOf) && base.Array.indexOf.call([0, 1], 1, 2) === -1) {
+    if (!testShims && isNative(pIndexOf) && pIndexOf.call([0, 1], 1, 2) === -1) {
         $.Array.prototype.contains = function (searchElement, fromIndex) {
             /*jslint unparam: true */
             /*jshint unused: false */
-            return base.Array.indexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
+            return pIndexOf.apply(toObjectFixIndexedAccess(this), arguments) !== -1;
         };
     } else {
         $.Array.prototype.contains = function (searchElement, fromIndex) {
@@ -4024,7 +3941,7 @@
         };
     }
 
-    $.Array.contains = contains = toMethod($.Array.prototype.contains);
+    $.Array.contains = toMethod($.Array.prototype.contains);
 
     /**
      * Throws a TypeError if the argument is not a RegExp.
@@ -4051,15 +3968,15 @@
      * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
      */
     function copyRegExp(regExpArg, options) {
-        throwIfIsNotRegExp(regExpArg);
+        var flags;
 
+        throwIfIsNotRegExp(regExpArg);
         if (!isPlainObject(options)) {
             options = {};
         }
 
         // Get native flags in use
-        var flags = exec(base.RegExp.getNativeFlags, toString(regExpArg))[1];
-
+        flags = exec(base.RegExp.getNativeFlags, toString(regExpArg))[1];
         if (options.add) {
             flags = replace(onlyCoercibleToString(flags + options.add), base.RegExp.clipDuplicates, '');
         }
@@ -4087,36 +4004,51 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
      */
     $.RegExp.prototype.exec = function (stringArg) {
-        throwIfIsNotRegExp(this);
-
-        var str = toString(stringArg),
-            origLastIndex = this.lastIndex,
-            match = base.RegExp.exec.apply(this, arguments),
+        var str,
+            origLastIndex,
+            match,
+            found,
+            len,
+            idx,
             r2;
 
+        throwIfIsNotRegExp(this);
+        str = toString(stringArg);
+        origLastIndex = this.lastIndex;
+        match = base.RegExp.exec.apply(this, arguments);
         if (isArray(match)) {
             // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
             // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
             // older IEs. IE 9 in standards mode follows the spec
-            if (!correctExecNpcg && match.length > 1 && contains(match, '')) {
-                r2 = copyRegExp(this, {remove: 'g'});
-                // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
-                // matching due to characters outside the match
-                replace(strSlice(toString(str), match.index), r2, function () {
-                    var length = arguments.length - 2,
-                        index,
-                        type,
-                        it;
-
-                    // Skip index 0 and the last 2
-                    for (index = 1; index < length; index += 1) {
-                        it = arguments[index];
-                        type = typeof it;
-                        if (type === 'undefined') {
-                            match[index] = it;
-                        }
+            len = match.length;
+            if (!correctExecNpcg && len > 1) {
+                for (idx = 0; idx < len; idx += 1) {
+                    if ('' === match[idx]) {
+                        found = true;
+                        break;
                     }
-                });
+                }
+
+                if (found) {
+                    r2 = copyRegExp(this, {remove: 'g'});
+                    // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
+                    // matching due to characters outside the match
+                    replace(pSSlice.call(toString(str), match.index), r2, function () {
+                        var length = arguments.length - 2,
+                            index,
+                            type,
+                            it;
+
+                        // Skip index 0 and the last 2
+                        for (index = 1; index < length; index += 1) {
+                            it = arguments[index];
+                            type = typeof it;
+                            if (type === 'undefined') {
+                                match[index] = it;
+                            }
+                        }
+                    });
+                }
             }
 
             // Fix browsers that increment `lastIndex` after zero-length matches
@@ -4163,9 +4095,7 @@
      * @returns {Array.<string>}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
      */
-    (function (
-        split
-    ) {
+    (function () {
         /**
          * Executes a regex search in a specified string. Returns a match array or `null`.
          * Optional `pos` argument specifies the search start position.
@@ -4180,14 +4110,16 @@
          * @returns {Array} Match array or `null`.
          */
         function regExpForEachExec(stringArg, regExpArg, pos) {
-            throwIfIsNotRegExp(regExpArg);
-
-            var str = onlyCoercibleToString(stringArg),
-                r2 = copyRegExp(regExpArg, {
-                    add: 'g',
-                    remove: 'y'
-                }),
+            var str,
+                r2,
                 match;
+
+            throwIfIsNotRegExp(regExpArg);
+            str = onlyCoercibleToString(stringArg);
+            r2 = copyRegExp(regExpArg, {
+                add: 'g',
+                remove: 'y'
+            });
 
             r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
             match = exec(r2, str);
@@ -4217,13 +4149,16 @@
          * @returns {*} Provided `context` object.
          */
         function regExpForEach(stringArg, regExpArg, callback, context) {
+            var str,
+                pos,
+                index,
+                match;
+
             throwIfIsNotRegExp(regExpArg);
-
-            var str = onlyCoercibleToString(stringArg),
-                pos = 0,
-                index = 0,
-                match = regExpForEachExec(str, regExpArg, pos);
-
+            str = onlyCoercibleToString(stringArg);
+            pos = 0;
+            index = 0;
+            match = regExpForEachExec(str, regExpArg, pos);
             while (isArray(match)) {
                 // Because `regex` is provided to `callback`, the function can use the deprecated/
                 // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
@@ -4240,17 +4175,17 @@
             return context;
         }
 
-        var es5limit = join(split('test', /(?:)/, -1), '') === 'test' &&
-                        join(split('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
-                        join(split('a b c d', / /, UWORD32 + 1), '') === 'a' &&
-                        join(split('a b c d', / /, Infinity), '') === '';
+        var es5limit = pJoin.call(pSplit.call('test', /(?:)/, -1), '') === 'test' &&
+                        pJoin.call(pSplit.call('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
+                        pJoin.call(pSplit.call('a b c d', / /, UWORD32 + 1), '') === 'a' &&
+                        pJoin.call(pSplit.call('a b c d', / /, Infinity), '') === '';
 
         if (testShims ||
-                split('test', new RegExp('(?:test)*')).length !== 2 ||
-                split('.', new RegExp('(.?)(.?)')).length !== 4 ||
-                split('tesst', new RegExp('(s)*'))[1] === 't' ||
-                split('', new RegExp('.?')).length > 0 ||
-                split('.', new RegExp('()()')).length > 1) {
+                pSplit.call('test', new RegExp('(?:test)*')).length !== 2 ||
+                pSplit.call('.', new RegExp('(.?)(.?)')).length !== 4 ||
+                pSplit.call('tesst', new RegExp('(s)*'))[1] === 't' ||
+                pSplit.call('', new RegExp('.?')).length > 0 ||
+                pSplit.call('.', new RegExp('()()')).length > 1) {
 
             $.String.prototype.split = function (separator, limit) {
                 var str = onlyCoercibleToString(this),
@@ -4258,7 +4193,8 @@
                     output,
                     origLastIndex,
                     lastLastIndex,
-                    lastLength;
+                    lastLength,
+                    len;
 
                 // "0".split(undefined, 0) -> []
                 if (type === 'undefined' && limit === 0) {
@@ -4275,11 +4211,11 @@
                         }
 
                         // Browsers handle nonregex split correctly, so use the faster native method
-                        output = split(str, separator, limit);
+                        output = pSplit.call(str, separator, limit);
                     } else {
                         output = [];
+                        output.length = lastLastIndex = 0;
                         origLastIndex = separator.lastIndex;
-                        lastLastIndex = 0;
                         type = typeof limit;
                         if (type === 'undefined') {
                             limit = MAX_SAFE_INTEGER;
@@ -4289,9 +4225,11 @@
 
                         regExpForEach(str, separator, function (match) {
                             if ((match.index + match[0].length) > lastLastIndex) {
-                                push(output, strSlice(str, lastLastIndex, match.index));
+                                len = output.length;
+                                output[len] = pSSlice.call(str, lastLastIndex, match.index);
+                                output.length = len + 1;
                                 if (match.length > 1 && match.index < str.length) {
-                                    output = concat(output, slice(match, 1));
+                                    output = pConcat.call(output, slice(match, 1));
                                 }
 
                                 lastLength = match[0].length;
@@ -4301,10 +4239,14 @@
 
                         if (lastLastIndex === str.length) {
                             if (!test(separator, '') || lastLength) {
-                                push(output, '');
+                                len = output.length;
+                                output[len] = '';
+                                output.length = len + 1;
                             }
                         } else {
-                            push(output, strSlice(str, lastLastIndex));
+                            len = output.length;
+                            output[len] = pSSlice.call(str, lastLastIndex);
+                            output.length = len + 1;
                         }
 
                         separator.lastIndex = origLastIndex;
@@ -4334,15 +4276,13 @@
                         }
                     }
 
-                    val = split(onlyCoercibleToString(this), separator, limit);
+                    val = pSplit.call(onlyCoercibleToString(this), separator, limit);
                 }
 
                 return val;
             };
         }
-    }(
-        split
-    ));
+    }());
 
     $.String.split = split = toMethod($.String.prototype.split);
 
@@ -4489,7 +4429,7 @@
         if (!isRegExp(regExpArg)) {
             regExpArg = new base.RegExp.Ctr(regExpArg);
         } else if (regExpArg.global) {
-            result = base.String.match.apply(str, arguments);
+            result = pMatch.apply(str, arguments);
             // Fixes IE bug
             regExpArg.lastIndex = 0;
 
@@ -4512,7 +4452,7 @@
      * @returns {string}
      */
     $.String.prototype.first = function () {
-        return charAt(onlyCoercibleToString(this), 0);
+        return pCharAt.call(onlyCoercibleToString(this), 0);
     };
 
     $.String.first = toMethod($.String.prototype.first);
@@ -4530,7 +4470,7 @@
     $.String.prototype.last = function () {
         var str = onlyCoercibleToString(this);
 
-        return charAt(str, str.length - 1);
+        return pCharAt.call(str, str.length - 1);
     };
 
     $.String.last = toMethod($.String.prototype.last);
@@ -4547,7 +4487,7 @@
      */
     $.String.prototype.countCharacter = function (character) {
         var str = onlyCoercibleToString(this),
-            first = charAt(onlyCoercibleToString(character), 0),
+            first = pCharAt.call(onlyCoercibleToString(character), 0),
             val;
 
         if (first === '') {
@@ -4575,7 +4515,7 @@
      */
     $.String.prototype.padLeadingChar = function (character, size) {
         var string = onlyCoercibleToString(this),
-            singleChar = charAt(onlyCoercibleToString(character), 0),
+            singleChar = pCharAt.call(onlyCoercibleToString(character), 0),
             count = toInteger(size) - string.length;
 
         if (count < 0 || count === Infinity) {
@@ -4597,8 +4537,8 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
      */
-    if (!testShims && isNative(base.String.repeat)) {
-        $.String.repeat = toMethod(base.String.repeat);
+    if (!testShims && isNative(pSRepeat)) {
+        $.String.repeat = toMethod(pSRepeat);
     } else {
         $.String.prototype.repeat = (function (onlyCoercibleToString, toInteger, RangeError) {
             /**
@@ -4652,15 +4592,15 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
      */
-    if (!testShims && isNative(base.String.startsWith)) {
-        $.String.startsWith = toMethod(base.String.startsWith);
+    if (!testShims && isNative(pStartsWith)) {
+        $.String.startsWith = toMethod(pStartsWith);
     } else {
         $.String.prototype.startsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
                 searchStr = toString(searchString),
                 start = mMin(mMax(toInteger(position), 0), thisStr.length);
 
-            return strSlice(thisStr, start, start + searchStr.length) === searchStr;
+            return pSSlice.call(thisStr, start, start + searchStr.length) === searchStr;
         };
 
         $.String.startsWith = toMethod($.String.prototype.startsWith);
@@ -4678,8 +4618,8 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
      */
-    if (!testShims && isNative(base.String.endsWith)) {
-        $.String.endsWith = toMethod(base.String.endsWith);
+    if (!testShims && isNative(pEndsWith)) {
+        $.String.endsWith = toMethod(pEndsWith);
     } else {
         $.String.prototype.endsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
@@ -4698,7 +4638,7 @@
             end = mMin(mMax(position, 0), thisLen);
             start = end - searchStr.length;
 
-            return start >= 0 && strSlice(thisStr, start, end) === searchStr;
+            return start >= 0 && pSSlice.call(thisStr, start, end) === searchStr;
         };
 
         $.String.endsWith = toMethod($.String.prototype.endsWith);
@@ -4716,8 +4656,8 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/contains
      */
-    if (!testShims && isNative(base.String.contains)) {
-        $.String.contains = toMethod(base.String.contains);
+    if (!testShims && isNative(pContains)) {
+        $.String.contains = toMethod(pContains);
     } else {
         $.String.prototype.contains = function (searchString, position) {
             var str = onlyCoercibleToString(this),
@@ -4731,7 +4671,7 @@
                 position = toInteger(position);
             }
 
-            return base.String.indexOf.call(str, searchStr, mMin(mMax(position, 0), length)) !== -1;
+            return pSIndexOf.call(str, searchStr, mMin(mMax(position, 0), length)) !== -1;
         };
 
         $.String.contains = toMethod($.String.prototype.contains);
@@ -4860,12 +4800,21 @@
     ) {
         if (hasDontEnumBug) {
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
-                var prop = toString(property);
+                var prop = toString(property),
+                    hop = hasOwn(this, prop),
+                    length,
+                    index;
 
-                return hasOwn(this, prop) ||
-                        ((prop in this) &&
-                            contains(shadowed, prop) &&
-                            !objectIs(this[prop], getPrototypeOf(this)[prop]));
+                if (!hop && prop in this) {
+                    for (index = 0, length = shadowed.length; index < length; index += 1) {
+                        if (prop === shadowed[index] && this[prop] !== getPrototypeOf(this)[prop]) {
+                            hop = true;
+                            break;
+                        }
+                    }
+                }
+
+                return hop;
             };
 
             $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
@@ -5090,10 +5039,10 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
-    if (!testShims && isNative(base.Array.splice) && base.Array.splice([1, 2], 0).length === 2) {
+    if (!testShims && isNative(pSplice) && pSplice([1, 2], 0).length === 2) {
         try {
-            if (!base.Array.splice.call([1, 2]).length) {
-                $.Array.splice = toMethod(base.Array.splice);
+            if (!pSplice.call([1, 2]).length) {
+                $.Array.splice = toMethod(pSplice);
             } else {
                 throw new Error();
             }
@@ -5104,7 +5053,7 @@
                 if (arguments.length < 1) {
                     val = [];
                 } else {
-                    val = base.Array.splice.apply(this, arguments);
+                    val = pSplice.apply(this, arguments);
                 }
 
                 return val;
@@ -5127,7 +5076,8 @@
                 item = 2,
                 itemCount = mMax(argLength - item, 0),
                 to,
-                loopCache;
+                loopCache,
+                len;
 
             if (argLength < 1) {
                 return removed;
@@ -5147,7 +5097,9 @@
             while (k < actualDeleteCount) {
                 from = actualStart + k;
                 if (hasOwnProp(object, from)) {
-                    push(removed, object[from]);
+                    len = removed.length;
+                    removed[len] = object[from];
+                    removed.length = len + 1;
                 }
 
                 k += 1;
@@ -5249,19 +5201,19 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
      */
     try {
-        base.Array.forEach.call('foo', function (item, index, list) {
+        pForEach.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.felist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.forEach) &&
+                isNative(pForEach) &&
                 isTypeObject(testTemp.felist) &&
                 toClass(testTemp.felist) === base.classString.string &&
-                !checkV8StrictBug(base.Array.forEach)) {
+                !checkV8StrictBug(pForEach)) {
 
-            $.Array.forEach = toMethod(base.Array.forEach);
+            $.Array.forEach = toMethod(pForEach);
         } else {
             throw new Error();
         }
@@ -5342,19 +5294,19 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
      */
     try {
-        base.Array.some.call('foo', function (item, index, list) {
+        pSome.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.slist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.some) &&
+                isNative(pSome) &&
                 isTypeObject(testTemp.slist) &&
                 toClass(testTemp.slist) === base.classString.string &&
-                !checkV8StrictBug(base.Array.some)) {
+                !checkV8StrictBug(pSome)) {
 
-            $.Array.some = toMethod(base.Array.some);
+            $.Array.some = toMethod(pSome);
         } else {
             throw new Error();
         }
@@ -5407,8 +5359,8 @@
      * @returns {*}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
      */
-    if (!testShims && isNative(base.Array.find) && !checkV8StrictBug(base.Array.find)) {
-        $.Array.find = toMethod(base.Array.find);
+    if (!testShims && isNative(pFind) && !checkV8StrictBug(pFind)) {
+        $.Array.find = toMethod(pFind);
     } else {
         $.Array.prototype.find = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
@@ -5460,8 +5412,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
      */
-    if (!testShims && isNative(base.Array.findIndex) && !checkV8StrictBug(base.Array.findIndex)) {
-        $.Array.findIndex = toMethod(base.Array.findIndex);
+    if (!testShims && isNative(pFindIndex) && !checkV8StrictBug(pFindIndex)) {
+        $.Array.findIndex = toMethod(pFindIndex);
     } else {
         $.Array.prototype.findIndex = function (fn, thisArg) {
             var object = toObjectFixIndexedAccess(this),
@@ -5503,8 +5455,8 @@
      * @param {*} [thisArg]
      * @returns {Array}
      */
-    if (!testShims && isNative(base.Array.from) && !checkV8StrictBug(base.Array.from)) {
-        $.Array.from = base.Array.from;
+    if (!testShims && isNative(mFrom) && !checkV8StrictBug(mFrom)) {
+        $.Array.from = mFrom;
     } else {
         $.Array.from = function (arrayLike, mapfn, thisArg) {
             var object = toObjectFixIndexedAccess(arrayLike),
@@ -5565,19 +5517,19 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every
      */
     try {
-        base.Array.every.call('foo', function (item, index, list) {
+        pEvery.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.elist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.every) &&
+                isNative(pEvery) &&
                 isTypeObject(testTemp.elist) &&
                 toClass(testTemp.elist) === base.classString.string &&
-                !checkV8StrictBug(base.Array.every)) {
+                !checkV8StrictBug(pEvery)) {
 
-            $.Array.every = toMethod(base.Array.every);
+            $.Array.every = toMethod(pEvery);
         } else {
             throw new Error();
         }
@@ -5630,19 +5582,19 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
      */
     try {
-        base.Array.map.call('foo', function (item, index, list) {
+        pMap.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.mlist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.map) &&
+                isNative(pMap) &&
                 isTypeObject(testTemp.mlist) &&
                 toClass(testTemp.mlist) === base.classString.string &&
-                !checkV8StrictBug(base.Array.map)) {
+                !checkV8StrictBug(pMap)) {
 
-            $.Array.map = toMethod(base.Array.map);
+            $.Array.map = toMethod(pMap);
         } else {
             throw new Error();
         }
@@ -5678,8 +5630,8 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/of
      */
-    if (!testShims && isNative(base.Array.of)) {
-        $.Array.of = base.Array.of;
+    if (!testShims && isNative(mOf)) {
+        $.Array.of = mOf;
     } else {
         $.Array.of = function () {
             return slice(arguments);
@@ -5700,19 +5652,19 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
      */
     try {
-        base.Array.filter.call('foo', function (item, index, list) {
+        pFilter.call('foo', function (item, index, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.flist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.filter) &&
+                isNative(pFilter) &&
                 isTypeObject(testTemp.flist) &&
                 toClass(testTemp.flist) === base.classString.string &&
-                !checkV8StrictBug(base.Array.filter)) {
+                !checkV8StrictBug(pFilter)) {
 
-            $.Array.filter = toMethod(base.Array.filter);
+            $.Array.filter = toMethod(pFilter);
         } else {
             throw new Error();
         }
@@ -5759,18 +5711,18 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
      */
     try {
-        base.Array.reduce.call('foo', function (unused1, unused2, unused3, list) {
+        pReduce.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rlist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.reduce) &&
+                isNative(pReduce) &&
                 isTypeObject(testTemp.rlist) &&
                 toClass(testTemp.rlist) === base.classString.string) {
 
-            $.Array.reduce = toMethod(base.Array.reduce);
+            $.Array.reduce = toMethod(pReduce);
         } else {
             throw new Error();
         }
@@ -5845,18 +5797,18 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight
      */
     try {
-        base.Array.reduceRight.call('foo', function (unused1, unused2, unused3, list) {
+        pReduceRight.call('foo', function (unused1, unused2, unused3, list) {
             /*jslint unparam: true */
             /*jshint unused: false */
             testTemp.rrlist = list;
         });
 
         if (!testShims &&
-                isNative(base.Array.reduceRight) &&
+                isNative(pReduceRight) &&
                 isTypeObject(testTemp.rrlist) &&
                 toClass(testTemp.rrlist) === base.classString.string) {
 
-            $.Array.reduceRight = toMethod(base.Array.reduceRight);
+            $.Array.reduceRight = toMethod(pReduceRight);
         } else {
             throw new Error();
         }
@@ -5987,21 +5939,21 @@
 
         while (left.length && right.length) {
             if (comparison(left[0], right[0]) <= 0) {
-                result[next] = shift(left);
+                result[next] = pShift.call(left);
             } else {
-                result[next] = shift(right);
+                result[next] = pShift.call(right);
             }
 
             next += 1;
         }
 
         while (left.length) {
-            result[next] = shift(left);
+            result[next] = pShift.call(left);
             next += 1;
         }
 
         while (right.length) {
-            result[next] = shift(right);
+            result[next] = pShift.call(right);
             next += 1;
         }
 
@@ -6089,7 +6041,7 @@
      * @returns {ArrayLike} same type as supplied array argument.
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
      */
-    if (!testShims && isNative(sort)) {
+    if (!testShims && isNative(pSort)) {
         $.Array.prototype.sort = function (comparefn) {
             var type = typeof comparefn;
 
@@ -6097,7 +6049,7 @@
                 comparefn = defaultComparison;
             }
 
-            return sort.call(checkObjectCoercible(this), throwIfNotAFunction(comparefn));
+            return pSort.call(checkObjectCoercible(this), throwIfNotAFunction(comparefn));
         };
     } else {
         $.Array.prototype.sort = $.Array.prototype.stableSort;
@@ -6114,7 +6066,7 @@
      * @returns {string}
      */
     function buildTestString(previous, element) {
-        return previous + base.String.Ctr.fromCharCode(element);
+        return previous + base.String.fromCharCode(element);
     }
 
     base.String.wsStr = reduce(base.String.whiteSpaces, function (previous, element) {
@@ -6132,10 +6084,10 @@
      */
     try {
         if (!testShims &&
-                isNative(base.String.trim) &&
-                !base.String.trim.call(reduce(base.String.whiteSpaces, buildTestString, '')).length) {
+                isNative(pTrim) &&
+                !pTrim.call(reduce(base.String.whiteSpaces, buildTestString, '')).length) {
 
-            $.String.trim = toMethod(base.String.trim);
+            $.String.trim = toMethod(pTrim);
         } else {
             throw new Error();
         }
@@ -6264,7 +6216,7 @@
                         if (!s) {
                             s = it;
                         } else {
-                            s += strSlice('0000000', 0, 7 - it.length) + it;
+                            s += pSSlice.call('0000000', 0, 7 - it.length) + it;
                         }
                     }
                 }
@@ -6379,16 +6331,16 @@
                         /*jslint bitwise:true */
                         multiply(1 << (-e), 0);
                         /*jslint bitwise:false */
-                        m = numToString() + strSlice('0.00000000000000000000', 2, 2 + f);
+                        m = numToString() + pSSlice.call('0.00000000000000000000', 2, 2 + f);
                     }
                 }
 
                 if (f > 0) {
                     k = m.length;
                     if (k <= f) {
-                        m = s + strSlice('0.0000000000000000000', 0, f - k + 2) + m;
+                        m = s + pSSlice.call('0.0000000000000000000', 0, f - k + 2) + m;
                     } else {
-                        m = s + strSlice(m, 0, k - f) + '.' + strSlice(m, k - f);
+                        m = s + pSSlice.call(m, 0, k - f) + '.' + pSSlice.call(m, k - f);
                     }
                 } else {
                     m = s + m;
@@ -6418,8 +6370,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
-    if (!testShims && isNative(base.Array.indexOf) && base.Array.indexOf.call([0, 1], 1, 2) === -1) {
-        $.Array.indexOf = toMethod(base.Array.indexOf);
+    if (!testShims && isNative(pIndexOf) && pIndexOf.call([0, 1], 1, 2) === -1) {
+        $.Array.indexOf = toMethod(pIndexOf);
     } else {
         $.Array.prototype.indexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
@@ -6470,8 +6422,8 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf
      */
-    if (!testShims && isNative(base.Array.lastIndexOf) && base.Array.lastIndexOf.call([0, 1], 0, -3) === -1) {
-        $.Array.lastIndexOf = toMethod(base.Array.lastIndexOf);
+    if (!testShims && isNative(pLastIndexOf) && pLastIndexOf.call([0, 1], 0, -3) === -1) {
+        $.Array.lastIndexOf = toMethod(pLastIndexOf);
     } else {
         $.Array.prototype.lastIndexOf = function (searchElement, fromIndex) {
             var object = toObjectFixIndexedAccess(this),
@@ -6520,8 +6472,8 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fill
      */
-    if (!testShims && isNative(base.Array.fill)) {
-        $.Array.fill = toMethod(base.Array.fill);
+    if (!testShims && isNative(pFill)) {
+        $.Array.fill = toMethod(pFill);
     } else {
         $.Array.prototype.fill = function (value, start, end) {
             var object = toObjectFixIndexedAccess(this),
@@ -6573,8 +6525,8 @@
      * @param {number} [end]
      * @returns {Array}
      */
-    if (!testShims && isNative(base.Array.copyWithin)) {
-        $.Array.copyWithin = toMethod(base.Array.copyWithin);
+    if (!testShims && isNative(pCopyWithin)) {
+        $.Array.copyWithin = toMethod(pCopyWithin);
     } else {
         $.Array.prototype.copyWithin = function (target, start, end) {
             var object = toObjectFixIndexedAccess(this),
@@ -6673,16 +6625,38 @@
 
                 if (hasErrorProps) {
                     $.Object.keys = function (object) {
-                        var keys = oKeys(object);
+                        var keys = oKeys(object),
+                            length,
+                            arr,
+                            next,
+                            index,
+                            len,
+                            idx,
+                            found,
+                            it;
 
                         if (!keysWorksWithArguments && isArguments(object)) {
-                            keys = concat(oKeys(slice(object)));
+                            keys = pConcat.call(oKeys(slice(object)));
                         }
 
                         if (isErrorTypePrototype(object)) {
-                            keys = filter(keys, function (key) {
-                                return !contains(unwantedError, key);
-                            });
+                            len = unwantedError.length;
+                            for (arr = [], next = 0, index = 0, length = keys.length; index < length; index += 1) {
+                                for (found = false, it = keys[index], idx = 0; idx < len; idx += 1) {
+                                    if (it === unwantedError[idx]) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found) {
+                                    arr[next] = it;
+                                    next += 1;
+                                }
+                            }
+
+                            arr.length = next;
+                            keys = arr;
                         }
 
                         return keys;
@@ -6692,7 +6666,7 @@
                         var keys = oKeys(object);
 
                         if (isArguments(object)) {
-                            keys = concat(oKeys(slice(object)));
+                            keys = pConcat.call(oKeys(slice(object)));
                         }
 
                         return keys;
@@ -6713,18 +6687,28 @@
 
             var skipProto = hasProtoEnumBug && isFunction(object),
                 skipErrorProps = hasErrorProps && isErrorTypePrototype(object),
+                length = base.props.unwantedError.length,
                 props = [],
                 next = 0,
                 prop,
                 ctor,
                 isProto,
                 nonEnum,
-                length,
-                index;
+                index,
+                unwanted;
 
             for (prop in object) {
                 if (!(skipProto && prop === 'prototype')) {
-                    if (!(skipErrorProps && contains(base.props.unwantedError, prop))) {
+                    if (skipErrorProps) {
+                        for (unwanted = false, index = 0; index < length; index += 1) {
+                            if (prop === base.props.unwantedError[index]) {
+                                unwanted = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!unwanted) {
                         if (hasOwnProp(object, prop)) {
                             props[next] = prop;
                             next += 1;
@@ -6733,10 +6717,8 @@
                 }
             }
 
-            props.length = next;
             if (hasEnumArgsBug && isArguments(object)) {
-                length = object.length;
-                for (index = 0; index < length; index += 1) {
+                for (index = 0, length = object.length; index < length; index += 1) {
                     if (index in object) {
                         props[next] = index;
                         next += 1;
@@ -7005,10 +6987,7 @@
 
             $.Object.defineProperty = function (object, property, descriptor) {
                 throwIfIsPrimitive(object);
-                if (isPrimitive(descriptor)) {
-                    throw new TypeError('Property descriptor must be an object: ' + toString(descriptor));
-                }
-
+                throwIfIsPrimitive(descriptor);
                 if (hasOwn(descriptor, 'value') && (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
                     throw new TypeError('Invalid property. A property cannot have accessors and a value');
                 }
@@ -7079,9 +7058,7 @@
      */
     $.Object.defineProperties = defineProperties = function (object, props) {
         throwIfIsPrimitive(object);
-        if (isPrimitive(props)) {
-            throw new base.TypeError.Ctr('Property description must be an object');
-        }
+        throwIfIsPrimitive(props);
 
         var keys = objectKeys(props),
             length = keys.length,
@@ -7369,7 +7346,7 @@
             throw new base.TypeError.Ctr('this is not a Date object.');
         }
 
-        var ms = getTime(this);
+        var ms = base.Date.getTime.call(this);
 
         return ms === ms;
     };
@@ -7388,7 +7365,7 @@
         $.Date.now = base.Date.now;
     } else {
         $.Date.now = function now() {
-            return getTime(new base.Date.Ctr());
+            return base.Date.getTime.call(new base.Date.Ctr());
         };
     }
 
@@ -7480,7 +7457,7 @@
         }
 
         if (toClass(a) === base.classString.date && toClass(b) === base.classString.date) {
-            return getTime(a) === getTime(b);
+            return base.Date.getTime.call(a) === base.Date.getTime.call(b);
         }
 
         if (isRegExp(a) && isRegExp(b)) {
@@ -7565,7 +7542,7 @@
         }
 
         if (toClass(a) === base.classString.date && toClass(b) === base.classString.date) {
-            return getTime(a) === getTime(b);
+            return base.Date.getTime.call(a) === base.Date.getTime.call(b);
         }
 
         if (isRegExp(a) && isRegExp(b)) {
@@ -7651,7 +7628,7 @@
         n = +n;
         if (n === n && n >= 0) {
             if (s.length > n) {
-                s = strSlice(s, 0, n);
+                s = pSSlice.call(s, 0, n);
             }
         }
 
@@ -7911,7 +7888,7 @@
                             return val;
                         });
 
-                        messageToString += join(arr, '\n');
+                        messageToString += pJoin.call(arr, '\n');
                     } else {
                         messageToString += this.message;
                     }
@@ -8176,7 +8153,7 @@
         }
 
         if (isString) {
-            object = cObject(join(object, ''));
+            object = cObject(pJoin.call(object, ''));
         }
 
         return object;
@@ -8275,10 +8252,10 @@
             Error
         ) {
 
-            var stringifyEscapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
-                                                '\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-' +
-                                                '\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g'),
-                stringifyMeta = {
+            var sfyEscapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
+                                            '\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-' +
+                                            '\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g'),
+                sfyMeta = {
                     '\b': '\\b',
                     '\t': '\\t',
                     '\n': '\\n',
@@ -8287,23 +8264,23 @@
                     '"': '\\"',
                     '\\': '\\\\'
                 },
-                stringifyIndent,
-                stringifyGap,
-                stringifyReplacer;
+                sfyIndent,
+                sfyGap,
+                sfyReplacer;
 
             function stringifyQuote(string) {
                 var result = '"';
 
-                stringifyEscapable.lastIndex = 0;
-                if (test(stringifyEscapable, string)) {
-                    result += replace(string, stringifyEscapable, function (a) {
-                        var c = stringifyMeta[a],
+                sfyEscapable.lastIndex = 0;
+                if (test(sfyEscapable, string)) {
+                    result += replace(string, sfyEscapable, function (a) {
+                        var c = sfyMeta[a],
                             r;
 
                         if (typeof c === 'string') {
                             r = c;
                         } else {
-                            r = '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
+                            r = '\\u' + pSSlice.call('0000' + pCharCodeAt.call(a, 0).toString(16), -4);
                         }
 
                         return r;
@@ -8317,7 +8294,7 @@
 
             function stringifyToString(key, holder) {
                 var member,
-                    mind = stringifyGap,
+                    mind = sfyGap,
                     partial,
                     value = holder[key],
                     type = typeof value;
@@ -8332,8 +8309,8 @@
                     value = value.toJSON(key);
                 }
 
-                if (isFunction(stringifyReplacer)) {
-                    value = stringifyReplacer.call(holder, key, value);
+                if (isFunction(sfyReplacer)) {
+                    value = sfyReplacer.call(holder, key, value);
                 }
 
                 switch (typeof value) {
@@ -8353,7 +8330,7 @@
                         return toString(value);
                     }
 
-                    stringifyGap += stringifyIndent;
+                    sfyGap += sfyIndent;
                     if (isArray(value)) {
                         partial = map(value, function (unused, idx, obj) {
                             /*jslint unparam: true */
@@ -8363,28 +8340,31 @@
 
                         if (!partial.length) {
                             member = '[]';
-                        } else if (typeof stringifyGap === 'string' && stringifyGap !== '') {
-                            member = '[\n' + stringifyGap + join(partial, ',\n' + stringifyGap) + '\n' + mind + ']';
+                        } else if (typeof sfyGap === 'string' && sfyGap !== '') {
+                            member = '[\n' + sfyGap +  pJoin.call(partial, ',\n' + sfyGap) + '\n' + mind + ']';
                         } else {
-                            member = '[' + join(partial) + ']';
+                            member = '[' + pJoin.call(partial, ',') + ']';
                         }
 
-                        stringifyGap = mind;
+                        sfyGap = mind;
 
                         return member;
                     }
 
-                    if (isArray(stringifyReplacer)) {
-                        partial = reduce(stringifyReplacer, function (prev, element) {
+                    if (isArray(sfyReplacer)) {
+                        partial = reduce(sfyReplacer, function (prev, element) {
                             var v,
-                                typev;
+                                typev,
+                                len;
 
                             if (typeof element === 'string') {
                                 v = stringifyToString(element, value);
                                 typev = typeof v;
                                 if (typev !== 'undefined') {
-                                    push(prev, stringifyQuote(element) +
-                                            (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
+                                    len = prev.length;
+                                    prev[len] = stringifyQuote(element) +
+                                            (typeof sfyGap === 'string' && sfyGap !== '' ? ': ' : ':') + v;
+                                    prev.length = len + 1;
                                 }
                             }
 
@@ -8393,11 +8373,14 @@
                     } else {
                         partial = reduce(objectKeys(value), function (prev, k) {
                             var v = stringifyToString(k, value),
-                                typev = typeof v;
+                                typev = typeof v,
+                                len;
 
                             if (typev !== 'undefined') {
-                                push(prev, stringifyQuote(k) +
-                                            (typeof stringifyGap === 'string' && stringifyGap !== '' ? ': ' : ':') + v);
+                                len = prev.length;
+                                prev[len] = stringifyQuote(k) +
+                                            (typeof sfyGap === 'string' && sfyGap !== '' ? ': ' : ':') + v;
+                                prev.length = len + 1;
                             }
 
                             return prev;
@@ -8406,13 +8389,13 @@
 
                     if (!partial.length) {
                         member = '{}';
-                    } else if (typeof stringifyGap === 'string' && stringifyGap !== '') {
-                        member = '{\n' + stringifyGap + join(partial, ',\n' + stringifyGap) + '\n' + mind + '}';
+                    } else if (typeof sfyGap === 'string' && sfyGap !== '') {
+                        member = '{\n' + sfyGap + pJoin.call(partial, ',\n' + sfyGap) + '\n' + mind + '}';
                     } else {
-                        member = '{' + join(partial) + '}';
+                        member = '{' + pJoin.call(partial, ',') + '}';
                     }
 
-                    stringifyGap = mind;
+                    sfyGap = mind;
 
                     return member;
                 }
@@ -8421,19 +8404,19 @@
             }
 
             return function (value, replacer, space) {
-                stringifyGap = '';
+                sfyGap = '';
 
                 var type = typeof space;
 
                 if (type === 'number') {
-                    stringifyIndent = repeat(' ', space);
+                    sfyIndent = repeat(' ', space);
                 } else if (type === 'string') {
-                    stringifyIndent = space;
+                    sfyIndent = space;
                 } else {
-                    stringifyIndent = '';
+                    sfyIndent = '';
                 }
 
-                stringifyReplacer = replacer;
+                sfyReplacer = replacer;
 
                 type = typeof replacer;
                 if (type !== 'undefined' && replacer !== null && !isFunction(replacer) && !isArray(replacer)) {
@@ -8558,7 +8541,7 @@
                 parseCharacterTest.lastIndex = 0;
                 if (test(parseCharacterTest, text)) {
                     text = replace(text, parseCharacterTest, function (a) {
-                        return '\\u' + strSlice('0000' + charCodeAt(a, 0).toString(16), -4);
+                        return '\\u' + pSSlice.call('0000' + pCharCodeAt.call(a, 0).toString(16), -4);
                     });
                 }
 
@@ -8602,30 +8585,43 @@
         var thiObj = toObjectFixIndexedAccess(this),
             object = slice(thiObj),
             lastElement,
-            val;
+            next,
+            val,
+            empty,
+            length,
+            pSet,
+            len,
+            idx,
+            it;
 
         if (toClass(object) === base.classString.string) {
             object = split(object, '');
         }
 
         if (toLength(object.length) < 1) {
-            val = [[]];
+            empty = [];
+            empty.length = 0;
+            val = [empty];
+            val.length = 1;
         } else {
-            lastElement = pop(object);
-            val = reduce($.Array.powerSet(object), function (previous, element) {
-                push(previous, element);
-                element = slice(element);
-                push(element, lastElement);
-                push(previous, element);
+            lastElement = pPop.call(object);
+            pSet = powerSet(object);
+            for (val = [], next = 0, idx = 0, len = pSet.length; idx < len; idx += 1, next += 2) {
+                val[next] = it = pSet[idx];
+                pSet[idx] = it = slice(it);
+                length = it.length;
+                it[length] = lastElement;
+                it.length = length + 1;
+                val[next + 1] = it;
+            }
 
-                return previous;
-            }, []);
+            val.length = next;
         }
 
         return val;
     };
 
-    $.Array.powerSet = toMethod($.Array.prototype.powerSet);
+    $.Array.powerSet = powerSet = toMethod($.Array.prototype.powerSet);
 
     /**
      * Convert an array to a plain object representation.
@@ -8693,14 +8689,14 @@
                                 value: $[key1][key2][key3]
                             }, base.properties.notEnumerable));
 
-                            push(utilx[key1][key2].methods, key3);
+                            $.Array.push(utilx[key1][key2].methods, key3);
                         });
                     } else {
-                        push(utilx[key1].methods, key2);
+                        $.Array.push(utilx[key1].methods, key2);
                     }
                 });
             } else {
-                push(utilx.methods, key1);
+                $.Array.push(utilx.methods, key1);
             }
         });
 
