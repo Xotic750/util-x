@@ -75,7 +75,13 @@
 
         if (!ok) {
             err = new Error(fmsg.call(this));
-            err.stack = err.stack || err.stacktrace || err.name + ': ' + err.message + '\n';
+            if (!err.stack) {
+                err.stack = err.name + ': ' + err.message;
+                if (err.stacktrace) {
+                    err.stack += '\n' + err.stacktrace;
+                }
+            }
+
             if (err.message.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
                 err.toString = function () {
                     var arr = this.message.split(new RegExp('\\r\\n|\\n')),

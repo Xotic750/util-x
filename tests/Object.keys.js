@@ -164,17 +164,41 @@
             expect(utilx.Object.keys(new Constructor()).sort()).to.eql(['constructor', 'prototype']);
         });
 
-        it('should not list', function () {
+        it('Object prototype should not list', function () {
             expect(utilx.Object.keys(Object.prototype)).to.eql([]);
+        });
+
+        it('Function prototype should not list', function () {
             expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+        });
+
+        it('Boolean prototype should not list', function () {
             expect(utilx.Object.keys(Boolean.prototype)).to.eql([]);
+        });
+
+        it('String prototype should not list', function () {
             expect(utilx.Object.keys(String.prototype)).to.eql([]);
-            expect(utilx.Object.keys(Number.prototype)).to.eql([]);
+        });
+
+        it('Number prototype should not list', function () {
+            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+        });
+
+        it('Error prototypes should not list', function () {
             expect(utilx.Object.keys(Error.prototype)).to.eql([]);
             expect(utilx.Object.keys(TypeError.prototype)).to.eql([]);
             expect(utilx.Object.keys(SyntaxError.prototype)).to.eql([]);
-            expect(utilx.Object.keys(Date.prototype)).to.eql([]);
-            expect(utilx.Object.keys(RegExp.prototype)).to.eql([]);
+            expect(utilx.Object.keys(RangeError.prototype)).to.eql([]);
+            expect(utilx.Object.keys(EvalError.prototype)).to.eql([]);
+            expect(utilx.Object.keys(URIError.prototype)).to.eql([]);
+        });
+
+        it('Date prototype should not list', function () {
+            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+        });
+
+        it('RegExp prototype should not list', function () {
+            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
         });
     });
 }());
