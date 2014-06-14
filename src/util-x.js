@@ -1268,7 +1268,7 @@
         pSValueOf = base.String.valueOf,
 
         hasOwnProp,
-        toString,
+        $toString,
         isNotPrimitive,
         isNative,
         isArguments,
@@ -2486,7 +2486,7 @@
         };
     }
 
-    toString = $.String.ToString;
+    $toString = $.String.ToString;
 
     /**
      * Returns true if the operand inputArg is an error.
@@ -2680,7 +2680,7 @@
      * @returns {string}
      */
     function onlyCoercibleToString(inputArg) {
-        return toString(checkObjectCoercible(inputArg));
+        return $toString(checkObjectCoercible(inputArg));
     }
 
     /**
@@ -2719,7 +2719,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
      */
     $.Object.has = function (object, property) {
-        return toString(property) in cObject(checkObjectCoercible(object));
+        return $toString(property) in cObject(checkObjectCoercible(object));
     };
 
     (function (
@@ -3783,7 +3783,7 @@
      */
     function throwIfIsNotHasValidLength(inputArg) {
         if (!hasValidLength(inputArg)) {
-            throw new base.TypeError.Ctr('invalid length property: ' + toString(inputArg));
+            throw new base.TypeError.Ctr('invalid length property: ' + $toString(inputArg));
         }
 
         return inputArg;
@@ -3946,7 +3946,7 @@
      */
     function throwIfIsNotRegExp(inputArg) {
         if (!isRegExp(inputArg)) {
-            throw new base.TypeError.Ctr('Type RegExp expected: ' + toString(inputArg));
+            throw new base.TypeError.Ctr('Type RegExp expected: ' + $toString(inputArg));
         }
 
         return inputArg;
@@ -3969,7 +3969,7 @@
         }
 
         // Get native flags in use
-        flags = exec(base.RegExp.getNativeFlags, toString(regExpArg))[1];
+        flags = exec(base.RegExp.getNativeFlags, $toString(regExpArg))[1];
         if (options.add) {
             flags = replace(onlyCoercibleToString(flags + options.add), base.RegExp.clipDuplicates, '');
         }
@@ -4006,7 +4006,7 @@
             r2;
 
         throwIfIsNotRegExp(this);
-        str = toString(stringArg);
+        str = $toString(stringArg);
         origLastIndex = this.lastIndex;
         match = base.RegExp.exec.apply(this, arguments);
         if (isArray(match)) {
@@ -4026,7 +4026,7 @@
                     r2 = copyRegExp(this, {remove: 'g'});
                     // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                     // matching due to characters outside the match
-                    replace(pSSlice.call(toString(str), match.index), r2, function () {
+                    replace(pSSlice.call($toString(str), match.index), r2, function () {
                         var length = arguments.length - 2,
                             index,
                             type,
@@ -4301,7 +4301,7 @@
                 origLastIndex = search.lastIndex;
             } else {
                 // Type-convert
-                search = toString(search);
+                search = $toString(search);
             }
 
             // Don't use `typeof`; some older browsers return 'function' for regex objects
@@ -4329,7 +4329,7 @@
                     var args = slice(arguments),
                         length = args.length;
 
-                    return replace(toString(replacement), replacementToken, function ($0, $1, $2) {
+                    return replace($toString(replacement), replacementToken, function ($0, $1, $2) {
                         /*jslint unparam: true */
                         /*jshint unused: false */
                         // Special variable or numbered backreference without curly braces
@@ -4583,7 +4583,7 @@
     } else {
         $.String.prototype.startsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
-                searchStr = toString(searchString),
+                searchStr = $toString(searchString),
                 start = mMin(mMax(toInteger(position), 0), thisStr.length);
 
             return pSSlice.call(thisStr, start, start + searchStr.length) === searchStr;
@@ -4609,7 +4609,7 @@
     } else {
         $.String.prototype.endsWith = function (searchString, position) {
             var thisStr = onlyCoercibleToString(this),
-                searchStr = toString(searchString),
+                searchStr = $toString(searchString),
                 thisLen = thisStr.length,
                 type = typeof position,
                 end,
@@ -4647,7 +4647,7 @@
     } else {
         $.String.prototype.contains = function (searchString, position) {
             var str = onlyCoercibleToString(this),
-                searchStr = toString(searchString),
+                searchStr = $toString(searchString),
                 length = str.length,
                 type = typeof position;
 
@@ -4786,7 +4786,7 @@
     ) {
         if (hasDontEnumBug) {
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
-                var prop = toString(property),
+                var prop = $toString(property),
                     hop = hasOwn(this, prop),
                     length,
                     index;
@@ -4806,7 +4806,7 @@
             $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
         } else if (hasProtoEnumBug) {
             $.Object.prototype.hasOwn = hasOwnProp = function (property) {
-                var prop = toString(property);
+                var prop = $toString(property);
 
                 return (prop === 'prototype' && isFunction(this)) || hasOwn(this, prop);
             };
@@ -4906,7 +4906,7 @@
                         numIndex = +index;
                         isInt = numIndex >= 0 && isSafeInteger(numIndex);
                     } else {
-                        string = toString(index);
+                        string = $toString(index);
                         if (test(rxInt, string)) {
                             number = +string;
                             if (number >= 0 && isSafeInteger(number)) {
@@ -5881,8 +5881,8 @@
      * @returns {number}
      */
     function defaultComparison(left, right) {
-        var leftS = toString(left),
-            rightS = toString(right),
+        var leftS = $toString(left),
+            rightS = $toString(right),
             val = 1;
 
         if (leftS === rightS) {
@@ -6168,7 +6168,7 @@
                 for (index = last; index >= 0; index -= 1) {
                     it = data[index];
                     if (s || !index || it) {
-                        it = toString(it);
+                        it = $toString(it);
                         if (!s) {
                             s = it;
                         } else {
@@ -6233,7 +6233,7 @@
                 x = +this;
                 // Test for NaN or if it is too big or small, return the string value of the number.
                 if (x !== x || x <= -1e21 || x >= 1e21) {
-                    return toString(x);
+                    return $toString(x);
                 }
 
                 s = '';
@@ -6919,7 +6919,7 @@
                         if (toClass(index) === classString) {
                             val = +index;
                         } else {
-                            val = toString(index);
+                            val = $toString(index);
                             if (test(rxInt, val)) {
                                 val = +val;
                             }
@@ -7347,7 +7347,7 @@
         if (toClass(characters) !== base.classString.string && toClass(characters) !== base.classString.number) {
             characters = '';
         } else {
-            characters = toString(characters);
+            characters = $toString(characters);
         }
 
         return characters + onlyCoercibleToString(this) + characters;
@@ -7380,7 +7380,7 @@
         if (toClass(characters) !== base.classString.string && toClass(characters) !== base.classString.number) {
             characters = '';
         } else {
-            characters = toString(characters);
+            characters = $toString(characters);
         }
 
         return replace(onlyCoercibleToString(this), pattern, characters);
@@ -7662,7 +7662,7 @@
                     isFunction(value) ||
                     isRegExp(value)) {
 
-            result = toString(value);
+            result = $toString(value);
         } else {
             result = value;
         }
@@ -7763,7 +7763,7 @@
      */
     function makeCustomError(name, ErrorConstructor, maxMessageLength) {
         if (typeof name !== 'string' || name === '') {
-            throw new base.TypeError.Ctr('"name" was not a valid string: ' + toString(name));
+            throw new base.TypeError.Ctr('"name" was not a valid string: ' + $toString(name));
         }
 
         if (!isErrorTypeConstructor(ErrorConstructor)) {
@@ -7878,7 +7878,7 @@
 
         return function (name, ErrorConstructor, maxMessageLength) {
             if (typeof name !== 'string') {
-                throw new TypeError('"name" was not a string: ' + toString(name));
+                throw new TypeError('"name" was not a string: ' + $toString(name));
             }
 
             if (name === '') {
@@ -8010,8 +8010,8 @@
      */
     $.Object.swapItems = function (object, prop1, prop2) {
         throwIfIsPrimitive(object);
-        prop1 = toString(prop1);
-        prop2 = toString(prop2);
+        prop1 = $toString(prop1);
+        prop2 = $toString(prop2);
 
         var temp1,
             temp2,
@@ -8025,7 +8025,7 @@
             temp2 = $.Object.getOwnPropertyDescriptor(object, prop2) || {};
             num = toLength(prop2);
             notFunc = !isFunction(object);
-            cond1 =  notFunc && hasValidLength(object) && toString(num) === prop2;
+            cond1 =  notFunc && hasValidLength(object) && $toString(num) === prop2;
             if (!isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
                 if (cond1 && num === object.length - 1) {
                     object.length -= 1;
@@ -8041,7 +8041,7 @@
             }
 
             num = toLength(prop1);
-            cond2 = notFunc && hasValidLength(object) && toString(num) === prop1;
+            cond2 = notFunc && hasValidLength(object) && $toString(num) === prop1;
             if (!isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
                 if (cond2 && num === object.length - 1) {
                     object.length -= 1;
@@ -8284,16 +8284,16 @@
                     return stringifyQuote(value);
                 case 'number':
                     if (value !== Infinity && value !== -Infinity) {
-                        return toString(value);
+                        return $toString(value);
                     }
 
                     return 'null';
                 case 'boolean':
                 case 'null':
-                    return toString(value);
+                    return $toString(value);
                 case 'object':
                     if (value === null) {
-                        return toString(value);
+                        return $toString(value);
                     }
 
                     sfyGap += sfyIndent;
@@ -8494,7 +8494,7 @@
             return function (text, reviver) {
                 var j;
 
-                text = toString(text);
+                text = $toString(text);
                 parseCharacterTest.lastIndex = 0;
                 if (test(parseCharacterTest, text)) {
                     text = replace(text, parseCharacterTest, function (a) {

@@ -71,7 +71,7 @@
     try {
         throw new Error(message);
     } catch (e) {
-        if (e.message === message && e.toString() === '[object object]') {
+        if (e.message === message && e.toString() === '[object Object]') {
             ieError = true;
         }
     }
