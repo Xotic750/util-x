@@ -71,7 +71,7 @@
     try {
         throw new Error(message);
     } catch (e) {
-        if (e.message === message && e.toString() === '[object Object]') {
+        if (e.message === message && e.toString() === '[object Error]') {
             ieError = true;
         }
     }
@@ -87,8 +87,9 @@
                 err.toString = function () {
                     return this.name + ': ' + this.message;
                 };
-            } else if (typeof err.stack !== 'string') {
-                err.stack = err.name + ': ' + err.message + '\n    ' + required.stack().join('\n    ');
+            } else if (typeof err.stack !== 'string' && typeof err.stacktrace === 'string') {
+                err.stack = err.stacktrace;
+                //err.stack = err.name + ': ' + err.message + '\n    ' + required.stack().join('\n    ');
             }
 
             if (err.message.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
