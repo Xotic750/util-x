@@ -72,6 +72,11 @@
         throw new Error(message);
     } catch (e) {
         if (e.message === message && e.toString() === '[object Error]') {
+            /*jshint freeze: false */
+            Error.prototype.toString = function () {
+                return this.name + ': ' + this.message;
+            };
+
             ieError = true;
         }
     }
@@ -83,11 +88,7 @@
 
         if (!ok) {
             err = new Error(fmsg.call(this));
-            if (ieError) {
-                err.toString = function () {
-                    return this.name + ': ' + this.message;
-                };
-            } else if (typeof err.stack !== 'string' && typeof err.stacktrace === 'string') {
+            if (!ieError && typeof err.stack !== 'string' && typeof err.stacktrace === 'string') {
                 err.stack = err.stacktrace;
                 //err.stack = err.name + ': ' + err.message + '\n    ' + required.stack().join('\n    ');
             }
