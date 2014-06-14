@@ -192,16 +192,13 @@
         });
 
         it('does not autobox the content in strict mode', function () {
-            var isStrictMode = (function () {
-                    return !this;
-                }()),
-                actual;
+            var actual;
 
             utilx.Array.map([1], function () {
                 actual = this;
             }, 'x');
 
-            expect(typeof actual).to.be(isStrictMode ? 'string' : 'object');
+            expect(typeof actual).to.be(required.isStrictMode() ? 'string' : 'object');
         });
     });
 }());

@@ -1110,16 +1110,6 @@
         },
 
         /**
-         * @private
-         * @name returnThis
-         * @function
-         * @returns {(object|undefined)} depends on strict mode
-         */
-        returnThis = function () {
-            return this;
-        },
-
-        /**
          * The function takes one argument protoFn, and returns the bound function as a stand alone method.
          * Default this check is to {@link checkObjectCoercible}
          * @private
@@ -1207,7 +1197,23 @@
          * @name isStrictMode
          * @type {boolean}
          */
-        isStrictMode = !returnThis(),
+        isStrictMode = (function () {
+            var isStrict = (function () {
+                    return !this;
+                }());
+
+            if (!isStrict) {
+                try {
+                    /*jslint evil: true */
+                    eval('function (a, a) { var x = { p: 015, p: 015 }; }');
+                    /*jslint evil: false */
+                } catch (eIsStrictMode) {
+                    isStrict = true;
+                }
+            }
+
+            return isStrict;
+        }()),
 
         // shortcuts
         pSlice = base.Array.slice,
@@ -1500,6 +1506,7 @@
     console.log('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
     console.log('+++++++++ hasEnumArgsBug: ' + hasEnumArgsBug);
     console.log('+++++++++ hasErrorProps: ' + hasErrorProps);
+    console.log('+++++++++ isStrictMode: ' + isStrictMode);
 
     /*
      *
@@ -6752,8 +6759,8 @@
      * @param {*} [thisArg]
      * @returns {boolean}
      */
-    $.Object.forKeys = function (object, fn, thisArg) {
-        var obj = toObjectFixIndexedAccess(object),
+    $.Object.prototype.forKeys = function (fn, thisArg) {
+        var object = toObjectFixIndexedAccess(this),
             keys,
             length,
             val,
@@ -6761,15 +6768,18 @@
             it;
 
         throwIfNotAFunction(fn);
-        for (keys = objectKeys(obj), val = false, index = 0, length = keys.length; index < length; index += 1) {
+        for (keys = objectKeys(object), val = false, index = 0, length = keys.length; index < length; index += 1) {
             it = keys[index];
-            if (fn.call(thisArg, obj[it], it, obj)) {
+            if (fn.call(thisArg, object[it], it, object)) {
                 val = true;
+                break;
             }
         }
 
         return val;
     };
+
+    $.Object.forKeys = toMethod($.Object.prototype.forKeys);
 
     /**
      * Check to see if an object is empty (contains no enumerable properties).

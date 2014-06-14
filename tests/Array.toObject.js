@@ -57,7 +57,7 @@
         });
 
         it('arguments', function () {
-            expect(utilx.Array.toObject(utilx.Function.returnArgs(1, 2, 3, 4, 5))).to.eql({
+            expect(utilx.Array.toObject(required.returnArgs(1, 2, 3, 4, 5))).to.eql({
                 0: 1,
                 1: 2,
                 2: 3,

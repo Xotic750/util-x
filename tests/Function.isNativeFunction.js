@@ -20,11 +20,11 @@
             expect(utilx.Function.isNativeFunction(new RegExp('x'))).to.not.be.ok();
             expect(utilx.Function.isNativeFunction([])).to.not.be.ok();
             expect(utilx.Function.isNativeFunction({})).to.not.be.ok();
-            expect(utilx.Function.isNativeFunction(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Function.isNativeFunction(required.returnArgs())).to.not.be.ok();
         });
 
         it('user functions should be not ok in each case', function () {
-            expect(utilx.Function.isNativeFunction(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Function.isNativeFunction(required.noop)).to.not.be.ok();
             expect(utilx.Function.isNativeFunction(describe)).to.not.be.ok();
             expect(utilx.Function.isNativeFunction(expect)).to.not.be.ok();
             expect(utilx.Function.isNativeFunction(it)).to.not.be.ok();
@@ -84,8 +84,8 @@
         }
 
         it('only user functions should be ok in each case', function () {
-            expect(utilx.Function.isFunction(utilx.Function.noop) &&
-                    !utilx.Function.isNativeFunction(utilx.Function.noop)).to.be.ok();
+            expect(utilx.Function.isFunction(required.noop) &&
+                    !utilx.Function.isNativeFunction(required.noop)).to.be.ok();
 
             expect(utilx.Function.isFunction(describe) && !utilx.Function.isNativeFunction(describe)).to.be.ok();
             expect(utilx.Function.isFunction(expect) && !utilx.Function.isNativeFunction(expect)).to.be.ok();

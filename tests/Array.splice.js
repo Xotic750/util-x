@@ -10,10 +10,9 @@
     describe('Array.splice', function () {
         var b = ['b'],
             a = [1, 'a', b],
-            makeArray,
             test;
 
-        makeArray = function (l, prefix) {
+        function makeArray(l, prefix) {
             prefix = prefix || '';
 
             var a1 = [],
@@ -26,7 +25,7 @@
             }
 
             return arr;
-        };
+        }
 
         it('should throw if no arguments', function () {
             expect(function () {
@@ -216,28 +215,28 @@
 
 
         it('should work with arguments - adding 1', function () {
-            var obj = utilx.Function.returnArgs();
+            var obj = required.returnArgs();
 
             utilx.Array.splice(obj, 0, 0, 1, 2, 3);
             expect(obj.length).to.eql(3);
         });
 
         it('should work with arguments - adding 2', function () {
-            var obj = utilx.Function.returnArgs(1);
+            var obj = required.returnArgs(1);
 
             utilx.Array.splice(obj, 1, 0, 2, 3);
             expect(obj.length).to.eql(3);
         });
 
         it('should work with arguments - removing', function () {
-            var obj = utilx.Function.returnArgs(1, 2, 3);
+            var obj = required.returnArgs(1, 2, 3);
 
             utilx.Array.splice(obj, 0, 3);
             expect(obj.length).to.eql(0);
         });
 
         it('should work with arguments - replacing', function () {
-            var obj = utilx.Function.returnArgs(99);
+            var obj = required.returnArgs(99);
 
             utilx.Array.splice(obj, 0, 1, 1, 2, 3);
             expect(obj.length).to.eql(3);

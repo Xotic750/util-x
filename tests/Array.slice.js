@@ -80,7 +80,7 @@
         });
 
         it('should work with arguments', function () {
-            var obj = utilx.Function.returnArgs(undefined, null, 1, 'a', 2, 'b', null, undefined);
+            var obj = required.returnArgs(undefined, null, 1, 'a', 2, 'b', null, undefined);
 
             expect(utilx.Array.slice(obj)).to.eql(arr);
             expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);

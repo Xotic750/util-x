@@ -39,7 +39,7 @@
             expect(typeof utilx.Object.ToObjectFixIndexedAccess([])).to.be('object');
             expect(typeof utilx.Object.ToObjectFixIndexedAccess({})).to.be('object');
             expect(typeof utilx.Object.ToObjectFixIndexedAccess(Object('a'))).to.be('object');
-            expect(typeof utilx.Object.ToObjectFixIndexedAccess(utilx.Function.noop)).to.be('function');
+            expect(typeof utilx.Object.ToObjectFixIndexedAccess(required.noop)).to.be('function');
             expect(typeof utilx.Object.ToObjectFixIndexedAccess(new Date())).to.be('object');
             expect(utilx.Object.ToObjectFixIndexedAccess(new RegExp('c')).toString()).to.be('/c/');
         });
@@ -61,7 +61,7 @@
             expect(utilx.Object.ToObjectFixIndexedAccess(testObject)).to.be(testObject);
             testObject = {};
             expect(utilx.Object.ToObjectFixIndexedAccess(testObject)).to.be(testObject);
-            testObject = utilx.Function.noop;
+            testObject = required.noop;
             expect(utilx.Object.ToObjectFixIndexedAccess(testObject)).to.be(testObject);
             testObject = Object('test');
             expect(utilx.Object.ToObjectFixIndexedAccess(testObject)).to.be(testObject);

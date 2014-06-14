@@ -19,10 +19,10 @@
             expect(utilx.Array.isArray(new Error('x'))).to.not.be.ok();
             expect(utilx.Array.isArray(new Date())).to.not.be.ok();
             expect(utilx.Array.isArray(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.Array.isArray(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Array.isArray(required.noop)).to.not.be.ok();
             expect(utilx.Array.isArray([])).to.be.ok();
             expect(utilx.Array.isArray({})).to.not.be.ok();
-            expect(utilx.Array.isArray(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Array.isArray(required.returnArgs())).to.not.be.ok();
         });
     });
 }());

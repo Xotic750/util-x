@@ -15,7 +15,7 @@
         });
 
         it('test arguments should be length of 3 or have environment problem with arguments', function () {
-            expect(utilx.Function.returnArgs(1, null, undefined).length).to.be(3);
+            expect(required.returnArgs(1, null, undefined).length).to.be(3);
         });
 
         it('test array from of should be length of 3 or possible slice problem', function () {
@@ -23,14 +23,14 @@
         });
 
         it('test native slice on arguments', function () {
-            var arr = utilx.Array.slice(utilx.Function.returnArgs(1, null, undefined));
+            var arr = utilx.Array.slice(required.returnArgs(1, null, undefined));
 
             expect(arr.length).to.be(3);
             expect(arr).to.eql(test);
         });
 
         it('test utilx slice on arguments', function () {
-            var arr = utilx.Array.slice(utilx.Function.returnArgs(1, null, undefined));
+            var arr = utilx.Array.slice(required.returnArgs(1, null, undefined));
 
             expect(arr.length).to.be(3);
             expect(arr).to.eql(test);

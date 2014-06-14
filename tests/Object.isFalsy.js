@@ -30,7 +30,7 @@
             expect(utilx.Object.isFalsy([0])).to.not.be.ok();
             expect(utilx.Object.isFalsy([1])).to.not.be.ok();
             expect(utilx.Object.isFalsy({})).to.not.be.ok();
-            expect(utilx.Object.isFalsy(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isFalsy(required.noop)).to.not.be.ok();
         });
     });
 }());

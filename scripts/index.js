@@ -8,15 +8,39 @@
             expect: require('expect.js'),
             Array: {},
             log: {}
-        },
-        message = 'test if we see info',
-        ieError = false;
+        };
 
     if ('1' === process.env.UTILX_WHICH) {
         required.utilx = require('../lib/util-x.min');
     } else {
         required.utilx = require('../lib/util-x');
     }
+
+    required.noop = function () {
+        return;
+    };
+
+    required.isStrictMode = function () {
+        var isStrict = (function () {
+                return !this;
+            }());
+
+        if (!isStrict) {
+            try {
+                /*jslint evil: true */
+                eval('function (a, a) { var x = { p: 015, p: 015 }; }');
+                /*jslint evil: false */
+            } catch (eIsStrictMode) {
+                isStrict = true;
+            }
+        }
+
+        return isStrict;
+    };
+
+    required.returnArgs = function () {
+        return arguments;
+    };
 
     required.create = function (varArgs) {
         var length = arguments.length,

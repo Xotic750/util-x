@@ -27,7 +27,7 @@
             expect(utilx.Number.isPositiveZero(utilx.Math.sign(' '))).to.be.ok();
             expect(utilx.Math.sign(true)).to.be(1);
             expect(utilx.Number.isPositiveZero(utilx.Math.sign(false))).to.be.ok();
-            expect(utilx.Number.isNaN(utilx.Math.sign(utilx.Function.noop))).to.be.ok();
+            expect(utilx.Number.isNaN(utilx.Math.sign(required.noop))).to.be.ok();
             expect(utilx.Number.isNaN(utilx.Math.sign({}))).to.be.ok();
             expect(utilx.Number.isPositiveZero(utilx.Math.sign([]))).to.be.ok();
             expect(utilx.Number.isNaN(utilx.Math.sign(new RegExp('c')))).to.be.ok();

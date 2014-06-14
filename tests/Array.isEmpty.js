@@ -69,7 +69,7 @@
             });
 
             expect(function () {
-                utilx.Array.isEmpty(utilx.Function.noop);
+                utilx.Array.isEmpty(required.noop);
             }).to.throwException(function (e) {
                 expect(e).to.be.a(TypeError);
             });
@@ -87,9 +87,9 @@
             });
 
             expect(utilx.Array.isEmpty([])).to.be.ok();
-            expect(utilx.Array.isEmpty(utilx.Function.returnArgs())).to.be.ok();
+            expect(utilx.Array.isEmpty(required.returnArgs())).to.be.ok();
             expect(utilx.Array.isEmpty([''])).to.not.be.ok();
-            expect(utilx.Array.isEmpty(utilx.Function.returnArgs(''))).to.not.be.ok();
+            expect(utilx.Array.isEmpty(required.returnArgs(''))).to.not.be.ok();
             expect(utilx.Array.isEmpty('')).to.be.ok();
         });
     });

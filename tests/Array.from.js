@@ -9,7 +9,7 @@
 
     describe('Array.from', function () {
         it('should create correct array from iterable', function () {
-            expect(utilx.Array.from(utilx.Function.returnArgs(0, 1, 2))).to.eql([0, 1, 2]);
+            expect(utilx.Array.from(required.returnArgs(0, 1, 2))).to.eql([0, 1, 2]);
 
             expect(utilx.Array.from(required.create(null, undefined, 0.1248, -0, 0))).to.eql(
                 required.create(null, undefined, 0.1248, -0, 0)
@@ -17,7 +17,7 @@
         });
 
         it('should handle empty iterables correctly', function () {
-            expect(utilx.Array.from(utilx.Function.returnArgs())).to.eql([]);
+            expect(utilx.Array.from(required.returnArgs())).to.eql([]);
         });
 
         it('should work with other constructors', function () {
@@ -95,6 +95,7 @@
                 context = {},
                 mapper = function (item) {
                     expect(this).to.equal(context);
+
                     return item * 2;
                 },
                 mapped = utilx.Array.from(original, mapper, context);
@@ -134,16 +135,13 @@
         });
 
         it('does not autobox the content in strict mode', function () {
-            var isStrictMode = (function () {
-                    return !this;
-                }()),
-                actual;
+            var actual;
 
             utilx.Array.from([1], function () {
                 actual = this;
             }, 'x');
 
-            expect(typeof actual).to.be(isStrictMode ? 'string' : 'object');
+            expect(typeof actual).to.be(required.isStrictMode() ? 'string' : 'object');
         });
     });
 }());

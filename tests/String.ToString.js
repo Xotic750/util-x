@@ -17,7 +17,7 @@
             expect(utilx.String.ToString('x')).to.be('x');
             expect(utilx.String.ToString([1, 2, 3])).to.be('1,2,3');
             expect(utilx.String.ToString({})).to.be('[object Object]');
-            expect(utilx.String.ToString(utilx.Function.noop)).to.be(utilx.Function.noop.toString());
+            expect(utilx.String.ToString(required.noop)).to.be(required.noop.toString());
             expect(utilx.String.ToString(new RegExp('c'))).to.be('/c/');
             expect(utilx.String.ToString(NaN)).to.be('NaN');
             expect(utilx.String.ToString(Infinity)).to.be('Infinity');

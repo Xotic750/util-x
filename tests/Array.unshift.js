@@ -89,7 +89,7 @@
                     null,
                     undefined
                 ),
-                arr = utilx.Function.returnArgs(),
+                arr = required.returnArgs(),
                 i;
 
             expect(utilx.Array.unshift(arr, undefined)).to.be(1);
@@ -201,7 +201,7 @@
                 expect(arr[i]).to.be(arrCmp[i]);
             }
 
-            expect(arr).eql(arrCmp);
+            expect(arr).to.eql(arrCmp);
         });
     });
 }());

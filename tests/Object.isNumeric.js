@@ -90,7 +90,7 @@
             // Empty object
             expect(utilx.Object.isNumeric({})).to.not.be.ok();
             // Instance of a function
-            expect(utilx.Object.isNumeric(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isNumeric(required.noop)).to.not.be.ok();
             // Empty Array
             expect(utilx.Object.isNumeric([])).to.not.be.ok();
             // Array Negative integer string

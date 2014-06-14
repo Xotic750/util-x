@@ -22,7 +22,7 @@
                     },
 
                     bar: {
-                        value: utilx.Function.noop
+                        value: required.noop
                     },
 
                     flum: {

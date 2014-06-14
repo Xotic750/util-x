@@ -49,7 +49,7 @@
             }).to.not.throwException();
 
             expect(function () {
-                utilx.customError('FnError', utilx.Function.noop);
+                utilx.customError('FnError', required.noop);
             }).to.not.throwException();
 
             expect(function () {

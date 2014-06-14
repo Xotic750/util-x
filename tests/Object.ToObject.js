@@ -33,7 +33,7 @@
             expect(typeof utilx.Object.ToObject([])).to.be('object');
             expect(typeof utilx.Object.ToObject({})).to.be('object');
             expect(typeof utilx.Object.ToObject(Object('a'))).to.be('object');
-            expect(typeof utilx.Object.ToObject(utilx.Function.noop)).to.be('function');
+            expect(typeof utilx.Object.ToObject(required.noop)).to.be('function');
             expect(typeof utilx.Object.ToObject(new Date())).to.be('object');
             expect(utilx.Object.ToObject(new RegExp('c')).toString()).to.be('/c/');
         });

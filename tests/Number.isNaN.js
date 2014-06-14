@@ -49,7 +49,7 @@
         });
 
         it('Functions should be false', function () {
-            expect(utilx.Number.isNaN(utilx.Function.noop)).to.be(false);
+            expect(utilx.Number.isNaN(required.noop)).to.be(false);
         });
 
         it('Objects should be false', function () {

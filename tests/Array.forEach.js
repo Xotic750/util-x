@@ -154,7 +154,7 @@
         it('should iterate arguments object', function () {
             var actual = {};
 
-            utilx.Array.forEach(utilx.Function.returnArgs(1, undefined, null, 2, 3), function (obj, index) {
+            utilx.Array.forEach(required.returnArgs(1, undefined, null, 2, 3), function (obj, index) {
                 actual[index] = obj;
             });
 
@@ -233,16 +233,13 @@
         });
 
         it('does not autobox the content in strict mode', function () {
-            var isStrictMode = (function () {
-                    return !this;
-                }()),
-                actual;
+            var actual;
 
             utilx.Array.forEach([1], function () {
                 actual = this;
             }, 'x');
 
-            expect(typeof actual).to.be(isStrictMode ? 'string' : 'object');
+            expect(typeof actual).to.be(required.isStrictMode() ? 'string' : 'object');
         });
     });
 }());

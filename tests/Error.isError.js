@@ -24,10 +24,10 @@
             expect(utilx.Error.isError(new URIError('x'))).to.be.ok();
             expect(utilx.Error.isError(new Date())).to.not.be.ok();
             expect(utilx.Error.isError(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.Error.isError(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Error.isError(required.noop)).to.not.be.ok();
             expect(utilx.Error.isError([])).to.not.be.ok();
             expect(utilx.Error.isError({})).to.not.be.ok();
-            expect(utilx.Error.isError(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Error.isError(required.returnArgs())).to.not.be.ok();
         });
     });
 }());

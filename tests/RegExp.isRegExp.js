@@ -18,10 +18,10 @@
             expect(utilx.RegExp.isRegExp(new Error('x'))).to.not.be.ok();
             expect(utilx.RegExp.isRegExp(new Date())).to.not.be.ok();
             expect(utilx.RegExp.isRegExp(new RegExp('x'))).to.be.ok();
-            expect(utilx.RegExp.isRegExp(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.RegExp.isRegExp(required.noop)).to.not.be.ok();
             expect(utilx.RegExp.isRegExp([])).to.not.be.ok();
             expect(utilx.RegExp.isRegExp({})).to.not.be.ok();
-            expect(utilx.RegExp.isRegExp(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.RegExp.isRegExp(required.returnArgs())).to.not.be.ok();
         });
     });
 }());

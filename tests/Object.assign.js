@@ -118,12 +118,14 @@
         });
 
         it('works with arrays', function () {
-            var x = required.create(1, null, undefined, {}, 4, 5, 6),
+            var x = required.create(undefined, undefined, undefined, {}, 4, 5, 6),
                 y = required.create(1, null, undefined, {}, 4, 5, 6);
 
             delete x[0];
-            expect(utilx.Object.assign([1, 2, 3], [ , , , 4, 5, 6])).to.eql([1, 2, 3, 4, 5, 6]);
-            expect(utilx.Object.assign([1, 2, 3], x)).to.eql(y);
+            delete x[1];
+            delete x[2];
+            expect(utilx.Object.assign([1, 2, 3], x)).to.eql([1, 2, 3, {}, 4, 5, 6]);
+            expect(utilx.Object.assign([1, 2, 3], y)).to.eql(y);
 
             expect(utilx.Object.assign([1, 2, 3], {
                 3: 4,

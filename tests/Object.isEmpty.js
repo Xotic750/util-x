@@ -11,13 +11,13 @@
         return;
     }
 
-    F.foo = utilx.Function.noop;
+    F.foo = required.noop;
 
     function X() {
         return;
     }
 
-    X.prototype.foo = utilx.Function.noop;
+    X.prototype.foo = required.noop;
 
     describe('Object.isEmpty', function () {
         it('should throw a TypeError in each case', function () {
@@ -61,13 +61,13 @@
         it('should be ok in each case', function () {
             expect(utilx.Object.isEmpty({})).to.be.ok();
             expect(utilx.Object.isEmpty([])).to.be.ok();
-            expect(utilx.Object.isEmpty(utilx.Function.noop)).to.be.ok();
+            expect(utilx.Object.isEmpty(required.noop)).to.be.ok();
             expect(utilx.Object.isEmpty(X)).to.be.ok();
         });
 
         it('should not be ok in each case', function () {
-            expect(utilx.Object.isEmpty({toString: utilx.Function.noop})).to.not.be.ok();
-            expect(utilx.Object.isEmpty({valueOf: utilx.Function.noop})).to.not.be.ok();
+            expect(utilx.Object.isEmpty({toString: required.noop})).to.not.be.ok();
+            expect(utilx.Object.isEmpty({valueOf: required.noop})).to.not.be.ok();
             expect(utilx.Object.isEmpty([1])).to.not.be.ok();
             expect(utilx.Object.isEmpty(F)).to.not.be.ok();
             expect(utilx.Object.isEmpty(X.prototype)).to.not.be.ok();

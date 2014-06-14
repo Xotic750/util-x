@@ -201,7 +201,7 @@
 
         it('should do nothing with others', function () {
             var arr1 = 123456789,
-                arr2 = utilx.Function.noop,
+                arr2 = required.noop,
                 arr3 = true;
 
             arr1 = utilx.Array.shuffle(arr1);
@@ -225,9 +225,9 @@
         });
 
         it('should work with arguments', function () {
-            var arr1 = utilx.Function.returnArgs(1, 2, 3),
-                arr2 = utilx.Function.returnArgs(1, 2, 3),
-                arr3 = utilx.Function.returnArgs();
+            var arr1 = required.returnArgs(1, 2, 3),
+                arr2 = required.returnArgs(1, 2, 3),
+                arr3 = required.returnArgs();
 
             utilx.Array.assign(arr3, 1, 2);
             utilx.Array.assign(arr3, 2, 3);

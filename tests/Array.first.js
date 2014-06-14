@@ -35,7 +35,7 @@
         it('should not throw an error in each case', function () {
             expect(utilx.Array.first([])).to.be(undefined);
             expect(utilx.Array.first([1, 2, 3])).to.be(1);
-            expect(utilx.Array.first(utilx.Function.returnArgs(1, 2, 3))).to.be(1);
+            expect(utilx.Array.first(required.returnArgs(1, 2, 3))).to.be(1);
             expect(utilx.Array.first({
                 0: 1,
                 1: 2,

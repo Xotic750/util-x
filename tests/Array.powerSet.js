@@ -53,7 +53,7 @@
         });
 
         it('arguments', function () {
-            expect(utilx.Array.powerSet(utilx.Function.returnArgs(1, 2, 3))).to.eql(expected);
+            expect(utilx.Array.powerSet(required.returnArgs(1, 2, 3))).to.eql(expected);
         });
 
         it('string', function () {

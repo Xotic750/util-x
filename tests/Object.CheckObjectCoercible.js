@@ -68,7 +68,7 @@
             }).to.not.throwException();
 
             expect(function () {
-                utilx.Object.CheckObjectCoercible(utilx.Function.noop);
+                utilx.Object.CheckObjectCoercible(required.noop);
             }).to.not.throwException();
 
             expect(function () {

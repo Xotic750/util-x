@@ -66,8 +66,8 @@
         });
 
         it('arguments', function () {
-            expect(utilx.Array.unique(utilx.Function.returnArgs(1, 2, 1, 3, 1, 4))).to.eql([1, 2, 3, 4]);
-            expect(utilx.Array.unique(utilx.Function.returnArgs())).to.eql([]);
+            expect(utilx.Array.unique(required.returnArgs(1, 2, 1, 3, 1, 4))).to.eql([1, 2, 3, 4]);
+            expect(utilx.Array.unique(required.returnArgs())).to.eql([]);
         });
 
         it('object with length', function () {

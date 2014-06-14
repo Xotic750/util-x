@@ -33,13 +33,13 @@
                 'num': 42,
                 'null': null,
                 'undefined': undefined,
-                'toString': utilx.Function.noop,
-                'toLocaleString': utilx.Function.noop,
-                'valueOf': utilx.Function.noop,
-                'hasOwnProperty': utilx.Function.noop,
-                'isPrototypeOf': utilx.Function.noop,
-                'propertyIsEnumerable': utilx.Function.noop,
-                'constructor': utilx.Function.noop
+                'toString': required.noop,
+                'toLocaleString': required.noop,
+                'valueOf': required.noop,
+                'hasOwnProperty': required.noop,
+                'isPrototypeOf': required.noop,
+                'propertyIsEnumerable': required.noop,
+                'constructor': required.noop
             },
             keys = utilx.Object.keys(obj),
             loopedValues2 = [
@@ -133,7 +133,7 @@
 
         it('should work with arguments object', function () {
             var testValue = [0, 1],
-                theArgs = utilx.Function.returnArgs(1, 2),
+                theArgs = required.returnArgs(1, 2),
                 theKeys;
 
             expect(function () {
@@ -144,7 +144,7 @@
             expect(theKeys).to.eql(testValue);
         });
 
-        it('should not list prototype or constructor', function () {
+        it('Constructor should not list prototype or constructor', function () {
             function Constructor() {
                 this.constructor = this.prototype = 1;
             }
@@ -152,6 +152,15 @@
             Constructor.prototype.constructor = 1;
 
             expect(utilx.Object.keys(Constructor)).to.eql([]);
+        });
+
+        it('Constructor prototype should not list constructor', function () {
+            function Constructor() {
+                this.constructor = this.prototype = 1;
+            }
+
+            Constructor.prototype.constructor = 1;
+
             expect(utilx.Object.keys(Constructor.prototype)).to.eql([]);
         });
 
@@ -184,21 +193,40 @@
             expect(utilx.Object.keys(Function.prototype)).to.eql([]);
         });
 
-        it('Error prototypes should not list', function () {
+        it('Error prototype should not list', function () {
             expect(utilx.Object.keys(Error.prototype)).to.eql([]);
+        });
+
+        it('TypeError prototype should not list', function () {
             expect(utilx.Object.keys(TypeError.prototype)).to.eql([]);
+        });
+
+        it('SyntaxError prototype should not list', function () {
             expect(utilx.Object.keys(SyntaxError.prototype)).to.eql([]);
+        });
+
+        it('RangeError prototype should not list', function () {
             expect(utilx.Object.keys(RangeError.prototype)).to.eql([]);
+        });
+
+        it('EvalError prototype should not list', function () {
             expect(utilx.Object.keys(EvalError.prototype)).to.eql([]);
+        });
+
+        it('URIError prototype should not list', function () {
             expect(utilx.Object.keys(URIError.prototype)).to.eql([]);
         });
 
+        it('ReferenceError prototypes should not list', function () {
+            expect(utilx.Object.keys(ReferenceError.prototype)).to.eql([]);
+        });
+
         it('Date prototype should not list', function () {
-            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+            expect(utilx.Object.keys(Date.prototype)).to.eql([]);
         });
 
         it('RegExp prototype should not list', function () {
-            expect(utilx.Object.keys(Function.prototype)).to.eql([]);
+            expect(utilx.Object.keys(RegExp.prototype)).to.eql([]);
         });
     });
 }());

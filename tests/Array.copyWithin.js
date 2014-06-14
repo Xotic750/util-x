@@ -73,7 +73,7 @@
         });
 
         it('works with arguments object', function () {
-            var args = utilx.Function.returnArgs(1, 2, 3, 4, 5),
+            var args = required.returnArgs(1, 2, 3, 4, 5),
                 exp1 = [1, 2, 3, 1, 2],
                 exp2 = utilx.Array.toObject(exp1);
 

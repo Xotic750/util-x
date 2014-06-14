@@ -86,15 +86,15 @@
         });
 
         it('arguments class', function () {
-            var x = utilx.Function.returnArgs(1, 2, 3),
-                y = utilx.Function.returnArgs(1, 2, 3);
+            var x = required.returnArgs(1, 2, 3),
+                y = required.returnArgs(1, 2, 3);
 
             expect(utilx.Object.deepEqual(x, y)).to.be(true);
             expect(utilx.Object.deepEqual(x, [1, 2, 3])).to.be(false);
         });
 
         it('test the arguments shim', function () {
-            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be(true);
+            expect(utilx.Object.isArguments(required.returnArgs())).to.be(true);
             expect(utilx.Object.isArguments([1, 2, 3])).to.be(false);
         });
 

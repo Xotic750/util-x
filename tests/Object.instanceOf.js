@@ -81,14 +81,14 @@
 
         it('native objects should be true in each case', function () {
             expect(utilx.Object.instanceOf({}, Object)).to.be.ok();
-            expect(utilx.Object.instanceOf(utilx.Function.noop, Function)).to.be.ok();
+            expect(utilx.Object.instanceOf(required.noop, Function)).to.be.ok();
             expect(utilx.Object.instanceOf(new RegExp('c'), RegExp)).to.be.ok();
             expect(utilx.Object.instanceOf(new Date(), Date)).to.be.ok();
             expect(utilx.Object.instanceOf(new Error('x'), Error)).to.be.ok();
         });
 
         it('arguments object should be an instance of Object', function () {
-            expect(utilx.Object.instanceOf(utilx.Function.returnArgs(), Object)).to.be.ok();
+            expect(utilx.Object.instanceOf(required.returnArgs(), Object)).to.be.ok();
         });
 
         it('custom error should be an instance of MyError, Error and Object', function () {

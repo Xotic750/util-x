@@ -22,9 +22,9 @@
             expect(utilx.Object.isObject(new Error('x'))).to.not.be.ok();
             expect(utilx.Object.isObject(new Date())).to.not.be.ok();
             expect(utilx.Object.isObject(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.Object.isObject(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isObject(required.noop)).to.not.be.ok();
             expect(utilx.Object.isObject([])).to.not.be.ok();
-            expect(utilx.Object.isObject(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Object.isObject(required.returnArgs())).to.not.be.ok();
         });
 
         it('should be ok in each case', function () {

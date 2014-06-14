@@ -34,14 +34,14 @@
             expect(utilx.Object.getPrototypeOf('')).to.be(String.prototype);
             expect(utilx.Object.getPrototypeOf([])).to.be(Array.prototype);
             expect(utilx.Object.getPrototypeOf({})).to.be(Object.prototype);
-            expect(utilx.Object.getPrototypeOf(utilx.Function.noop)).to.be(Function.prototype);
+            expect(utilx.Object.getPrototypeOf(required.noop)).to.be(Function.prototype);
             expect(utilx.Object.getPrototypeOf(new RegExp('c'))).to.be(RegExp.prototype);
             expect(utilx.Object.getPrototypeOf(new Date())).to.be(Date.prototype);
             expect(utilx.Object.getPrototypeOf(new Error('x'))).to.be(Error.prototype);
         });
 
         it('arguments object should return Object.prototype', function () {
-            expect(utilx.Object.getPrototypeOf(utilx.Function.returnArgs())).to.be(Object.prototype);
+            expect(utilx.Object.getPrototypeOf(required.returnArgs())).to.be(Object.prototype);
         });
 
         it('custom error should return own prototype', function () {

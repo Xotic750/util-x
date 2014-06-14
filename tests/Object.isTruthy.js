@@ -22,7 +22,7 @@
             expect(utilx.Object.isTruthy([0])).to.be.ok();
             expect(utilx.Object.isTruthy([1])).to.be.ok();
             expect(utilx.Object.isTruthy({})).to.be.ok();
-            expect(utilx.Object.isTruthy(utilx.Function.noop)).to.be.ok();
+            expect(utilx.Object.isTruthy(required.noop)).to.be.ok();
         });
 
         it('should not be truthy in each case', function () {

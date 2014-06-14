@@ -10,13 +10,13 @@
     describe('Object.hasOwn', function () {
         /*jshint -W001 */
         var obj = {
-                'toString': utilx.Function.noop,
-                'toLocaleString': utilx.Function.noop,
-                'valueOf': utilx.Function.noop,
-                'hasOwnProperty': utilx.Function.noop,
-                'isPrototypeOf': utilx.Function.noop,
-                'propertyIsEnumerable': utilx.Function.noop,
-                'constructor': utilx.Function.noop
+                'toString': required.noop,
+                'toLocaleString': required.noop,
+                'valueOf': required.noop,
+                'hasOwnProperty': required.noop,
+                'isPrototypeOf': required.noop,
+                'propertyIsEnumerable': required.noop,
+                'constructor': required.noop
             },
             obj2 = {};
         /*jshint +W001 */

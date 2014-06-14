@@ -156,14 +156,14 @@
 
             expect(function () {
                 var obj = utilx.Object.defineProperty({}, 'foo', {
-                    value: utilx.Function.noop,
+                    value: required.noop,
                     enumerable: true,
                     writable: true,
                     configurable: true
                 });
 
                 expect(utilx.Object.hasOwn(obj, 'foo')).to.be.ok();
-                expect(obj.foo).to.be(utilx.Function.noop);
+                expect(obj.foo).to.be(required.noop);
             }).to.not.throwException();
         });
 
@@ -280,14 +280,14 @@
 
             expect(function () {
                 var obj = utilx.Object.defineProperty([], 'foo', {
-                    value: utilx.Function.noop,
+                    value: required.noop,
                     enumerable: true,
                     writable: true,
                     configurable: true
                 });
 
                 expect(utilx.Object.hasOwn(obj, 'foo')).to.be.ok();
-                expect(obj.foo).to.be(utilx.Function.noop);
+                expect(obj.foo).to.be(required.noop);
             }).to.not.throwException();
         });
 
@@ -665,14 +665,14 @@
 
             expect(function () {
                 var obj = utilx.Object.defineProperty(function () { return; }, 'foo', {
-                    value: utilx.Function.noop,
+                    value: required.noop,
                     enumerable: true,
                     writable: true,
                     configurable: true
                 });
 
                 expect(utilx.Object.hasOwn(obj, 'foo')).to.be.ok();
-                expect(obj.foo).to.be(utilx.Function.noop);
+                expect(obj.foo).to.be(required.noop);
             }).to.not.throwException();
         });
     });

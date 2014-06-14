@@ -197,7 +197,7 @@
                     },
 
                     foo: {
-                        value: utilx.Function.noop,
+                        value: required.noop,
                         enumerable: true,
                         writable: true,
                         configurable: true
@@ -209,7 +209,7 @@
             expect(obj[0]).to.be(10);
             expect(obj[1]).to.be(true);
             expect(obj[2]).to.be('x');
-            expect(obj.foo).to.be(utilx.Function.noop);
+            expect(obj.foo).to.be(required.noop);
         });
 
         it('should not throw an error definining properties on functions', function () {
@@ -241,7 +241,7 @@
                     },
 
                     foo3: {
-                        value: utilx.Function.noop,
+                        value: required.noop,
                         enumerable: true,
                         writable: true,
                         configurable: true
@@ -256,7 +256,7 @@
             expect(utilx.Object.hasOwn(obj, 'foo2')).to.be.ok();
             expect(obj.foo2).to.be('x');
             expect(utilx.Object.hasOwn(obj, 'foo3')).to.be.ok();
-            expect(obj.foo3).to.be(utilx.Function.noop);
+            expect(obj.foo3).to.be(required.noop);
         });
 
         it('should not throw an error redefinining properties on functions', function () {
@@ -267,7 +267,7 @@
             obj.foo = 10;
             obj.foo1 = true;
             obj.foo2 = 'x';
-            obj.foo3 = utilx.Function.noop;
+            obj.foo3 = required.noop;
 
             expect(function () {
                 utilx.Object.defineProperties(obj, {
@@ -304,7 +304,7 @@
             expect(utilx.Object.hasOwn(obj, 'foo2')).to.be.ok();
             expect(obj.foo2).to.be('x');
             expect(utilx.Object.hasOwn(obj, 'foo3')).to.be.ok();
-            expect(obj.foo3).to.be(utilx.Function.noop);
+            expect(obj.foo3).to.be(required.noop);
         });
     });
 }());

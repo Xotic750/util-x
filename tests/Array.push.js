@@ -89,7 +89,7 @@
                     null,
                     undefined
                 ),
-                arr = utilx.Function.returnArgs(),
+                arr = required.returnArgs(),
                 i;
 
             expect(utilx.Array.push(arr, undefined)).to.be(1);

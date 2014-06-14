@@ -20,11 +20,11 @@
             expect(utilx.Function.isFunction(new RegExp('x'))).to.not.be.ok();
             expect(utilx.Function.isFunction([])).to.not.be.ok();
             expect(utilx.Function.isFunction({})).to.not.be.ok();
-            expect(utilx.Function.isFunction(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Function.isFunction(required.returnArgs())).to.not.be.ok();
         });
 
         it('user functions should not ok in each case', function () {
-            expect(utilx.Function.isFunction(utilx.Function.noop)).to.be.ok();
+            expect(utilx.Function.isFunction(required.noop)).to.be.ok();
             expect(utilx.Function.isFunction(describe)).to.be.ok();
             expect(utilx.Function.isFunction(expect)).to.be.ok();
             expect(utilx.Function.isFunction(it)).to.be.ok();

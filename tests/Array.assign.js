@@ -83,7 +83,7 @@
 
         it('should not throw if argument is complex object', function () {
             expect(function () {
-                utilx.Array.assign(new utilx.Function.noop(), 0, 'a');
+                utilx.Array.assign(new required.noop(), 0, 'a');
             }).to.not.throwException();
         });
 
@@ -340,7 +340,7 @@
 
         it('should work on arguments', function () {
             var arrCmp = utilx.Array.slice(testSubject),
-                arr = utilx.Function.returnArgs(),
+                arr = required.returnArgs(),
                 i;
 
             expect(utilx.Array.assign(arr, 0, undefined)).to.be(1);

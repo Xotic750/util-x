@@ -20,13 +20,13 @@
                 'num': 42,
                 'null': null,
                 'undefined': undefined,
-                'toString': utilx.Function.noop,
-                'toLocaleString': utilx.Function.noop,
-                'valueOf': utilx.Function.noop,
-                'hasOwnProperty': utilx.Function.noop,
-                'isPrototypeOf': utilx.Function.noop,
-                'propertyIsEnumerable': utilx.Function.noop,
-                'constructor': utilx.Function.noop
+                'toString': required.noop,
+                'toLocaleString': required.noop,
+                'valueOf': required.noop,
+                'hasOwnProperty': required.noop,
+                'isPrototypeOf': required.noop,
+                'propertyIsEnumerable': required.noop,
+                'constructor': required.noop
             };
         });
 
@@ -174,7 +174,7 @@
                 return;
             });
 
-            expect(actual).to.not.be.ok();
+            expect(actual).to.be(false);
         });
 
         it('should return true if it is stopped somewhere', function () {
@@ -182,7 +182,7 @@
                 return true;
             });
 
-            expect(actual).to.be.ok();
+            expect(actual).to.be(true);
         });
 
         it('should return false if there are no elements', function () {
@@ -190,21 +190,63 @@
                 return true;
             });
 
-            expect(actual).to.not.be.ok();
+            expect(actual).to.be(false);
+        });
+
+        it('should enumerate all', function () {
+            var actual = {};
+
+            utilx.Object.forKeys(forKeys, function (item, prop) {
+                actual[prop] = item;
+            });
+
+            expect(actual).to.eql(forKeys);
+        });
+
+        it('should stop after 3 elements', function () {
+            var numberOfRuns = 0;
+
+            utilx.Object.forKeys(forKeys, function () {
+                numberOfRuns += 1;
+
+                return numberOfRuns === 3;
+            });
+
+            expect(numberOfRuns).to.be(3);
+        });
+
+        it('should enumerate all in string', function () {
+            var count = 0,
+                inner = [],
+                props = [];
+
+            utilx.Object.forKeys('foo', function (item, prop) {
+                /*jslint unparam: true */
+                /*jshint unused: true */
+                inner.push(item);
+                props.push(prop);
+                count += 1;
+            });
+
+            expect(count).to.be(3);
+            expect(inner.sort()).to.eql(['f', 'o', 'o']);
+            expect(props.sort()).to.eql(['0', '1', '2']);
         });
 
         it('should have a boxed object as list argument of callback', function () {
             var actual;
 
-            utilx.Object.forKeys('foo', function (item, prop, obj) {
+            utilx.Object.forKeys('foo', function (item, prop, list) {
                 /*jslint unparam: true */
                 /*jshint unused: true */
-                actual = obj;
+                actual = list;
+
+                return true;
             });
 
             if (typeof actual !== 'object') {
                 /*global console */
-                console.log('actual', actual);
+                console.log('actual', typeof actual);
             }
 
             expect(typeof actual).to.be('object');
@@ -214,16 +256,13 @@
         });
 
         it('does not autobox the content in strict mode', function () {
-            var isStrictMode = (function () {
-                    return !this;
-                }()),
-                actual;
+            var actual;
 
             utilx.Object.forKeys({'blah': '1'}, function () {
                 actual = this;
             }, 'x');
 
-            expect(typeof actual).to.be(isStrictMode ? 'string' : 'object');
+            expect(typeof actual).to.be(required.isStrictMode() ? 'string' : 'object');
         });
     });
 }());

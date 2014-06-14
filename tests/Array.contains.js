@@ -79,7 +79,7 @@
         });
 
         it('should iterate arguments object', function () {
-            var args = utilx.Function.returnArgs(1, undefined, null, 2, 3);
+            var args = required.returnArgs(1, undefined, null, 2, 3);
 
             expect(utilx.Array.contains(args, 1)).to.be.ok();
             expect(utilx.Array.contains(args, undefined)).to.be.ok();

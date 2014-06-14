@@ -19,9 +19,9 @@
             expect(utilx.Object.is(true, true)).to.be.ok();
             expect(utilx.Object.is('x', 'x')).to.be.ok();
             expect(utilx.Object.is([1, 2, 3], [1, 2, 3])).to.not.be.ok();
-            expect(utilx.Object.is(utilx.Function.returnArgs(), utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Object.is(required.returnArgs(), required.returnArgs())).to.not.be.ok();
             expect(utilx.Object.is({}, {}), false, 'Object.is');
-            expect(utilx.Object.is(utilx.Function.noop, utilx.Function.noop)).to.be.ok();
+            expect(utilx.Object.is(required.noop, required.noop)).to.be.ok();
             expect(utilx.Object.is(new RegExp('c'), new RegExp('c'))).to.not.be.ok();
             expect(utilx.Object.is(new Date(2013, 11, 23), new Date(2013, 11, 23))).to.not.be.ok();
             expect(utilx.Object.is(new Error('x'), new Error('x'))).to.not.be.ok();

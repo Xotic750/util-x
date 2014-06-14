@@ -19,8 +19,8 @@
             expect(utilx.Date.isDate(true)).to.not.be.ok();
             expect(utilx.Date.isDate()).to.not.be.ok();
             expect(utilx.Date.isDate(null)).to.not.be.ok();
-            expect(utilx.Date.isDate(utilx.Function.noop)).to.not.be.ok();
-            expect(utilx.Date.isDate(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Date.isDate(required.noop)).to.not.be.ok();
+            expect(utilx.Date.isDate(required.returnArgs())).to.not.be.ok();
         });
     });
 }());

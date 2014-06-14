@@ -18,10 +18,10 @@
             expect(utilx.Object.isArguments(new Error('x'))).to.not.be.ok();
             expect(utilx.Object.isArguments(new Date())).to.not.be.ok();
             expect(utilx.Object.isArguments(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.Object.isArguments(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isArguments(required.noop)).to.not.be.ok();
             expect(utilx.Object.isArguments([])).to.not.be.ok();
             expect(utilx.Object.isArguments({})).to.not.be.ok();
-            expect(utilx.Object.isArguments(utilx.Function.returnArgs())).to.be.ok();
+            expect(utilx.Object.isArguments(required.returnArgs())).to.be.ok();
         });
     });
 }());

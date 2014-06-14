@@ -16,9 +16,9 @@
             expect(utilx.Object.ToClassString(true)).to.be('[object Boolean]');
             expect(utilx.Object.ToClassString('x')).to.be('[object String]');
             expect(utilx.Object.ToClassString([1, 2, 3])).to.be('[object Array]');
-            expect(utilx.Object.ToClassString(utilx.Function.returnArgs())).to.be('[object Arguments]');
+            expect(utilx.Object.ToClassString(required.returnArgs())).to.be('[object Arguments]');
             expect(utilx.Object.ToClassString({})).to.be('[object Object]');
-            expect(utilx.Object.ToClassString(utilx.Function.noop)).to.be('[object Function]');
+            expect(utilx.Object.ToClassString(required.noop)).to.be('[object Function]');
             expect(utilx.Object.ToClassString(new RegExp('c'))).to.be('[object RegExp]');
             expect(utilx.Object.ToClassString(new Date())).to.be('[object Date]');
             expect(utilx.Object.ToClassString(new Error('x'))).to.be('[object Error]');

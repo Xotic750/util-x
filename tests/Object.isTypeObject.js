@@ -18,7 +18,7 @@
             expect(utilx.Object.isTypeObject(new Error('x'))).to.be.ok();
             expect(utilx.Object.isTypeObject(new Date())).to.be.ok();
             expect(utilx.Object.isTypeObject(new RegExp('x'))).to.be.ok();
-            expect(utilx.Object.isTypeObject(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isTypeObject(required.noop)).to.not.be.ok();
         });
     });
 }());

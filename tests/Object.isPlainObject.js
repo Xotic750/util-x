@@ -22,11 +22,11 @@
             expect(utilx.Object.isPlainObject(new Error('x'))).to.not.be.ok();
             expect(utilx.Object.isPlainObject(new Date())).to.not.be.ok();
             expect(utilx.Object.isPlainObject(new RegExp('x'))).to.not.be.ok();
-            expect(utilx.Object.isPlainObject(utilx.Function.noop)).to.not.be.ok();
+            expect(utilx.Object.isPlainObject(required.noop)).to.not.be.ok();
             expect(utilx.Object.isPlainObject([])).to.not.be.ok();
             expect(utilx.Object.isPlainObject({})).to.be.ok();
             expect(utilx.Object.isPlainObject(new F())).to.not.be.ok();
-            expect(utilx.Object.isPlainObject(utilx.Function.returnArgs())).to.not.be.ok();
+            expect(utilx.Object.isPlainObject(required.returnArgs())).to.not.be.ok();
         });
     });
 }());

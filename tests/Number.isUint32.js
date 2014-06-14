@@ -70,7 +70,7 @@
                 null,
                 undefined,
                 '',
-                utilx.Function.noop,
+                required.noop,
                 {
                     valueOf: function () {
                         return 3;
