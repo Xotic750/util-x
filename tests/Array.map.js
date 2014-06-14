@@ -5,12 +5,11 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.map', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            mapArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+            mapArray = required.create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
                                   new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
             testIndex,
@@ -22,7 +21,7 @@
         beforeEach(function () {
             var i = -1;
 
-            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
             delete testSubject[8];
             callback = function () {

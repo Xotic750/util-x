@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.stableSort', function () {
         var testArray,
@@ -144,7 +143,7 @@
             delete testArray[3];
             delete testArray[4];
             utilx.Array.stableSort(testArray);
-            expect(testArray).to.eql(create('a', 'b', 'c', 'd', 'e', 'f', undefined, undefined));
+            expect(testArray).to.eql(required.create('a', 'b', 'c', 'd', 'e', 'f', undefined, undefined));
         });
 
         it('sorting [] ascending should result in []', function () {
@@ -201,7 +200,7 @@
             delete testArray[3];
             delete testArray[4];
             utilx.Array.stableSort(testArray, descending);
-            expect(testArray).to.eql(create(undefined, undefined, 'f', 'e', 'd', 'c', 'b', 'a'));
+            expect(testArray).to.eql(required.create(undefined, undefined, 'f', 'e', 'd', 'c', 'b', 'a'));
         });
 
         it('sorting [] descending should result in []', function () {

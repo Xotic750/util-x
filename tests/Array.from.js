@@ -5,15 +5,14 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.from', function () {
         it('should create correct array from iterable', function () {
             expect(utilx.Array.from(utilx.Function.returnArgs(0, 1, 2))).to.eql([0, 1, 2]);
 
-            expect(utilx.Array.from(create(null, undefined, 0.1248, -0, 0))).to.eql(
-                create(null, undefined, 0.1248, -0, 0)
+            expect(utilx.Array.from(required.create(null, undefined, 0.1248, -0, 0))).to.eql(
+                required.create(null, undefined, 0.1248, -0, 0)
             );
         });
 
@@ -126,12 +125,12 @@
         });
 
         it('removes holes', function () {
-            var input = create('[0, , 2]'),
+            var input = required.create('[0, , 2]'),
                 result = utilx.Array.from(input);
 
             expect(utilx.Object.has(input, 1)).not.to.be.ok();
             expect(utilx.Object.has(result, 1)).to.be.ok();
-            expect(result).to.eql(create(0, undefined, 2));
+            expect(result).to.eql(required.create(0, undefined, 2));
         });
 
         it('does not autobox the content in strict mode', function () {

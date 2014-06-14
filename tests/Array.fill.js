@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.fill', function () {
         var testSubject;
@@ -41,7 +40,7 @@
 
         it('works without a value', function () {
             var original = testSubject,
-                filled = create(
+                filled = required.create(
                     undefined,
                     undefined,
                     undefined,

@@ -1302,7 +1302,7 @@
         /**
          * Indicates if object suffers the don'r enum bug
          * @private
-         * @type {boolean
+         * @type {boolean}
          * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
          */
         hasDontEnumBug = !base.Object.propertyIsEnumerable.call({'toString': null}, 'toString'),

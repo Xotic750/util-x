@@ -5,12 +5,11 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.filter', function () {
         var lastIndex = Math.pow(2, 32) - 1,
-            filterArray = create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
+            filterArray = required.create(0, 1, 2, 'a', 'b', 'c', [8, 9, 10], {}, true, false, undefined, null,
                                   new Date(), new Error('x'), new RegExp('t'), Infinity, -Infinity),
             testSubject,
             testIndex,
@@ -26,10 +25,10 @@
         };
 
         beforeEach(function () {
-            testSubject = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject[1];
             delete testSubject[8];
-            filteredArray = create(2, undefined, 'hej', false, 0, 9);
+            filteredArray = required.create(2, undefined, 'hej', false, 0, 9);
         });
 
         it('should throw if no arguments', function () {

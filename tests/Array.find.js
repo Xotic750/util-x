@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.find', function () {
         var list = [5, 10, 15, 20];
@@ -119,20 +118,20 @@
         });
 
         it('should work with a sparse array', function () {
-            var obj = create(1, 2, undefined),
+            var obj = required.create(1, 2, undefined),
                 seen = [],
                 found,
                 expected = [];
 
             delete obj[1];
             found = utilx.Array.find(obj, function (item, idx) {
-                utilx.Array.assign(seen, idx, create(idx, item));
+                utilx.Array.assign(seen, idx, required.create(idx, item));
 
                 return false;
             });
 
             utilx.Array.assign(expected, 0, [0, 1]);
-            utilx.Array.assign(expected, 2, create(2, undefined));
+            utilx.Array.assign(expected, 2, required.create(2, undefined));
             expect(found).to.equal(undefined);
             expect(seen).to.eql(expected);
         });
@@ -145,14 +144,14 @@
                 },
                 seen = [],
                 found = utilx.Array.find(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, create(idx, item));
+                    utilx.Array.assign(seen, idx, required.create(idx, item));
 
                     return false;
                 }),
                 expected = [];
 
             utilx.Array.assign(expected, 0, [0, 1]);
-            utilx.Array.assign(expected, 2, create(2, undefined));
+            utilx.Array.assign(expected, 2, required.create(2, undefined));
             expect(found).to.equal(undefined);
             expect(seen).to.eql(expected);
         });

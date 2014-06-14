@@ -5,11 +5,10 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.slice', function () {
-        var arr = create(undefined, null, 1, 'a', 2, 'b', null, undefined),
+        var arr = required.create(undefined, null, 1, 'a', 2, 'b', null, undefined),
             testValue;
 
         it('should throw if no arguments', function () {
@@ -40,17 +39,17 @@
             expect(utilx.Array.slice(arr)).to.eql(arr);
             expect(utilx.Array.slice(arr, undefined, undefined)).to.eql(arr);
 
-            testValue = create(undefined);
+            testValue = required.create(undefined);
             expect(utilx.Array.slice(arr, -1)).to.eql(testValue);
             expect(utilx.Array.slice(arr, -1).length).to.be(1);
             expect(utilx.Array.slice(arr, 0)).to.eql(arr);
 
-            testValue = create('a', 2, 'b', null, undefined);
+            testValue = required.create('a', 2, 'b', null, undefined);
             expect(utilx.Array.slice(arr, 3)).to.eql(testValue);
             expect(utilx.Array.slice(arr, -1, 4)).to.eql([]);
             expect(utilx.Array.slice(arr, -1, 4).length).to.be(0);
 
-            testValue = create(undefined, null, 1, 'a');
+            testValue = required.create(undefined, null, 1, 'a');
             expect(utilx.Array.slice(arr, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];
@@ -63,17 +62,17 @@
             expect(utilx.Array.slice(obj)).to.eql(arr);
             expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
 
-            testValue = create(undefined);
+            testValue = required.create(undefined);
             expect(utilx.Array.slice(obj, -1)).to.eql(testValue);
             expect(utilx.Array.slice(obj, -1).length).to.be(1);
             expect(utilx.Array.slice(obj, 0)).to.eql(arr);
 
-            testValue = create('a', 2, 'b', null, undefined);
+            testValue = required.create('a', 2, 'b', null, undefined);
             expect(utilx.Array.slice(obj, 3)).to.eql(testValue);
             expect(utilx.Array.slice(obj, -1, 4)).to.eql([]);
             expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
 
-            testValue = create(undefined, null, 1, 'a');
+            testValue = required.create(undefined, null, 1, 'a');
             expect(utilx.Array.slice(obj, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];
@@ -86,17 +85,17 @@
             expect(utilx.Array.slice(obj)).to.eql(arr);
             expect(utilx.Array.slice(obj, undefined, undefined)).to.eql(arr);
 
-            testValue = create(undefined);
+            testValue = required.create(undefined);
             expect(utilx.Array.slice(obj, -1)).to.eql(testValue);
             expect(utilx.Array.slice(obj, -1).length).to.be(1);
             expect(utilx.Array.slice(obj, 0)).to.eql(arr);
 
-            testValue = create('a', 2, 'b', null, undefined);
+            testValue = required.create('a', 2, 'b', null, undefined);
             expect(utilx.Array.slice(obj, 3)).to.eql(testValue);
             expect(utilx.Array.slice(obj, -1, 4), []).to.eql([]);
             expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
 
-            testValue = create(undefined, null, 1, 'a');
+            testValue = required.create(undefined, null, 1, 'a');
             expect(utilx.Array.slice(obj, 0, 4)).to.eql(testValue);
 
             testValue = ['a', 2, 'b'];

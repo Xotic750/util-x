@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.assign', function () {
         var overflow = Math.pow(2, 32),
@@ -17,7 +16,7 @@
             maxLastHex = 0xFFFFFFFE,
             minHexStr = '0x0',
             maxLastHexStr = '0x' + maxLast.toString(16),
-            testSubject = create(
+            testSubject = required.create(
                 undefined,
                 null,
                 -1,

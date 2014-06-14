@@ -5,11 +5,10 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.of', function () {
-        var test = create(1, null, undefined);
+        var test = required.create(1, null, undefined);
 
         it('test array should be length of 3 or have environment problem with array', function () {
             expect(test.length).to.be(3);

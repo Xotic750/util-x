@@ -9,7 +9,8 @@
             Array: {},
             log: {}
         },
-        message = 'test if we see info';
+        message = 'test if we see info',
+        ieError = false;
 
     if ('1' === process.env.UTILX_WHICH) {
         required.utilx = require('../lib/util-x.min');
@@ -17,7 +18,7 @@
         required.utilx = require('../lib/util-x');
     }
 
-    required.Array.create = function (varArgs) {
+    required.create = function (varArgs) {
         var length = arguments.length,
             result = [],
             sliced,
@@ -69,12 +70,9 @@
 
     try {
         throw new Error(message);
-    } catch (ePatch) {
-        if (ePatch.message === message && ePatch.toString() === '[object object]') {
-            /*jshint freeze: false */
-            Error.prototype.toString = function () {
-                return this.name + ': ' + this.message;
-            };
+    } catch (e) {
+        if (e.message === message && e.toString() === '[object object]') {
+            ieError = true;
         }
     }
 
@@ -85,8 +83,11 @@
 
         if (!ok) {
             err = new Error(fmsg.call(this));
-            err.stack = null;
-            if (typeof err.stack !== 'string') {
+            if (ieError) {
+                err.toString = function () {
+                    return this.name + ': ' + this.message;
+                };
+            } else if (typeof err.stack !== 'string') {
                 err.stack = err.name + ': ' + err.message + '\n    ' + required.stack().join('\n    ');
             }
 

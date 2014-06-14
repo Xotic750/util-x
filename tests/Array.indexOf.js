@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.indexOf', function () {
         var arr = [
@@ -18,7 +17,7 @@
                 'propertyIsEnumerable',
                 'constructor'
             ],
-            arr2 = create(2, 3, undefined, true, 'hej', null, 2, false, 0, 8, 9),
+            arr2 = required.create(2, 3, undefined, true, 'hej', null, 2, false, 0, 8, 9),
             arr3 = [0, 1, 2, 3, 4, 5];
 
         delete arr2[1];

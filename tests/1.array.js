@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         expect = required.expect,
-        utilx = required.utilx,
-        create = required.Array.create;
+        utilx = required.utilx;
 
     describe('Native array', function () {
         var A = Array,
@@ -121,8 +120,8 @@
             testSubject2.length = 5;
             expect(testSubject1).to.eql(testSubject2);
             testSubject1 = new A(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
-            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
-            expect(testSubject2).to.eql(create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9));
+            testSubject2 = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            expect(testSubject2).to.eql(required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9));
         });
 
         it('[...*] should have correct elements', function () {
@@ -136,7 +135,7 @@
             expect(testSubject1).to.eql(testSubject2);
 
             testSubject1 = [2, 3, undefined, true, 'hej', null, false, 0, , 9];
-            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject2 = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject2[8];
             expect(testSubject1).to.eql(testSubject2);
         });
@@ -191,7 +190,7 @@
             testSubject1 = [];
             testSubject1[0] = undefined;
             expect(testSubject1.hasOwnProperty(0)).to.be.ok();
-            expect(testSubject1).to.eql(create(undefined));
+            expect(testSubject1).to.eql(required.create(undefined));
         });
 
         it('assigning undefined element should increase the length', function () {
@@ -204,7 +203,7 @@
             testSubject1 = [];
             testSubject1[0] = null;
             expect(testSubject1.hasOwnProperty(0)).to.be.ok();
-            expect(testSubject1).to.eql(create(null));
+            expect(testSubject1).to.eql(required.create(null));
         });
 
         it('assigning null element should increase the length', function () {
@@ -217,7 +216,7 @@
             testSubject1 = [];
             Array.prototype.push.call(testSubject1, undefined);
             expect(testSubject1.hasOwnProperty(0)).to.be.ok();
-            expect(testSubject1).to.eql(create(undefined));
+            expect(testSubject1).to.eql(required.create(undefined));
         });
 
         it('push undefined element should increase the length', function () {
@@ -269,7 +268,7 @@
             testSubject1 = [];
             Array.prototype.unshift.call(testSubject1, undefined);
             expect(testSubject1.hasOwnProperty(0)).to.be.ok();
-            expect(testSubject1).to.eql(create(undefined));
+            expect(testSubject1).to.eql(required.create(undefined));
         });
 
         it('unshift undefined element should increase the length', function () {
@@ -314,7 +313,7 @@
         });
 
         it('slice should work on array', function () {
-            testSubject1 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject1 = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject1[8];
             testSubject2 = Array.prototype.slice.call(testSubject1);
             expect(testSubject2).to.eql(testSubject1);
@@ -334,7 +333,7 @@
                 length: 10
             };
 
-            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject2 = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             delete testSubject2[8];
             testSubject3 = Array.prototype.slice.call(testSubject1);
             expect(testSubject3).to.eql(testSubject2);
@@ -363,7 +362,7 @@
 
         it('slice should work on arguments', function () {
             testSubject1 = utilx.Function.returnArgs(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
-            testSubject2 = create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
+            testSubject2 = required.create(2, 3, undefined, true, 'hej', null, false, 0, 8, 9);
             testSubject3 = Array.prototype.slice.call(testSubject1);
             expect(testSubject3).to.eql(testSubject2);
         });

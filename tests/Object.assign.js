@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Object.assign', function () {
         it('should throw if no arguments', function () {
@@ -119,8 +118,8 @@
         });
 
         it('works with arrays', function () {
-            var x = create(1, null, undefined, {}, 4, 5, 6),
-                y = create(1, null, undefined, {}, 4, 5, 6);
+            var x = required.create(1, null, undefined, {}, 4, 5, 6),
+                y = required.create(1, null, undefined, {}, 4, 5, 6);
 
             delete x[0];
             expect(utilx.Object.assign([1, 2, 3], [ , , , 4, 5, 6])).to.eql([1, 2, 3, 4, 5, 6]);

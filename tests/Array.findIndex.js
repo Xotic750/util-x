@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.findIndex', function () {
         var list = [5, 10, 15, 20];
@@ -119,20 +118,20 @@
         });
 
         it('should work with a sparse array', function () {
-            var obj = create(1, 2, undefined),
+            var obj = required.create(1, 2, undefined),
                 seen = [],
                 foundIndex,
                 expected = [];
 
             delete obj[1];
             foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                utilx.Array.assign(seen, idx, create(idx, item));
+                utilx.Array.assign(seen, idx, required.create(idx, item));
 
                 return utilx.Object.isUndefined(item);
             });
 
             utilx.Array.assign(expected, 0, [0, 1]);
-            utilx.Array.assign(expected, 2, create(2, undefined));
+            utilx.Array.assign(expected, 2, required.create(2, undefined));
             expect(foundIndex).to.equal(2);
             expect(seen).to.eql(expected);
         });
@@ -145,14 +144,14 @@
                 },
                 seen = [],
                 foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, create(idx, item));
+                    utilx.Array.assign(seen, idx, required.create(idx, item));
 
                     return false;
                 }),
                 expected = [];
 
             utilx.Array.assign(expected, 0, [0, 1]);
-            utilx.Array.assign(expected, 2, create(2, undefined));
+            utilx.Array.assign(expected, 2, required.create(2, undefined));
             expect(foundIndex).to.equal(-1);
             expect(seen).to.eql(expected);
         });

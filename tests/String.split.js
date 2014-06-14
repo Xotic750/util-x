@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('String.split', function () {
         var test,
@@ -296,7 +295,7 @@
             var txt = '.',
                 rx = new RegExp('(.)?(.)?');
 
-            expect(utilx.String.split(txt, rx)).to.eql(create('', '.', undefined, ''));
+            expect(utilx.String.split(txt, rx)).to.eql(required.create('', '.', undefined, ''));
         });
 
         msg = '(\'A<B>bold</B>and<CODE>coded</CODE>\', /<(\\/)?([^<>]+)>/) results in [\'A\', undefined, ' +
@@ -306,7 +305,7 @@
                 rx = new RegExp('<(\\/)?([^<>]+)>');
 
             expect(utilx.String.split(txt, rx))
-                .to.eql(create(
+                .to.eql(required.create(
                     'A',
                     undefined,
                     'B',
@@ -326,7 +325,7 @@
         it('(\'test\', /(s)*/) results in [\'t\', undefined, \'e\', \'s\', \'t\']', function () {
             var txt = 'tesst';
 
-            expect(utilx.String.split(txt, /(s)*/)).to.eql(create(
+            expect(utilx.String.split(txt, /(s)*/)).to.eql(required.create(
                 't',
                 undefined,
                 'e',
@@ -341,7 +340,7 @@
             var txt = 'tesst';
 
             expect(utilx.String.split(txt, /(s)*?/))
-                .to.eql(create(
+                .to.eql(required.create(
                     't',
                     undefined,
                     'e',

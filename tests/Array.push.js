@@ -5,8 +5,7 @@
 
     var required = require('../scripts/'),
         utilx = required.utilx,
-        expect = required.expect,
-        create = required.Array.create;
+        expect = required.expect;
 
     describe('Array.push', function () {
         it('should throw if no arguments', function () {
@@ -34,7 +33,7 @@
         });
 
         it('array', function () {
-            var arrCmp = create(
+            var arrCmp = required.create(
                     undefined,
                     null,
                     -1,
@@ -76,7 +75,7 @@
         });
 
         it('arguments', function () {
-            var arrCmp = create(
+            var arrCmp = required.create(
                     undefined,
                     null,
                     -1,
