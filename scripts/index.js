@@ -25,15 +25,15 @@
                 return !this;
             }());
 
+        /*
         if (!isStrict) {
             try {
-                /*jslint evil: true */
                 eval('function (a, a) { var x = { p: 015, p: 015 }; }');
-                /*jslint evil: false */
             } catch (eIsStrictMode) {
                 isStrict = true;
             }
         }
+        */
 
         return isStrict;
     };
