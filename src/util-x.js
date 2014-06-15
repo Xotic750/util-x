@@ -1220,7 +1220,6 @@
         stringify,
         truncate,
         inherits,
-        stableSort,
         stringContains,
         pPowerSet,
         toInt32,
@@ -1230,6 +1229,7 @@
         $slice,
         $split,
         $replace,
+        $splice,
         noop,
 
         /**
@@ -5129,6 +5129,8 @@
         $.Array.splice = toMethod($.Array.prototype.splice);
     }
 
+    $splice = $.Array.splice;
+
     /**
      * Checks if the supplied function suffers from the V8 strict mode bug.
      * @private
@@ -5872,9 +5874,46 @@
             val = 1;
 
         if (leftS === rightS) {
-            val = 0;
+            val = +0;
         } else if (leftS < rightS) {
             val = -1;
+        }
+
+        return val;
+    }
+
+    /**
+     * sortCompare function for stableSort.
+     * @private
+     * @function sortCompare
+     * @param {*} object
+     * @param {*} left
+     * @param {*} right
+     * @returns {number}
+     */
+    function sortCompare(left, right) {
+        var hasj = $hasOwn(left, 0),
+            hask = $hasOwn(right, 0),
+            typex,
+            typey,
+            val;
+
+        if (!hasj && !hask) {
+            val = +0;
+        } else if (!hasj) {
+            val = 1;
+        } else if (!hask) {
+            val = -1;
+        } else {
+            typex = typeof left[0];
+            typey = typeof right[0];
+            if (typex === 'undefined' && typey === 'undefined') {
+                val = +0;
+            } else if (typex === 'undefined') {
+                val = 1;
+            } else if (typey === 'undefined') {
+                val = -1;
+            }
         }
 
         return val;
@@ -5890,22 +5929,60 @@
      * @returns {Array}
      */
     function merge(left, right, comparison) {
-        var result = [];
+        var result = [],
+            next = 0,
+            sComp;
 
+        result.length = left.length + right.length;
         while (left.length && right.length) {
-            if (comparison(left[0], right[0]) <= 0) {
-                pPush.call(result, pShift.call(left));
+            sComp = sortCompare(left, right);
+            if (typeof sComp !== 'number') {
+                if (comparison(left[0], right[0]) <= 0) {
+                    if ($hasOwn(left, 0)) {
+                        result[next] = left[0];
+                    }
+
+                    pShift.call(left);
+                } else {
+                    if ($hasOwn(right, 0)) {
+                        result[next] = right[0];
+                    }
+
+                    pShift.call(right);
+                }
+            } else if (sComp <= 0) {
+                if ($hasOwn(left, 0)) {
+                    result[next] = left[0];
+                }
+
+                pShift.call(left);
             } else {
-                pPush.call(result, pShift.call(right));
+                if ($hasOwn(right, 0)) {
+                    result[next] = right[0];
+                }
+
+                pShift.call(right);
             }
+
+            next += 1;
         }
 
         while (left.length) {
-            pPush.call(result, pShift.call(left));
+            if ($hasOwn(left, 0)) {
+                result[next] = left[0];
+            }
+
+            pShift.call(left);
+            next += 1;
         }
 
         while (right.length) {
-            pPush.call(result, pShift.call(right));
+            if ($hasOwn(right, 0)) {
+                result[next] = right[0];
+            }
+
+            pShift.call(right);
+            next += 1;
         }
 
         return result;
@@ -5966,16 +6043,24 @@
         throwIfNotAFunction(comparefn);
         if (length > 1) {
             sorted = mergeSort(object, comparefn);
-            for (index = 0; index < length; index += 1) {
-                object[index] = sorted[index];
+            if (isArray(object) || isArguments(object)) {
+                object.length = 0;
+            } else {
+                $splice(object, 0, object.length);
             }
 
+            object.length = sorted.length;
+            for (index = 0; index < length; index += 1) {
+                if ($hasOwn(sorted, index)) {
+                    object[index] = sorted[index];
+                }
+            }
         }
 
         return object;
     };
 
-    $.Array.stableSort = stableSort = toMethod($.Array.prototype.stableSort);
+    $.Array.stableSort = toMethod($.Array.prototype.stableSort);
 
     /**
      * This {@link boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
@@ -7398,8 +7483,8 @@
                 return false;
             }
         } else {
-            stableSort(ka);
-            stableSort(kb);
+            pSort.call(ka);
+            pSort.call(kb);
             for (index = 0; index < length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;
@@ -7483,8 +7568,8 @@
                 return false;
             }
         } else {
-            stableSort(ka);
-            stableSort(kb);
+            pSort.call(ka);
+            pSort.call(kb);
             for (index = 0; index < length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;

@@ -138,13 +138,39 @@
             expect(testArray).to.eql(['a', 'b', 'c', 'd', 'e', 'f']);
         });
 
-        it('sorting [f,e,d,,,,a,c,b] ascending should result in [a,b,c,d,e,f,undefined,undefined]', function () {
+        it('sorting [f,e,d,,,,a,c,b] ascending should result in [a,b,c,d,e,f,,,]', function () {
             testArray = ['f', 'e', 'd', 1, 2, 'a', 'c', 'b'];
             delete testArray[3];
             delete testArray[4];
             utilx.Array.stableSort(testArray);
-            expect(testArray).to.eql(required.create('a', 'b', 'c', 'd', 'e', 'f', undefined, undefined));
+            var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+            expected.length = 8;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
         });
+
+        it('sorting [f,e,d,,null,,a,c,b] ascending should result in [a,b,c,d,e,f,null,,,]', function () {
+            testArray = ['f', 'e', 'd', 1, null, 2, 'a', 'c', 'b'];
+            delete testArray[3];
+            delete testArray[5];
+            utilx.Array.stableSort(testArray);
+            var expected = ['a', 'b', 'c', 'd', 'e', 'f', null];
+            expected.length = 9;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
+        });
+
+        /*jslint maxlen: 125 */
+        it('sorting [f,e,d,,null,undefined,a,c,b] ascending should result in [a,b,c,d,e,f,null,undefined,,]', function () {
+            testArray = required.create('f', 'e', 'd', 1, null, undefined, 'a', 'c', 'b');
+            delete testArray[3];
+            utilx.Array.stableSort(testArray);
+            var expected = required.create('a', 'b', 'c', 'd', 'e', 'f', null, undefined);
+            expected.length = 9;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
+        });
+        /*jslint maxlen: 120 */
 
         it('sorting [] ascending should result in []', function () {
             testArray = [];
@@ -195,13 +221,39 @@
             expect(testArray).to.eql(['f', 'e', 'd', 'c', 'b', 'a']);
         });
 
-        it('sorting [f,e,d,,,a,c,b] descending should result in [undefined undefined,f,e,d,c,b,a]', function () {
+        it('sorting [f,e,d,,,a,c,b] descending should result in [f,e,d,c,b,a,,,]', function () {
             testArray = ['f', 'e', 'd', 1, 2, 'a', 'c', 'b'];
             delete testArray[3];
             delete testArray[4];
             utilx.Array.stableSort(testArray, descending);
-            expect(testArray).to.eql(required.create(undefined, undefined, 'f', 'e', 'd', 'c', 'b', 'a'));
+            var expected = ['f', 'e', 'd', 'c', 'b', 'a'];
+            expected.length = 8;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
         });
+
+        it('sorting [f,e,d,,null,,a,c,b] descending should result in [null,f,e,d,c,b,a,,,]', function () {
+            testArray = ['f', 'e', 'd', 1, null, 2, 'a', 'c', 'b'];
+            delete testArray[3];
+            delete testArray[5];
+            utilx.Array.stableSort(testArray, descending);
+            var expected = [null, 'f', 'e', 'd', 'c', 'b', 'a'];
+            expected.length = 9;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
+        });
+
+        /*jslint maxlen: 125 */
+        it('sorting [f,e,d,undefined,null,,a,c,b] descending should result in [null,f,e,d,c,b,a,undefined,,]', function () {
+            testArray = required.create('f', 'e', 'd', undefined, null, 2, 'a', 'c', 'b');
+            delete testArray[5];
+            utilx.Array.stableSort(testArray, descending);
+            var expected = required.create(null, 'f', 'e', 'd', 'c', 'b', 'a', undefined);
+            expected.length = 9;
+            expect(testArray.length).to.eql(expected.length);
+            expect(testArray).to.eql(expected);
+        });
+        /*jslint maxlen: 120 */
 
         it('sorting [] descending should result in []', function () {
             testArray = [];
@@ -306,6 +358,27 @@
                 4: 2,
                 5: 1,
                 length: 6
+            });
+
+            testArray = {
+                0: 5,
+                1: 2,
+                2: 4,
+                4: null,
+                6: 1,
+                7: 3,
+                length: 8
+            };
+
+            utilx.Array.stableSort(testArray, descending);
+            expect(testArray).to.eql({
+                0: null,
+                1: 5,
+                2: 4,
+                3: 3,
+                4: 2,
+                5: 1,
+                length: 8
             });
         });
     });
