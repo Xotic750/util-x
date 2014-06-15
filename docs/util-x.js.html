@@ -1201,6 +1201,7 @@
 
         pHasOwn = base.Object.hasOwn,
         pIsPrototypeOf = base.Object.isPrototypeOf,
+        mDefineProperty = base.Object.defineProperty,
         mGetPrototypeOf = base.Object.getPrototypeOf,
         mKeys = base.Object.keys,
         mParse,
@@ -1212,6 +1213,9 @@
         mParseInt = base.parseInt,
         mParsefloat = base.parseFloat,
         mIsFinite = base.isFinite,
+        mIsNaN = base.isNaN,
+
+        pBValueOf = base.Boolean.valueOf,
 
         $hasOwn,
         $toString,
@@ -1247,11 +1251,13 @@
         stringContains,
         pPowerSet,
         toInt32,
+        isUint32,
         $exec,
         $test,
         $slice,
         $split,
         $replace,
+        noop,
 
         /**
          * Indicates if object suffers the don'r enum bug
@@ -1689,7 +1695,7 @@
      * @function
      * @returns {undefined}
      */
-    $.Function.noop = function () {
+    $.Function.noop = noop = function () {
         return;
     };
 
@@ -2126,7 +2132,7 @@
         return inputArg !== null &amp;&amp;
                 typeof inputArg === 'object' &amp;&amp;
                 toClass(inputArg) === classBoolean &amp;&amp;
-                base.Boolean.valueOf.call(inputArg);
+                pBValueOf.call(inputArg);
     };
 
     /**
@@ -2141,7 +2147,7 @@
         return inputArg !== null &amp;&amp;
                 typeof inputArg === 'object' &amp;&amp;
                 toClass(inputArg) === classBoolean &amp;&amp;
-                !base.Boolean.valueOf.call(inputArg);
+                !pBValueOf.call(inputArg);
     };
 
     /**
@@ -2189,7 +2195,7 @@
      * @returns {boolean}
      */
     $.Boolean.isTrueAny = function (inputArg) {
-        return toClass(inputArg) === classBoolean &amp;&amp; base.Boolean.valueOf.call(inputArg);
+        return toClass(inputArg) === classBoolean &amp;&amp; pBValueOf.call(inputArg);
     };
 
     /**
@@ -2201,7 +2207,7 @@
      * @returns {boolean}
      */
     $.Boolean.isFalseAny = function (inputArg) {
-        return toClass(inputArg) === classBoolean &amp;&amp; !base.Boolean.valueOf.call(inputArg);
+        return toClass(inputArg) === classBoolean &amp;&amp; !pBValueOf.call(inputArg);
     };
 
     /**
@@ -2598,19 +2604,19 @@
      * @returns {boolean}
      */
     $.Number.outRange = function (value, min, max) {
-        if ((toClass(value) === classNumber &amp;&amp; !base.isNaN(value)) || isNumeric(value)) {
+        if ((toClass(value) === classNumber &amp;&amp; !mIsNaN(value)) || isNumeric(value)) {
             value = +value;
         } else {
             return true;
         }
 
-        if ((toClass(min) === classNumber &amp;&amp; !base.isNaN(min)) || isNumeric(min)) {
+        if ((toClass(min) === classNumber &amp;&amp; !mIsNaN(min)) || isNumeric(min)) {
             min = +min;
         } else {
             return true;
         }
 
-        if ((toClass(max) === classNumber &amp;&amp; !base.isNaN(min)) || isNumeric(max)) {
+        if ((toClass(max) === classNumber &amp;&amp; !mIsNaN(min)) || isNumeric(max)) {
             max = +max;
         } else {
             return true;
@@ -3191,8 +3197,7 @@
                 /*jshint unused:false */
                 var fn = throwIfNotAFunction(this),
                     args = $slice(arguments, 1),
-                    bound = new CFunction('binder', 'return function(' +
-                                              bindArgs(fn.length - args.length) +
+                    bound = new CFunction('binder', 'return function(' + bindArgs(fn.length - args.length) +
                         '){return binder.apply(this,arguments);}')(function () {
                         var binderArgs = pConcat.call(args, $slice(arguments)),
                             result;
@@ -3602,7 +3607,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Number.isUint32 = function (inputArg) {
+    $.Number.isUint32 = isUint32 = function (inputArg) {
         return isSafeInteger(inputArg) &amp;&amp; inputArg >= 0 &amp;&amp; inputArg &lt;= MAX_UINT32;
     };
 
@@ -6830,16 +6835,12 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
      */
     try {
-        (function (
-            noop,
-            isUint32,
-            defineProp
-        ) {
+        (function () {
             if (testShims) {
                 throw new CError();
             }
 
-            if (defineProp({}, 'sentinel', { value: null }) !== null) {
+            if (mDefineProperty({}, 'sentinel', { value: null }) !== null) {
                 throw new CError('Fails sentinel check');
             }
 
@@ -6850,7 +6851,7 @@
 
             // Test string integer
             try {
-                if (defineProp([], '1.', { value: null })[1] !== null) {
+                if (mDefineProperty([], '1.', { value: null })[1] !== null) {
                     throw new CError('Fails integer check');
                 }
             } catch (eDP1) {
@@ -6859,7 +6860,7 @@
 
             // Test assign to array
             try {
-                if (defineProp([], '0', { value: null }) !== null) {
+                if (mDefineProperty([], '0', { value: null }) !== null) {
                     throw new CError('Fails array check');
                 }
             } catch (eDP2) {
@@ -6868,7 +6869,7 @@
 
             // Test overwrite array property when no value defined
             try {
-                if (defineProp([10], '0', {})[0] !== 10) {
+                if (mDefineProperty([10], '0', {})[0] !== 10) {
                     throw new CError('Fails overwrite check');
                 }
             } catch (eDP3) {
@@ -6893,10 +6894,10 @@
                         descriptor.value = object[property];
                     }
 
-                    return defineProp(object, property, descriptor);
+                    return mDefineProperty(object, property, descriptor);
                 };
             } else {
-                $.Object.defineProperty = defineProp;
+                $.Object.defineProperty = mDefineProperty;
             }
 
             testTemp.dpObject = {
@@ -6934,12 +6935,7 @@
 
                 throw new CError();
             }
-        }(
-            $.Function.noop,
-            $.Number.isUint32,
-            base.Object.defineProperty,
-            propNotEnumerable
-        ));
+        }());
     } catch (eDP) {
         (function () {
             var definePropertyInteger = (function () {
@@ -7068,7 +7064,7 @@
     // detect a Rhino bug and patch it
     try {
         $.Object.freeze({
-            noop: $.Function.noop
+            noop: noop
         });
     } catch (eFreeze) {
         $.Object.freeze = (function (
@@ -8115,7 +8111,7 @@
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
                 // within an object or array).
-                $.Object.isUndefined(mStringify($.Function.noop)) &amp;&amp;
+                $.Object.isUndefined(mStringify(noop)) &amp;&amp;
                 // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
                 // 3.1b3 pass this test.
                 $.Object.isUndefined(mStringify(Undefined)) &amp;&amp;
@@ -8135,11 +8131,11 @@
                 // YUI 3.0.0b1 fails to serialize `null` literals.
                 mStringify(null) === 'null' &amp;&amp;
                 // FF 3.1b1, 2 halts serialization if an array contains a function:
-                // `[1, true, $.Function.noop, 1]` serializes as "[1,true,],". These versions
+                // `[1, true, noop, 1]` serializes as "[1,true,],". These versions
                 // of Firefox also allow trailing commas in JSON objects and arrays.
                 // FF 3.1b3 elides non-JSON values from objects and arrays, unless they
                 // define custom `toJSON` methods.
-                mStringify([Undefined, $.Function.noop, null]) === '[null,null,null]' &amp;&amp;
+                mStringify([Undefined, noop, null]) === '[null,null,null]' &amp;&amp;
                 // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
                 // where character escape codes are expected (e.g., `\b` => `\u0008`).
                 // Removed test for '\0' => '\\'u0000'as Chrome 10 fails in 'use strict' mode with
@@ -8781,7 +8777,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Sun Jun 15 2014 04:21:21 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Sun Jun 15 2014 10:58:17 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
