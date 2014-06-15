@@ -58,19 +58,19 @@
             });
         });
 
-        it('should be ok in each case', function () {
-            expect(utilx.Object.isEmpty({})).to.be.ok();
-            expect(utilx.Object.isEmpty([])).to.be.ok();
-            expect(utilx.Object.isEmpty(required.noop)).to.be.ok();
-            expect(utilx.Object.isEmpty(X)).to.be.ok();
+        it('should true in each case', function () {
+            expect(utilx.Object.isEmpty({})).to.be(true);
+            expect(utilx.Object.isEmpty([])).to.be(true);
+            expect(utilx.Object.isEmpty(required.noop)).to.be(true);
+            expect(utilx.Object.isEmpty(X)).to.be(true);
         });
 
-        it('should not be ok in each case', function () {
-            expect(utilx.Object.isEmpty({toString: required.noop})).to.not.be.ok();
-            expect(utilx.Object.isEmpty({valueOf: required.noop})).to.not.be.ok();
-            expect(utilx.Object.isEmpty([1])).to.not.be.ok();
-            expect(utilx.Object.isEmpty(F)).to.not.be.ok();
-            expect(utilx.Object.isEmpty(X.prototype)).to.not.be.ok();
+        it('should false in each case', function () {
+            expect(utilx.Object.isEmpty({toString: required.noop})).to.be(false);
+            expect(utilx.Object.isEmpty({valueOf: required.noop})).to.be(false);
+            expect(utilx.Object.isEmpty([1])).to.be(false);
+            expect(utilx.Object.isEmpty(F)).to.be(false);
+            expect(utilx.Object.isEmpty(X.prototype)).to.be(false);
         });
     });
 }());
