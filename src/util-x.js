@@ -309,42 +309,6 @@
     };
 
     /**
-     * @private
-     * @name base.String.whiteSpaces
-     * @type {Array.<number>}
-     */
-    base.String.whiteSpaces = [
-        0x0009, // Tab
-        0x000a, // Line Feed
-        0x000b, // Vertical Tab
-        0x000c, // Form Feed
-        0x000d, // Carriage Return
-        0x0020, // Space
-        0x0085, // Next line
-        0x00a0, // No-break space
-        0x1680, // Ogham space mark
-        0x180e, // Mongolian vowel separator
-        0x2000, // En quad
-        0x2001, // Em quad
-        0x2002, // En space
-        0x2003, // Em space
-        0x2004, // Three-per-em space
-        0x2005, // Four-per-em space
-        0x2006, // Six-per-em space
-        0x2007, // Figure space
-        0x2008, // Punctuation space
-        0x2009, // Thin space
-        0x200a, // Hair space
-        0x200b, // Zero width space
-        0x2028, // Line separator
-        0x2029, // Paragraph separator
-        0x202f, // Narrow no-break space
-        0x205f, // Medium mathematical space
-        0x3000, // Ideographic space
-        0xfeff // Byte Order Mark
-    ];
-
-    /**
      * Set of all possible Number values including the special Not-a-Number (NaN) values, positive infinity,
      * and negative infinity.
      * @typedef {number} number
@@ -435,11 +399,7 @@
         proto: RegExp.prototype,
         exec: RegExp.prototype.exec,
         test: RegExp.prototype.test,
-        toString: RegExp.prototype.toString,
-        splitNewLine: new RegExp('\\r\\n|\\n'),
-        plusMinus: new RegExp('^[+\\-]?'),
-        notDigits: new RegExp('^\\d+$'),
-        testStr: new RegExp('test')
+        toString: RegExp.prototype.toString
     };
 
     /**
@@ -707,6 +667,11 @@
         CReferenceError = base.ReferenceError.Ctr,
         CEvalError = base.EvalError.Ctr,
         CURIError = base.URIError.Ctr,
+        CNumber = base.Number.Ctr,
+        CString = base.String.Ctr,
+        CDate = base.Date.Ctr,
+        CRegExp = base.RegExp.Ctr,
+        CFunction = base.Function.Ctr,
 
         protoObject = base.Object.proto,
         protoFunction = base.Function.proto,
@@ -723,6 +688,13 @@
         protoEvalError = base.EvalError.proto,
         protoReferenceError = base.ReferenceError.proto,
         protoUTIError = base.URIError.proto,
+
+        mLookupGetter = base.Object.lookupGetter,
+        mLookupSetter = base.Object.lookupSetter,
+        mDefineGetter = base.Object.defineGetter,
+        mDefineSetter = base.Object.defineSetter,
+
+        mGetOwnPropertyDescriptor = base.Object.getOwnPropertyDescriptor,
 
         /**
          * The Object constructor creates an object wrapper.
@@ -1132,68 +1104,6 @@
 
         /**
          * @private
-         * @name hasOwn
-         * @function
-         * @param {Object} object
-         * @param {StringLike} property
-         * @returns {boolean}
-         */
-        hasOwn = toMethod(base.Object.hasOwn),
-
-        /**
-         * @private
-         * @name $slice
-         * @function
-         * @param {ArrayLike} array
-         * @param {NumberLike} [start]
-         * @param {NumberLike} [end]
-         * @returns {Array}
-         */
-        $slice,
-
-        /**
-         * @private
-         * @name $split
-         * @function
-         * @param {string} stringArg
-         * @param {string|RegExp} [separator]
-         * @param {number} [limit]
-         * @returns {Array.<string>}
-         */
-        $split,
-
-        /**
-         * @private
-         * @name $replace
-         * @function
-         * @param {RegExp|string} search
-         * @param {string|Function} replacement
-         * @returns {string}
-         */
-        $replace,
-
-        /**
-         * @private
-         * @name test
-         * @function
-         * @param {RegExp} regex
-         * @param {string} string
-         * @returns {boolean}
-         */
-        test = toMethod(base.RegExp.test),
-
-        /**
-         * @private
-         * @name exec
-         * @function
-         * @param {RegExp} regex
-         * @param {string} string
-         * @returns {(Array|null)}
-         */
-        exec = toMethod(base.RegExp.exec),
-
-        /**
-         * @private
          * @name isStrictMode
          * @type {boolean}
          */
@@ -1243,8 +1153,6 @@
         mOf = base.Array.of,
         mFrom = base.Array.from,
 
-        CRegExp = base.RegExp.Ctr,
-
         cString = base.String.Ctr,
         pMatch = base.String.match,
         pSplit = base.String.split,
@@ -1260,13 +1168,25 @@
         pSValueOf = base.String.valueOf,
         pReplace = base.String.replace,
 
+        pGetTime = base.Date.getTime,
+
         pNToString = base.Number.toString,
 
+        pHasOwn = base.Object.hasOwn,
+        pIsPrototypeOf = base.Object.isPrototypeOf,
+        mGetPrototypeOf = base.Object.getPrototypeOf,
         mKeys = base.Object.keys,
         mParse,
         mStringify,
 
-        hasOwnProp,
+        pExec = base.RegExp.exec,
+        pTest = base.RegExp.test,
+
+        mParseInt = base.parseInt,
+        mParsefloat = base.parseFloat,
+        mIsFinite = base.isFinite,
+
+        $hasOwn,
         $toString,
         $repeat,
         isNotPrimitive,
@@ -1280,7 +1200,7 @@
         isNumeric,
         isPlainObject,
         isErrorTypeConstructor,
-        getPrototypeOf,
+        $getPrototypeOf,
         modulo,
         $forEach,
         $push,
@@ -1299,6 +1219,12 @@
         stableSort,
         stringContains,
         pPowerSet,
+        toInt32,
+        $exec,
+        $test,
+        $slice,
+        $split,
+        $replace,
 
         /**
          * Indicates if object suffers the don'r enum bug
@@ -1392,7 +1318,7 @@
                     for (prop in props) {
                         /*jslint forin: false */
                         it = shadowed[index];
-                        if (!hasOwn(props[prop], it)) {
+                        if (!pHasOwn.call(props[prop], it)) {
                             props[prop][it] = false;
                         }
                         /*jslint forin: true */
@@ -2440,7 +2366,8 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    if (!testShims && base.RegExp.testStr !== null && typeof base.RegExp.testStr === 'object') {
+    testTemp.testRx = new CRegExp('test');
+    if (!testShims && testTemp.testRx !== null && typeof testTemp.testRx === 'object') {
         $.Object.isTypeOfObject = function (inputArg) {
             return inputArg === null || typeof inputArg === 'object';
         };
@@ -2589,19 +2516,23 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $.Object.isNumeric = isNumeric = function (inputArg) {
-        var val = false,
-            string,
-            number;
+    $.Object.isNumeric = isNumeric = (function () {
+        var plusMinus = new CRegExp('^[+\\-]?');
 
-        if (toClass(inputArg) === classNumber || toClass(inputArg) === classString) {
-            string = $.String.replace(inputArg, base.RegExp.plusMinus, '');
-            number = base.parseFloat(string);
-            val = number === number && base.isFinite(string);
-        }
+        return function (inputArg) {
+            var val = false,
+                string,
+                number;
 
-        return val;
-    };
+            if (toClass(inputArg) === classNumber || toClass(inputArg) === classString) {
+                string = pReplace.call(inputArg, plusMinus, '');
+                number = mParsefloat(string);
+                val = number === number && mIsFinite(string);
+            }
+
+            return val;
+        };
+    }());
 
     /**
      * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
@@ -2731,10 +2662,8 @@
         return $toString(property) in cObject(checkObjectCoercible(object));
     };
 
-    (function (
-        classString
-    ) {
-        var beginsFunction = new RegExp('^\\s*\\bfunction\\b'),
+    (function () {
+        var beginsFunction = new CRegExp('^\\s*\\bfunction\\b'),
             runIENativeFunction,
             isIENativeFunction,
             isNativeFunction,
@@ -2750,7 +2679,7 @@
          * @returns {boolean}
          */
         function isFunctionBasic(inputArg) {
-            var isFn = toClass(inputArg) === classString,
+            var isFn = toClass(inputArg) === classFunction,
                 type;
 
             if (!isFn && inputArg !== null) {
@@ -2792,7 +2721,7 @@
                             isNotPrimitive(window.alert) &&
                             typeof window.alert.toString;
 
-        if (tmp === 'undefined' && test(beginsFunction, window.alert)) {
+        if (tmp === 'undefined' && pTest.call(beginsFunction, window.alert)) {
             isIENativeFunction = function (inputArg) {
                 // inputArg
                 // we want return true or false
@@ -2814,7 +2743,7 @@
 
                 var type = typeof inputArg.toString;
 
-                return type === 'undefined' && test(beginsFunction, inputArg);
+                return type === 'undefined' && pTest.call(beginsFunction, inputArg);
             };
         } else {
             isIENativeFunction = function () {
@@ -2832,15 +2761,14 @@
          */
         try {
             /*jslint evil: true */
-            //eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
-            eval('(' + base.Function.toString.call(base.Function.Ctr) + ')');
+            eval('(' + base.Function.toString.call(CFunction) + ')');
             /*jslint evil: false */
             // Opera 10 doesn't play ball so have to test the string
-            operaNative = new RegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|' +
+            operaNative = new CRegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|' +
                                      '\\/\\* source code not available \\*\\/) \\}$');
 
             isNativeFunction = function (inputArg) {
-                return test(operaNative, inputArg);
+                return pTest.call(operaNative, inputArg);
             };
         } catch (eINF1) {
             isNativeFunction = function (inputArg) {
@@ -2943,9 +2871,7 @@
                     type !== 'number' &&
                     (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
         };
-    }(
-        classFunction
-    ));
+    }());
 
     /**
      * Creates a new array from arguments, starting at start and ending at end.
@@ -3038,7 +2964,7 @@
                 type !== 'boolean' &&
                 type !== 'string' &&
                 type !== 'number' &&
-                hasOwn(inputArg, 'length')) {
+                pHasOwn.call(inputArg, 'length')) {
 
             length = inputArg.length;
             if (isInteger(length) && length >= 0) {
@@ -3145,7 +3071,7 @@
      * @private
      * @type {boolean}
      */
-    areGetSetSupported = isFunction(base.Object.lookupGetter) && isFunction(base.Object.lookupSetter);
+    areGetSetSupported = isFunction(mLookupGetter) && isFunction(mLookupSetter);
 
     /**
      * Target function.
@@ -3238,7 +3164,7 @@
                 /*jshint unused:false */
                 var fn = throwIfNotAFunction(this),
                     args = $slice(arguments, 1),
-                    bound = base.Function.Ctr('binder', 'return function(' +
+                    bound = new CFunction('binder', 'return function(' +
                                               bindArgs(fn.length - args.length) +
                         '){return binder.apply(this,arguments);}')(function () {
                         var binderArgs = pConcat.call(args, $slice(arguments)),
@@ -3498,7 +3424,7 @@
      * @param {*} inputArg
      * @returns {number}
      */
-    $.Number.toInt32 = function (inputArg) {
+    $.Number.toInt32 = toInt32 = function (inputArg) {
         var number = +inputArg,
             val = 0;
 
@@ -3974,13 +3900,13 @@
     }
 
     (function () {
-        var clipDups = new RegExp('([\\s\\S])(?=[\\s\\S]*\\1)', 'g'),
+        var clipDups = new CRegExp('([\\s\\S])(?=[\\s\\S]*\\1)', 'g'),
             // Check for correct `exec` handling of nonparticipating capturing groups
-            npcgType = typeof exec(new RegExp('()??'), '')[1],
-            escapeThese = new RegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
+            npcgType = typeof pExec.call(new CRegExp('()??'), '')[1],
+            escapeThese = new CRegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
             correctExecNpcg = npcgType === 'undefined',
-            replacementToken = new RegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', 'g'),
-            getNativeFlags = new RegExp('\\/([a-z]*)$', 'i'),
+            replacementToken = new CRegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', 'g'),
+            getNativeFlags = new CRegExp('\\/([a-z]*)$', 'i'),
             es5limit = pJoin.call(pSplit.call('test', /(?:)/, -1), '') === 'test' &&
                         pJoin.call(pSplit.call('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
                         pJoin.call(pSplit.call('a b c d', / /, UWORD32 + 1), '') === 'a' &&
@@ -4032,7 +3958,7 @@
             }
 
             // Get native flags in use
-            flags = exec(getNativeFlags, $toString(regExpArg))[1];
+            flags = pExec.call(getNativeFlags, $toString(regExpArg))[1];
             if (options.add) {
                 flags = pReplace.call(onlyCoercibleToString(flags + options.add), clipDups, '');
             }
@@ -4067,7 +3993,7 @@
             throwIfIsNotRegExp(this);
             str = $toString(stringArg);
             origLastIndex = this.lastIndex;
-            match = base.RegExp.exec.apply(this, arguments);
+            match = pExec.apply(this, arguments);
             if (isArray(match)) {
                 // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
                 // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
@@ -4117,7 +4043,7 @@
             return match;
         };
 
-        $.RegExp.exec = exec = toMethod($.RegExp.prototype.exec);
+        $.RegExp.exec = $exec = toMethod($.RegExp.prototype.exec);
 
         /**
          * Fixes browser bugs in the native `RegExp.prototype.test`.
@@ -4131,10 +4057,10 @@
          */
         $.RegExp.prototype.test = function (stringArg) {
             // Do this the easy way :-)
-            return !!exec(this, stringArg);
+            return !!$exec(this, stringArg);
         };
 
-        $.RegExp.test = test = toMethod($.RegExp.prototype.test);
+        $.RegExp.test = $test = toMethod($.RegExp.prototype.test);
 
         /**
          * Executes a regex search in a specified string. Returns a match array or `null`.
@@ -4162,7 +4088,7 @@
             });
 
             r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
-            match = exec(r2, str);
+            match = $exec(r2, str);
             if (regExpArg.global) {
                 if (isArray(match)) {
                     regExpArg.lastIndex = r2.lastIndex;
@@ -4227,11 +4153,11 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
          */
         if (testShims ||
-                pSplit.call('test', new RegExp('(?:test)*')).length !== 2 ||
-                pSplit.call('.', new RegExp('(.?)(.?)')).length !== 4 ||
-                pSplit.call('tesst', new RegExp('(s)*'))[1] === 't' ||
-                pSplit.call('', new RegExp('.?')).length > 0 ||
-                pSplit.call('.', new RegExp('()()')).length > 1) {
+                pSplit.call('test', new CRegExp('(?:test)*')).length !== 2 ||
+                pSplit.call('.', new CRegExp('(.?)(.?)')).length !== 4 ||
+                pSplit.call('tesst', new CRegExp('(s)*'))[1] === 't' ||
+                pSplit.call('', new CRegExp('.?')).length > 0 ||
+                pSplit.call('.', new CRegExp('()()')).length > 1) {
 
             $.String.prototype.split = function (separator, limit) {
                 var str = onlyCoercibleToString(this),
@@ -4281,7 +4207,7 @@
                         });
 
                         if (lastLastIndex === str.length) {
-                            if (!test(separator, '') || lastLength) {
+                            if (!$test(separator, '') || lastLength) {
                                 pPush.call(output, '');
                             }
                         } else {
@@ -4479,7 +4405,7 @@
          * @param {string} stringArg String to search.
          * @param {(RegExp|*)} regExpArg Regex to search with. If not a regex object, it is passed to `RegExp`.
          * @returns {Array} If `regex` uses flag g, an array of match strings or `null`. Without flag g,
-         * the result of calling `$.RegExp.exec(regExpArg)`.
+         * the result of calling `$exec(regExpArg)`.
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match
          */
         $.String.prototype.match = function (regExpArg) {
@@ -4496,7 +4422,7 @@
                 return result;
             }
 
-            return $.RegExp.exec(regExpArg, str);
+            return $exec(regExpArg, str);
         };
 
         $.String.match = toMethod($.String.prototype.match);
@@ -4763,27 +4689,27 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tointeger
      */
-    if (!testShims && isNative(base.Object.getPrototypeOf)) {
+    if (!testShims && isNative(mGetPrototypeOf)) {
         try {
-            if (base.Object.getPrototypeOf(1) === protoNumber &&
-                    base.Object.getPrototypeOf(true) === protoNumber &&
-                    base.Object.getPrototypeOf('') === protoNumber) {
+            if (mGetPrototypeOf(1) === protoNumber &&
+                    mGetPrototypeOf(true) === protoNumber &&
+                    mGetPrototypeOf('') === protoNumber) {
 
-                $.Object.getPrototypeOf = getPrototypeOf = base.Object.getPrototypeOf;
+                $.Object.getPrototypeOf = mGetPrototypeOf;
             } else {
                 throw new CError();
             }
         } catch (eGPO) {
-            $.Object.getPrototypeOf = getPrototypeOf = function (object) {
-                return base.Object.getPrototypeOf(cObject(checkObjectCoercible(object)));
+            $.Object.getPrototypeOf = function (object) {
+                return mGetPrototypeOf(cObject(checkObjectCoercible(object)));
             };
         }
     } else if (!testShims && protoObject[stringProto] === null) {
-        $.Object.getPrototypeOf = getPrototypeOf = function (object) {
+        $.Object.getPrototypeOf = function (object) {
             return cObject(checkObjectCoercible(object))[stringProto];
         };
     } else {
-        $.Object.getPrototypeOf = getPrototypeOf = (function () {
+        $.Object.getPrototypeOf = (function () {
             var fixOpera10GetPrototypeOf;
 
             if (returnArgs().constructor.prototype !== protoObject) {
@@ -4823,6 +4749,8 @@
         }());
     }
 
+    $getPrototypeOf = $.Object.getPrototypeOf;
+
     /**
      * Check to see if an object is a plain object (created using "{}" or "new Object").
      * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
@@ -4835,7 +4763,7 @@
     $.Object.isPlainObject = isPlainObject = function (object) {
         return toClass(object) === classObject &&
                 !isFunction(object) &&
-                getPrototypeOf(object) === protoObject;
+                $getPrototypeOf(object) === protoObject;
     };
 
     /**
@@ -4851,15 +4779,15 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     if (hasDontEnumBug) {
-        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
+        $.Object.prototype.hasOwn = function (property) {
             var prop = $toString(property),
-                hop = hasOwn(this, prop),
+                hop = pHasOwn.call(this, prop),
                 length,
                 index;
 
             if (!hop && prop in this) {
                 for (index = 0, length = shadowed.length; index < length; index += 1) {
-                    if (prop === shadowed[index] && this[prop] !== getPrototypeOf(this)[prop]) {
+                    if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
                         hop = true;
                         break;
                     }
@@ -4869,18 +4797,20 @@
             return hop;
         };
 
-        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
     } else if (hasProtoEnumBug) {
-        $.Object.prototype.hasOwn = hasOwnProp = function (property) {
+        $.Object.prototype.hasOwn = function (property) {
             var prop = $toString(property);
 
-            return (prop === 'prototype' && isFunction(this)) || hasOwn(this, prop);
+            return (prop === 'prototype' && isFunction(this)) || pHasOwn.call(this, prop);
         };
 
-        $.Object.hasOwn = hasOwnProp = toMethod($.Object.prototype.hasOwn);
+        $.Object.hasOwn = toMethod($.Object.prototype.hasOwn);
     } else {
-        $.Object.hasOwn = hasOwnProp = hasOwn;
+        $.Object.hasOwn = toMethod(pHasOwn);
     }
+
+    $hasOwn = $.Object.hasOwn;
 
     /**
      * The function takes one argument inputArg, if the argument is an object whose class internal
@@ -4951,7 +4881,7 @@
      * @returns {(number|undefined)}
      */
     $.Array.prototype.assign = (function () {
-        var rxInt = new RegExp('^[1-9]\\d*$');
+        var rxInt = new CRegExp('^[1-9]\\d*$');
 
         return function (index, value) {
             var object = toObjectFixIndexedAccess(this),
@@ -4969,7 +4899,7 @@
                         isInt = numIndex >= 0 && isSafeInteger(numIndex);
                     } else {
                         string = $toString(index);
-                        if (test(rxInt, string)) {
+                        if ($test(rxInt, string)) {
                             number = +string;
                             if (number >= 0 && isSafeInteger(number)) {
                                 numIndex = number;
@@ -5136,7 +5066,7 @@
             actualDeleteCount = mMin(mMax(toLength(deleteCount), 0), length - actualStart);
             while (k < actualDeleteCount) {
                 from = actualStart + k;
-                if (hasOwnProp(object, from)) {
+                if ($hasOwn(object, from)) {
                     pPush.call(removed, object[from]);
                 }
 
@@ -5149,7 +5079,7 @@
                 while (k < loopCache) {
                     from = k + actualDeleteCount;
                     to = k + itemCount;
-                    if (hasOwnProp(object, from)) {
+                    if ($hasOwn(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -5169,7 +5099,7 @@
                 while (k > actualStart) {
                     from = k + actualDeleteCount - 1;
                     to = k + itemCount - 1;
-                    if (hasOwnProp(object, from)) {
+                    if ($hasOwn(object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -6081,31 +6011,63 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
      */
     (function () {
-        var length = base.String.whiteSpaces.length,
+        var whiteSpaces = [
+                0x0009, // Tab
+                0x000a, // Line Feed
+                0x000b, // Vertical Tab
+                0x000c, // Form Feed
+                0x000d, // Carriage Return
+                0x0020, // Space
+                0x0085, // Next line
+                0x00a0, // No-break space
+                0x1680, // Ogham space mark
+                0x180e, // Mongolian vowel separator
+                0x2000, // En quad
+                0x2001, // Em quad
+                0x2002, // En space
+                0x2003, // Em space
+                0x2004, // Three-per-em space
+                0x2005, // Four-per-em space
+                0x2006, // Six-per-em space
+                0x2007, // Figure space
+                0x2008, // Punctuation space
+                0x2009, // Thin space
+                0x200a, // Hair space
+                0x200b, // Zero width space
+                0x2028, // Line separator
+                0x2029, // Paragraph separator
+                0x202f, // Narrow no-break space
+                0x205f, // Medium mathematical space
+                0x3000, // Ideographic space
+                0xfeff // Byte Order Mark
+            ],
+            length = whiteSpaces.length,
+            wsStr = '',
             index,
+            wsTrim,
             hex;
 
-        for (base.String.wsStr = testTemp.trimString = '', index = 0; index < length; index += 1) {
-            hex = pNToString.call(base.String.whiteSpaces[index], 16);
-            base.String.wsStr += '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
-            testTemp.trimString += base.String.fromCharCode(base.String.whiteSpaces[index]);
+        for (testTemp.trimString = '', index = 0; index < length; index += 1) {
+            hex = pNToString.call(whiteSpaces[index], 16);
+            wsStr += '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
+            testTemp.trimString += base.String.fromCharCode(whiteSpaces[index]);
+        }
+
+        try {
+            if (!testShims && isNative(pTrim) && !pTrim.call(testTemp.trimString).length) {
+                $.String.trim = toMethod(pTrim);
+            } else {
+                throw new CError();
+            }
+        } catch (eTrim) {
+            wsTrim = new CRegExp('^[' + wsStr + ']+|[' + wsStr + ']+$', 'g');
+            $.String.prototype.trim = function () {
+                return $replace(onlyCoercibleToString(this), wsTrim, '');
+            };
+
+            $.String.trim = toMethod($.String.prototype.trim);
         }
     }());
-
-    try {
-        if (!testShims && isNative(pTrim) && !pTrim.call(testTemp.trimString).length) {
-            $.String.trim = toMethod(pTrim);
-        } else {
-            throw new CError();
-        }
-    } catch (eTrim) {
-        base.RegExp.wsTrim = new RegExp('^[' + base.String.wsStr + ']+|[' + base.String.wsStr + ']+$', 'g');
-        $.String.prototype.trim = function () {
-            return $replace(onlyCoercibleToString(this), base.RegExp.wsTrim, '');
-        };
-
-        $.String.trim = toMethod($.String.prototype.trim);
-    }
 
     /**
      * This function parses a string argument and returns an integer of the specified radix or base.
@@ -6124,27 +6086,30 @@
             base.Number.parseInt(testTemp.trimString + '0x16', 10) === 0) {
 
         if (testShims ||
-                base.parseInt(testTemp.trimString + '08') !== 8 ||
-                base.parseInt(testTemp.trimString + '0x16') !== 22 ||
-                base.Number.parseInt(testTemp.trimString + '0x16', 10) === 0) {
+                mParseInt(testTemp.trimString + '08') !== 8 ||
+                mParseInt(testTemp.trimString + '0x16') !== 22 ||
+                mParseInt(testTemp.trimString + '0x16', 10) === 0) {
 
-            base.RegExp.hex = new RegExp('^0[xX]');
-            $.Number.parseInt = function (str, radix) {
-                var type = typeof radix;
+            $.Number.parseInt = (function () {
+                var hexRx = new CRegExp('^0[xX]');
 
-                str = $.String.trim(str);
-                if (type === 'undefined' || !$.Number.toInt32(radix)) {
-                    radix = test(base.RegExp.hex, str) ? 16 : 10;
-                }
+                return function (str, radix) {
+                    var type = typeof radix;
 
-                if (radix === 10 && test(base.RegExp.hex, str)) {
-                    return 0;
-                }
+                    str = $.String.trim(str);
+                    if (type === 'undefined' || !toInt32(radix)) {
+                        radix = $test(hexRx, str) ? 16 : 10;
+                    }
 
-                return base.parseInt(str, radix);
-            };
+                    if (radix === 10 && $test(hexRx, str)) {
+                        return 0;
+                    }
+
+                    return mParseInt(str, radix);
+                };
+            }());
         } else {
-            $.Number.parseInt = base.parseInt;
+            $.Number.parseInt = mParseInt;
         }
     } else {
         $.Number.parseInt = base.Number.parseInt;
@@ -6162,7 +6127,7 @@
     if (!testShims && isNative(base.Number.parseFloat)) {
         $.Number.parseFloat = base.Number.parseFloat;
     } else {
-        $.Number.parseFloat = base.parseFloat;
+        $.Number.parseFloat = mParsefloat;
     }
 
     /**
@@ -6579,7 +6544,7 @@
             }
 
             for (index = count; index >= 1; index -= 1) {
-                if (hasOwnProp(object, from)) {
+                if ($hasOwn(object, from)) {
                     object[to] = object[from];
                 } else {
                     delete object[to];
@@ -6702,7 +6667,7 @@
                     }
 
                     if (!unwanted) {
-                        if (hasOwnProp(object, prop)) {
+                        if ($hasOwn(object, prop)) {
                             pPush.call(props, prop);
                         }
                     }
@@ -6723,7 +6688,7 @@
                 nonEnum = nonEnumProps[toClass(object)];
                 for (index = 0, length = shadowed.length; index < length; index += 1) {
                     prop = shadowed[index];
-                    if (!(isProto && nonEnum[prop]) && hasOwnProp(object, prop)) {
+                    if (!(isProto && nonEnum[prop]) && $hasOwn(object, prop)) {
                         pPush.call(props, prop);
                     }
                 }
@@ -6770,8 +6735,8 @@
         throwIfNotAFunction(fn);
         for (keys = objectKeys(object), val = false, index = 0, length = keys.length; index < length; index += 1) {
             it = keys[index];
-            if (fn.call(thisArg, object[it], it, object)) {
-                val = true;
+            val = !!fn.call(thisArg, object[it], it, object);
+            if (val) {
                 break;
             }
         }
@@ -6815,9 +6780,13 @@
      * @param {*} string
      * @returns {boolean}
      */
-    $.String.prototype.isDigits = function () {
-        return $.RegExp.test(base.RegExp.notDigits, onlyCoercibleToString(this));
-    };
+    $.String.prototype.isDigits = (function () {
+        var notDigits = new CRegExp('^\\d+$');
+
+        return function () {
+            return $.RegExp.test(notDigits, onlyCoercibleToString(this));
+        };
+    }());
 
     $.String.isDigits = toMethod($.String.prototype.isDigits);
 
@@ -6882,13 +6851,13 @@
             if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
                 $.Object.defineProperty = function (object, property, descriptor) {
                     var isA = (isArray(object) || isArguments(object)) && isNumeric(property) && isUint32(+property),
-                        isB = (definePropertyPatch1 || definePropertyPatch2) && hasOwn(descriptor, 'value');
+                        isB = (definePropertyPatch1 || definePropertyPatch2) && pHasOwn.call(descriptor, 'value');
 
                     if (definePropertyPatch1 && isA) {
                         property = +property;
                     }
 
-                    if (definePropertyPatch2 && isA && (isB || !hasOwnProp(object, property))) {
+                    if (definePropertyPatch2 && isA && (isB || !$hasOwn(object, property))) {
                         object[property] = descriptor.value;
                         //ut(object, property, descriptor.value);
                     }
@@ -6911,7 +6880,7 @@
             };
 
             for (testProp in testTemp.dpObject) {
-                if (hasOwn(testTemp.dpObject, testProp)) {
+                if (pHasOwn.call(testTemp.dpObject, testProp)) {
                     defineProperty(testTemp.dpObject, testProp, propNotEnumerable);
                 }
             }
@@ -6926,7 +6895,7 @@
 
             testTemp.dpArray = [10, true, '', noop];
             for (testProp in testTemp.dpArray) {
-                if (hasOwn(testTemp.dpArray, testProp)) {
+                if (pHasOwn.call(testTemp.dpArray, testProp)) {
                     defineProperty(testTemp.dpArray, testProp, propNotEnumerable);
                 }
             }
@@ -6945,12 +6914,9 @@
             propNotEnumerable
         ));
     } catch (eDP) {
-        (function (
-            defineGetter,
-            defineSetter
-        ) {
+        (function () {
             var definePropertyInteger = (function () {
-                    var rxInt = new RegExp('^[1-9]\\d*.?$');
+                    var rxInt = new CRegExp('^[1-9]\\d*.?$');
 
                     return function (index) {
                         var val;
@@ -6959,7 +6925,7 @@
                             val = +index;
                         } else {
                             val = $toString(index);
-                            if (test(rxInt, val)) {
+                            if ($test(rxInt, val)) {
                                 val = +val;
                             }
                         }
@@ -6971,7 +6937,9 @@
             $.Object.defineProperty = function (object, property, descriptor) {
                 throwIfIsPrimitive(object);
                 throwIfIsPrimitive(descriptor);
-                if (hasOwn(descriptor, 'value') && (hasOwn(descriptor, 'get') || hasOwn(descriptor, 'set'))) {
+                if (pHasOwn.call(descriptor, 'value') &&
+                            (pHasOwn.call(descriptor, 'get') || pHasOwn.call(descriptor, 'set'))) {
+
                     throw new CTypeError('Invalid property. A property cannot have accessors and a value');
                 }
 
@@ -6979,8 +6947,8 @@
                     type,
                     index;
 
-                if (!hasOwn(descriptor, 'get') && !hasOwn(descriptor, 'set')) {
-                    if (hasOwn(descriptor, 'value') || !hasOwnProp(object, property)) {
+                if (!pHasOwn.call(descriptor, 'get') && !pHasOwn.call(descriptor, 'set')) {
+                    if (pHasOwn.call(descriptor, 'value') || !$hasOwn(object, property)) {
                         index = definePropertyInteger(property);
                         if (isProtoSupported) {
                             prototype = object[stringProto];
@@ -7003,25 +6971,22 @@
                         }
                     }
                 } else {
-                    if (!isNative(defineGetter) || !isNative(defineSetter)) {
+                    if (!isNative(mDefineGetter) || !isNative(mDefineSetter)) {
                         throw new CTypeError('getters & setters can not be defined on this javascript engine');
                     }
 
                     if (isFunction(descriptor.get)) {
-                        defineGetter.call(object, property, descriptor.get);
+                        mDefineGetter.call(object, property, descriptor.get);
                     }
 
                     if (isFunction(descriptor.set)) {
-                        defineSetter.call(object, property, descriptor.set);
+                        mDefineSetter.call(object, property, descriptor.set);
                     }
                 }
 
                 return object;
             };
-        }(
-            base.Object.defineGetter,
-            base.Object.defineSetter
-        ));
+        }());
     }
 
     defineProperty = $.Object.defineProperty;
@@ -7161,7 +7126,7 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
      */
-    if (!testShims && isNative(base.Object.isPrototypeOf)) {
+    if (!testShims && isNative(pIsPrototypeOf)) {
         $.Object.instanceOf = function (object, ctr) {
             throwIfNotAFunction(ctr);
 
@@ -7172,7 +7137,7 @@
                 type !== 'boolean' &&
                 type !== 'string' &&
                 type !== 'number' &&
-                (object instanceof ctr || base.Object.isPrototypeOf.call(ctr.prototype, object));
+                (object instanceof ctr || pIsPrototypeOf.call(ctr.prototype, object));
         };
     } else {
         $.Object.instanceOf = function (object, ctr) {
@@ -7195,7 +7160,7 @@
                             break;
                         }
 
-                        object = getPrototypeOf(object);
+                        object = $getPrototypeOf(object);
                     }
                 }
             }
@@ -7236,7 +7201,7 @@
                     keysArray = objectKeys(from);
                     for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
                         nextKey = keysArray[nextIndex];
-                        if (hasOwnProp(from, nextKey)) {
+                        if ($hasOwn(from, nextKey)) {
                             to[nextKey] = from[nextKey];
                         }
                     }
@@ -7326,7 +7291,7 @@
             throw new CTypeError('this is not a Date object.');
         }
 
-        var ms = base.Date.getTime.call(this);
+        var ms = pGetTime.call(this);
 
         return ms === ms;
     };
@@ -7345,7 +7310,7 @@
         $.Date.now = base.Date.now;
     } else {
         $.Date.now = function now() {
-            return base.Date.getTime.call(new base.Date.Ctr());
+            return pGetTime.call(new CDate());
         };
     }
 
@@ -7386,7 +7351,7 @@
         }
 
         if (toClass(a) === classDate && toClass(b) === classDate) {
-            return base.Date.getTime.call(a) === base.Date.getTime.call(b);
+            return pGetTime.call(a) === pGetTime.call(b);
         }
 
         if (isRegExp(a) && isRegExp(b)) {
@@ -7471,7 +7436,7 @@
         }
 
         if (toClass(a) === classDate && toClass(b) === classDate) {
-            return base.Date.getTime.call(a) === base.Date.getTime.call(b);
+            return pGetTime.call(a) === pGetTime.call(b);
         }
 
         if (isRegExp(a) && isRegExp(b)) {
@@ -7487,7 +7452,7 @@
             return a === b;
         }
 
-        if (getPrototypeOf(a) !== getPrototypeOf(b)) {
+        if ($getPrototypeOf(a) !== $getPrototypeOf(b)) {
             return false;
         }
 
@@ -7724,103 +7689,6 @@
     }());
 
     /**
-     * Creates a custom Error constructor.
-     * @private
-     * @function makeCustomError
-     * @param {string} name
-     * @param {Function} ErrorConstructor Does not work with IE < 9, only Error can be used
-     * @param {NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
-     * @returns {Function}
-     */
-    function makeCustomError(name, ErrorConstructor, maxMessageLength) {
-        if (typeof name !== 'string' || name === '') {
-            throw new CTypeError('"name" was not a valid string: ' + $toString(name));
-        }
-
-        if (!isErrorTypeConstructor(ErrorConstructor)) {
-            throw new CTypeError('"ErrorConstructor" was not an Error type');
-        }
-
-        maxMessageLength = +maxMessageLength;
-        if (maxMessageLength !== maxMessageLength || maxMessageLength < 64) {
-            maxMessageLength = 128;
-        }
-
-        /**
-         * @private
-         * @name CustomError
-         * @constructor
-         */
-        function CustomError(message, stackStartFunction) {
-            var err;
-
-            if (typeof message !== 'string') {
-                message = truncate(stringify(message, $.customErrorReplacer),  maxMessageLength);
-            }
-
-            defineProperty(this, 'message', assign({
-                value: message
-            }, propNotEnumerable));
-
-            if (!isFunction(stackStartFunction)) {
-                stackStartFunction = CustomError;
-            }
-
-            this.stackStartFunction = stackStartFunction;
-            if (isFunction(ErrorConstructor.captureStackTrace)) {
-                ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
-            } else {
-                err = ErrorConstructor.call(this);
-                if (typeof err.stack === 'string') {
-                    defineProperty(this, 'stack', assign({
-                        value: err.stack
-                    }, propNotEnumerable));
-                } else if (typeof err.stacktrace === 'string') {
-                    defineProperty(this, 'stack', assign({
-                        value: err.stacktrace
-                    }, propNotEnumerable));
-                }
-            }
-        }
-
-        inherits(CustomError, ErrorConstructor);
-
-        defineProperties(CustomError.prototype, {
-            name: assign({
-                value: name
-            }, propNotEnumerable),
-
-            toString: assign({
-                value: function () {
-                    var arr = $split(this.message, base.RegExp.splitNewLine),
-                        messageToString = this.name + ': ',
-                        length = arr.length,
-                        tempArr,
-                        element,
-                        index;
-
-                    if (length > 1) {
-                        for (tempArr = [], index = 0; index < length; index += 1) {
-                            element = arr[index];
-                            if (!stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-                                pPush.call(tempArr, element);
-                            }
-                        }
-
-                        messageToString += pJoin.call(tempArr, '\n');
-                    } else {
-                        messageToString += this.message;
-                    }
-
-                    return messageToString;
-                }
-            }, propNotEnumerable)
-        });
-
-        return CustomError;
-    }
-
-    /**
      * Creates a custom Error. If and invalid ErrorConstructor is provided it will default to Error.
      * If a valid native Error type constructor is provided but not supporte by the browesr the it will
      * also default to Error. (Looking at you IE < 9)
@@ -7833,8 +7701,108 @@
      * @returns {Function}
      */
     $.customError = (function () {
-        var isOkToUseOtherErrors,
+        var splitNewLine = new CRegExp('\\r\\n|\\n'),
+            isOkToUseOtherErrors,
             Custom;
+
+        /**
+         * Creates a custom Error constructor.
+         * @private
+         * @function makeCustomError
+         * @param {string} name
+         * @param {Function} ErrorConstructor Does not work with IE < 9, only Error can be used
+         * @param {NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
+         * @returns {Function}
+         */
+        function makeCustomError(name, ErrorConstructor, maxMessageLength) {
+            var CustomError;
+
+            if (typeof name !== 'string' || name === '') {
+                throw new CTypeError('"name" was not a valid string: ' + $toString(name));
+            }
+
+            if (!isErrorTypeConstructor(ErrorConstructor)) {
+                throw new CTypeError('"ErrorConstructor" was not an Error type');
+            }
+
+            maxMessageLength = +maxMessageLength;
+            if (maxMessageLength !== maxMessageLength || maxMessageLength < 64) {
+                maxMessageLength = 128;
+            }
+
+            /**
+             * @private
+             * @name CustomError
+             * @constructor
+             */
+            CustomError = function (message, stackStartFunction) {
+                var err;
+
+                if (typeof message !== 'string') {
+                    message = truncate(stringify(message, $.customErrorReplacer), maxMessageLength);
+                }
+
+                defineProperty(this, 'message', assign({
+                    value: message
+                }, propNotEnumerable));
+
+                if (!isFunction(stackStartFunction)) {
+                    stackStartFunction = CustomError;
+                }
+
+                this.stackStartFunction = stackStartFunction;
+                if (isFunction(ErrorConstructor.captureStackTrace)) {
+                    ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
+                } else {
+                    err = ErrorConstructor.call(this);
+                    if (typeof err.stack === 'string') {
+                        defineProperty(this, 'stack', assign({
+                            value: err.stack
+                        }, propNotEnumerable));
+                    } else if (typeof err.stacktrace === 'string') {
+                        defineProperty(this, 'stack', assign({
+                            value: err.stacktrace
+                        }, propNotEnumerable));
+                    }
+                }
+            };
+
+            inherits(CustomError, ErrorConstructor);
+
+            defineProperties(CustomError.prototype, {
+                name: assign({
+                    value: name
+                }, propNotEnumerable),
+
+                toString: assign({
+                    value: function () {
+                        var arr = $split(this.message, splitNewLine),
+                            messageToString = this.name + ': ',
+                            length = arr.length,
+                            tempArr,
+                            element,
+                            index;
+
+                        if (length > 1) {
+                            for (tempArr = [], index = 0; index < length; index += 1) {
+                                element = arr[index];
+                                if (!stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
+                                    pPush.call(tempArr, element);
+                                }
+                            }
+
+                            messageToString += pJoin.call(tempArr, '\n');
+                        } else {
+                            messageToString += this.message;
+                        }
+
+                        return messageToString;
+                    }
+                }, propNotEnumerable)
+            });
+
+            return CustomError;
+        }
 
         try {
             Custom = makeCustomError('CustomSyntaxError', CSyntaxError);
@@ -7892,26 +7860,26 @@
         testTemp.gOPDarray = [10, 20, 30];
         testTemp.gOPDarray[4] = Undefined;
         if (testShims ||
-                !isNative(base.Object.getOwnPropertyDescriptor) ||
-                base.Object.getOwnPropertyDescriptor(testTemp.gOPDsentinel, 'sentinel').value !== null ||
-                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 3).value !== 30 ||
-                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, '3').value !== 30 ||
-                !hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
-                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 4).value !== Undefined ||
-                base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5) !== Undefined ||
-                hasOwn(base.Object.getOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
+                !isNative(mGetOwnPropertyDescriptor) ||
+                mGetOwnPropertyDescriptor(testTemp.gOPDsentinel, 'sentinel').value !== null ||
+                mGetOwnPropertyDescriptor(testTemp.gOPDarray, 3).value !== 30 ||
+                mGetOwnPropertyDescriptor(testTemp.gOPDarray, '3').value !== 30 ||
+                !pHasOwn.call(mGetOwnPropertyDescriptor(testTemp.gOPDarray, 4), 'value') ||
+                mGetOwnPropertyDescriptor(testTemp.gOPDarray, 4).value !== Undefined ||
+                mGetOwnPropertyDescriptor(testTemp.gOPDarray, 5) !== Undefined ||
+                pHasOwn.call(mGetOwnPropertyDescriptor(testTemp.gOPDarray, 5), 'value')) {
 
             throw new CError();
         }
 
-        if (!(base.Object.getOwnPropertyDescriptor(function (a) {
+        if (!(mGetOwnPropertyDescriptor(function (a) {
                 return a;
             }, 'length').writable)) {
 
-            $.Object.getOwnPropertyDescriptor = base.Object.getOwnPropertyDescriptor;
+            $.Object.getOwnPropertyDescriptor = mGetOwnPropertyDescriptor;
         } else {
             $.Object.getOwnPropertyDescriptor = function (object, property) {
-                var descriptor = base.Object.getOwnPropertyDescriptor(object, property);
+                var descriptor = mGetOwnPropertyDescriptor(object, property);
 
                 if (isFunction(object) && property === 'length' && descriptor.writable) {
                     descriptor.writable = false;
@@ -7928,15 +7896,15 @@
                 setter,
                 type;
 
-            if (hasOwnProp(throwIfIsPrimitive(object), property)) {
+            if ($hasOwn(throwIfIsPrimitive(object), property)) {
                 descriptor = {};
                 descriptor.configurable = true;
                 descriptor.enumerable = true;
                 if (areGetSetSupported) {
                     prototype = object[stringProto];
                     object[stringProto] = protoObject;
-                    getter = base.Object.lookupGetter.call(object, property);
-                    setter = base.Object.lookupSetter.call(object, property);
+                    getter = mLookupGetter.call(object, property);
+                    setter = mLookupSetter.call(object, property);
                     type = typeof prototype;
                     if (type === 'undefined') {
                         delete object[stringProto];
@@ -7991,7 +7959,7 @@
             num = toLength(prop2);
             notFunc = !isFunction(object);
             cond1 =  notFunc && hasValidLength(object) && $toString(num) === prop2;
-            if (!isPlainObject(temp1) || !hasOwn(temp1, 'value')) {
+            if (!isPlainObject(temp1) || !pHasOwn.call(temp1, 'value')) {
                 if (cond1 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -8007,7 +7975,7 @@
 
             num = toLength(prop1);
             cond2 = notFunc && hasValidLength(object) && $toString(num) === prop1;
-            if (!isPlainObject(temp2) || !hasOwn(temp2, 'value')) {
+            if (!isPlainObject(temp2) || !pHasOwn.call(temp2, 'value')) {
                 if (cond2 && num === object.length - 1) {
                     object.length -= 1;
                 }
@@ -8114,8 +8082,8 @@
                 mStringify(0) === '0' &&
                 // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
                 // literals.
-                mStringify(new base.Number.Ctr()) === '0' &&
-                mStringify(new base.String.Ctr()) === '""' &&
+                mStringify(new CNumber()) === '0' &&
+                mStringify(new CString()) === '""' &&
                 // FF 3.1b1, 2 throw an error if the testTemp.customJSON is `null`, `undefined`, or
                 // does not define a canonical JSON representation (this applies to
                 // objects with `toJSON` properties as well, *unless* they are nested
@@ -8157,15 +8125,15 @@
                 mStringify([1, 2], null, 1) === '[\n 1,\n 2\n]' &&
                 // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
                 // serialize extended years.
-                mStringify(new base.Date.Ctr(-8.64e15)) === '"-271821-04-20T00:00:00.000Z"' &&
+                mStringify(new CDate(-8.64e15)) === '"-271821-04-20T00:00:00.000Z"' &&
                 // The milliseconds are optional in ES 5, but required in 5.1.
-                mStringify(new base.Date.Ctr(8.64e15)) === '"+275760-09-13T00:00:00.000Z"' &&
+                mStringify(new CDate(8.64e15)) === '"+275760-09-13T00:00:00.000Z"' &&
                 // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
                 // four-digit years instead of six-digit years. Credits: @Yaffle.
-                mStringify(new base.Date.Ctr(-621987552e5)) === '"-000001-01-01T00:00:00.000Z"' &&
+                mStringify(new CDate(-621987552e5)) === '"-000001-01-01T00:00:00.000Z"' &&
                 // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
                 // values less than 1000. Credits: @Yaffle.
-                mStringify(new base.Date.Ctr(-1)) === '"1969-12-31T23:59:59.999Z"';
+                mStringify(new CDate(-1)) === '"1969-12-31T23:59:59.999Z"';
         } catch (eStringify) {
             testTemp.stringifySupport = null;
         }
@@ -8174,7 +8142,7 @@
         $.JSON.stringify = mStringify;
     } else {
         $.JSON.stringify = (function () {
-            var sfyEscapable = new RegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
+            var sfyEscapable = new CRegExp('[\\\\\\"\\x00-\\x1f\\x7f-\\x9f\\u00ad\\u0600-' +
                                             '\\u0604\\u070f\\u17b4\\u17b5\\u200c-\\u200f\\u2028-' +
                                             '\\u202f\\u2060-\\u206f\\ufeff\\ufff0-\\uffff]', 'g'),
                 sfyMeta = {
@@ -8195,7 +8163,7 @@
                     hex;
 
                 sfyEscapable.lastIndex = 0;
-                if (test(sfyEscapable, string)) {
+                if ($test(sfyEscapable, string)) {
                     result += $replace(string, sfyEscapable, function (a) {
                         var c = sfyMeta[a],
                             r;
@@ -8375,7 +8343,7 @@
                 testTemp.parseSupport = testTemp.parseSimple.A.length === 5 && testTemp.parseSimple.A[0] === 1;
                 if (testTemp.parseSupport) {
                     try {
-                        // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in base.str.
+                        // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in string.
                         testTemp.parseSupport = typeof mParse('"\t"') === 'string';
                     } catch (ignore) {}
 
@@ -8416,13 +8384,13 @@
         }
     } else {
         $.JSON.parse = (function () {
-            var parseProtect1 = new RegExp('^[\\],:{}\\s]*$'),
-                parseProtect2 = new RegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g'),
-                parseProtect3 = new RegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
+            var parseProtect1 = new CRegExp('^[\\],:{}\\s]*$'),
+                parseProtect2 = new CRegExp('\\\\(?:["\\\\\\/bfnrt]|u[0-9a-fA-F]{4})', 'g'),
+                parseProtect3 = new CRegExp('"[^"\\\\\\n\\r]*"|true|false|null|' +
                                            '-?\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d+)?', 'g'),
 
-                parseProtect4 = new RegExp('(?:^|:|,)(?:\\s*\\[)+', 'g'),
-                parseCharacterTest = new RegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5' +
+                parseProtect4 = new CRegExp('(?:^|:|,)(?:\\s*\\[)+', 'g'),
+                parseCharacterTest = new CRegExp('[\\u0000\\u00ad\\u0600-\\u0604\\u070f\\u17b4\\u17b5' +
                                                 '\\u200c-\\u200f\\u2028-\\u202f\\u2060-\\u206f\\ufeff' +
                                                 '\\ufff0-\\uffff]', 'g');
 
@@ -8458,7 +8426,7 @@
 
                 text = $toString(text);
                 parseCharacterTest.lastIndex = 0;
-                if (test(parseCharacterTest, text)) {
+                if ($test(parseCharacterTest, text)) {
                     text = $replace(text, parseCharacterTest, function (a) {
                         var hex = pNToString.call(pCharCodeAt.call(a, 0), 16);
 
@@ -8466,7 +8434,7 @@
                     });
                 }
 
-                if (test(parseProtect1,
+                if ($test(parseProtect1,
                         $replace($replace($replace(text,
                             parseProtect2, '@'),
                             parseProtect3, ']'),
@@ -8585,7 +8553,7 @@
         var utilx = {};
 
         $forEach(objectKeys($), function (key1) {
-            if (!hasOwn(utilx, 'methods')) {
+            if (!pHasOwn.call(utilx, 'methods')) {
                 defineProperty(utilx, 'methods', assign({
                     value: []
                 }, propNotEnumerable));
@@ -8596,7 +8564,7 @@
             }, propNotEnumerable));
 
             if (isPlainObject($[key1])) {
-                if (!hasOwn(utilx[key1], 'methods')) {
+                if (!pHasOwn.call(utilx[key1], 'methods')) {
                     defineProperty(utilx[key1], 'methods', assign({
                         value: []
                     }, propNotEnumerable));
@@ -8608,7 +8576,7 @@
                     }, propNotEnumerable));
 
                     if (isPlainObject($[key1][key2])) {
-                        if (!hasOwn(utilx[key1][key2], 'methods')) {
+                        if (!pHasOwn.call(utilx[key1][key2], 'methods')) {
                             defineProperty(utilx[key1][key2], 'methods', assign({
                                 value: []
                             }, propNotEnumerable));
@@ -8750,7 +8718,7 @@
         var prop;
 
         for (prop in testTemp) {
-            if (hasOwn(testTemp, prop)) {
+            if (pHasOwn.call(testTemp, prop)) {
                 testTemp[prop] = null;
             }
         }
