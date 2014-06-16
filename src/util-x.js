@@ -3963,15 +3963,14 @@
         function copyRegExp(regExpArg, options) {
             var flags;
 
-            throwIfIsNotRegExp(regExpArg);
             if (!isPlainObject(options)) {
                 options = {};
             }
 
             // Get native flags in use
-            flags = pExec.call(getNativeFlags, $toString(regExpArg))[1];
+            flags = onlyCoercibleToString(pExec.call(getNativeFlags, $toString(regExpArg))[1]);
             if (options.add) {
-                flags = pReplace.call(onlyCoercibleToString(flags + options.add), clipDups, '');
+                flags = pReplace.call(flags + options.add, clipDups, '');
             }
 
             if (options.remove) {
@@ -4074,85 +4073,6 @@
         $.RegExp.test = $test = toMethod($.RegExp.prototype.test);
 
         /**
-         * Executes a regex search in a specified string. Returns a match array or `null`.
-         * Optional `pos` argument specifies the search start position.
-         * The `lastIndex` property of the provided regex is not
-         * used, but is updated for compatibility. Also fixes browser bugs compared to the native
-         * `RegExp.prototype.exec` and can be used reliably cross-browser.
-         * @private
-         * @function regExpForEachExec
-         * @param {string} stringArg String to search.
-         * @param {RegExp} regExpArg Regex to search with.
-         * @param {Number} [pos=0] Zero-based index at which to start the search.
-         * @returns {Array} Match array or `null`.
-         */
-        function regExpForEachExec(stringArg, regExpArg, pos) {
-            var str,
-                r2,
-                match;
-
-            throwIfIsNotRegExp(regExpArg);
-            str = onlyCoercibleToString(stringArg);
-            r2 = copyRegExp(regExpArg, {
-                add: 'g',
-                remove: 'y'
-            });
-
-            r2.lastIndex = pos = mMin(mMax(toInteger(pos), 0), MAX_SAFE_INTEGER);
-            match = $exec(r2, str);
-            if (regExpArg.global) {
-                if (isArray(match)) {
-                    regExpArg.lastIndex = r2.lastIndex;
-                } else {
-                    regExpArg.lastIndex = 0;
-                }
-            }
-
-            return match;
-        }
-
-        /**
-         * Executes a provided function once per regex match.
-         * @private
-         * @function regExpForEach
-         * @param {string} str String to search.
-         * @param {RegExp} regex Regex to search with.
-         * @param {Function} callback Function to execute for each match. Invoked with four arguments:
-         *   <li>The match array, with named backreference properties.
-         *   <li>The zero-based match index.
-         *   <li>The string being traversed.
-         *   <li>The regex object being used to traverse the string.
-         * @param {*} [context] Object to use as `this` when executing `callback`.
-         * @returns {*} Provided `context` object.
-         */
-        function regExpForEach(stringArg, regExpArg, callback, context) {
-            var str,
-                pos,
-                index,
-                match;
-
-            throwIfIsNotRegExp(regExpArg);
-            str = onlyCoercibleToString(stringArg);
-            pos = 0;
-            index = 0;
-            match = regExpForEachExec(str, regExpArg, pos);
-            while (isArray(match)) {
-                // Because `regex` is provided to `callback`, the function can use the deprecated/
-                // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
-                // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
-                // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
-                // globalized versions of regexes, mutating the regex will not have any effect on the
-                // iteration or matched strings, which is a nice side effect that brings extra safety
-                callback.call(context, match, index, str, regExpArg);
-                pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
-                match = regExpForEachExec(str, regExpArg, pos);
-                index += 1;
-            }
-
-            return context;
-        }
-
-        /**
          * Splits a String object into an array of strings by separating the string into subbase.str.
          * @memberof utilx.String
          * @name split
@@ -4176,36 +4096,51 @@
                     output,
                     origLastIndex,
                     lastLastIndex,
-                    lastLength;
+                    lastLength,
+                    pos,
+                    match,
+                    r2;
 
                 // "0".split(undefined, 0) -> []
                 if (type === 'undefined' && limit === 0) {
                     output = [];
                 } else {
-                    if (!isRegExp(separator)) {
-                        if (es5limit) {
-                            type = typeof limit;
-                            if (type === 'undefined') {
-                                limit = MAX_UINT32;
-                            } else {
-                                limit = mMin(toLength(limit), MAX_UINT32);
-                            }
+                    if (es5limit) {
+                        type = typeof limit;
+                        if (type === 'undefined') {
+                            limit = MAX_UINT32;
+                        } else {
+                            limit = mMin(toLength(limit), MAX_UINT32);
                         }
+                    }
 
+                    if (!isRegExp(separator)) {
                         // Browsers handle nonregex split correctly, so use the faster native method
                         output = pSplit.call(str, separator, limit);
                     } else {
                         output = [];
                         origLastIndex = separator.lastIndex;
                         lastLastIndex = 0;
-                        type = typeof limit;
-                        if (type === 'undefined') {
-                            limit = MAX_SAFE_INTEGER;
-                        } else {
-                            limit = toLength(limit);
+                        if (separator.global) {
+                            separator.lastIndex = 0;
                         }
 
-                        regExpForEach(str, separator, function (match) {
+                        r2 = copyRegExp(separator, {
+                            add: 'g',
+                            remove: 'y'
+                        });
+
+                        r2.lastIndex = 0;
+                        match = $exec(r2, str);
+                        while (isArray(match)) {
+                            // Because `regex` is provided to `callback`, the function can use the deprecated/
+                            // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
+                            // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
+                            // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
+                            // globalized versions of regexes, mutating the regex will not have any effect on the
+                            // iteration or matched strings, which is a nice side effect that brings extra safety
+                            //callback.call(context, match, index, str, regExpArg);
+
                             if ((match.index + match[0].length) > lastLastIndex) {
                                 pPush.call(output, pSSlice.call(str, lastLastIndex, match.index));
                                 if (match.length > 1 && match.index < str.length) {
@@ -4215,7 +4150,24 @@
                                 lastLength = match[0].length;
                                 lastLastIndex = match.index + lastLength;
                             }
-                        });
+
+                            pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
+                            pos = mMin(mMax(pos, 0), MAX_SAFE_INTEGER);
+                            r2 = copyRegExp(separator, {
+                                add: 'g',
+                                remove: 'y'
+                            });
+
+                            r2.lastIndex = pos;
+                            match = $exec(r2, str);
+                            if (separator.global) {
+                                if (isArray(match)) {
+                                    separator.lastIndex = r2.lastIndex;
+                                } else {
+                                    separator.lastIndex = 0;
+                                }
+                            }
+                        }
 
                         if (lastLastIndex === str.length) {
                             if (!$test(separator, '') || lastLength) {
