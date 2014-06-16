@@ -941,28 +941,13 @@
          * @returns {boolean}
          */
         isErrorTypePrototype = function (inputArg) {
-            var result = true;
-
-            switch (inputArg) {
-            case protoError:
-                /* falls through */
-            case protoTypeError:
-                /* falls through */
-            case protoSyntaxError:
-                /* falls through */
-            case protoRangeError:
-                /* falls through */
-            case protoEvalError:
-                /* falls through */
-            case protoReferenceError:
-                /* falls through */
-            case protoURIError:
-                break;
-            default:
-                result = false;
-            }
-
-            return result;
+            return inputArg === protoError ||
+                    inputArg === protoTypeError ||
+                    inputArg === protoSyntaxError ||
+                    inputArg === protoRangeError ||
+                    inputArg === protoEvalError ||
+                    inputArg === protoReferenceError ||
+                    inputArg === protoURIError;
         },
 
         /**
@@ -6785,6 +6770,7 @@
             var skipProto = hasProtoEnumBug &amp;&amp; isFunction(object),
                 skipErrorProps = hasErrorProps &amp;&amp; isErrorTypePrototype(object),
                 length = skipErrorProps &amp;&amp; unwantedError.length,
+                theClass = (hasBoxedStringBug || hasDontEnumBug) &amp;&amp; toClass(object),
                 props = [],
                 prop,
                 ctor,
@@ -6810,7 +6796,7 @@
                 }
             }
 
-            if (hasBoxedStringBug &amp;&amp; toClass(object) === classString(object)) {
+            if (hasBoxedStringBug &amp;&amp; theClass === classString) {
                 for (index = 0, length = object.length; index &lt; length; index += 1) {
                     pPush.call(props, cString(index));
                 }
@@ -6825,7 +6811,7 @@
             if (hasDontEnumBug &amp;&amp; object !== protoObject) {
                 ctor = object.constructor;
                 isProto = isFunction(ctor) &amp;&amp; ctor.prototype === object;
-                nonEnum = nonEnumProps[toClass(object)];
+                nonEnum = nonEnumProps[theClass];
                 for (index = 0, length = shadowed.length; index &lt; length; index += 1) {
                     prop = shadowed[index];
                     if (!(isProto &amp;&amp; nonEnum[prop]) &amp;&amp; $hasOwn(object, prop)) {
@@ -8137,7 +8123,7 @@
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     $.Array.prototype.shuffle = function (rounds) {
-        var object = cObject(checkObjectCoercible(this)),
+        var object = toObjectFixIndexedAccess(this),
             isString,
             inLen,
             outLen,
@@ -8149,13 +8135,7 @@
         if ('length' in object &amp;&amp; !isFunction(object)) {
             inLen = toLength(object.length);
             isString = toClass(object) === classString;
-            if (isString) {
-                for (tempVal = {}, tempVal.length = inLen, inIndex = 0; inIndex &lt; inLen; inIndex += 1) {
-                    tempVal[inIndex] = pCharAt.call(object, inIndex);
-                }
-
-                object = tempVal;
-            } else {
+            if (!isString) {
                 object.length = inLen;
             }
 
@@ -8602,7 +8582,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     $.Array.prototype.powerSet = pPowerSet = function () {
-        var thisObj = cObject(checkObjectCoercible(this)),
+        var thisObj = toObjectFixIndexedAccess(this),
             val = [],
             object,
             lastElement,
@@ -8617,14 +8597,13 @@
                 pPush.call(val, []);
             } else {
                 if (toClass(thisObj) === classString) {
-                    for (object = {}, object.length = len, idx = 0; idx &lt; len; idx += 1) {
-                        object[idx] = pCharAt.call(thisObj, idx);
-                    }
+                    lastElement = thisObj[len - 1];
+                    object = pSSlice.call(thisObj, 0, -1);
                 } else {
                     object = $slice(thisObj);
+                    lastElement = pPop.call(object);
                 }
 
-                lastElement = pPop.call(object);
                 pSet = pPowerSet.call(object);
                 for (idx = 0, len = pSet.length; idx &lt; len; idx += 1) {
                     it = pSet[idx];
@@ -8660,7 +8639,7 @@
         if ('length' in object &amp;&amp; !isFunction(object)) {
             accumulator.length = length = toLength(object.length);
             for (index = 0; index &lt; length; index += 1) {
-                if (index in object) {
+                if ($hasOwn(object, index)) {
                     accumulator[index] = object[index];
                 }
             }
@@ -8885,7 +8864,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Mon Jun 16 2014 15:49:16 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Mon Jun 16 2014 16:53:11 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

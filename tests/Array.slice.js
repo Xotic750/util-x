@@ -101,5 +101,28 @@
             testValue = ['a', 2, 'b'];
             expect(utilx.Array.slice(obj, 3, 6)).to.eql(testValue);
         });
+
+        it('should work with string', function () {
+            var obj = '1234567890';
+
+            expect(utilx.Array.slice(obj)).to.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+            expect(utilx.Array.slice(obj, undefined, undefined))
+                    .to.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+
+            expect(utilx.Array.slice(obj, -1)).to.eql(['0']);
+            expect(utilx.Array.slice(obj, -1).length).to.be(1);
+            expect(utilx.Array.slice(obj, 0)).to.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+
+            testValue = required.create('a', 2, 'b', null, undefined);
+            expect(utilx.Array.slice(obj, 3)).to.eql(['4', '5', '6', '7', '8', '9', '0']);
+            expect(utilx.Array.slice(obj, -1, 4), []).to.eql([]);
+            expect(utilx.Array.slice(obj, -1, 4).length).to.be(0);
+
+            testValue = required.create(undefined, null, 1, 'a');
+            expect(utilx.Array.slice(obj, 0, 4)).to.eql(['1', '2', '3', '4']);
+
+            testValue = ['a', 2, 'b'];
+            expect(utilx.Array.slice(obj, 3, 6)).to.eql(['4', '5', '6']);
+        });
     });
 }());
