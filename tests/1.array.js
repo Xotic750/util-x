@@ -7,6 +7,7 @@
         expect = required.expect,
         utilx = required.utilx;
 
+
     describe('Native array', function () {
         var A = Array,
             overflow = Math.pow(2, 32),

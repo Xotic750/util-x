@@ -144,5 +144,58 @@
         this.and = new required.expect.Assertion(this.obj);
     };
 
+    required.expect.Assertion.prototype.assertWarn = function (truth, msg, error, expected) {
+        var fmsg = this.flags.not ? error : msg,
+            ok = this.flags.not ? !truth : truth,
+            err;
+
+        if (!ok) {
+            err = new Error(fmsg.call(this));
+            if (!err.stack) {
+                err.stack = err.name + ': ' + err.message;
+                if (err.stacktrace) {
+                    err.stack += '\n' + err.stacktrace;
+                }
+            }
+
+            if (err.message.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
+                err.toString = function () {
+                    var arr = this.message.split(new RegExp('\\r\\n|\\n')),
+                        messageToString = this.name + ': ',
+                        length = arr.length,
+                        tempArr,
+                        element,
+                        index;
+
+                    if (length > 1) {
+                        for (tempArr = [], index = 0; index < length; index += 1) {
+                            element = arr[index];
+                            if (element.indexOf('opera:config#UserPrefs|Exceptions Have Stacktrace') !== -1) {
+                                tempArr.push(element);
+                            }
+                        }
+
+                        messageToString += tempArr.join('\n');
+                    } else {
+                        messageToString += this.message;
+                    }
+
+                    return messageToString;
+                };
+            }
+
+            if (arguments.length > 3) {
+                err.actual = this.obj;
+                err.expected = expected;
+                err.showDiff = true;
+            }
+
+            //throw err;
+            console.log(err.stack);
+        }
+
+        this.and = new required.expect.Assertion(this.obj);
+    };
+
     module.exports = required;
 }());

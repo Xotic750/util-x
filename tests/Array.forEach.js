@@ -14,6 +14,7 @@
             testSubject,
             expected,
             str = 'Hello, World!',
+            arrStr = ['H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'],
             testIndex;
 
         utilx.Array.assign(forEachArray, 24, NaN);
@@ -198,10 +199,11 @@
             var actual = [];
 
             utilx.Array.forEach(str, function (item, index) {
-                utilx.Array.assign(actual, index, item);
+                actual[index] = item;
             });
 
-            expect(actual).to.eql(utilx.String.split(str, ''));
+            expect(actual.length).to.be(arrStr.length);
+            expect(actual).to.eql(arrStr);
         });
 
         it('should iterate all in a string using a context', function () {
@@ -211,10 +213,11 @@
                 };
 
             utilx.Array.forEach(str, function (item, index) {
-                utilx.Array.assign(this.a, index, item);
+                this.a[index] = item;
             }, o);
 
-            expect(actual).to.eql(utilx.String.split(str, ''));
+            expect(actual.length).to.be(arrStr.length);
+            expect(actual).to.eql(arrStr);
         });
 
         it('should have a boxed object as list argument of callback', function () {
