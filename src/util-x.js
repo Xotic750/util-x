@@ -4090,102 +4090,96 @@
                 pSplit.call('', new CRegExp('.?')).length > 0 ||
                 pSplit.call('.', new CRegExp('()()')).length > 1) {
 
-            $.String.prototype.split = function (separator, limit) {
-                var str = onlyCoercibleToString(this),
-                    type = typeof separator,
-                    output,
-                    origLastIndex,
-                    lastLastIndex,
-                    lastLength,
-                    pos,
-                    match,
-                    r2;
-
-                // "0".split(undefined, 0) -> []
-                if (type === 'undefined' && limit === 0) {
-                    output = [];
-                } else {
-                    if (es5limit) {
-                        type = typeof limit;
-                        if (type === 'undefined') {
-                            limit = MAX_UINT32;
-                        } else {
-                            limit = mMin(toLength(limit), MAX_UINT32);
-                        }
-                    }
-
-                    if (!isRegExp(separator)) {
-                        // Browsers handle nonregex split correctly, so use the faster native method
-                        output = pSplit.call(str, separator, limit);
-                    } else {
-                        output = [];
-                        origLastIndex = separator.lastIndex;
-                        lastLastIndex = 0;
-                        if (separator.global) {
-                            separator.lastIndex = 0;
-                        }
-
-                        r2 = copyRegExp(separator, {
+            $.String.prototype.split = (function () {
+                function search(str, regex, pos) {
+                    var r2 = copyRegExp(regex, {
                             add: 'g',
                             remove: 'y'
-                        });
+                        }),
+                        match;
 
-                        r2.lastIndex = 0;
-                        match = $exec(r2, str);
-                        while (isArray(match)) {
-                            // Because `regex` is provided to `callback`, the function can use the deprecated/
-                            // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since
-                            // `regExpExec` doesn't use `lastIndex` to set the search position, this can't lead
-                            // to an infinite loop, at least. Actually, because of the way `regExpExec` caches
-                            // globalized versions of regexes, mutating the regex will not have any effect on the
-                            // iteration or matched strings, which is a nice side effect that brings extra safety
-                            //callback.call(context, match, index, str, regExpArg);
-
-                            if ((match.index + match[0].length) > lastLastIndex) {
-                                pPush.call(output, pSSlice.call(str, lastLastIndex, match.index));
-                                if (match.length > 1 && match.index < str.length) {
-                                    output = pConcat.call(output, $slice(match, 1));
-                                }
-
-                                lastLength = match[0].length;
-                                lastLastIndex = match.index + lastLength;
-                            }
-
-                            pos = match.index + mMin(mMax(match[0].length, 1), UWORD32);
-                            pos = mMin(mMax(pos, 0), MAX_SAFE_INTEGER);
-                            r2 = copyRegExp(separator, {
-                                add: 'g',
-                                remove: 'y'
-                            });
-
-                            r2.lastIndex = pos;
-                            match = $exec(r2, str);
-                            if (separator.global) {
-                                if (isArray(match)) {
-                                    separator.lastIndex = r2.lastIndex;
-                                } else {
-                                    separator.lastIndex = 0;
-                                }
-                            }
-                        }
-
-                        if (lastLastIndex === str.length) {
-                            if (!$test(separator, '') || lastLength) {
-                                pPush.call(output, '');
-                            }
+                    r2.lastIndex = pos || 0;
+                    match = $exec(r2, str);
+                    if (regex.global) {
+                        if (match) {
+                            regex.lastIndex = r2.lastIndex;
                         } else {
-                            pPush.call(output, pSSlice.call(str, lastLastIndex));
-                        }
-
-                        separator.lastIndex = origLastIndex;
-                        if (output.length > limit) {
-                            output = $slice(output, 0, limit);
+                            regex.lastIndex = 0;
                         }
                     }
+
+                    return match;
                 }
 
-                return output;
-            };
+                return function (separator, limit) {
+                    var str = onlyCoercibleToString(this),
+                        type = typeof separator,
+                        output,
+                        origLastIndex,
+                        lastLastIndex,
+                        lastLength,
+                        pos,
+                        match,
+                        length;
+
+                    // "0".split(undefined, 0) -> []
+                    if (type === 'undefined' && limit === 0) {
+                        output = [];
+                    } else {
+                        if (es5limit) {
+                            type = typeof limit;
+                            if (type === 'undefined') {
+                                limit = MAX_UINT32;
+                            } else {
+                                limit = mMin(toLength(limit), MAX_UINT32);
+                            }
+                        } else {
+                            limit = toLength(limit);
+                        }
+
+                        if (!isRegExp(separator)) {
+                            // Browsers handle nonregex split correctly, so use the faster native method
+                            output = pSplit.call(str, separator, limit);
+                        } else {
+                            output = [];
+                            origLastIndex = separator.lastIndex;
+                            lastLastIndex = 0;
+                            length = str.length;
+                            match = search(str, separator, pos);
+                            while (match) {
+                                // This condition is not the same as `if (match[0].length)`
+                                if ((match.index + match[0].length) > lastLastIndex) {
+                                    pPush.call(output, pSSlice.call(str, lastLastIndex, match.index));
+                                    if (match.length > 1 && match.index < length) {
+                                        pPush.apply(output, $slice(match, 1));
+                                    }
+
+                                    lastLength = match[0].length;
+                                    lastLastIndex = match.index + lastLength;
+                                }
+
+                                pos = match.index + (match[0].length || 1);
+                                match = search(str, separator, pos);
+                            }
+
+                            if (lastLastIndex === str.length) {
+                                if (!pTest.call(separator, '') || lastLength) {
+                                    pPush.call(output, '');
+                                }
+                            } else {
+                                pPush.call(output, pSSlice.call(str, lastLastIndex));
+                            }
+
+                            separator.lastIndex = origLastIndex;
+                            if (output.length > limit) {
+                                output = $slice(output, 0, limit);
+                            }
+                        }
+                    }
+
+                    return output;
+                };
+            }());
         } else {
             $.String.prototype.split = function (separator, limit) {
                 var type = typeof separator,
