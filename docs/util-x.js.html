@@ -1030,6 +1030,155 @@
         }()),
 
         /**
+         * Indicates if object suffers the don'r enum bug
+         * @private
+         * @type {boolean}
+         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+         */
+        hasDontEnumBug = !base.Object.propertyIsEnumerable.call({'toString': null}, 'toString'),
+
+        /**
+         * Indicates if a function suffers the prototype is enumerable bug.
+         * @private
+         * @type {boolean}
+         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+         */
+        hasProtoEnumBug = (function () {
+            var isEn = base.Object.propertyIsEnumerable.call(returnArgs, 'prototype'),
+                Constructor;
+
+            if (!isEn) {
+                Constructor = function () {
+                    this.constructor = this.prototype = 1;
+                };
+
+                Constructor.prototype.constructor = 1;
+                isEn = base.Object.propertyIsEnumerable.call(Constructor, 'prototype');
+            }
+
+            return isEn;
+        }()),
+
+        /**
+         * Indicates if a arguments suffers the prototype is enumerable bug.
+         * @private
+         * @type {boolean}
+         */
+        hasEnumArgsBug = !base.Object.propertyIsEnumerable.call(returnArgs(1), '0'),
+
+        /**
+         * Indicates if a string suffers the indexed accessability bug.
+         * @private
+         * @type {boolean}
+         */
+        hasBoxedStringBug = (function () {
+            var objg = cObject('g');
+
+            return objg[0] !== 'g' || !base.Object.hasOwn.call(objg, '0');
+        }()),
+
+        /**
+         * List of unwanted Error prototype prtoperty names that are enumerable.
+         * @private
+         * @type {Array.&lt;string>}
+         */
+        unwantedError = [],
+
+        /**
+         * Indicates if the Error object has additional enumerable properties.
+         * @private
+         * @type {boolean}
+         */
+        hasErrorProps = (function () {
+            var prop;
+
+            for (prop in protoError) {
+                if (base.Object.hasOwn.call(protoError, prop)) {
+                    base.Array.push.call(unwantedError, prop);
+                }
+            }
+
+            return !!unwantedError.length;
+        }()),
+
+        /**
+         * Used to avoid iterating non-enumerable properties in IE &lt; 9 if hasDontEnumBug.
+         * @private
+         * @type {Object.&lt;string, Object>}
+         */
+        nonEnumProps = (function () {
+            var nep,
+                props,
+                length,
+                index,
+                classN,
+                key;
+
+            if (hasDontEnumBug) {
+                nep = {};
+                nep[classArray] =
+                    nep[classDate] =
+                    nep[classNumber] = {
+                        constructor: true,
+                        toLocaleString: true,
+                        toString: true,
+                        valueOf: true
+                    };
+
+                nep[classBoolean] =
+                    nep[classString] = {
+                        constructor: true,
+                        toString: true,
+                        valueOf: true
+                    };
+
+                nep[classError] =
+                    nep[classFunction] =
+                    nep[classRegexp] = {
+                        constructor: true,
+                        toString: true
+                    };
+
+                nep[classObject] = {
+                    constructor: true
+                };
+
+                for (index = 0, length = shadowed.length; index &lt; length; index += 1) {
+                    key = shadowed[index];
+                    for (classN in nep) {
+                        if (base.Object.hasOwn.call(nep, classN)) {
+                            props = nep[classN];
+                            props[key] = base.Object.hasOwn.call(props, key);
+                        }
+                    }
+                }
+            }
+
+            return props;
+        }()),
+
+        /**
+         * Object used for temporary testing values.
+         * @private
+         * @type {Object.&lt;string, *>}
+         */
+        testTemp = {},
+
+        /**
+         * Indicates if __proto__ is supported.
+         * @private
+         * @type {boolean}
+         */
+        isProtoSupported = protoObject[stringProto] === null,
+
+        /**
+         * Indicates if __defineGetter__ and __lookupSetter__ are supported.
+         * @private
+         * @type {boolean}
+         */
+        areGetSetSupported = isFunction(mLookupGetter) &amp;&amp; isFunction(mLookupSetter),
+
+        /**
          * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
          * @private
          * @name toObjectFixIndexedAccess
@@ -1038,24 +1187,19 @@
          * @returns {Object}
          * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
          */
-        toObjectFixIndexedAccess = (function () {
-            var objg = cObject('g'),
-                shouldSplitString = objg[0] !== 'g' || !('0' in objg);
+        toObjectFixIndexedAccess = function (inputArg) {
+            var object = cObject(checkObjectCoercible(inputArg)),
+                length,
+                index;
 
-            return function (inputArg) {
-                var object = cObject(checkObjectCoercible(inputArg)),
-                    length,
-                    index;
-
-                if (shouldSplitString &amp;&amp; toClass(object) === classString) {
-                    for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
-                        object[index] = pCharAt.call(object, index);
-                    }
+            if (hasBoxedStringBug &amp;&amp; toClass(object) === classString) {
+                for (index = 0, length = object.length; index &lt; length; index += 1) {
+                    object[index] = pCharAt.call(object, index);
                 }
+            }
 
-                return object;
-            };
-        }()),
+            return object;
+        },
 
         /**
          * @private
@@ -1259,139 +1403,6 @@
         $splice,
         noop,
 
-        /**
-         * Indicates if object suffers the don'r enum bug
-         * @private
-         * @type {boolean}
-         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
-         */
-        hasDontEnumBug = !base.Object.propertyIsEnumerable.call({'toString': null}, 'toString'),
-
-        /**
-         * Indicates if a function suffers the prototype is enumerable bug.
-         * @private
-         * @type {boolean}
-         * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
-         */
-        hasProtoEnumBug = (function () {
-            var isEn = base.Object.propertyIsEnumerable.call(returnArgs, 'prototype'),
-                Constructor;
-
-            if (!isEn) {
-                Constructor = function () {
-                    this.constructor = this.prototype = 1;
-                };
-
-                Constructor.prototype.constructor = 1;
-                isEn = base.Object.propertyIsEnumerable.call(Constructor, 'prototype');
-            }
-
-            return isEn;
-        }()),
-
-        /**
-         * Indicates if a arguments suffers the prototype is enumerable bug.
-         * @private
-         * @type {boolean}
-         */
-        hasEnumArgsBug = !base.Object.propertyIsEnumerable.call(returnArgs(1), '0'),
-
-        /**
-         * List of unwanted Error prototype prtoperty names that are enumerable.
-         * @private
-         * @type {Array.&lt;string>}
-         */
-        unwantedError = [],
-
-        /**
-         * Indicates if the Error object has additional enumerable properties.
-         * @private
-         * @type {boolean}
-         */
-        hasErrorProps = (function () {
-            var prop;
-
-            for (prop in protoError) {
-                if (pHasOwn.call(protoError, prop)) {
-                    pPush.call(unwantedError, prop);
-                }
-            }
-
-            return !!unwantedError.length;
-        }()),
-
-        /**
-         * Used to avoid iterating non-enumerable properties in IE &lt; 9 if hasDontEnumBug.
-         * @private
-         * @type {Object.&lt;string, Object>}
-         */
-        nonEnumProps = (function () {
-            var nep,
-                props,
-                length,
-                index,
-                classN,
-                key;
-
-            if (hasDontEnumBug) {
-                nep = {};
-                nep[classArray] =
-                    nep[classDate] =
-                    nep[classNumber] = {
-                        constructor: true,
-                        toLocaleString: true,
-                        toString: true,
-                        valueOf: true
-                    };
-
-                nep[classBoolean] =
-                    nep[classString] = {
-                        constructor: true,
-                        toString: true,
-                        valueOf: true
-                    };
-
-                nep[classError] =
-                    nep[classFunction] =
-                    nep[classRegexp] = {
-                        constructor: true,
-                        toString: true
-                    };
-
-                nep[classObject] = {
-                    constructor: true
-                };
-
-                for (index = 0, length = shadowed.length; index &lt; length; index += 1) {
-                    key = shadowed[index];
-                    for (classN in nep) {
-                        if (pHasOwn.call(nep, classN)) {
-                            props = nep[classN];
-                            props[key] = pHasOwn.call(props, key);
-                        }
-                    }
-                }
-            }
-
-            return props;
-        }()),
-
-        /**
-         * Object used for temporary testing values.
-         * @private
-         * @type {Object.&lt;string, *>}
-         */
-        testTemp = {},
-
-        /**
-         * Indicates if __proto__ is supported.
-         * @private
-         * @type {boolean}
-         */
-        isProtoSupported = protoObject[stringProto] === null,
-
-        areGetSetSupported,
-
         publicUtil,
 
         /** @namespace {Object} utilx */
@@ -1479,6 +1490,9 @@
     console.log('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
     console.log('+++++++++ hasEnumArgsBug: ' + hasEnumArgsBug);
     console.log('+++++++++ hasErrorProps: ' + hasErrorProps);
+    console.log('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
+    console.log('+++++++++ isProtoSupported: ' + isProtoSupported);
+    console.log('+++++++++ areGetSetSupported: ' + areGetSetSupported);
     console.log('+++++++++ isStrictMode: ' + isStrictMode);
 
     /*
@@ -2706,7 +2720,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
      */
     $.Object.has = function (object, property) {
-        return $toString(property) in cObject(checkObjectCoercible(object));
+        return $toString(property) in toObjectFixIndexedAccess(object);
     };
 
     (function () {
@@ -3112,13 +3126,6 @@
 
         return inputArg;
     }
-
-    /**
-     * Indicates if __defineGetter__ and __lookupSetter__ are supported.
-     * @private
-     * @type {boolean}
-     */
-    areGetSetSupported = isFunction(mLookupGetter) &amp;&amp; isFunction(mLookupSetter);
 
     /**
      * Target function.
@@ -6803,10 +6810,14 @@
                 }
             }
 
-            if (hasEnumArgsBug &amp;&amp; isArguments(object)) {
+            if (hasBoxedStringBug &amp;&amp; toClass(object) === classString(object)) {
+                for (index = 0, length = object.length; index &lt; length; index += 1) {
+                    pPush.call(props, cString(index));
+                }
+            } else if (hasEnumArgsBug &amp;&amp; isArguments(object)) {
                 for (index = 0, length = object.length; index &lt; length; index += 1) {
                     if ($hasOwn(object, index)) {
-                        pPush.call(props, index);
+                        pPush.call(props, cString(index));
                     }
                 }
             }
@@ -8874,7 +8885,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Mon Jun 16 2014 00:41:24 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Mon Jun 16 2014 15:49:16 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
