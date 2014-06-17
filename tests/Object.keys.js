@@ -144,6 +144,19 @@
             expect(theKeys).to.eql(testValue);
         });
 
+        it('should work with string object', function () {
+            var testValue = ['0', '1', '2'],
+                theObj = Object('hej'),
+                theKeys;
+
+            expect(function () {
+                theKeys = utilx.Object.keys(theObj);
+            }).to.not.throwException();
+
+            expect(theKeys).to.eql(testValue);
+            expect(theKeys.length).to.be(3);
+        });
+
         it('Constructor should not list prototype or constructor', function () {
             function Constructor() {
                 this.constructor = this.prototype = 1;
@@ -194,7 +207,7 @@
         });
 
         it('Function prototype should not list', function () {
-            console.log('Function.prototype: ' + Function.prototype);
+            console.log('Function.prototype: ' + typeof Function.prototype);
             expect(function () {
                 utilx.Object.keys(Function.prototype);
             }).to.not.throwException();
@@ -203,7 +216,7 @@
         });
 
         it('Boolean prototype should not list', function () {
-            console.log('Boolean.prototype: ' + Boolean.prototype);
+            console.log('Boolean.prototype: ' + typeof Boolean.prototype);
             expect(function () {
                 utilx.Object.keys(Boolean.prototype);
             }).to.not.throwException();
@@ -212,7 +225,7 @@
         });
 
         it('String prototype should not list', function () {
-            console.log('String.prototype: ' + String.prototype);
+            console.log('String.prototype: ' + typeof String.prototype);
             expect(function () {
                 utilx.Object.keys(String.prototype);
             }).to.not.throwException();
@@ -221,7 +234,7 @@
         });
 
         it('Number prototype should not list', function () {
-            console.log('Number.prototype: ' + Number.prototype);
+            console.log('Number.prototype: ' + typeof Number.prototype);
             expect(function () {
                 utilx.Object.keys(Number.prototype);
             }).to.not.throwException();
@@ -230,7 +243,7 @@
         });
 
         it('Error prototype should not list', function () {
-            console.log('Error.prototype: ' + Error.prototype);
+            console.log('Error.prototype: ' + typeof Error.prototype);
             expect(function () {
                 utilx.Object.keys(Error.prototype);
             }).to.not.throwException();
@@ -239,7 +252,7 @@
         });
 
         it('TypeError prototype should not list', function () {
-            console.log('TypeError.prototype: ' + TypeError.prototype);
+            console.log('TypeError.prototype: ' + typeof TypeError.prototype);
             expect(function () {
                 utilx.Object.keys(TypeError.prototype);
             }).to.not.throwException();

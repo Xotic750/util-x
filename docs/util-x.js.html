@@ -699,28 +699,34 @@
         CDate = base.Date.Ctr,
         CRegExp = base.RegExp.Ctr,
         CFunction = base.Function.Ctr,
+        CBoolean = base.Boolean.Ctr,
+        CArray = base.Array.Ctr,
+        //CObject = base.Object.Ctr,
 
         protoObject = base.Object.proto,
         protoFunction = base.Function.proto,
         protoNumber = base.Number.proto,
-        protoBoolean = base.Boolean.proto,
+        //protoBoolean = base.Boolean.proto,
         protoString = base.String.proto,
-        protoDate = base.Date.proto,
+        //protoDate = base.Date.proto,
         protoRegExp = base.RegExp.proto,
 
         protoError = base.Error.proto,
+        /*
         protoTypeError = base.TypeError.proto,
         protoSyntaxError = base.SyntaxError.proto,
         protoRangeError = base.RangeError.proto,
         protoEvalError = base.EvalError.proto,
         protoReferenceError = base.ReferenceError.proto,
         protoURIError = base.URIError.proto,
+        */
 
         mLookupGetter = base.Object.lookupGetter,
         mLookupSetter = base.Object.lookupSetter,
         mDefineGetter = base.Object.defineGetter,
         mDefineSetter = base.Object.defineSetter,
 
+        pIsPrototypeOf = base.Object.isPrototypeOf,
         mGetOwnPropertyDescriptor = base.Object.getOwnPropertyDescriptor,
 
         /**
@@ -840,6 +846,46 @@
         },
 
         /**
+         * The function tests whether an object has in its prototype chain the prototype property of a constructor.
+         * @private
+         * @name instanceOf
+         * @function
+         * @param {Object} object
+         * @param {Function} ctr
+         * @returns {boolean}
+         * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
+         */
+        instanceOf = function (object, ctr) {
+            throwIfNotAFunction(ctr);
+
+            var type = typeof object,
+                val = false;
+
+            if (type !== 'undefined' &amp;&amp;
+                    object !== null &amp;&amp;
+                    type !== 'boolean' &amp;&amp;
+                    type !== 'string' &amp;&amp;
+                    type !== 'number') {
+
+                if (object instanceof ctr) {
+                    val = true;
+                } else {
+                    type = typeof ctr.prototype;
+                    if (type !== 'undefined' &amp;&amp;
+                            ctr.prototype !== null &amp;&amp;
+                            type !== 'boolean' &amp;&amp;
+                            type !== 'string' &amp;&amp;
+                            type !== 'number') {
+
+                        val = pIsPrototypeOf.call(ctr.prototype, object);
+                    }
+                }
+            }
+
+            return val;
+        },
+
+        /**
          * The abstract operation throws an error if its argument is a value that cannot be
          * converted to an Object, otherwise returns the argument.
          * @private
@@ -940,6 +986,7 @@
          * @param {*} inputArg
          * @returns {boolean}
          */
+        /*
         isErrorTypePrototype = function (inputArg) {
             return inputArg === protoError ||
                     inputArg === protoTypeError ||
@@ -949,6 +996,7 @@
                     inputArg === protoReferenceError ||
                     inputArg === protoURIError;
         },
+        */
 
         /**
          * @private
@@ -958,10 +1006,10 @@
          * @returns {string}
          */
         toClass = (function () {
+            var toC;
+
             try {
                 if (testShims ||
-                        pOToString.call() !== classUndefined ||
-                        pOToString.call(null) !== classNull ||
                         pOToString.call(protoRegExp) !== classRegexp ||
                         pOToString.call(protoString) !== classString ||
                         pOToString.call(protoError) !== classError ||
@@ -970,12 +1018,36 @@
                     throw new CError();
                 }
 
-                return function (inputArg) {
+                toC = function (inputArg) {
                     return pOToString.call(inputArg);
                 };
-            } catch (eClass) {
+
+                try {
+                    if (toC() !== classUndefined || toC(null) !== classNull) {
+                        throw new CError();
+                    }
+                } catch (eClass1) {
+                    toC = function (inputArg) {
+                        var type = typeof inputArg,
+                            val;
+
+                        if (type === 'undefined') {
+                            val = classUndefined;
+                        } else if (inputArg === null) {
+                            val = classNull;
+                        } else {
+                            val = pOToString.call(inputArg);
+                        }
+
+                        return val;
+                    };
+                }
+
+                return toC;
+            } catch (eClass2) {
                 return function (inputArg) {
                     var type = typeof inputArg,
+                        object,
                         val;
 
                     if (type === 'undefined') {
@@ -989,24 +1061,29 @@
                             typeof inputArg.length === 'number') {
 
                         val = classArguments;
-                    } else if (inputArg === protoNumber) {
-                        val = classNumber;
-                    } else if (inputArg === protoBoolean) {
-                        val = classBoolean;
-                    } else if (inputArg === protoObject) {
-                        val = classObject;
-                    } else if (inputArg === protoFunction) {
-                        val = classFunction;
-                    } else if (inputArg === protoString) {
-                        val = classString;
-                    } else if (inputArg === protoDate) {
-                        val = classDate;
-                    } else if (inputArg === protoRegExp) {
-                        val = classRegexp;
-                    } else if (isErrorTypePrototype(inputArg)) {
-                        val = classError;
                     } else {
-                        val = pOToString.call(inputArg);
+                        object = cObject(inputArg);
+                        if (object instanceof CNumber) {
+                            val = classNumber;
+                        } else if (object instanceof CBoolean) {
+                            val = classBoolean;
+                        } else if (object instanceof CString) {
+                            val = classString;
+                        } else if (object instanceof CDate) {
+                            val = classDate;
+                        } else if (object instanceof CRegExp) {
+                            val = classRegexp;
+                        } else if (object instanceof CError) {
+                            val = classError;
+                        } else if (object instanceof CArray) {
+                            val = classArray;
+                        } else if (object instanceof CFunction) {
+                            val = classFunction;
+                        }
+                    }
+
+                    if (!val) {
+                        val = pOToString.call(object);
                     }
 
                     return val;
@@ -1322,7 +1399,6 @@
         pNToString = base.Number.toString,
 
         pHasOwn = base.Object.hasOwn,
-        pIsPrototypeOf = base.Object.isPrototypeOf,
         mDefineProperty = base.Object.defineProperty,
         mGetPrototypeOf = base.Object.getPrototypeOf,
         mKeys = base.Object.keys,
@@ -1363,7 +1439,6 @@
         defineProperties,
         assign,
         create,
-        instanceOf,
         objectKeys,
         objectIs,
         stringify,
@@ -2936,6 +3011,18 @@
                     (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
         };
     }());
+
+    /**
+     * The function tests whether an object has in its prototype chain the prototype property of a constructor.
+     * @memberof utilx.Object
+     * @name instanceOf
+     * @function
+     * @param {Object} object
+     * @param {Function} ctr
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
+     */
+    $.Object.instanceOf = instanceOf;
 
     /**
      * Creates a new array from arguments, starting at start and ending at end.
@@ -6700,7 +6787,7 @@
                             keys = pConcat.call(mKeys($slice(object)));
                         }
 
-                        if (isErrorTypePrototype(object)) {
+                        if (instanceOf(object, Error)) {
                             len = unwantedError.length;
                             for (arr = [], index = 0, length = keys.length; index &lt; length; index += 1) {
                                 for (found = false, it = keys[index], idx = 0; idx &lt; len; idx += 1) {
@@ -6742,7 +6829,7 @@
             throwIfIsPrimitive(object);
 
             var skipProto = hasProtoEnumBug &amp;&amp; isFunction(object),
-                skipErrorProps = hasErrorProps &amp;&amp; isErrorTypePrototype(object),
+                skipErrorProps = hasErrorProps &amp;&amp; instanceOf(object, Error),
                 length = skipErrorProps &amp;&amp; unwantedError.length,
                 theClass = (hasEnumStringBug || hasDontEnumBug) &amp;&amp; toClass(object),
                 props = [],
@@ -6787,7 +6874,7 @@
                 nonEnum = nonEnumProps[theClass];
                 for (index = 0, length = shadowed.length; index &lt; length; index += 1) {
                     prop = shadowed[index];
-                    if (!(isProto &amp;&amp; nonEnum[prop]) &amp;&amp; $hasOwn(object, prop)) {
+                    if (!(isProto &amp;&amp; nonEnum[prop]) &amp;&amp; !(isProto &amp;&amp; prop === 'constructor') &amp;&amp; $hasOwn(object, prop)) {
                         pPush.call(props, prop);
                     }
                 }
@@ -7205,61 +7292,6 @@
 
         return object;
     };
-
-    /**
-     * The function tests whether an object has in its prototype chain the prototype property of a constructor.
-     * @memberof utilx.Object
-     * @name instanceOf
-     * @function
-     * @param {Object} object
-     * @param {Function} ctr
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
-     */
-    if (!testShims &amp;&amp; isNative(pIsPrototypeOf)) {
-        $.Object.instanceOf = function (object, ctr) {
-            throwIfNotAFunction(ctr);
-
-            var type = typeof object;
-
-            return type !== 'undefined' &amp;&amp;
-                object !== null &amp;&amp;
-                type !== 'boolean' &amp;&amp;
-                type !== 'string' &amp;&amp;
-                type !== 'number' &amp;&amp;
-                (object instanceof ctr || pIsPrototypeOf.call(ctr.prototype, object));
-        };
-    } else {
-        $.Object.instanceOf = function (object, ctr) {
-            throwIfNotAFunction(ctr);
-
-            var type = typeof object,
-                val = false;
-
-            if (type !== 'undefined' &amp;&amp;
-                    object !== null &amp;&amp;
-                    type !== 'boolean' &amp;&amp;
-                    type !== 'string' &amp;&amp;
-                    type !== 'number') {
-
-                val = object instanceof ctr;
-                if (!val) {
-                    while (object) {
-                        if (cObject(object) === ctr.prototype) {
-                            val = true;
-                            break;
-                        }
-
-                        object = $getPrototypeOf(object);
-                    }
-                }
-            }
-
-            return val;
-        };
-    }
-
-    instanceOf = $.Object.instanceOf;
 
     /**
      * The assign function is used to copy the values of all of the enumerable own properties from a
@@ -8837,7 +8869,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Tue Jun 17 2014 22:00:01 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Wed Jun 18 2014 01:35:06 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
