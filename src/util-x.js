@@ -1004,21 +1004,6 @@
         hasProtoEnumBug = base.Object.propertyIsEnumerable.call(returnArgs, 'prototype'),
 
         /**
-         * Indicates if a function suffers the construtor is enumerable bug.
-         * @private
-         * @type {boolean}
-         */
-        hasConstructorEnumBug = (function () {
-            var Constructor = function () {
-                    this.constructor = this.prototype = 1;
-                };
-
-            Constructor.prototype.constructor = 1;
-
-            return base.Object.propertyIsEnumerable.call(Constructor.prototype, 'constructor');
-        }()),
-
-        /**
          * Indicates if a arguments suffers the prototype is enumerable bug.
          * @private
          * @type {boolean}
@@ -1454,7 +1439,6 @@
     /*global console */
     console.log('+++++++++ hasDontEnumBug: ' + hasDontEnumBug);
     console.log('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
-    console.log('+++++++++ hasConstructorEnumBug: ' + hasConstructorEnumBug);
     console.log('+++++++++ hasEnumArgsBug: ' + hasEnumArgsBug);
     console.log('+++++++++ hasErrorProps: ' + hasErrorProps);
     console.log('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
@@ -6736,14 +6720,15 @@
                 theClass = (hasEnumStringBug || hasDontEnumBug) && toClass(object),
                 props = [],
                 prop,
-                ctor,
-                isProto,
+                hasDEB = hasDontEnumBug && object !== protoObject,
+                ctor = hasDEB && object.constructor,
+                isProto = hasDEB && isFunction(ctor) && ctor.prototype === object,
                 nonEnum,
                 index,
                 unwanted;
 
             for (prop in object) {
-                if (!(skipProto && prop === 'prototype')) {
+                if (!(skipProto && prop === 'prototype') && !(isProto && prop === 'constructor')) {
                     if (skipErrorProps) {
                         for (unwanted = false, index = 0; index < length; index += 1) {
                             if (prop === unwantedError[index]) {
@@ -6771,16 +6756,11 @@
                 }
             }
 
-            if (hasDontEnumBug && object !== protoObject) {
-                ctor = object.constructor;
-                isProto = isFunction(ctor) && ctor.prototype === object;
+            if (hasDEB) {
                 nonEnum = nonEnumProps[theClass];
                 for (index = 0, length = shadowed.length; index < length; index += 1) {
                     prop = shadowed[index];
-                    if (!(isProto && nonEnum[prop]) &&
-                            !(hasConstructorEnumBug && isProto && prop === 'constructor') &&
-                            $hasOwn(object, prop)) {
-
+                    if (!(isProto && nonEnum[prop]) && $hasOwn(object, prop)) {
                         pPush.call(props, prop);
                     }
                 }

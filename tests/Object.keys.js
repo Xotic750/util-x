@@ -1,4 +1,4 @@
-/*global require, describe, it */
+/*global require, describe, it, console */
 
 (function () {
     'use strict';
@@ -194,6 +194,7 @@
         });
 
         it('Function prototype should not list', function () {
+            console.log('Function.prototype: ' + Function.prototype);
             expect(function () {
                 utilx.Object.keys(Function.prototype);
             }).to.not.throwException();
@@ -202,6 +203,7 @@
         });
 
         it('Boolean prototype should not list', function () {
+            console.log('Boolean.prototype: ' + Boolean.prototype);
             expect(function () {
                 utilx.Object.keys(Boolean.prototype);
             }).to.not.throwException();
@@ -210,6 +212,7 @@
         });
 
         it('String prototype should not list', function () {
+            console.log('String.prototype: ' + String.prototype);
             expect(function () {
                 utilx.Object.keys(String.prototype);
             }).to.not.throwException();
@@ -218,6 +221,7 @@
         });
 
         it('Number prototype should not list', function () {
+            console.log('Number.prototype: ' + Number.prototype);
             expect(function () {
                 utilx.Object.keys(Number.prototype);
             }).to.not.throwException();
@@ -226,6 +230,7 @@
         });
 
         it('Error prototype should not list', function () {
+            console.log('Error.prototype: ' + Error.prototype);
             expect(function () {
                 utilx.Object.keys(Error.prototype);
             }).to.not.throwException();
@@ -234,6 +239,7 @@
         });
 
         it('TypeError prototype should not list', function () {
+            console.log('TypeError.prototype: ' + TypeError.prototype);
             expect(function () {
                 utilx.Object.keys(TypeError.prototype);
             }).to.not.throwException();
