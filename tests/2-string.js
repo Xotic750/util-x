@@ -5,7 +5,12 @@
 
     var required = require('../scripts/'),
         //utilx = required.utilx,
-        expect = required.expect;
+        expect = required.expect,
+        dontRun = true;
+
+    if (dontRun) {
+        return;
+    }
 
     describe('Native string', function () {
         var test,
