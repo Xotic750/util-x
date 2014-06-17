@@ -6767,7 +6767,7 @@
                 nonEnum = nonEnumProps[theClass];
                 for (index = 0, length = shadowed.length; index < length; index += 1) {
                     prop = shadowed[index];
-                    if (!(isProto && nonEnum[prop]) && $hasOwn(object, prop)) {
+                    if (!(isProto && (prop === 'constructor' || nonEnum[prop])) && $hasOwn(object, prop)) {
                         pPush.call(props, prop);
                     }
                 }

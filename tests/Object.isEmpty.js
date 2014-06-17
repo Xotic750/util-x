@@ -59,17 +59,51 @@
         });
 
         it('should true in each case', function () {
+            expect(function () {
+                utilx.Object.isEmpty({});
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty({})).to.be(true);
+
+            expect(function () {
+                utilx.Object.isEmpty([]);
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty([])).to.be(true);
+
+            expect(function () {
+                utilx.Object.isEmpty(required.noop);
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty(required.noop)).to.be(true);
+
+            expect(function () {
+                utilx.Object.isEmpty(X);
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty(X)).to.be(true);
         });
 
         it('should false in each case', function () {
+            expect(function () {
+                utilx.Object.isEmpty({toString: required.noop});
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty({toString: required.noop})).to.be(false);
+
+            expect(function () {
+                utilx.Object.isEmpty({valueOf: required.noop});
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty({valueOf: required.noop})).to.be(false);
+
+            expect(function () {
+                utilx.Object.isEmpty([1]);
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty([1])).to.be(false);
-            expect(utilx.Object.isEmpty(F)).to.be(false);
+
+            expect(function () {
+                utilx.Object.isEmpty(X.prototype);
+            }).to.not.throwException();
+            expect(utilx.Object.isEmpty(X.prototype)).to.be(false);
+
+            expect(function () {
+                utilx.Object.isEmpty(X.prototype);
+            }).to.not.throwException();
             expect(utilx.Object.isEmpty(X.prototype)).to.be(false);
         });
     });

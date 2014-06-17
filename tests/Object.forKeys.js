@@ -228,9 +228,9 @@
                 count += 1;
             });
 
-            expect(count).to.be(3);
             expect(inner.sort()).to.eql(['f', 'o', 'o']);
             expect(props.sort()).to.eql(['0', '1', '2']);
+            expect(count).to.be(3);
         });
 
         it('should have a boxed object as list argument of callback', function () {
