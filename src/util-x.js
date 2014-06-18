@@ -679,10 +679,11 @@
         protoObject = base.Object.proto,
         protoFunction = base.Function.proto,
         protoNumber = base.Number.proto,
-        //protoBoolean = base.Boolean.proto,
+        protoBoolean = base.Boolean.proto,
         protoString = base.String.proto,
-        //protoDate = base.Date.proto,
+        protoDate = base.Date.proto,
         protoRegExp = base.RegExp.proto,
+        protoArray = base.Array.proto,
 
         protoError = base.Error.proto,
         /*
@@ -1038,20 +1039,22 @@
                         object = cObject(inputArg);
                         if (object instanceof CNumber) {
                             val = classNumber;
-                        } else if (object instanceof CBoolean) {
+                        } else if (object instanceof CBoolean || object === protoBoolean) {
                             val = classBoolean;
-                        } else if (object instanceof CString) {
+                        } else if (object instanceof CString || object === protoString) {
                             val = classString;
-                        } else if (object instanceof CDate) {
+                        } else if (object instanceof CDate || object === protoDate) {
                             val = classDate;
-                        } else if (object instanceof CRegExp) {
+                        } else if (object instanceof CRegExp || object === protoRegExp) {
                             val = classRegexp;
-                        } else if (object instanceof CError) {
+                        } else if (object instanceof CError || object === protoError) {
                             val = classError;
-                        } else if (object instanceof CArray) {
+                        } else if (object instanceof CArray || object === protoArray) {
                             val = classArray;
-                        } else if (object instanceof CFunction) {
+                        } else if (object instanceof CFunction || object === protoFunction) {
                             val = classFunction;
+                        } else if (object === protoObject) {
+                            val = classObject;
                         }
                     }
 
@@ -6760,7 +6763,7 @@
                             keys = pConcat.call(mKeys($slice(object)));
                         }
 
-                        if (instanceOf(object, Error)) {
+                        if (toClass(object) === classError) {
                             len = unwantedError.length;
                             for (arr = [], index = 0, length = keys.length; index < length; index += 1) {
                                 for (found = false, it = keys[index], idx = 0; idx < len; idx += 1) {
@@ -6802,9 +6805,9 @@
             throwIfIsPrimitive(object);
 
             var skipProto = hasProtoEnumBug && isFunction(object),
-                skipErrorProps = hasErrorProps && instanceOf(object, Error),
+                theClass = (hasEnumStringBug || hasDontEnumBug || hasErrorProps) && toClass(object),
+                skipErrorProps = hasErrorProps && theClass === classError,
                 length = skipErrorProps && unwantedError.length,
-                theClass = (hasEnumStringBug || hasDontEnumBug) && toClass(object),
                 props = [],
                 prop,
                 hasDEB = hasDontEnumBug && object !== protoObject,
@@ -6847,7 +6850,7 @@
                 nonEnum = nonEnumProps[theClass];
                 for (index = 0, length = shadowed.length; index < length; index += 1) {
                     prop = shadowed[index];
-                    if (!(isProto && nonEnum[prop]) && !(isProto && prop === 'constructor') && $hasOwn(object, prop)) {
+                    if (!(isProto && nonEnum[prop]) && $hasOwn(object, prop)) {
                         pPush.call(props, prop);
                     }
                 }
@@ -7901,7 +7904,7 @@
 
         try {
             Custom = makeCustomError('CustomSyntaxError', CSyntaxError);
-            isOkToUseOtherErrors = instanceOf(new Custom('test'), CSyntaxError);
+            isOkToUseOtherErrors = new Custom('test') instanceof CSyntaxError;
         } catch (eCSE) {
             // IE < 9
             isOkToUseOtherErrors = false;
@@ -8455,7 +8458,7 @@
         try {
             mParse();
         } catch (eParse) {
-            testTemp.parseSupport = instanceOf(eParse, CSyntaxError);
+            testTemp.parseSupport = eParse instanceof CSyntaxError;
         }
 
         if (testTemp.parseSupport) {

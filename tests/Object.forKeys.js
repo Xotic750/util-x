@@ -221,15 +221,13 @@
                 props = [];
 
             utilx.Object.forKeys('foo', function (item, prop) {
-                /*jslint unparam: true */
-                /*jshint unused: true */
                 inner.push(item);
                 props.push(prop);
                 count += 1;
             });
 
-            expect(inner.sort()).to.eql(['f', 'o', 'o']);
             expect(props.sort()).to.eql(['0', '1', '2']);
+            expect(inner.sort()).to.eql(['f', 'o', 'o']);
             expect(count).to.be(3);
         });
 
