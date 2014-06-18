@@ -1340,6 +1340,29 @@
         areGetSetSupported = isFunction(mLookupGetter) &amp;&amp; isFunction(mLookupSetter),
 
         /**
+         * @private
+         * @name isStrictMode
+         * @type {boolean}
+         */
+        isStrictMode = (function () {
+            var isStrict = (function () {
+                    return !this;
+                }());
+
+            /*
+            if (!isStrict) {
+                try {
+                    eval('function (a, a) { var x = { p: 015, p: 015 }; }');
+                } catch (eIsStrictMode) {
+                    isStrict = true;
+                }
+            }
+            */
+
+            return isStrict;
+        }()),
+
+        /**
          * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
          * @private
          * @name toObjectFixIndexedAccess
@@ -1352,6 +1375,44 @@
             var object = cObject(checkObjectCoercible(inputArg)),
                 length,
                 index;
+
+            if (hasBoxedStringBug &amp;&amp; toClass(object) === classString) {
+                for (index = 0, length = object.length; index &lt; length; index += 1) {
+                    object[index] = pCharAt.call(object, index);
+                }
+            }
+
+            return object;
+        },
+
+        /**
+         * Indicates if the this argument used with call does not convert to an object when not strict mode.
+         * @private
+         * @type {boolean}
+         */
+        hasCallBug = !isStrictMode &amp;&amp; typeof (function () { return !this; }()).call('foo') === 'string',
+
+        /**
+         * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+         * For use with call.
+         * @private
+         * @name toObjectCallFix
+         * @function
+         * @param {*} inputArg
+         * @returns {*}
+         */
+        toObjectCallFix = function (inputArg) {
+            var object = inputArg,
+                length,
+                index,
+                type;
+
+            if (hasCallBug) {
+                type = typeof inputArg;
+                if (type !== 'boolean' || type !== 'number' || type !== 'string') {
+                    object = cObject(inputArg);
+                }
+            }
 
             if (hasBoxedStringBug &amp;&amp; toClass(object) === classString) {
                 for (index = 0, length = object.length; index &lt; length; index += 1) {
@@ -1433,29 +1494,6 @@
                 return protoFn.apply(checkThisArgFn(thisArg), argSlice(arguments, 1));
             };
         },
-
-        /**
-         * @private
-         * @name isStrictMode
-         * @type {boolean}
-         */
-        isStrictMode = (function () {
-            var isStrict = (function () {
-                    return !this;
-                }());
-
-            /*
-            if (!isStrict) {
-                try {
-                    eval('function (a, a) { var x = { p: 015, p: 015 }; }');
-                } catch (eIsStrictMode) {
-                    isStrict = true;
-                }
-            }
-            */
-
-            return isStrict;
-        }()),
 
         // shortcuts
         pSlice = base.Array.slice,
@@ -1627,23 +1665,6 @@
             JSON: {}
         };
 
-        //hasCallBug = (!isStrictMode &amp;&amp; typeof returnThis.call('foo') === 'string');
-
-    /*
-    function toObjectCallFix(inputArg) {
-        var type;
-
-        if (hasCallBug &amp;&amp; returnThis()) {
-            type = typeof inputArg;
-            if (type !== 'boolean' || type !== 'number' || type !== 'string') {
-                inputArg = cObject(inputArg);
-            }
-        }
-
-        return inputArg;
-    }
-    */
-
     /*global console */
     console.log('+++++++++ hasDontEnumBug: ' + hasDontEnumBug);
     console.log('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
@@ -1651,6 +1672,7 @@
     console.log('+++++++++ hasErrorProps: ' + hasErrorProps);
     console.log('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
     console.log('+++++++++ hasEnumStringBug: ' + hasEnumStringBug);
+    console.log('+++++++++ hasCallBug: ' + hasCallBug);
     console.log('+++++++++ isProtoSupported: ' + isProtoSupported);
     console.log('+++++++++ areGetSetSupported: ' + areGetSetSupported);
     console.log('+++++++++ isStrictMode: ' + isStrictMode);
@@ -5399,7 +5421,12 @@
                 index;
 
             throwIfNotAFunction(fn);
-            for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (index = 0; index &lt; length; index += 1) {
                 if (index in object) {
                     fn.call(thisArg, object[index], index, object);
                 }
@@ -5431,7 +5458,12 @@
             val;
 
         throwIfNotAFunction(fn);
-        for (val = false, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+        length = toLength(object.length);
+        if (length) {
+            thisArg = toObjectCallFix(thisArg);
+        }
+
+        for (val = false, index = 0; index &lt; length; index += 1) {
             val = !!fn.call(thisArg, object[index], index, object);
             if (val) {
                 break;
@@ -5493,7 +5525,12 @@
                 index;
 
             throwIfNotAFunction(fn);
-            for (val = false, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (val = false, index = 0; index &lt; length; index += 1) {
                 if (index in object) {
                     val = !!fn.call(thisArg, object[index], index, object);
                     if (val) {
@@ -5545,7 +5582,12 @@
                 it;
 
             throwIfNotAFunction(fn);
-            for (index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (index = 0; index &lt; length; index += 1) {
                 if (index in object) {
                     it = object[index];
                     if (fn.call(thisArg, it, index, object)) {
@@ -5597,7 +5639,12 @@
                 index;
 
             throwIfNotAFunction(fn);
-            for (val = -1, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (val = -1, index = 0; index &lt; length; index += 1) {
                 if (index in object &amp;&amp; fn.call(thisArg, object[index], index, object)) {
                     val = index;
                     break;
@@ -5654,6 +5701,10 @@
             }
 
             array.length = length;
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
             for (index = 0; index &lt; length; index += 1) {
                 it = object[index];
                 if (mapping) {
@@ -5717,7 +5768,12 @@
                 index;
 
             throwIfNotAFunction(fn);
-            for (val = true, index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (val = true, index = 0; index &lt; length; index += 1) {
                 if (index in object) {
                     val = !!fn.call(thisArg, object[index], index, object);
                     if (!val) {
@@ -5782,7 +5838,13 @@
                 index;
 
             throwIfNotAFunction(fn);
-            for (arr = [], index = 0, arr.length = length = toLength(object.length); index &lt; length; index += 1) {
+            arr = [];
+            arr.length = length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (index = 0; index &lt; length; index += 1) {
                 if (index in object) {
                     arr[index] =  fn.call(thisArg, object[index], index, object);
                 }
@@ -5851,7 +5913,12 @@
                 it;
 
             throwIfNotAFunction(fn);
-            for (arr = [], index = 0, length = toLength(object.length); index &lt; length; index += 1) {
+            length = toLength(object.length);
+            if (length) {
+                thisArg = toObjectCallFix(thisArg);
+            }
+
+            for (arr = [], index = 0; index &lt; length; index += 1) {
                 it = object[index];
                 if (index in object &amp;&amp; fn.call(thisArg, it, index, object)) {
                     pPush.call(arr, it);
@@ -7025,7 +7092,13 @@
             it;
 
         throwIfNotAFunction(fn);
-        for (keys = objectKeys(cObject(this)), val = false, index = 0, len = keys.length; index &lt; len; index += 1) {
+        keys = objectKeys(cObject(this));
+        len = keys.length;
+        if (len) {
+            thisArg = toObjectCallFix(thisArg);
+        }
+
+        for (val = false, index = 0; index &lt; len; index += 1) {
             it = keys[index];
             val = !!fn.call(thisArg, object[it], it, object);
             if (val) {
@@ -8991,7 +9064,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Wed Jun 18 2014 23:34:05 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha8</a> on Thu Jun 19 2014 01:47:23 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
