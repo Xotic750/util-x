@@ -3390,7 +3390,7 @@
              * @name bindArgs
              * @function
              * @param {number} length
-             * @returns {string}
+             * @return {string}
              */
             function bindArgs(length) {
                 var len = mMax(0, length),
@@ -3409,8 +3409,15 @@
                 /*jshint unused:false */
                 var fn = throwIfNotAFunction(this),
                     args = $slice(arguments, 1),
-                    bound = new CFunction('binder', 'return function(' + bindArgs(fn.length - args.length) +
-                        '){return binder.apply(this,arguments);}')(function () {
+                    bound = (function (binder) {
+                        /*jslint evil: true */
+                        var f = eval('(function(){return function(' +
+                                     bindArgs(fn.length - args.length) +
+                                     '){return binder.apply(this,arguments);}}());');
+                        /*jslint evil: false */
+
+                        return f;
+                    }(function () {
                         var binderArgs = pConcat.call(args, $slice(arguments)),
                             result;
 
@@ -3424,7 +3431,7 @@
                         }
 
                         return fn.apply(thisArg, binderArgs);
-                    });
+                    }));
 
                 if (cObject(fn.prototype) === fn.prototype) {
                     BindCtr.prototype = fn.prototype;
