@@ -7001,6 +7001,7 @@
                 unwanted;
 
             for (prop in object) {
+                /*jslint forin: false*/
                 if (!(skipProto && prop === 'prototype')) {
                     if (skipErrorProps) {
                         for (unwanted = false, index = 0; index < length; index += 1) {
@@ -7015,6 +7016,8 @@
                         pPush.call(props, prop);
                     }
                 }
+
+                /*jslint forin: true*/
             }
 
             if (hasEnumStringBug && theClass === classString) {
