@@ -7896,6 +7896,7 @@
         } else if (type === 'undefined' ||
                     value === Infinity ||
                     value === -Infinity ||
+                    $.Number.isNaN(value) ||
                     isFunction(value) ||
                     isRegExp(value)) {
 
