@@ -5237,7 +5237,7 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
-    if (!testShims && isNative(pSplice) && pSplice([1, 2], 0).length === 2) {
+    if (!testShims && isNative(pSplice) && pSplice.call([1, 2], 0).length === 2) {
         try {
             if (!pSplice.call([1, 2]).length) {
                 $.Array.splice = toMethod(pSplice);
