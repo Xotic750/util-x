@@ -577,7 +577,7 @@
      * @returns {*}
      */
 
-    var testShims = true,
+    var testShims = false,
 
         // constants
         POSITIVE_ZERO = +0,
@@ -4317,6 +4317,20 @@
         };
 
         $.RegExp.test = $test = toMethod($.RegExp.prototype.test);
+
+        /**
+         * Checks to see that the string is only comprised of byte sized characters.
+         * @memberof utilx.String
+         * @name isBytestring
+         * @function
+         * @param {string} stringArg String to check.
+         * @returns {Boolean} Is a bytestring or not.
+         */
+        $.String.prototype.isBytestring = function () {
+            return $.RegExp.test(/^[\x00-\xFF]*$/, onlyCoercibleToString(this));
+        };
+
+        $.String.isBytestring = toMethod($.String.prototype.isBytestring);
 
         /**
          * Splits a String object into an array of strings by separating the string into subbase.str.
