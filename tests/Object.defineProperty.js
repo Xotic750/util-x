@@ -525,8 +525,8 @@
                     configurable: true
                 });
 
-                expect(obj.length).to.be(2);
-                expect(obj[1]).to.be(undefined);
+                expect(obj.length).to.be(0);
+                expect(obj['1.']).to.be(undefined);
             }).to.not.throwException();
 
             expect(function () {
@@ -537,8 +537,8 @@
                     configurable: true
                 });
 
-                expect(obj.length).to.be(2);
-                expect(obj[1]).to.be(undefined);
+                expect(obj.length).to.be(0);
+                expect(obj['1.']).to.be(undefined);
             }).to.not.throwException();
 
             expect(function () {
@@ -549,8 +549,8 @@
                     configurable: true
                 });
 
-                expect(obj.length).to.be(2);
-                expect(obj[1]).to.be(null);
+                expect(obj.length).to.be(0);
+                expect(obj['1.']).to.be(null);
             }).to.not.throwException();
 
             expect(function () {
@@ -561,8 +561,8 @@
                     configurable: true
                 });
 
-                expect(obj.length).to.be(2);
-                expect(obj[1]).to.be(true);
+                expect(obj.length).to.be(0);
+                expect(obj['1.']).to.be(true);
             }).to.not.throwException();
             /*jshint +W047 */
         });

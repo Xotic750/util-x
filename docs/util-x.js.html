@@ -28,7 +28,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * @file {@link http://xotic750.github.io/util-x/ util-x}. A Javascript utility library..
- * @version 0.1.4
+ * @version 0.1.5
  * @author Graham Fairweather &lt;xotic750@gmail.com>
  * @copyright Copyright (c) 2013 Graham Fairweather
  * @license {@link &lt;http://www.gnu.org/licenses/gpl-3.0.html> GPL3}
@@ -1605,6 +1605,7 @@
         $split,
         $replace,
         $splice,
+        $isDigits,
         noop,
 
         publicUtil,
@@ -5113,18 +5114,6 @@
     $.Array.last = toMethod($.Array.prototype.last);
 
     /**
-     * The put method assigns a value to a specific element of an array and
-     * returns the new length of the array.
-     * @private
-     * @name put
-     * @function
-     * @param {ArrayLike} array
-     * @param {NumberLike} index
-     * @param {*} value
-     * @returns {(number|undefined)}
-     */
-
-    /**
      * The Array.assign() method assigns a value to a specific element of an array and
      * returns the new length of the array.
      * @memberof utilx.Array
@@ -7184,7 +7173,7 @@
         };
     }());
 
-    $.String.isDigits = toMethod($.String.prototype.isDigits);
+    $.String.isDigits = $isDigits = toMethod($.String.prototype.isDigits);
 
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
@@ -7198,24 +7187,27 @@
      * @returns {Object}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
      */
+
     try {
         (function () {
             if (testShims) {
                 throw new CError();
             }
 
-            if (mDefineProperty({}, 'sentinel', { value: null }) !== null) {
+            if (mDefineProperty({}, 'sentinel', { value: null }).sentinel !== null) {
                 throw new CError('Fails sentinel check');
             }
 
             var definePropertyPatch1,
                 definePropertyPatch2,
                 definePropertyPatch3,
+                testObj,
                 testProp;
 
             // Test string integer
             try {
-                if (mDefineProperty([], '1.', { value: null })[1] !== null) {
+                testObj = mDefineProperty([], '1.', { value: null });
+                if (testObj.length !== 0 || testObj[1] === null || testObj['1.'] !== null) {
                     throw new CError('Fails integer check');
                 }
             } catch (eDP1) {
@@ -7224,7 +7216,8 @@
 
             // Test assign to array
             try {
-                if (mDefineProperty([], '0', { value: null }) !== null) {
+                testObj = mDefineProperty([], '1', { value: null });
+                if (testObj.length !== 1 || testObj[1] !== null) {
                     throw new CError('Fails array check');
                 }
             } catch (eDP2) {
@@ -7233,29 +7226,66 @@
 
             // Test overwrite array property when no value defined
             try {
-                if (mDefineProperty([10], '0', {})[0] !== 10) {
+                testObj = mDefineProperty([10, 20], '1', {});
+                if (testObj.length !== 2 || testObj[1] !== 20) {
                     throw new CError('Fails overwrite check');
                 }
             } catch (eDP3) {
                 definePropertyPatch3 = true;
             }
 
+            console.log([definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3]);
             if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
                 $.Object.defineProperty = function (object, property, descriptor) {
-                    var isA = (isArray(object) || isArguments(object)) &amp;&amp; isNumeric(property) &amp;&amp; isUint32(+property),
-                        isB = (definePropertyPatch1 || definePropertyPatch2) &amp;&amp; pHasOwn.call(descriptor, 'value');
+                    var prototype,
+                        type;
 
-                    if (definePropertyPatch1 &amp;&amp; isA) {
-                        property = +property;
-                    }
+                    if (isArray(object) || isArguments(object)) {
+                        property = $toString(property);
+                        if ($isDigits(property) &amp;&amp; isUint32(+property)) {
+                            property = +property;
+                        }
 
-                    if (definePropertyPatch2 &amp;&amp; isA &amp;&amp; (isB || !$hasOwn(object, property))) {
-                        object[property] = descriptor.value;
-                        //ut(object, property, descriptor.value);
-                    }
+                        if (toClass(property) === classString &amp;&amp; isNumeric(property)) {
+                            if (!pHasOwn.call(descriptor, 'get') &amp;&amp; !pHasOwn.call(descriptor, 'set')) {
+                                if (pHasOwn.call(descriptor, 'value') || !pHasOwn.call(object, property)) {
+                                    if (isProtoSupported) {
+                                        prototype = object[stringProto];
+                                        object[stringProto] = protoObject;
+                                        /*
+                                        try {
+                                            delete object[property];
+                                        } catch (ignore) {}
+                                        */
 
-                    if (definePropertyPatch3 &amp;&amp; isA &amp;&amp; !isB) {
-                        descriptor.value = object[property];
+                                        object[property] = descriptor.value;
+                                        type = typeof prototype;
+                                        if (type === 'undefined') {
+                                            delete object[stringProto];
+                                        } else {
+                                            object[stringProto] = prototype;
+                                        }
+                                    } else {
+                                        object[property] = descriptor.value;
+                                    }
+                                }
+                            } else {
+                                if (!isNative(mDefineGetter) || !isNative(mDefineSetter)) {
+                                    throw new CTypeError('getters &amp; setters can not be defined' +
+                                                         ' on this javascript engine');
+                                }
+
+                                if (isFunction(descriptor.get)) {
+                                    mDefineGetter.call(object, property, descriptor.get);
+                                }
+
+                                if (isFunction(descriptor.set)) {
+                                    mDefineSetter.call(object, property, descriptor.set);
+                                }
+                            }
+
+                            return object;
+                        }
                     }
 
                     return mDefineProperty(object, property, descriptor);
@@ -7273,7 +7303,8 @@
 
             for (testProp in testTemp.dpObject) {
                 if (pHasOwn.call(testTemp.dpObject, testProp)) {
-                    defineProperty(testTemp.dpObject, testProp, propNotEnumerable);
+                    console.log(testProp);
+                    $.Object.defineProperty(testTemp.dpObject, testProp, propNotEnumerable);
                 }
             }
 
@@ -7288,7 +7319,7 @@
             testTemp.dpArray = [10, true, '', noop];
             for (testProp in testTemp.dpArray) {
                 if (pHasOwn.call(testTemp.dpArray, testProp)) {
-                    defineProperty(testTemp.dpArray, testProp, propNotEnumerable);
+                    $.Object.defineProperty(testTemp.dpArray, testProp, propNotEnumerable);
                 }
             }
 
@@ -7297,30 +7328,12 @@
                     testTemp.dpArray[2] !== '' ||
                     testTemp.dpArray[3] !== noop) {
 
+                console.log('throw 2');
                 throw new CError();
             }
         }());
     } catch (eDP) {
         (function () {
-            var definePropertyInteger = (function () {
-                    var rxInt = new CRegExp('^[1-9]\\d*.?$');
-
-                    return function (index) {
-                        var val;
-
-                        if (toClass(index) === classNumber) {
-                            val = +index;
-                        } else {
-                            val = $toString(index);
-                            if ($test(rxInt, val)) {
-                                val = +val;
-                            }
-                        }
-
-                        return val;
-                    };
-                }());
-
             $.Object.defineProperty = function (object, property, descriptor) {
                 throwIfIsPrimitive(object);
                 throwIfIsPrimitive(descriptor);
@@ -7331,12 +7344,17 @@
                 }
 
                 var prototype,
-                    type,
-                    index;
+                    type;
 
+                property = $toString(property);
                 if (!pHasOwn.call(descriptor, 'get') &amp;&amp; !pHasOwn.call(descriptor, 'set')) {
                     if (pHasOwn.call(descriptor, 'value') || !$hasOwn(object, property)) {
-                        index = definePropertyInteger(property);
+                        if (isArray(object) || isArguments(object)) {
+                            if ($isDigits(property) &amp;&amp; isUint32(+property)) {
+                                property = +property;
+                            }
+                        }
+
                         if (isProtoSupported) {
                             prototype = object[stringProto];
                             object[stringProto] = protoObject;
@@ -7346,7 +7364,7 @@
                             } catch (ignore) {}
                             */
 
-                            object[index] = descriptor.value;
+                            object[property] = descriptor.value;
                             type = typeof prototype;
                             if (type === 'undefined') {
                                 delete object[stringProto];
@@ -7354,7 +7372,7 @@
                                 object[stringProto] = prototype;
                             }
                         } else {
-                            object[index] = descriptor.value;
+                            object[property] = descriptor.value;
                         }
                     }
                 } else {
@@ -9096,7 +9114,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha13</a> on Tue Jan 13 2015 15:49:54 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha13</a> on Thu Jan 15 2015 01:31:55 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
