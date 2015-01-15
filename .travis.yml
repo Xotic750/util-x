@@ -4,7 +4,7 @@ node_js:
     - "0.10"
     - "0.8"
     - "0.6"
-before_install: npm install mocha expect.js git://github.com/stacktracejs/stacktrace.js.git
+before_install: npm install mocha expect.js zuul
 install: true
 env:
     global:
