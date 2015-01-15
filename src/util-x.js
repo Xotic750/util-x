@@ -7206,7 +7206,6 @@
                 definePropertyPatch3 = true;
             }
 
-            console.log([definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3]);
             if (definePropertyPatch1 || definePropertyPatch2 || definePropertyPatch3) {
                 $.Object.defineProperty = function (object, property, descriptor) {
                     var prototype,
@@ -7275,7 +7274,6 @@
 
             for (testProp in testTemp.dpObject) {
                 if (pHasOwn.call(testTemp.dpObject, testProp)) {
-                    console.log(testProp);
                     $.Object.defineProperty(testTemp.dpObject, testProp, propNotEnumerable);
                 }
             }
@@ -7300,7 +7298,6 @@
                     testTemp.dpArray[2] !== '' ||
                     testTemp.dpArray[3] !== noop) {
 
-                console.log('throw 2');
                 throw new CError();
             }
         }());

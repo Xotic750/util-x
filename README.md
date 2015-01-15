@@ -12,7 +12,7 @@ Master
 
 [![browser support](https://ci.testling.com/Xotic750/util-x.png)](https://ci.testling.com/Xotic750/util-x 'Browser support on Testling CI')
 
-#[util-x 0.1.5](http://xotic750.github.io/util-x/)
+#[util-x 0.1.6](http://xotic750.github.io/util-x/)
 ###### Graham Fairweather <xotic750@gmail.com>
 
 An unobtrusive Javascript library that attempts to give you the best possible chance of writing cross-environment code.
