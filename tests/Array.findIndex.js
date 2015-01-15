@@ -97,10 +97,10 @@
                     length: 3
                 },
                 foundIndex = utilx.Array.findIndex(obj, function (item) {
-                    return item === 2;
+                    return item === 3;
                 });
 
-            expect(foundIndex).to.equal(1);
+            expect(foundIndex).to.equal(2);
         });
 
         it('should work with an array-like object with negative length', function () {
@@ -125,9 +125,13 @@
 
             delete obj[1];
             foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                utilx.Array.assign(seen, idx, required.create(idx, item));
+                if (utilx.Object.hasOwn(obj, idx)) {
+                    utilx.Array.assign(seen, idx, required.create(idx, item));
 
-                return utilx.Object.isUndefined(item);
+                    return utilx.Object.isUndefined(item);
+                }
+
+                return false;
             });
 
             utilx.Array.assign(expected, 0, [0, 1]);
@@ -144,7 +148,11 @@
                 },
                 seen = [],
                 foundIndex = utilx.Array.findIndex(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, required.create(idx, item));
+                    if (utilx.Object.hasOwn(obj, idx)) {
+                        utilx.Array.assign(seen, idx, required.create(idx, item));
+
+                        return utilx.Object.isUndefined(item);
+                    }
 
                     return false;
                 }),
@@ -152,7 +160,7 @@
 
             utilx.Array.assign(expected, 0, [0, 1]);
             utilx.Array.assign(expected, 2, required.create(2, undefined));
-            expect(foundIndex).to.equal(-1);
+            expect(foundIndex).to.equal(2);
             expect(seen).to.eql(expected);
         });
 

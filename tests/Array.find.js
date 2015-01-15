@@ -125,7 +125,11 @@
 
             delete obj[1];
             found = utilx.Array.find(obj, function (item, idx) {
-                utilx.Array.assign(seen, idx, required.create(idx, item));
+                if (utilx.Object.hasOwn(obj, idx)) {
+                    utilx.Array.assign(seen, idx, required.create(idx, item));
+
+                    return utilx.Object.isUndefined(item);
+                }
 
                 return false;
             });
@@ -144,7 +148,11 @@
                 },
                 seen = [],
                 found = utilx.Array.find(obj, function (item, idx) {
-                    utilx.Array.assign(seen, idx, required.create(idx, item));
+                    if (utilx.Object.hasOwn(obj, idx)) {
+                        utilx.Array.assign(seen, idx, required.create(idx, item));
+
+                        return utilx.Object.isUndefined(item);
+                    }
 
                     return false;
                 }),

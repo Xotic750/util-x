@@ -35,17 +35,13 @@
         it('should throw if source argument is undefined', function () {
             expect(function () {
                 utilx.Object.assign({}, undefined);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
         });
 
         it('should throw if source argument is null', function () {
             expect(function () {
                 utilx.Object.assign({}, null);
-            }).to.throwException(function (e) {
-                expect(e).to.be.a(TypeError);
-            });
+            }).to.not.throwException();
         });
 
         it('returns the modified target object', function () {

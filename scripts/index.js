@@ -4,7 +4,6 @@
     'use strict';
 
     var required = {
-            stack: require('stacktrace-js'),
             expect: require('expect.js'),
             Array: {},
             log: {}

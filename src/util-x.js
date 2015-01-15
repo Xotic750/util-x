@@ -5577,12 +5577,10 @@
             }
 
             for (index = 0; index < length; index += 1) {
-                if (index in object) {
-                    it = object[index];
-                    if (fn.call(thisArg, it, index, object)) {
-                        val = it;
-                        break;
-                    }
+                it = object[index];
+                if (fn.call(thisArg, it, index, object)) {
+                    val = it;
+                    break;
                 }
             }
 
@@ -5634,7 +5632,7 @@
             }
 
             for (val = -1, index = 0; index < length; index += 1) {
-                if (index in object && fn.call(thisArg, object[index], index, object)) {
+                if (fn.call(thisArg, object[index], index, object)) {
                     val = index;
                     break;
                 }
@@ -7512,16 +7510,22 @@
                 keysArray,
                 len,
                 nextIndex,
-                nextKey;
+                nextKey,
+                type,
+                arg;
 
             if (length >= 2) {
                 for (index = 1; index < length; index += 1) {
-                    from = cObject(checkObjectCoercible(arguments[index]));
-                    keysArray = objectKeys(from);
-                    for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
-                        nextKey = keysArray[nextIndex];
-                        if ($hasOwn(from, nextKey)) {
-                            to[nextKey] = from[nextKey];
+                    arg = arguments[index];
+                    type = typeof arg;
+                    if (type !== 'undefined' && arg !== null) {
+                        from = cObject(checkObjectCoercible(arguments[index]));
+                        keysArray = objectKeys(from);
+                        for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
+                            nextKey = keysArray[nextIndex];
+                            if ($hasOwn(from, nextKey)) {
+                                to[nextKey] = from[nextKey];
+                            }
                         }
                     }
                 }
