@@ -6,3 +6,9 @@ node_js:
     - "0.6"
 before_install: npm install mocha expect.js git://github.com/stacktracejs/stacktrace.js.git
 install: true
+env:
+    global:
+        - secure: sZmU+PhSvNl42BLkGCLNB66s7nec7qjVP/zv+zsedEg9mmOnR2fMEi2KYFQXE1VIL1E2qlcGxFybiIVJ/qUnnbgb47tNk1yVrTzRxoN8dynQzm16kAQ3EviwkCLz7lFr6d0+Pc3PY3ioZX+bhEvLGNpWB6bNWVwqL52KhUQ97qI=
+        - secure: Afr4HTy9E3KC59+JVhytMgrZWdrPiVflymNZak4jYkXZOyGagU4JGnKEiMzgOmhwZ4+yEHr41zsETmuti++8axBV4fedDaqjQPYRVxAFYSPzva6wHibZ1GdxkHwbGtAoxhAmq64dRBl0eVL5rB7rEbd/VznDatojP7LIlL4x8Iw=
+addons:
+    sauce_connect: true
