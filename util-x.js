@@ -120,6 +120,10 @@
 (function (global, module, define, Undefined) {
     'use strict';
 
+    if (global && global.alert) {
+        global.alert('in closure');
+    }
+
     var base,
 
         testShims = false,
