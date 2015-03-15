@@ -25,8 +25,9 @@
 /*jslint devel: true */
 
 /*global Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number,
-    Object, RangeError, ReferenceError, RegExp, String, SyntaxError, TypeError,
-    URIError, define, global, isFinite, isNaN, module, parseFloat, parseInt, window
+    Object, RangeError, ReferenceError, RegExp, self, String, SyntaxError,
+    TypeError, URIError, console, define, global, isFinite, isNaN, module,
+    parseFloat, parseInt, window
 */
 
 /*properties
@@ -43,8 +44,8 @@
     abs, actual, add, alert, amd, anchor, apply, areSameClass, areSameTypeOf,
     argNames, assert, assign, bind, c, call, captureStackTrace, ceil, charAt,
     charCodeAt, clamp, clampToInt, classId, clipDuplicates, codePointAt, concat,
-    configurable, console, constructor, contains, copyWithin, countCharacter,
-    create, customError, customErrorReplacer, customJSON, deepEqual, deepFreeze,
+    configurable, constructor, contains, copyWithin, countCharacter, create,
+    customError, customErrorReplacer, customJSON, deepEqual, deepFreeze,
     deepStrictEqual, defineGetter, defineProperties, defineProperty,
     defineSetter, doesNotThrow, e, endsWith, enumerable, equal, escapeRegex,
     every, exec, execSlice, expected, exports, factory, fail, fill, filter, find,
@@ -111,13 +112,12 @@
  * This IIFE contains the private scope of the module.
  *
  * @alias module:util-x
- * @param {?Object} globalThis Reference to the global this.
- * @param {?(Object|boolean)} global Reference to the 'window' object or false.
+ * @param {?(Object|boolean)} global Reference to the 'global' object or false.
  * @param {?(Object|boolean)} module Reference to the 'module' object or false - CMD.
  * @param {?(Object|boolean)} define Reference to the 'define' object or false - AMD.
  * @param {undefined} Undefined An undefined variable.
  */
-(function (globalThis, global, module, define, Undefined) {
+(function (global, module, define, Undefined) {
     'use strict';
 
     var base,
@@ -15444,7 +15444,7 @@
 
     //Code to export the public utilx object to different environments.
 
-    if (globalThis && typeOf(globalThis) !== 'object') {
+    if (typeOf(global) !== 'object') {
         throw new CTypeError('Invalid global context');
     }
 
@@ -15470,11 +15470,16 @@
          * @global
          * @name utilx
          */
-        defineProperty(globalThis, 'utilx', assign({
+        defineProperty(global, 'utilx', assign({
             value: exports.factory()
         }, propNotEnumerable));
     }
 
     // No longer required - trash early.
     testTemp = null;
-}(this, (typeof window === 'object' && window) || (typeof global === 'object' && global), typeof module === 'object' && module, (typeof define === 'function' || false) && define));
+}((typeof window === 'object' && window) ||
+    (typeof self === 'object' && self) ||
+    (typeof global === 'object' && global) ||
+    (typeof this === 'object' && this) || {},
+    typeof module === 'object' && module,
+    (typeof define === 'function' || false) && define));
