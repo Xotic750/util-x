@@ -9,6 +9,13 @@
         <script>
             window.onload = function () {
                 setTimeout(function () {
+                    if (typeof console === 'object' || typeof console === 'function' || false) {
+                        if (typeof console.log === 'object' || typeof console.log === 'function' || false) {
+                            console.log(mocha);
+                            console.log(mocha.setup);
+                        }
+                    }
+
                     mocha.setup({
                         ui: 'bdd',
                         timeout: 1200000
