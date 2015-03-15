@@ -4,7 +4,7 @@
         <title>util-x</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script type="application/x-javascript" src="./util-x.js"></script>
+        <script type="application/x-javascript" src="./util-x.min.js"></script>
     </head>
     <body>
         <div id="util-x"></div>
@@ -12,7 +12,7 @@
             window.onload = function () {
                 var x = document.getElementById('util-x');
 
-                utilx.Array.forEach([1, 2, 3], function (item) {
+                window.utilx.Array.forEach([1, 2, 3], function (item) {
                     var y = document.createElement('div');
 
                     y.appendChild(document.createTextNode(item));
