@@ -9,14 +9,16 @@
     <body>
         <div id="util-x"></div>
         <script>
-            var x = document.getElementById('util-x');
+            window.onload = function () {
+                var x = document.getElementById('util-x');
 
-            utilx.Array.forEach([1, 2, 3], function (item) {
-                var y = document.createElement('div');
+                utilx.Array.forEach([1, 2, 3], function (item) {
+                    var y = document.createElement('div');
 
-                y.appendChild(document.createTextNode(item));
-                x.appendChild(y);
-            });
+                    y.appendChild(document.createTextNode(item));
+                    x.appendChild(y);
+                });
+            };
         </script>
     </body>
 </html>
