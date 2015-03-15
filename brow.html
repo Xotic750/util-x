@@ -8,21 +8,25 @@
         <script type="application/x-javascript" src="./node_modules/mocha/mocha.js"></script>
         <script>
             window.onload = function () {
-                mocha.setup({
-                    ui: 'bdd',
-                    timeout: 1200000
-                });
+                setTimeout(function () {
+                    mocha.setup({
+                        ui: 'bdd',
+                        timeout: 1200000
+                    });
 
-                var js = document.createElement('script');
+                    var js = document.createElement('script');
 
-                js.type = 'text/javascript';
-                js.src = './brow.js';
-                js.onload = function () {
-                    mocha.checkLeaks();
-                    mocha.run();
-                };
+                    js.type = 'text/javascript';
+                    js.src = './brow.js';
+                    js.onload = function () {
+                        setTimeout(function () {
+                            mocha.checkLeaks();
+                            mocha.run();
+                        }, 5000);
+                    };
 
-                document.body.appendChild(js);
+                    document.body.appendChild(js);
+                }, 5000);
             };
         </script>
     </head>
