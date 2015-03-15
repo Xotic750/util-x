@@ -15449,11 +15449,13 @@
     }
 
     if (module && module.exports) {
+        conlog('module');
         /**
          * Node and other CommonJS-like environments that support "module.exports".
          */
         module.exports = exports.factory();
     } else if (define && define.amd) {
+        conlog('define');
         define(function () {
             /**
              * Asynchronous Module Definition-like environments that support "define".
@@ -15463,6 +15465,7 @@
             return exports.factory();
         });
     } else {
+        conlog('global');
         /**
          * Without module support. Defines "utilx"
          * on the reference to the "global this" if it doesn't already exist.
