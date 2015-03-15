@@ -7,6 +7,16 @@
         <script type="application/x-javascript" src="./util-x.js"></script>
     </head>
     <body>
-        <div id="utilx"></div>
+        <div id="util-x"></div>
+        <script>
+            var x = document.getElementById('util-x');
+
+            utilx.Array.forEach([1, 2, 3], function (item) {
+                var y = document.createElement('div');
+
+                y.appendChild(document.createTextNode(item));
+                x.appendChild(y);
+            });
+        </script>
     </body>
 </html>

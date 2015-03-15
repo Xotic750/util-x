@@ -16,19 +16,24 @@
                         }
                     }
 
-                    mocha.setup({
+                    var mocha1 = mocha,
+                        m = document.createElement('div'),
+                        js = document.createElement('script');
+
+                    mocha1.setup({
                         ui: 'bdd',
                         timeout: 1200000
                     });
 
-                    var js = document.createElement('script');
+                    m.id = 'mocha';
+                    document.body.appendChild(m);
 
                     js.type = 'text/javascript';
                     js.src = './brow.js';
                     js.onload = function () {
                         setTimeout(function () {
-                            mocha.checkLeaks();
-                            mocha.run();
+                            mocha1.checkLeaks();
+                            mocha1.run();
                         }, 1000);
                     };
 
@@ -38,6 +43,5 @@
         </script>
     </head>
     <body>
-        <div id="mocha"></div>
     </body>
 </html>
