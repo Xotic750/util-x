@@ -26,7 +26,7 @@
 
 /*global Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number,
     Object, RangeError, ReferenceError, RegExp, self, String, SyntaxError,
-    TypeError, URIError, console, define, global, isFinite, isNaN, module,
+    TypeError, URIError, define, global, isFinite, isNaN, module,
     parseFloat, parseInt, window
 */
 
@@ -123,7 +123,7 @@
     var base,
 
         testShims = false,
-        enableLog = true,
+        //enableLog = true,
         conlog,
 
         affirm,
@@ -2119,10 +2119,23 @@
     }
 
     /**
+     * Shortcut
+     *
+     * @private
+     * @function module:util-x~noop
+     * @returns {undefined}
+     */
+    function noop() {
+        return;
+    }
+
+    /**
      * @private
      * @function module:util-x~conlog
      * @param {...*} [varArgs]
      */
+    conlog = noop;
+    /*
     conlog = (function (con) {
         var type = typeof con,
             okType,
@@ -2219,6 +2232,7 @@
 
         return fn;
     }((typeof console === 'object' || typeof console === 'function' || false) && console));
+    */
 
     /**
      * Internal affirm
@@ -3276,17 +3290,6 @@
      * EXPORTABLES THAT DO NOT RELY ON ANY OF OUR FUNCTIONS
      *
      */
-
-    /**
-     * Shortcut
-     *
-     * @private
-     * @function module:util-x~noop
-     * @returns {undefined}
-     */
-    function noop() {
-        return;
-    }
 
     /**
      * Returns the primitive value of undefined.
