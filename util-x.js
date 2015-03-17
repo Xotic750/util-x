@@ -26,7 +26,7 @@
 
 /*global Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number,
     Object, RangeError, ReferenceError, RegExp, self, String, SyntaxError,
-    TypeError, URIError, console, define, global, isFinite, isNaN, module,
+    TypeError, URIError, define, global, isFinite, isNaN, module,
     parseFloat, parseInt, window
 */
 
@@ -123,7 +123,7 @@
     var base,
 
         testShims = false,
-        enableLog = true,
+        //enableLog = true,
         $conlog,
 
         $affirm,
@@ -167,7 +167,7 @@
         classBoolean = '[object Boolean]',
         classNumber = '[object Number]',
 
-        supportsAccessors,
+        hasAccessorSupport,
         stringProto = '__proto__',
         stringDefineGetter = '__defineGetter__',
         stringDefineSetter = '__defineSetter__',
@@ -328,7 +328,7 @@
         pTest,
 
         mParseInt,
-        mParsefloat,
+        mParseFloat,
         mIsFinite,
 
         //iBind,
@@ -371,6 +371,7 @@
         $map,
         $trim,
         $substr,
+        $parseFloat,
 
         BigNum,
 
@@ -1699,8 +1700,10 @@
     pTest = base.RegExp.test;
 
     mParseInt = base.parseInt;
-    mParsefloat = base.parseFloat;
+    mParseFloat = base.parseFloat;
     mIsFinite = base.isFinite;
+
+    $parseFloat = mParseFloat;
 
     /**
      * Shortcut
@@ -2137,6 +2140,8 @@
      * @function module:util-x~$conlog
      * @param {...*} [varArgs]
      */
+    $conlog = function () { return; };
+    /*
     $conlog = (function (con) {
         var type = typeof con,
             okType,
@@ -2233,6 +2238,7 @@
 
         return fn;
     }((typeof console === 'object' || typeof console === 'function' || false) && console));
+    */
 
     /**
      * Internal $affirm
@@ -3640,7 +3646,7 @@
 
             if (thisClass === classNumber || thisClass === classString) {
                 string = pReplace.call(inputArg, plusMinus, '');
-                number = mParsefloat(string);
+                number = $parseFloat(string);
                 val = $strictEqual(number, number) && mIsFinite(string);
             } else {
                 val = false;
@@ -6695,71 +6701,154 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ordinary-object-internal-methods-and-internal-slots-getprototypeof
      */
-    if (!testShims && $isNative(mGetPrototypeOf)) {
-        try {
-            if (mGetPrototypeOf(1) === protoNumber &&
-                    mGetPrototypeOf(true) === protoBoolean &&
-                    mGetPrototypeOf('') === protoString) {
+    exports.Object.getPrototypeOf = (function () {
+        var argNames = ['object'];
 
-                exports.Object.getPrototypeOf = mGetPrototypeOf;
-            } else {
-                throw new CError();
-            }
-        } catch (eGPO) {
-            exports.Object.getPrototypeOf = function (object) {
-                return mGetPrototypeOf($Object($checkObjectCoercible(object)));
-            };
+        return $decide(
+            // test
+            $affirmBasic(mGetPrototypeOf),
 
-            exports.Object.getPrototypeOf.argNames = ['object'];
-        }
-    } else if (!testShims && protoObject[stringProto] === null) {
-        exports.Object.getPrototypeOf = function (object) {
-            return $Object($checkObjectCoercible(object))[stringProto];
-        };
+            // pass
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        var proto;
 
-        exports.Object.getPrototypeOf.argNames = ['object'];
-    } else {
-        exports.Object.getPrototypeOf = (function () {
-            var fixOpera10GetPrototypeOf;
+                        $affirm.doesNotThrow(function () {
+                            proto = mGetPrototypeOf(1);
+                        }, 'get number literal proto');
 
-            if (returnArgs().constructor.prototype !== protoObject) {
-                fixOpera10GetPrototypeOf = true;
-            }
+                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
 
-            return function (object) {
-                var obj = $Object($checkObjectCoercible(object)),
-                    ctrProto,
-                    protoObj;
+                        $affirm.doesNotThrow(function () {
+                            proto = mGetPrototypeOf(true);
+                        }, 'get boolean literal proto');
 
-                if (obj === protoObject) {
-                    return null;
-                }
+                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
 
-                if ($isFunction(obj.constructor)) {
-                    if (fixOpera10GetPrototypeOf && $isArguments(obj)) {
-                        ctrProto = protoObject;
-                    } else {
-                        ctrProto = obj.constructor.prototype;
-                    }
-                } else {
-                    protoObj = obj[stringProto];
-                    if ($toClass(protoObj) === classObject && !$isFunction(protoObj)) {
-                        ctrProto = protoObj;
-                    } else {
-                        ctrProto = protoObject;
-                    }
-                }
+                        $affirm.doesNotThrow(function () {
+                            proto = mGetPrototypeOf('');
+                        }, 'get string literal proto');
 
-                if (obj === ctrProto) {
-                    return protoObject;
-                }
+                        $affirm.strictEqual(proto, protoString, 'work with string literal');
+                    },
 
-                return ctrProto;
-            };
-        }());
+                    // pass
+                    function () {
+                        return mGetPrototypeOf;
+                    },
 
-        exports.Object.getPrototypeOf.argNames = ['object'];
-    }
+                    // fail
+                    function () {
+                        return function (object) {
+                            return mGetPrototypeOf($Object($checkObjectCoercible(object)));
+                        };
+                    },
+
+                    // argNames
+                    ['object'],
+
+                    // message
+                    'Object.getPrototypeOf primitive patch'
+                );
+            },
+
+            // fail
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        var proto;
+
+                        $affirm.doesNotThrow(function () {
+                            proto = protoObject[stringProto];
+                        }, 'get __proto__');
+
+                        $affirm.strictEqual(protoObject[stringProto], null, 'has __proto__');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $Object($checkObjectCoercible(1))[stringProto];
+                        }, 'get number literal proto');
+
+                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $Object($checkObjectCoercible(true))[stringProto];
+                        }, 'get boolean literal proto');
+
+                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $Object($checkObjectCoercible(''))[stringProto];
+                        }, 'get string literal proto');
+
+                        $affirm.strictEqual(proto, protoString, 'work with string literal');
+                        $affirm.ok(!testShims, 'testing shim');
+                    },
+
+                    // pass
+                    function () {
+                        return function (object) {
+                            return $Object($checkObjectCoercible(object))[stringProto];
+                        };
+                    },
+
+                    // fail
+                    function () {
+                        var fixOpera10GetPrototypeOf;
+
+                        if (returnArgs().constructor.prototype !== protoObject) {
+                            fixOpera10GetPrototypeOf = true;
+                        }
+
+                        return function (object) {
+                            var obj = $Object($checkObjectCoercible(object)),
+                                ctrProto,
+                                protoObj;
+
+                            if (obj === protoObject) {
+                                return null;
+                            }
+
+                            if ($isFunction(obj.constructor)) {
+                                if (fixOpera10GetPrototypeOf && $isArguments(obj)) {
+                                    ctrProto = protoObject;
+                                } else {
+                                    ctrProto = obj.constructor.prototype;
+                                }
+                            } else {
+                                protoObj = obj[stringProto];
+                                if ($toClass(protoObj) === classObject && !$isFunction(protoObj)) {
+                                    ctrProto = protoObj;
+                                } else {
+                                    ctrProto = protoObject;
+                                }
+                            }
+
+                            if (obj === ctrProto) {
+                                return protoObject;
+                            }
+
+                            return ctrProto;
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Object.getPrototypeOf full shim'
+                );
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.getPrototypeOf __proto__ shim'
+        );
+    }());
 
     /**
      * Return the value of the [[Prototype]] internal property of object.
@@ -6810,43 +6899,76 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
-    if (hasDontEnumBug) {
-        /* jshint -W001 */
-        exports.Object.proto.hasOwnProperty = function (property) {
-            var prop = $toString(property),
-                hop = pHasOwn.call(this, prop),
-                length,
-                index;
+    /* jshint -W001 */
+    exports.Object.proto.hasOwnProperty = (function () {
+        var argNames = ['property'];
 
-            if (!hop && $hasProperty(this, prop)) {
-                for (index = 0, length = shadowed.length; index < length; index += 1) {
-                    if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
-                        hop = true;
-                        break;
-                    }
-                }
-            }
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+            },
 
-            return hop;
-        };
-        /* jshint +W001 */
+            // pass
+            function () {
+                return pHasOwn;
+            },
 
-        exports.Object.proto.hasOwnProperty.argNames = ['property'];
-    } else if (hasProtoEnumBug) {
-        /* jshint -W001 */
-        exports.Object.proto.hasOwnProperty = function (property) {
-            var prop = $toString(property);
+            // fail
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+                    },
 
-            return (prop === 'prototype' && $isFunction(this)) || pHasOwn.call(this, prop);
-        };
-        /* jshint +W001 */
+                    // pass
+                    function () {
+                        return function (property) {
+                            var prop = $toString(property);
 
-        exports.Object.proto.hasOwnProperty.argNames = ['property'];
-    } else {
-        /* jshint -W001 */
-        exports.Object.proto.hasOwnProperty = pHasOwn;
-        /* jshint +W001 */
-    }
+                            return (prop === 'prototype' && $isFunction(this)) || pHasOwn.call(this, prop);
+                        };
+                    },
+
+                    // fail
+                    function () {
+                        return function (property) {
+                            var prop = $toString(property),
+                                hop = pHasOwn.call(this, prop),
+                                length,
+                                index;
+
+
+                            if (!hop && $hasProperty(this, prop)) {
+                                for (index = 0, length = shadowed.length; index < length; index += 1) {
+                                    if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                                        hop = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            return hop;
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Object.hasOwnProperty hasDontEnumBug patch'
+                );
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasDontEnumBug patch'
+        );
+    }());
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
@@ -6859,10 +6981,9 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
-    /* jshint -W001 */
     exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
-    /* jshint +W001 */
     exports.Object.hasOwnProperty.argNames = ['object', 'property'];
+    /* jshint +W001 */
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
@@ -7290,11 +7411,11 @@
      * Checks if the supplied function suffers from the V8 strict mode bug.
      *
      * @private
-     * @function module:util-x~hasV8StrictBug
+     * @function module:util-x~$testV8StrictBug
      * @param {Function} fn
      * @returns {boolean}
      */
-    function hasV8StrictBug(fn) {
+    function $testV8StrictBug(fn) {
         var bug = false;
 
         if (isStrictMode) {
@@ -7307,25 +7428,25 @@
     }
 
     /**
-     * @function module:util-x~affirmArrayMethodTestsBasic
+     * @function module:util-x~$affirmArrayMethodTestsBasic
      * @param {Function} [thisArg]
      * @returns {Function}
      */
-    function affirmArrayMethodTestsBasic(Fn) {
+    function $affirmArrayMethodTestsBasic(Fn) {
         return function () {
             $affirmBasic(Fn)();
-            $affirm.ok(!hasV8StrictBug(Fn), 'V8 bug');
+            $affirm.ok(!$testV8StrictBug(Fn), 'V8 bug');
         };
     }
 
     /**
-     * @function module:util-x~affirmArrayMethodTestsObject
+     * @function module:util-x~$affirmArrayMethodTestsObject
      * @param {Function} [thisArg]
      * @returns {Function}
      */
-    function affirmArrayMethodTestsObject(Fn) {
+    function $affirmArrayMethodTestsObject(Fn) {
         return function () {
-            affirmArrayMethodTestsBasic(Fn)();
+            $affirmArrayMethodTestsBasic(Fn)();
 
             var result;
 
@@ -7366,7 +7487,7 @@
      */
     exports.Array.proto.forEach = $decide(
         // test
-        affirmArrayMethodTestsObject(pForEach),
+        $affirmArrayMethodTestsObject(pForEach),
 
         // pass
         function () {
@@ -7508,7 +7629,7 @@
      */
     exports.Array.proto.some = $decide(
         // test
-        affirmArrayMethodTestsObject(pSome),
+        $affirmArrayMethodTestsObject(pSome),
 
         // pass
         function () {
@@ -7592,7 +7713,7 @@
     exports.Array.proto.find = $decide(
         // test
         function () {
-            affirmArrayMethodTestsBasic(pFind)();
+            $affirmArrayMethodTestsBasic(pFind)();
 
             var obj = {
                     0: 1,
@@ -7690,7 +7811,7 @@
     exports.Array.proto.findIndex = $decide(
         // test
         function () {
-            affirmArrayMethodTestsBasic(pFindIndex)();
+            $affirmArrayMethodTestsBasic(pFindIndex)();
 
             var obj = {
                     0: 1,
@@ -7858,7 +7979,7 @@
      */
     exports.Array.proto.every = $decide(
         // test
-        affirmArrayMethodTestsObject(pEvery),
+        $affirmArrayMethodTestsObject(pEvery),
 
         // pass
         function () {
@@ -7940,7 +8061,7 @@
      */
     exports.Array.proto.map = $decide(
         // test
-        affirmArrayMethodTestsObject(pMap),
+        $affirmArrayMethodTestsObject(pMap),
 
         // pass
         function () {
@@ -8056,7 +8177,7 @@
      */
     exports.Array.proto.filter = $decide(
         // test
-        affirmArrayMethodTestsObject(pFilter),
+        $affirmArrayMethodTestsObject(pFilter),
 
         // pass
         function () {
@@ -8126,7 +8247,7 @@
      */
     exports.Array.proto.reduce = $decide(
         // test
-        affirmArrayMethodTestsObject(pReduce),
+        $affirmArrayMethodTestsObject(pReduce),
 
         // pass
         function () {
@@ -8218,7 +8339,7 @@
      */
     exports.Array.proto.reduceRight = $decide(
         // test
-        affirmArrayMethodTestsObject(pReduceRight),
+        $affirmArrayMethodTestsObject(pReduceRight),
 
         // pass
         function () {
@@ -8333,7 +8454,7 @@
         var tmp = max - min + 1,
             val;
 
-        if (tmp > Number.MAX_SAFE_INTEGER) {
+        if (tmp > MAX_SAFE_INTEGER) {
             tmp = new BigNum(max).minus(min).plus(1);
             val  = $floor(tmp.times($random())) + min;
         } else {
@@ -8349,12 +8470,12 @@
      * Default compare function for stableSort.
      *
      * @private
-     * @function module:util-x~defaultComparison
+     * @function module:util-x~$defaultComparison
      * @param {*} left
      * @param {*} right
      * @returns {number}
      */
-    function defaultComparison(left, right) {
+    function $defaultComparison(left, right) {
         var leftS = $toString(left),
             rightS = $toString(right),
             val = 1;
@@ -8363,142 +8484,6 @@
             val = +0;
         } else if (leftS < rightS) {
             val = -1;
-        }
-
-        return val;
-    }
-
-    /**
-     * sortCompare function for stableSort.
-     *
-     * @private
-     * @function module:util-x~sortCompare
-     * @param {*} object
-     * @param {*} left
-     * @param {*} right
-     * @returns {number}
-     */
-    function sortCompare(left, right) {
-        var hasj = $hasOwn(left, 0),
-            hask = $hasOwn(right, 0),
-            typex,
-            typey,
-            val;
-
-        if (!hasj && !hask) {
-            val = +0;
-        } else if (!hasj) {
-            val = 1;
-        } else if (!hask) {
-            val = -1;
-        } else {
-            typex = typeof left[0];
-            typey = typeof right[0];
-            if (typex === 'undefined' && typey === 'undefined') {
-                val = +0;
-            } else if (typex === 'undefined') {
-                val = 1;
-            } else if (typey === 'undefined') {
-                val = -1;
-            }
-        }
-
-        return val;
-    }
-
-    /**
-     * merge function for stableSort.
-     *
-     * @private
-     * @function module:util-x~merge
-     * @param {module:util-x~ArrayLike} left
-     * @param {module:util-x~ArrayLike} right
-     * @param {Function} comparison
-     * @returns {Array}
-     */
-    function merge(left, right, comparison) {
-        var result = [],
-            next = 0,
-            sComp;
-
-        result.length = left.length + right.length;
-        while (left.length && right.length) {
-            sComp = sortCompare(left, right);
-            if (typeof sComp !== 'number') {
-                if (comparison(left[0], right[0]) <= 0) {
-                    if ($hasOwn(left, 0)) {
-                        result[next] = left[0];
-                    }
-
-                    pShift.call(left);
-                } else {
-                    if ($hasOwn(right, 0)) {
-                        result[next] = right[0];
-                    }
-
-                    pShift.call(right);
-                }
-            } else if (sComp <= 0) {
-                if ($hasOwn(left, 0)) {
-                    result[next] = left[0];
-                }
-
-                pShift.call(left);
-            } else {
-                if ($hasOwn(right, 0)) {
-                    result[next] = right[0];
-                }
-
-                pShift.call(right);
-            }
-
-            next += 1;
-        }
-
-        while (left.length) {
-            if ($hasOwn(left, 0)) {
-                result[next] = left[0];
-            }
-
-            pShift.call(left);
-            next += 1;
-        }
-
-        while (right.length) {
-            if ($hasOwn(right, 0)) {
-                result[next] = right[0];
-            }
-
-            pShift.call(right);
-            next += 1;
-        }
-
-        return result;
-    }
-
-    /**
-     * mergeSort function for stableSort.
-     *
-     * @private
-     * @function module:util-x~mergeSort
-     * @param {module:util-x~ArrayLike} array
-     * @param {Function} comparefn
-     * @returns {Array}
-     */
-    function mergeSort(array, comparefn) {
-        var length = array.length,
-            middle,
-            front,
-            back,
-            val;
-
-        if (length < 2) {
-            val = $slice(array);
-        } else {
-            middle = $ceil(length / 2);
-            front = $slice(array, 0, middle);
-            back = $slice(array, middle);
-            val = merge(mergeSort(front, comparefn), mergeSort(back, comparefn), comparefn);
         }
 
         return val;
@@ -8517,35 +8502,173 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
      * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
      */
-    exports.Array.proto.stableSort = function (comparefn) {
-        var object = $toObject(this),
-            length = $toLength(object.length),
-            index,
-            sorted;
+    exports.Array.proto.stableSort = (function () {
+        /**
+         * sortCompare function for stableSort.
+         *
+         * @private
+         * @function
+         * @param {*} object
+         * @param {*} left
+         * @param {*} right
+         * @returns {number}
+         */
+        function sortCompare(left, right) {
+            var hasj = $hasOwn(left, 0),
+                hask = $hasOwn(right, 0),
+                typex,
+                typey,
+                val;
 
-        if ($isUndefined(comparefn)) {
-            comparefn = defaultComparison;
-        }
-
-        $throwIfNotFunction(comparefn);
-        if (length > 1) {
-            sorted = mergeSort(object, comparefn);
-            if ($isArray(object) || $isArguments(object)) {
-                object.length = 0;
+            if (!hasj && !hask) {
+                val = +0;
+            } else if (!hasj) {
+                val = 1;
+            } else if (!hask) {
+                val = -1;
             } else {
-                $splice(object, 0, object.length);
-            }
-
-            object.length = sorted.length;
-            for (index = 0; index < length; index += 1) {
-                if ($hasOwn(sorted, index)) {
-                    object[index] = sorted[index];
+                typex = typeof left[0];
+                typey = typeof right[0];
+                if (typex === 'undefined' && typey === 'undefined') {
+                    val = +0;
+                } else if (typex === 'undefined') {
+                    val = 1;
+                } else if (typey === 'undefined') {
+                    val = -1;
                 }
             }
+
+            return val;
         }
 
-        return object;
-    };
+        /**
+         * merge function for stableSort.
+         *
+         * @private
+         * @function
+         * @param {module:util-x~ArrayLike} left
+         * @param {module:util-x~ArrayLike} right
+         * @param {Function} comparison
+         * @returns {Array}
+         */
+        function merge(left, right, comparison) {
+            var result = [],
+                next = 0,
+                sComp;
+
+            result.length = left.length + right.length;
+            while (left.length && right.length) {
+                sComp = sortCompare(left, right);
+                if (typeof sComp !== 'number') {
+                    if (comparison(left[0], right[0]) <= 0) {
+                        if ($hasOwn(left, 0)) {
+                            result[next] = left[0];
+                        }
+
+                        pShift.call(left);
+                    } else {
+                        if ($hasOwn(right, 0)) {
+                            result[next] = right[0];
+                        }
+
+                        pShift.call(right);
+                    }
+                } else if (sComp <= 0) {
+                    if ($hasOwn(left, 0)) {
+                        result[next] = left[0];
+                    }
+
+                    pShift.call(left);
+                } else {
+                    if ($hasOwn(right, 0)) {
+                        result[next] = right[0];
+                    }
+
+                    pShift.call(right);
+                }
+
+                next += 1;
+            }
+
+            while (left.length) {
+                if ($hasOwn(left, 0)) {
+                    result[next] = left[0];
+                }
+
+                pShift.call(left);
+                next += 1;
+            }
+
+            while (right.length) {
+                if ($hasOwn(right, 0)) {
+                    result[next] = right[0];
+                }
+
+                pShift.call(right);
+                next += 1;
+            }
+
+            return result;
+        }
+
+        /**
+         * mergeSort function for stableSort.
+         *
+         * @private
+         * @function module:util-x~mergeSort
+         * @param {module:util-x~ArrayLike} array
+         * @param {Function} comparefn
+         * @returns {Array}
+         */
+        function mergeSort(array, comparefn) {
+            var length = array.length,
+                middle,
+                front,
+                back,
+                val;
+
+            if (length < 2) {
+                val = $slice(array);
+            } else {
+                middle = $ceil(length / 2);
+                front = $slice(array, 0, middle);
+                back = $slice(array, middle);
+                val = merge(mergeSort(front, comparefn), mergeSort(back, comparefn), comparefn);
+            }
+
+            return val;
+        }
+
+        return function (comparefn) {
+            var object = $toObject(this),
+                length = $toLength(object.length),
+                index,
+                sorted;
+
+            if ($isUndefined(comparefn)) {
+                comparefn = $defaultComparison;
+            }
+
+            $throwIfNotFunction(comparefn);
+            if (length > 1) {
+                sorted = mergeSort(object, comparefn);
+                if ($isArray(object) || $isArguments(object)) {
+                    object.length = 0;
+                } else {
+                    $splice(object, 0, object.length);
+                }
+
+                object.length = sorted.length;
+                for (index = 0; index < length; index += 1) {
+                    if ($hasOwn(sorted, index)) {
+                        object[index] = sorted[index];
+                    }
+                }
+            }
+
+            return object;
+        };
+    }());
 
     exports.Array.proto.stableSort.argNames = ['comparefn'];
 
@@ -8670,7 +8793,7 @@
                     function () {
                         return function (comparefn) {
                             if ($isUndefined(comparefn)) {
-                                comparefn = defaultComparison;
+                                comparefn = $defaultComparison;
                             }
 
                             return pSort.call($checkObjectCoercible(this), $throwIfNotFunction(comparefn));
@@ -8794,9 +8917,26 @@
         // test
         function () {
             $affirmBasic(pTrim)();
-            $affirm.strictEqual(pTrim.call(wspaceStrings.trimString).length, 0, 'not all whitespace trimmed');
-            $affirm.strictEqual(pTrim.call(base.String.fromCharCode(0x200b)).length, 1, 'trimmed 0x200b bug');
-            $affirm.strictEqual(pTrim.call(base.String.fromCharCode(0x0085)).length, 1, 'trimmed 0x0085 bug');
+
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = pTrim.call(wspaceStrings.trimString);
+            }, 'test1');
+
+            $affirm.strictEqual(value.length, 0, 'not all whitespace trimmed');
+
+            $affirm.doesNotThrow(function () {
+                value = pTrim.call(base.String.fromCharCode(0x200b));
+            }, 'test2');
+
+            $affirm.strictEqual(value.length, 1, 'trimmed 0x200b bug');
+
+            $affirm.doesNotThrow(function () {
+                value = pTrim.call(base.String.fromCharCode(0x0085));
+            }, 'test3');
+
+            $affirm.strictEqual(value.length, 1, 'trimmed 0x0085 bug');
         },
 
         // pass
@@ -8812,9 +8952,6 @@
                 return $replace(onlyCoercibleToString(this), wsTrim, '');
             };
         },
-
-        // argNames
-        [],
 
         // message
         'String.trim shim'
@@ -8852,19 +8989,49 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
      */
-    if (testShims ||
-            !$isNative(base.parseInt) ||
-            mParseInt(wspaceStrings.trimString + '08') !== 8 ||
-            mParseInt(wspaceStrings.trimString + '0x16') !== 22 ||
-            mParseInt(wspaceStrings.trimString + '0x16', 10) !== 0) {
+    exports.parseInt = $decide(
+        // test
+        function () {
+            $affirm.ok(!testShims, 'testing shim');
 
-        exports.parseInt = (function () {
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = mParseInt(wspaceStrings.trimString + '08' + wspaceStrings.trimString);
+            }, 'test1');
+
+            $affirm.strictEqual(value, 8, 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseInt(wspaceStrings.trimString + '0x16' + wspaceStrings.trimString);
+            }, 'test3');
+
+            $affirm.strictEqual(value, 22, 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseInt(wspaceStrings.trimString + '0x16' + wspaceStrings.trimString, 10);
+            }, 'test5');
+
+            $affirm.strictEqual(value, 0, 'test6');
+        },
+
+        // pass
+        function () {
+            return mParseInt;
+        },
+
+        // fail
+        function () {
             var hexRx = new CRegExp('^0[xX]');
 
             return function (str, radix) {
                 str = $trim(str);
                 if ($isUndefined(radix) || !toInt32(radix)) {
-                    radix = $test(hexRx, str) ? 16 : 10;
+                    if ($test(hexRx, str)) {
+                        radix = 16;
+                    } else {
+                        radix = 10;
+                    }
                 }
 
                 if (radix === 10 && $test(hexRx, str)) {
@@ -8873,12 +9040,14 @@
 
                 return mParseInt(str, radix);
             };
-        }());
+        },
 
-        exports.parseInt.argNames = ['inputArg', 'radix'];
-    } else {
-        exports.parseInt = mParseInt;
-    }
+        // argNames
+        ['inputArg', 'radix'],
+
+        // message
+        'parseInt patch'
+    );
 
     /**
      * Shortcut
@@ -8901,22 +9070,112 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseInt
      */
-    if (testShims ||
-            !$isNative(base.Number.parseInt) ||
-            base.Number.parseInt(wspaceStrings.trimString + '08') !== 8 ||
-            base.Number.parseInt(wspaceStrings.trimString + '0x16') !== 22 ||
-            base.Number.parseInt(wspaceStrings.trimString + '0x16', 10) !== 0) {
+    exports.Number.parseInt = $decide(
+        // test
+        function () {
+            $affirmBasic(base.Number.parseInt)();
 
-        exports.Number.parseInt = function (str, radix) {
-            /*jslint unparam: true */
-            /*jshint unused: false */
-            return $parseInt.apply(null, $slice(arguments));
-        };
+            var value;
 
-        exports.Number.parseInt.argNames = ['inputArg', 'radix'];
-    } else {
-        exports.Number.parseInt = base.Number.parseInt;
-    }
+            $affirm.doesNotThrow(function () {
+                value = base.Number.parseInt(wspaceStrings.trimString + '08' + wspaceStrings.trimString);
+            }, 'test1');
+
+            $affirm.strictEqual(value, 8, 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.parseInt(wspaceStrings.trimString + '0x16' + wspaceStrings.trimString);
+            }, 'test3');
+
+            $affirm.strictEqual(value, 22, 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.parseInt(wspaceStrings.trimString + '0x16' + wspaceStrings.trimString, 10);
+            }, 'test5');
+
+            $affirm.strictEqual(value, 0, 'test6');
+        },
+
+        // pass
+        function () {
+            return base.Number.parseInt;
+        },
+
+        // fail
+        function () {
+            return function () {
+                return $parseInt.apply(null, $slice(arguments));
+            };
+        },
+
+        // argNames
+        ['inputArg', 'radix'],
+
+        // message
+        'Number.parseInt shim'
+    );
+
+    /**
+     * This method parses a string argument and returns a floating point number.
+     *
+     * @function module:util-x~exports.parseFloat
+     * @param {StringLike} inputArg
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
+     */
+    exports.parseFloat = $decide(
+        // test
+        function () {
+            $affirm.ok(!testShims, 'testing shim');
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '123.45678' + wspaceStrings.trimString);
+            }, 'test1');
+
+            $affirm.strictEqual(value, 123.45678, 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '0123.45678' + wspaceStrings.trimString);
+            }, 'test3');
+
+            $affirm.strictEqual(value, 123.45678, 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '123.456780' + wspaceStrings.trimString);
+            }, 'test5');
+
+            $affirm.strictEqual(value, 123.45678, 'test6');
+        },
+
+        // pass
+        function () {
+            return mParseFloat;
+        },
+
+        // fail
+        function () {
+            return function (str) {
+                return mParseFloat($trim(str));
+            };
+        },
+
+        // argNames
+        ['inputArg'],
+
+        // message
+        'parseFloat patch'
+    );
+
+    /**
+     * This method parses a string argument and returns a floating point number.
+     *
+     * @function module:util-x~$parseFloat
+     * @param {StringLike} inputArg
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
+     */
+    $parseFloat = exports.parseFloat;
 
     /**
      * This method parses a string argument and returns a floating point number.
@@ -8926,12 +9185,49 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
      */
-    if (testShims || !$isNative(base.Number.parseFloat)) {
-        exports.Number.parseFloat = mParsefloat;
-        exports.Number.parseFloat.argNames = ['inputArg'];
-    } else {
-        exports.Number.parseFloat = base.Number.parseFloat;
-    }
+    exports.Number.parseFloat = $decide(
+        // test
+        // test
+        function () {
+            $affirmBasic(mParseFloat);
+
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '123.45678' + wspaceStrings.trimString);
+            }, 'test1');
+
+            $affirm.strictEqual(value, 123.45678, 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '0123.45678' + wspaceStrings.trimString);
+            }, 'test3');
+
+            $affirm.strictEqual(value, 123.45678, 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = mParseFloat(wspaceStrings.trimString + '123.456780' + wspaceStrings.trimString);
+            }, 'test5');
+
+            $affirm.strictEqual(value, 123.45678, 'test6');
+        },
+
+        // pass
+        function () {
+            return mParseFloat;
+        },
+
+        // fail
+        function () {
+            return $parseFloat;
+        },
+
+        // argNames
+        ['inputArg'],
+
+        // message
+        'Number.parseFloat shim'
+    );
 
     /**
      * This method formats a number using fixed-point notation.
@@ -8942,15 +9238,45 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
-    if (testShims ||
-            !$isNative(base.Number.toFixed) ||
-            base.Number.toFixed.call(0.00008, 3) !== '0.000' ||
-            base.Number.toFixed.call(0.9, 0) === '0' ||
-            base.Number.toFixed.call(1.255, 2) !== '1.25' ||
-            base.Number.toFixed.call(1000000000000000128, 0) !== '1000000000000000128') {
+    exports.Number.proto.toFixed = $decide(
+        // test
+        function () {
+            $affirmBasic(base.Number.toFixed)();
 
-        // Hide these variables and functions
-        (function () {
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.toFixed.call(0.00008, 3);
+            }, 'test1');
+
+            $affirm.strictEqual(value, '0.000', 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.toFixed.call(0.9, 0);
+            }, 'test3');
+
+            $affirm.strictEqual(value, '1', 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.toFixed.call(1.255, 2);
+            }, 'test5');
+
+            $affirm.strictEqual(value, '1.25', 'test6');
+
+            $affirm.doesNotThrow(function () {
+                value = base.Number.toFixed.call(1000000000000000128, 0);
+            }, 'test7');
+
+            $affirm.strictEqual(value, '1000000000000000128', 'test8');
+        },
+
+        // pass
+        function () {
+            return base.Number.toFixed;
+        },
+
+        // fail
+        function () {
             var baseNum = 1e7,
                 data = [0, 0, 0, 0, 0, 0],
                 size = data.length,
@@ -9025,7 +9351,7 @@
                 return n;
             }
 
-            exports.Number.proto.toFixed = function (fractionDigits) {
+            return function (fractionDigits) {
                 var f,
                     x,
                     s,
@@ -9121,12 +9447,14 @@
 
                 return m;
             };
+        },
 
-            exports.Number.proto.toFixed.argNames = ['fractionDigits'];
-        }());
-    } else {
-        exports.Number.proto.toFixed = base.Number.toFixed;
-    }
+        // argNames
+        ['fractionDigits'],
+
+        // message
+        'Number.toFixed shim'
+    );
 
     /**
      * This {@link module:util-x~boundPrototypalFunction method} formats a number using fixed-point notation.
@@ -9156,7 +9484,14 @@
         // test
         function () {
             $affirmBasic(pIndexOf)();
-            $affirm.strictEqual(pIndexOf.call([0, 1], 1, 2), -1, 'item not found');
+
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = pIndexOf.call([0, 1], 1, 2);
+            }, 'test1');
+
+            $affirm.strictEqual(value, -1, 'item not found');
         },
 
         // pass
@@ -9232,7 +9567,6 @@
      * @param {*} searchElement
      * @returns {boolean}
      */
-
     exports.Array.proto.contains = function (searchElement) {
         /*jslint unparam: true */
         /*jshint unused: false */
@@ -9272,7 +9606,14 @@
         // test
         function () {
             $affirmBasic(pIndexOf)();
-            $affirm.strictEqual(pLastIndexOf.call([0, 1], 0, -3), -1, 'item not found');
+
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = pLastIndexOf.call([0, 1], 0, -3);
+            }, 'test1');
+
+            $affirm.strictEqual(value, -1, 'item not found');
         },
 
         // pass
@@ -9556,13 +9897,21 @@
             function () {
                 $affirmBasic(mKeys)();
 
-                var keysWorksWithArguments = mKeys(returnArgs(1, 2)).length === 2;
+                var value;
 
-                $affirm.ok(keysWorksWithArguments, 'works with arguments object');
+                $affirm.doesNotThrow(function () {
+                    value = mKeys(returnArgs(1, 2));
+                }, 'test1');
+
+                $affirm.strictEqual(value.length, 2, 'works with arguments object');
                 $affirm.ok(!hasErrorProps, 'works with error objects');
 
+                $affirm.doesNotThrow(function () {
+                    value = mKeys(CError.prototype);
+                }, 'test2');
+
                 // Error prototype should not list
-                $affirm.strictEqual(mKeys(CError.prototype).length, 0, 'Error prototype zero list');
+                $affirm.strictEqual(value.length, 0, 'Error prototype zero list');
             },
 
             // pass
@@ -9570,17 +9919,25 @@
                 return $decide(
                     // test
                     function () {
+                        var value;
+
                         $affirm.doesNotThrow(function () {
-                            mKeys(1);
+                            value = mKeys(1);
                         }, 'number literal');
 
-                        $affirm.doesNotThrow(function () {
-                            mKeys('a');
-                        }, 'string literal');
+                        $affirm.strictEqual(value.length, 0, 'number literal');
 
                         $affirm.doesNotThrow(function () {
-                            mKeys(true);
+                            value = mKeys('a');
+                        }, 'string literal');
+
+                        $affirm.strictEqual(value.length, 1, 'string literal');
+
+                        $affirm.doesNotThrow(function () {
+                            value = mKeys(true);
                         }, 'boolean literal');
+
+                        $affirm.strictEqual(value.length, 0, 'boolean literal');
                     },
 
                     // pass
@@ -9811,7 +10168,7 @@
      */
     $isDigits = exports.String.isDigits;
 
-    supportsAccessors = pHasOwn.call(protoObject, stringDefineGetter);
+    hasAccessorSupport = pHasOwn.call(protoObject, stringDefineGetter);
 
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
@@ -9862,7 +10219,7 @@
                 );
             */
 
-            if (supportsAccessors && (mLookupGetter.call(object, property) || mLookupSetter.call(object, property))) {
+            if (hasAccessorSupport && (mLookupGetter.call(object, property) || mLookupSetter.call(object, property))) {
                 // As accessors are supported only on engines implementing
                 // `__proto__` we can safely override `__proto__` while defining
                 // a property to make sure that we don't hit an inherited
@@ -9879,7 +10236,7 @@
                 object[property] = descriptor.value;
             }
         } else {
-            if (!supportsAccessors) {
+            if (!hasAccessorSupport) {
                 throw new CTypeError('getters & setters can not be defined on this javascript engine');
             }
 
@@ -10038,7 +10395,7 @@
                     argNames,
 
                     // message
-                    'defineProperty patch'
+                    'Object.defineProperty patch'
                 );
             },
 
@@ -10051,7 +10408,7 @@
             argNames,
 
             //message
-            'defineProperty shim'
+            'Onject.defineProperty sham'
         );
     }());
 
@@ -10150,7 +10507,7 @@
                     argNames,
 
                     // message
-                    'defineProperties patch'
+                    'Object.defineProperties patch'
                 );
             },
 
@@ -10178,7 +10535,7 @@
             argNames,
 
             // message
-            'defineProperties shim'
+            'Object.defineProperties using Object.defineProperty'
         );
     }());
 
@@ -10205,15 +10562,28 @@
      * @returns {Object}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
      */
-    if (!testShims && $isNative(base.Object.freeze)) {
-        exports.Object.freeze = base.Object.freeze;
-    } else {
-        exports.Object.freeze = function (object) {
-            return $throwIfIsPrimitive(object);
-        };
+    exports.Object.freeze = $decide(
+        // test
+        $affirmBasic(base.Object.freeze),
 
-        exports.Object.freeze.argNames = ['object'];
-    }
+        // pass
+        function () {
+            return base.Object.freeze;
+        },
+
+        // fail
+        function () {
+            return function (object) {
+                return $throwIfIsPrimitive(object);
+            };
+        },
+
+        // argNames
+        ['object'],
+
+        // message
+        'Object.freeze sham'
+    );
 
     // detect a Rhino bug and patch it
     try {
@@ -10250,17 +10620,30 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isFrozen
      */
-    if (!testShims && $isNative(base.Object.isFrozen)) {
-        exports.Object.isFrozen = base.Object.isFrozen;
-    } else {
-        exports.Object.isFrozen = function (object) {
-            $throwIfIsPrimitive(object);
+    exports.Object.isFrozen = $decide(
+        // test
+        $affirmBasic(base.Object.isFrozen),
 
-            return false;
-        };
+        // pass
+        function () {
+            return base.Object.isFrozen;
+        },
 
-        exports.Object.isFrozen.argNames = ['object'];
-    }
+        // fail
+        function () {
+            return function (object) {
+                $throwIfIsPrimitive(object);
+
+                return false;
+            };
+        },
+
+        // argNames
+        ['object'],
+
+        //  message
+        'Object.isFrozen sham'
+    );
 
     /**
      * To make object fully immutable, freeze each object in object.
@@ -10299,41 +10682,54 @@
      * @returns {Object}
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
      */
-    if (!testShims && $isNative(base.Object.assign)) {
-        exports.Object.assign = base.Object.assign;
-    } else {
-        exports.Object.assign = function (target) {
-            var to = $Object($checkObjectCoercible(target)),
-                length = $toLength(arguments.length),
-                from,
-                index,
-                keysArray,
-                len,
-                nextIndex,
-                nextKey,
-                arg;
+    exports.Object.assign = $decide(
+        // test
+        $affirmBasic(base.Object.assign),
 
-            if (length >= 2) {
-                for (index = 1; index < length; index += 1) {
-                    arg = arguments[index];
-                    if (arg !== null && !$isUndefined(arg)) {
-                        from = $Object(arguments[index]);
-                        keysArray = $objectKeys(from);
-                        for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
-                            nextKey = keysArray[nextIndex];
-                            if ($hasOwn(from, nextKey)) {
-                                to[nextKey] = from[nextKey];
+        // pass
+        function () {
+            return base.Object.assign;
+        },
+
+        // fail
+        function () {
+            return function (target) {
+                var to = $Object($checkObjectCoercible(target)),
+                    length = $toLength(arguments.length),
+                    from,
+                    index,
+                    keysArray,
+                    len,
+                    nextIndex,
+                    nextKey,
+                    arg;
+
+                if (length >= 2) {
+                    for (index = 1; index < length; index += 1) {
+                        arg = arguments[index];
+                        if (arg !== null && !$isUndefined(arg)) {
+                            from = $Object(arguments[index]);
+                            keysArray = $objectKeys(from);
+                            for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
+                                nextKey = keysArray[nextIndex];
+                                if ($hasOwn(from, nextKey)) {
+                                    to[nextKey] = from[nextKey];
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            return to;
-        };
+                return to;
+            };
+        },
 
-        exports.Object.assign.argNames = ['target'];
-    }
+        // argNames
+        ['target'],
+
+        // message
+        'Object.assign shim'
+    );
 
     /**
      * The assign function is used to copy the values of all of the enumerable own properties from a
@@ -10477,13 +10873,25 @@
      * @returns {number}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
      */
-    if (!testShims && $isNative(base.Date.now)) {
-        exports.Date.now = base.Date.now;
-    } else {
-        exports.Date.now = function now() {
-            return pGetTime.call(new CDate());
-        };
-    }
+    exports.Date.now = $decide(
+        // test
+        $affirmBasic(base.Date.now),
+
+        // pass
+        function () {
+            return base.Date.now;
+        },
+
+        // fail
+        function () {
+            return function now() {
+                return pGetTime.call(new CDate());
+            };
+        },
+
+        // message
+        'Date.now shim'
+    );
 
     /**
      * This method wraps the string within the given character.
@@ -11399,17 +11807,38 @@
                 pToISOString.call(new Date(Number.MAX_VALUE));
             }, CRangeError, 'Throws on invalid date');
 
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = pToISOString.call(new CDate(-8.64e15));
+            }, 'test1');
+
             // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
             // serialize extended years.
-            $affirm.strictEqual(pToISOString.call(new CDate(-8.64e15)), '-271821-04-20T00:00:00.000Z', 'test1');
+            $affirm.strictEqual(value, '-271821-04-20T00:00:00.000Z', 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = pToISOString.call(new CDate(8.64e15));
+            }, 'test3');
+
             // The milliseconds are optional in ES 5, but required in 5.1.
-            $affirm.strictEqual(pToISOString.call(new CDate(8.64e15)), '+275760-09-13T00:00:00.000Z', 'test2');
+            $affirm.strictEqual(value, '+275760-09-13T00:00:00.000Z', 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = pToISOString.call(new CDate(-621987552e5));
+            }, 'test5');
+
             // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
             // four-digit years instead of six-digit years. Credits: @Yaffle.
-            $affirm.strictEqual(pToISOString.call(new CDate(-621987552e5)), '-000001-01-01T00:00:00.000Z', 'test3');
+            $affirm.strictEqual(value, '-000001-01-01T00:00:00.000Z', 'test6');
+
+            $affirm.doesNotThrow(function () {
+                value = pToISOString.call(new CDate(-1));
+            }, 'test7');
+
             // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
             // values less than 1000. Credits: @Yaffle.
-            $affirm.strictEqual(pToISOString.call(new CDate(-1)), '1969-12-31T23:59:59.999Z', 'test4');
+            $affirm.strictEqual(value, '1969-12-31T23:59:59.999Z', 'test8');
         },
 
         // pass
@@ -11419,7 +11848,6 @@
 
         // fail
         function () {
-            $conlog(pToISOString);
             var pGetUTCFullYear = base.Date.proto.getUTCFullYear,
                 pGetUTCMonth =  base.Date.proto.getUTCMonth,
                 pGetUTCDate =  base.Date.proto.getUTCDate,
@@ -11539,21 +11967,36 @@
         function () {
             $affirmBasic(pToJSON);
 
-            var date = $makeDate(-8.64e15);
+            var value;
 
-            date.toISOString = null;
             $affirm.throws(function () {
-                pToJSON.call(date);
+                value = pToJSON.call($makeDate(-8.64e15));
+                value.toISOString = null;
             }, CTypeError, 'Throw if toISOString is not a function');
 
-            date = $makeDate(-8.64e15);
-            $affirm.strictEqual(pToJSON.call(date), '-271821-04-20T00:00:00.000Z', 'test1');
-            date = $makeDate(8.64e15);
-            $affirm.strictEqual(pToJSON.call(date), '+275760-09-13T00:00:00.000Z', 'test2');
-            date = $makeDate(-621987552e5);
-            $affirm.strictEqual(pToJSON.call(date), '-000001-01-01T00:00:00.000Z', 'test3');
-            date = $makeDate(-1);
-            $affirm.strictEqual(pToJSON.call(date), '1969-12-31T23:59:59.999Z', 'test');
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call($makeDate(-8.64e15));
+            }, 'test1');
+
+            $affirm.strictEqual(value, '-271821-04-20T00:00:00.000Z', 'test2');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call($makeDate(8.64e15));
+            }, 'test3');
+
+            $affirm.strictEqual(value, '+275760-09-13T00:00:00.000Z', 'test4');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call($makeDate(-621987552e5));
+            }, 'test5');
+
+            $affirm.strictEqual(value, '-000001-01-01T00:00:00.000Z', 'test6');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call($makeDate(-1));
+            }, 'test7');
+
+            $affirm.strictEqual(value, '1969-12-31T23:59:59.999Z', 'test8');
         },
 
         // pass
