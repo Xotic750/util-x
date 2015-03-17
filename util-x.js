@@ -123,7 +123,7 @@
     var base,
 
         testShims = false,
-        //enableLog = true,
+        enableLog = true,
         $conlog,
 
         $affirm,
@@ -2140,8 +2140,6 @@
      * @function module:util-x~$conlog
      * @param {...*} [varArgs]
      */
-    $conlog = function () { return; };
-    /*
     $conlog = (function (con) {
         var type = typeof con,
             okType,
@@ -2238,7 +2236,6 @@
 
         return fn;
     }((typeof console === 'object' || typeof console === 'function' || false) && console));
-    */
 
     /**
      * Internal $affirm
