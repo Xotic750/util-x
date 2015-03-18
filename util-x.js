@@ -1920,17 +1920,17 @@
      * @param {Object} inputArg The object to be tested.
      * @throws {CTypeError} If inputArg is primitive
      * @param {string} property The property name.
-     * @returns {boolean|undefined} True if the property is in the object's prototype, otherwise falsy.
+     * @returns {boolean} True if the property is in the object's prototype, otherwise false.
      */
     function $inPrototype(inputArg, property) {
         $throwIfIsPrimitive(inputArg);
 
         var rtn;
 
-        if (!$isPrimitive(inputArg.constructor)) {
-            if (!$isPrimitive(inputArg.constructor.prototype)) {
-                rtn = pHasOwn.call(inputArg.constructor.prototype, $toString(property));
-            }
+        if (!$isPrimitive(inputArg.constructor) && !$isPrimitive(inputArg.constructor.prototype)) {
+            rtn = pHasOwn.call(inputArg.constructor.prototype, $toString(property));
+        } else {
+            rtn = false;
         }
 
         return rtn;
@@ -2619,8 +2619,12 @@
             $affirm.ok(!testShims, 'testing shim');
             $affirm.strictEqual(pOToString.call(protoRegExp), classRegexp, 'test1');
             $affirm.strictEqual(pOToString.call(protoString), classString, 'test2');
-            $affirm.strictEqual(pOToString.call(protoError), classError, 'test3');
-            $affirm.strictEqual(pOToString.call(returnArgs()), classArguments, 'test4');
+            $affirm.strictEqual(pOToString.call(protoNumber), classNumber, 'test3');
+            $affirm.strictEqual(pOToString.call(protoBoolean), classBoolean, 'test3');
+            $affirm.strictEqual(pOToString.call(protoError), classError, 'test4');
+            $affirm.strictEqual(pOToString.call(protoFunction), classFunction, 'test5');
+            $affirm.strictEqual(pOToString.call(protoArray), classArray, 'test6');
+            $affirm.strictEqual(pOToString.call(returnArgs()), classArguments, 'test7');
         },
 
         // pass
@@ -2666,7 +2670,7 @@
                         } else if ($isUndefined(inputArg)) {
                             val = classUndefined;
                         } else {
-                            val = pOToString.call(inputArg);
+                            val = toC(inputArg);
                         }
 
                         return val;
@@ -4520,7 +4524,10 @@
      */
     exports.Array.isArray = $decide(
         // test
-        $affirmBasic(mIsArray),
+        function () {
+            $affirmBasic(mIsArray)();
+            $affirm.ok(mIsArray([]), 'is an array');
+        },
 
         // pass
         function () {
