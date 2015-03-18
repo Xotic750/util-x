@@ -2169,6 +2169,7 @@
                 for (rtn.length = length, index = 0; index < length; index += 1) {
                     rtn[index] = args[index];
                 }
+
                 return rtn;
             };
         } else {
@@ -2180,7 +2181,9 @@
                 log.apply(con, ['Test log', true, con]);
                 fn = function () {
                     if (enableLog) {
-                        log.apply(con, toArr(arguments));
+                        try {
+                            log.apply(con, toArr(arguments));
+                        } catch (ignore) {}
                     }
                 };
 
@@ -2195,7 +2198,9 @@
                 Function.prototype.call.apply(log, pConcat.call([con], ['Test log', true, con]));
                 fn = function () {
                     if (enableLog) {
-                        Function.prototype.call.apply(log, pConcat.call([con], toArr(arguments)));
+                        try {
+                            Function.prototype.call.apply(log, pConcat.call([con], toArr(arguments)));
+                        } catch (ignore) {}
                     }
                 };
 
@@ -2218,7 +2223,9 @@
 
                     if (enableLog) {
                         for (length = $toLength(args.length), index = 0; index < length; index += 1) {
-                            log(args[index]);
+                            try {
+                                log(args[index]);
+                            } catch (ignore) {}
                         }
                     }
                 };
@@ -11994,6 +12001,30 @@
             }, 'test7');
 
             $affirm.strictEqual(value, '1969-12-31T23:59:59.999Z', 'test8');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call(NaN);
+            }, 'test9');
+
+            $affirm.strictEqual(value, null, 'test10');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call(Infinity);
+            }, 'test11');
+
+            $affirm.strictEqual(value, null, 'test12');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call(-Infinity);
+            }, 'test13');
+
+            $affirm.strictEqual(value, null, 'test14');
+
+            $affirm.doesNotThrow(function () {
+                value = pToJSON.call($makeDate(Number.MAX_VALUE));
+            }, 'test15');
+
+            $affirm.strictEqual(value, null, 'test16');
         },
 
         // pass
