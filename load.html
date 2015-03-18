@@ -2,23 +2,19 @@
 <html lang="en">
     <head>
         <title>util-x</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <div id="util-x"></div>
         <script type="text/javascript" src="./util-x.js"></script>
         <script>
-            window.onload = function () {
-                var x = document.getElementById('util-x');
+            var x = document.getElementById('util-x');
 
-                window.utilx.Array.forEach([1, 2, 3], function (item) {
-                    var y = document.createElement('div');
+            window.utilx.Array.forEach([1, 2, 3], function (item) {
+                var y = document.createElement('div');
 
-                    y.appendChild(document.createTextNode(item));
-                    x.appendChild(y);
-                });
-            };
+                y.appendChild(document.createTextNode(item));
+                x.appendChild(y);
+            });
         </script>
     </body>
 </html>
