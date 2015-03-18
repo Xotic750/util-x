@@ -84,6 +84,7 @@
         var rtn;
 
         if (!isPrimitive(inputArg.constructor) && !isPrimitive(inputArg.constructor.prototype)) {
+            console.log(hasOwn.call(inputArg.constructor.prototype, stringify(property)));
             rtn = hasOwn.call(inputArg.constructor.prototype, stringify(property));
         } else {
             rtn = false;
@@ -191,22 +192,23 @@
     }
 
     print = (function (out) {
-        return function print(mtd, itm, res) {
-            var row = document.createElement('div'),
-                method = document.createElement('div'),
-                item = document.createElement('div'),
-                result = document.createElement('div');
+        return function print(mtd, itm, res, val) {
+            var row = document.createElement('tr'),
+                method = document.createElement('td'),
+                item = document.createElement('td'),
+                result = document.createElement('td'),
+                isFun = document.createElement('td');
 
-            row.className = 'row';
-            method.className = 'method';
-            item.className = 'item';
-            result.className = 'result';
             method.appendChild(document.createTextNode(stringify(mtd)));
             item.appendChild(document.createTextNode(stringify(itm)));
             result.appendChild(document.createTextNode(stringify(res)));
+            isFun.appendChild(document.createTextNode(stringify(isFunction(val))));
+
             row.appendChild(method);
             row.appendChild(item);
             row.appendChild(result);
+            row.appendChild(isFun);
+
             out.appendChild(row);
         };
     }(document.getElementById('out')));
@@ -248,6 +250,30 @@
         name: 'Date',
         value: Date
     }, {
+        name: 'Number.prototype',
+        value: Number.prototype
+    }, {
+        name: 'String.prototype',
+        value: String.prototype
+    }, {
+        name: 'Boolean.prototype',
+        value: Boolean.prototype
+    }, {
+        name: 'Array.prototype',
+        value: Array.prototype
+    }, {
+        name: 'Object.prototype',
+        value: Object.prototype
+    }, {
+        name: 'Function.prototype',
+        value: Function.prototype
+    }, {
+        name: 'RegExp.prototype',
+        value: RegExp.prototype
+    }, {
+        name: 'Date.prototype',
+        value: Date.prototype
+    }, {
         name: 'isNaN',
         value: isNaN
     }, {
@@ -267,11 +293,14 @@
         value: function () {
             return;
         }
+    }, {
+        name: '/x/',
+        value: /x/
     }];
 
     forEach(methods, function (method) {
         forEach(testItems, function (testItem) {
-            print(method.name, testItem.name, method.fn(testItem.value));
+            print(method.name, testItem.name, method.fn(testItem.value), testItem.value);
         });
     });
 }());

@@ -1,4 +1,4 @@
-.method, .item, .result {
-    display:inline-block;
+.column {
+    display:inline;
     width:10em;
 }
