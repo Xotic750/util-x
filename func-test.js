@@ -10,6 +10,7 @@
         isStrictMode,
         hasCallBug,
         print,
+        isFunc,
         testItems,
         methods;
 
@@ -84,7 +85,6 @@
         var rtn;
 
         if (!isPrimitive(inputArg.constructor) && !isPrimitive(inputArg.constructor.prototype)) {
-            console.log(hasOwn.call(inputArg.constructor.prototype, stringify(property)));
             rtn = hasOwn.call(inputArg.constructor.prototype, stringify(property));
         } else {
             rtn = false;
@@ -99,6 +99,23 @@
             typeof inputArg.length === 'number' &&
             inPrototype(inputArg, 'call') &&
             inPrototype(inputArg, 'apply');
+    }
+
+    function typeofFunction(inputArg) {
+        return typeof inputArg === 'function' || false;
+    }
+
+    if (!(typeofFunction(/x/) || ((typeof window.Uint8Array !== 'function' || false) && window.Uint8Array))) {
+        isFunc = typeofFunction;
+    } else {
+        isFunc = function (inputArg) {
+            /**
+             * The use of 'Object#toString' avoids issues with the 'typeof' operator
+             * in older versions of Chrome and Safari which return 'function' for regexes
+             * and Safari 8 equivalents which return 'object' for typed array constructors.
+             */
+            return toClass.call(inputArg) === '[object Function]';
+        };
     }
 
     /*
@@ -197,17 +214,20 @@
                 method = document.createElement('td'),
                 item = document.createElement('td'),
                 result = document.createElement('td'),
-                isFun = document.createElement('td');
+                isFun = document.createElement('td'),
+                isFun2 = document.createElement('td');
 
             method.appendChild(document.createTextNode(stringify(mtd)));
             item.appendChild(document.createTextNode(stringify(itm)));
             result.appendChild(document.createTextNode(stringify(res)));
             isFun.appendChild(document.createTextNode(stringify(isFunction(val))));
+            isFun2.appendChild(document.createTextNode(stringify(isFunc(val))));
 
             row.appendChild(method);
             row.appendChild(item);
             row.appendChild(result);
             row.appendChild(isFun);
+            row.appendChild(isFun2);
 
             out.appendChild(row);
         };
@@ -296,6 +316,18 @@
     }, {
         name: '/x/',
         value: /x/
+    }, {
+        name: 'new Date()',
+        value: new Date()
+    }, {
+        name: 'true',
+        value: true
+    }, {
+        name: '1',
+        value: 1
+    }, {
+        name: 'hi',
+        value: 'hi'
     }];
 
     forEach(methods, function (method) {
