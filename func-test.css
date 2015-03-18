@@ -1,0 +1,4 @@
+.method, .item, .result {
+    display:inline-block;
+    width:10em;
+}
