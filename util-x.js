@@ -2136,115 +2136,6 @@
     }
 
     /**
-     * @private
-     * @function module:util-x~$conlog
-     * @param {...*} [varArgs]
-     */
-    $conlog = (function (con) {
-        var type = typeof con,
-            okType,
-            hasLog,
-            hasLogApply,
-            log,
-            toArr,
-            fn;
-
-        okType = type === 'object' || type === 'function' || false;
-        if (okType) {
-            type = typeof con.log;
-            hasLog = type === 'object' || type === 'function' || false;
-        } else {
-            hasLog = false;
-        }
-
-        if (hasLog) {
-            log = con.log;
-            type = typeof log.apply;
-            hasLogApply = type === 'object' || type === 'function' || false;
-            toArr = function toArr(args) {
-                var rtn = [],
-                    length = $toLength(args.length),
-                    index;
-
-                for (rtn.length = length, index = 0; index < length; index += 1) {
-                    rtn[index] = args[index];
-                }
-
-                return rtn;
-            };
-        } else {
-            hasLogApply = false;
-        }
-
-        if (hasLogApply) {
-            try {
-                log.apply(con, ['Test log', true, con]);
-                fn = function () {
-                    if (enableLog) {
-                        try {
-                            log.apply(con, toArr(arguments));
-                        } catch (ignore) {}
-                    }
-                };
-
-                fn('Using standard apply for logging');
-            } catch (eLogApply) {
-                hasLogApply = false;
-            }
-        }
-
-        if (!hasLogApply && hasLog) {
-            try {
-                Function.prototype.call.apply(log, pConcat.call([con], ['Test log', true, con]));
-                fn = function () {
-                    if (enableLog) {
-                        try {
-                            Function.prototype.call.apply(log, pConcat.call([con], toArr(arguments)));
-                        } catch (ignore) {}
-                    }
-                };
-
-                fn('Using function apply for logging');
-                hasLogApply = true;
-            } catch (eApplyLog) {
-                hasLogApply = false;
-            }
-        }
-
-        if (!hasLogApply && hasLog) {
-            try {
-                log('Test log');
-                log(true);
-                log(con);
-                fn = function () {
-                    var args = toArr(arguments),
-                        length,
-                        index;
-
-                    if (enableLog) {
-                        for (length = $toLength(args.length), index = 0; index < length; index += 1) {
-                            try {
-                                log(args[index]);
-                            } catch (ignore) {}
-                        }
-                    }
-                };
-
-                fn('Using for loop for logging');
-                hasLogApply = true;
-            } catch (eLog) {
-                hasLog = hasLogApply = toArr = null;
-            }
-
-            if (!hasLog) {
-                fn = function () { return; };
-            }
-        }
-
-        return fn;
-    }((typeof global.console === 'object' || typeof global.console === 'function' || false) && global.console));
-
-    /**
      * Internal $affirm
      *
      * @private
@@ -2619,6 +2510,98 @@
 
         return result;
     }
+
+    /**
+     * @private
+     * @function module:util-x~$conlog
+     * @param {...*} [varArgs]
+     */
+    $conlog = (function (console) {
+        var hasLog = !$isPrimitive(console) && !$isPrimitive(console.log),
+            log,
+            arr,
+            slice,
+            fn;
+
+        if (hasLog) {
+            log = console.log;
+            arr = ['Test log', true];
+            slice = function (args) {
+                var length = args.length,
+                    rtn = [],
+                    index;
+
+                for (rtn.length = length, index = 0; index < length; index += 1) {
+                    rtn[index] = args[index];
+                }
+
+                return rtn;
+            };
+        }
+
+        if (hasLog && !$isPrimitive(log.apply)) {
+            try {
+                log.apply(console, arr);
+                fn = function () {
+                    if (enableLog) {
+                        log.apply(console, slice(arguments));
+                    }
+                };
+
+                fn('Using standard apply for logging');
+            } catch (eApply) {
+                fn = null;
+            }
+        }
+
+        if (hasLog && !fn) {
+            try {
+                arr = pConcat.call([console], arr);
+                Function.prototype.call.apply(log, arr);
+                arr.length = 1;
+                fn = function () {
+                    if (enableLog) {
+                        Function.prototype.call.apply(log, pConcat.call(arr, slice(arguments)));
+                    }
+                };
+
+                fn('Using function apply for logging');
+            } catch (eFunction) {
+                fn = null;
+            }
+        }
+
+        if (hasLog && !fn) {
+            try {
+                log(arr[0]);
+                log(arr[1]);
+                fn = function () {
+                    var args,
+                        length,
+                        index;
+
+                    if (enableLog) {
+                        args = slice(arguments);
+                        for (length = args.length, index = 0; index < length; index += 1) {
+                            log(args[index]);
+                        }
+                    }
+                };
+
+                fn('Using for loop for logging');
+            } catch (eLoop) {
+                fn = null;
+            }
+        }
+
+        if (!fn) {
+            fn = function () {
+                return;
+            };
+        }
+
+        return fn;
+    }(global.console));
 
     /**
      * Provides a string representation of the supplied object in the form "[object type]",
