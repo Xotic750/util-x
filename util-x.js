@@ -44,7 +44,7 @@
     actual, add, alert, amd, anchor, apply, areSameClass, areSameTypeOf,
     argNames, assert, assign, bind, c, call, captureStackTrace, ceil, charAt,
     charCodeAt, clamp, clampToInt, classId, clipDuplicates, codePointAt, concat,
-    configurable, constructor, contains, copyWithin, countCharacter, create,
+    configurable, console, constructor, contains, copyWithin, countCharacter, create,
     customError, customErrorReplacer, deepEqual, deepFreeze, deepStrictEqual,
     defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
     e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
@@ -2242,7 +2242,7 @@
         }
 
         return fn;
-    }((typeof console === 'object' || typeof console === 'function' || false) && console));
+    }((typeof global.console === 'object' || typeof global.console === 'function' || false) && global.console));
 
     /**
      * Internal $affirm
