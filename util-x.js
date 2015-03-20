@@ -24,10 +24,10 @@
 
 /*jslint devel: true */
 
-/*global Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number,
-    Object, RangeError, ReferenceError, RegExp, self, String, SyntaxError,
-    TypeError, URIError, define, global, isFinite, isNaN, module,
-    parseFloat, parseInt, window
+/*global
+    Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number, Object,
+    RangeError, ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
+    define, global, isFinite, isNaN, module, parseFloat, parseInt, self, window
 */
 
 /*properties
@@ -38,29 +38,29 @@
     MAX_UINT32, MAX_UINT8, MAX_VALUE, MIN_INT16, MIN_INT32, MIN_INT8,
     MIN_SAFE_INTEGER, MIN_VALUE, Math, NEGATIVE_INFINITY, NEGATIVE_ZERO, NaN,
     Number, Object, POSITIVE_INFINITY, POSITIVE_ZERO, RM, RangeError,
-    ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject,
-    ToObjectFixIndexedAccess, ToString, TypeError, UNSAFE_INTEGER, URIError,
-    UWORD16, UWORD32, UWORD8, Uint8Array, WORD16, WORD32, WORD8, '\\', abs,
-    actual, add, alert, amd, anchor, apply, areSameClass, areSameTypeOf,
-    argNames, assert, assign, bind, c, call, captureStackTrace, ceil, charAt,
-    charCodeAt, clamp, clampToInt, classId, clipDuplicates, codePointAt, concat,
-    configurable, console, constructor, contains, copyWithin, countCharacter, create,
-    customError, customErrorReplacer, deepEqual, deepFreeze, deepStrictEqual,
-    defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
-    e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
-    expected, exports, factory, fail, fill, filter, find, findIndex, first,
-    floor, foo, forAll, forEach, forKeys, freeze, from, fromCharCode,
-    fromCodePoint, get, getOwnPropertyDescriptor, getOwnPropertyNames,
-    getPrototypeOf, getTime, getUTCDate, getUTCFullYear, getUTCHours,
-    getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds, global,
-    goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase, inRange,
-    index, indexOf, inherits, instanceOf, interimLastIndex, is, isArguments,
-    isArray, isBoolean, isBytestring, isDate, isDigits, isEmpty, isError,
-    isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen, isFunction,
-    isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction, isNegative,
-    isNumber, isNumeric, isObject, isOdd, isPlainObject, isPositive, isPrimitive,
-    isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16,
-    isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIndex,
+    ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject, ToString,
+    TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32, UWORD8, Uint8Array,
+    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor, apply,
+    areSameClass, areSameTypeOf, argNames, assert, assign, bind, c, call,
+    captureStackTrace, ceil, charAt, charCodeAt, clamp, clampToInt, classId,
+    clipDuplicates, codePointAt, concat, configurable, console, constructor,
+    contains, copyWithin, countCharacter, create, customError,
+    customErrorReplacer, deepEqual, deepFreeze, deepStrictEqual, defineGetter,
+    defineProperties, defineProperty, defineSetter, doesNotThrow, e, endsWith,
+    enumerable, equal, escapeRegex, every, exec, execSlice, expected, exports,
+    factory, fail, fill, filter, find, findIndex, first, firstIn, floor, foo,
+    forAll, forEach, forKeys, freeze, from, fromCharCode, fromCodePoint, get,
+    getOwnPropertyDescriptor, getOwnPropertyNames, getPrototypeOf, getTime,
+    getUTCDate, getUTCFullYear, getUTCHours, getUTCMilliseconds, getUTCMinutes,
+    getUTCMonth, getUTCSeconds, global, goNative, hasOwn, hasOwnProperty,
+    hasProperty, ifError, ignoreCase, inRange, index, indexOf, inherits,
+    instanceOf, interimLastIndex, is, isArguments, isArray, isBoolean,
+    isBytestring, isDate, isDigits, isEmpty, isError, isErrorTypeConstructor,
+    isEven, isExtensible, isFinite, isFrozen, isFunction, isInt16, isInt32,
+    isInt8, isInteger, isNaN, isNativeFunction, isNegative, isNumber, isNumeric,
+    isObject, isOdd, isPlainObject, isPositive, isPrimitive, isPrototypeOf,
+    isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16, isUint32,
+    isUint8, isUndefined, isValid, join, keys, last, lastIn, lastIndex,
     lastIndexOf, length, link, localeCompare, log, lookupGetter, lookupSetter,
     map, match, max, message, methods, min, minus, modulo, multiline, name, noop,
     normaliseErrorIEToStringOff, normaliseErrorIEToStringOn,
@@ -69,16 +69,16 @@
     padLeadingChar, parse, parseFloat, parseInt, plus, pop, pow, powerSet,
     preventExtensions, propertyIsEnumerable, proto, prototype, push, random,
     randomInt, reduce, reduceRight, regex, remove, repeat, replace, replaceAll,
-    returnArgs, reverse, round, runIENativeFunction, s, seal, search, sentinel,
-    set, setPrototypeOf, shift, shuffle, sign, slice, some, sort, source, splice,
-    split, sqrt, stableSort, stack, stackStartFunction, stacktrace, startsWith,
-    sticky, strictEqual, stringify, substr, substring, swapItems, test, throws,
-    times, toClass, toExponential, toFixed, toISOString, toInt16, toInt32,
-    toInt8, toInteger, toJSON, toLength, toLocaleLowerCase, toLocaleString,
-    toLocaleUpperCase, toLowerCase, toObject, toPrecision, toPrimitive, toSource,
-    toString, toUint, toUint16, toUint32, toUint8, toUpperCase, trim, trimLeft,
-    trimRight, trimString, truncate, typeOf, unique, unshift, unwatch, value,
-    valueOf, version, watch, wrapInChars, writable, wsStr
+    returnArgs, reverse, round, s, seal, search, sentinel, set, setPrototypeOf,
+    shift, shuffle, sign, slice, some, sort, source, splice, split, sqrt,
+    stableSort, stack, stackStartFunction, stacktrace, startsWith, sticky,
+    strictEqual, stringify, substr, substring, swapItems, test, throws, times,
+    toExponential, toFixed, toISOString, toInt16, toInt32, toInt8, toInteger,
+    toJSON, toLength, toLocaleLowerCase, toLocaleString, toLocaleUpperCase,
+    toLowerCase, toObject, toPrecision, toPrimitive, toSource, toString,
+    toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase, trim,
+    trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift, unwatch,
+    value, valueOf, version, watch, wrapInChars, writable, wsStr
 */
 
 /**
@@ -153,19 +153,38 @@
         MIN_VALUE = 5e-324,
         EPSILON = 2.220446049250313e-16,
 
-        // class strings
-        classArguments = '[object Arguments]',
-        classFunction = '[object Function]',
-        classObject = '[object Object]',
-        classUndefined = '[object Undefined]',
-        classNull = '[object Null]',
-        classError = '[object Error]',
-        classRegexp = '[object RegExp]',
-        classArray = '[object Array]',
-        classDate = '[object Date]',
-        classString = '[object String]',
-        classBoolean = '[object Boolean]',
-        classNumber = '[object Number]',
+        /** `Object#toString` result references. */
+        stringTagArguments = '[object Arguments]',
+        stringTagFunction = '[object Function]',
+        stringTagObject = '[object Object]',
+        stringTagUndefined = '[object Undefined]',
+        stringTagNull = '[object Null]',
+        stringTagError = '[object Error]',
+        stringTagRegExp = '[object RegExp]',
+        stringTagArray = '[object Array]',
+        stringTagDate = '[object Date]',
+        stringTagString = '[object String]',
+        stringTagBoolean = '[object Boolean]',
+        stringTagNumber = '[object Number]',
+
+
+        //stringTagMap = '[object Map]',
+        //stringTagSet = '[object Set]',
+        //stringTagWeakMap = '[object WeakMap]',
+
+        stringTagArrayBuffer = '[object ArrayBuffer]',
+        stringTagFloat32Array = '[object Float32Array]',
+        stringTagFloat64Array = '[object Float64Array]',
+        stringTagInt8Array = '[object Int8Array]',
+        stringTagInt16Array = '[object Int16Array]',
+        stringTagInt32Array = '[object Int32Array]',
+        stringTagUint8Array = '[object Uint8Array]',
+        stringTagUint8ClampedArray = '[object Uint8ClampedArray]',
+        stringTagUint16Array = '[object Uint16Array]',
+        stringTagUint32Array = '[object Uint32Array]',
+
+        stringTagHTMLCollection = '[object HTMLCollection]',
+        stringTagNodeList = '[object NodeList]',
 
         hasAccessorSupport,
         stringProto = '__proto__',
@@ -233,10 +252,10 @@
         $sqrt,
         //mRound,
 
-        $isFunc,
+        $isFunctionBasic,
         $isFunction,
         $throwIfNotFunction,
-        $toClass,
+        $toStringTag,
         hasDontEnumBug,
         hasProtoEnumBug,
         hasEnumArgsBug,
@@ -248,17 +267,11 @@
         hasErrorProps,
         //nonEnumProps,
 
-        beginsFunction,
-        runIENativeFunction,
-        isIENativeFunction,
-        isNativeFunction,
-        isFunctionInternal,
-        operaNative,
-
         testTemp,
 
         wspaceStrings,
 
+        hasWorkingGOPD,
         hasProto,
         hasGetSet,
         isStrictMode,
@@ -1846,36 +1859,44 @@
     }
 
     /**
-     * Avoid a Chakra JIT bug in compatibility modes of IE 11.
+     * Returns true if the operand inputArg is a Function. (Duck typed)
+     * Replaced later on with a more reliable method, but we need to define
+     * more functions first.
      *
      * @private
-     * @function module:util-x~$typeofFunction
+     * @function module:util-x~$isFunctionBasic
      * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the typeof object is 'function', otherwise false.
-     * @see https://github.com/jashkenas/underscore/issues/1621 for more details.
+     * @returns {boolean} True if the object matches the duck typing, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
-    function $typeofFunction(inputArg) {
-        return typeof inputArg === 'function' || false;
-    }
+    $isFunctionBasic = (function () {
+        /**
+        * Avoid a Chakra JIT bug in compatibility modes of IE 11.
+        *
+        * @private
+        * @function
+        * @param {*} [inputArg] The object to be tested.
+        * @returns {boolean} True if the typeof object is 'function', otherwise false.
+        * @see https://github.com/jashkenas/underscore/issues/1621 for more details.
+        */
+        function typeofFunction(inputArg) {
+            return typeof inputArg === 'function' || false;
+        }
 
-    /**
-     * @private
-     * @function module:util-x~$isFunc
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if a function, otherwise false.
-     */
-    if (!($typeofFunction(/x/) || (global && (typeof global.Uint8Array !== 'function' || false) && global.Uint8Array))) {
-        $isFunc = $typeofFunction;
-    } else {
-        $isFunc = function (inputArg) {
+        if (!(typeofFunction(/x/) || (global.Uint8Array && !typeofFunction(global.Uint8Array)))) {
+            return typeofFunction;
+        }
+
+        return function (inputArg) {
             /**
              * The use of 'Object#toString' avoids issues with the 'typeof' operator
              * in older versions of Chrome and Safari which return 'function' for regexes
              * and Safari 8 equivalents which return 'object' for typed array constructors.
              */
-            return pOToString.call(inputArg) === classFunction;
+            return pOToString.call(inputArg) === stringTagFunction || false;
         };
-    }
+    }());
+
 
     /**
      * Returns true if the operand inputArg is a primitive object.
@@ -1889,11 +1910,7 @@
     function $isPrimitive(inputArg) {
         var type = typeof inputArg;
 
-        return type === 'undefined' ||
-                inputArg === null ||
-                type === 'boolean' ||
-                type === 'string' ||
-                type === 'number';
+        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || false;
     }
 
     /**
@@ -1915,58 +1932,11 @@
     }
 
     /**
-     * @private
-     * @function module:util-x~$inPrototype
-     * @param {Object} inputArg The object to be tested.
-     * @throws {CTypeError} If inputArg is primitive
-     * @param {string} property The property name.
-     * @returns {boolean} True if the property is in the object's prototype, otherwise false.
-     */
-    function $inPrototype(inputArg, property) {
-        $throwIfIsPrimitive(inputArg);
-
-        var rtn;
-
-        if (!$isPrimitive(inputArg.constructor) && !$isPrimitive(inputArg.constructor.prototype)) {
-            rtn = pHasOwn.call(inputArg.constructor.prototype, $toString(property));
-        } else {
-            rtn = false;
-        }
-
-        return rtn;
-    }
-
-    /**
-     * replaced later
+     * Needed now, replaced later
      */
     $isArray = function (inputArg) {
-        return !$isPrimitive(inputArg) &&
-                pHasOwn.call(inputArg, 'length') &&
-                (typeof inputArg.length === 'number') &&
-                $inPrototype(inputArg, 'push') &&
-                $inPrototype(inputArg, 'pop') &&
-                $inPrototype(inputArg, 'splice');
+        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'length') && pOToString.call(inputArg) === stringTagArray) || false;
     };
-
-    /**
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFun
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    function $isFun(inputArg) {
-        return !$isPrimitive(inputArg) && $isFunc(inputArg) &&
-                pHasOwn.call(inputArg, 'length') &&
-                typeof inputArg.length === 'number' &&
-                $inPrototype(inputArg, 'constructor') &&
-                $inPrototype(inputArg, 'call') &&
-                $inPrototype(inputArg, 'apply');
-    }
 
     /**
      * Returns true if the operand inputArg is a Function. (Duck typed)
@@ -1979,7 +1949,143 @@
      * @returns {boolean} True if the object matches the duck typing, otherwise false.
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
-    $isFunction = $isFun;
+    $isFunction = $isFunctionBasic;
+
+    /**
+     * The abstract operation throws an error if its argument is a value that cannot be
+     * converted to an Object, otherwise returns the argument.
+     *
+     * @private
+     * @function module:util-x~$checkObjectCoercible
+     * @param {*} inputArg The object to be tested.
+     * @throws {TypeError} If inputArg is null or undefined.
+     * @returns {*} The inputArg if coercible.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
+     */
+    function $checkObjectCoercible(inputArg) {
+        if (inputArg === null || $isUndefined(inputArg)) {
+            throw new CTypeError('Cannot convert argument to object: ' + inputArg);
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * The function tests whether an object is strictly equal to Infinity or -Infinity.
+     *
+     * @private
+     * @function module:util-x~$isInfinity
+     * @param {*} inputArg The object to be tested.
+     * @returns {boolean} If the target value is Infinity or -Infinity then returns true, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
+     */
+    function $isInfinities(inputArg) {
+        return inputArg === Infinity || inputArg === -Infinity || false;
+    }
+
+    /**
+     * The function evaluates the passed value and converts it to an integer.
+     *
+     * @private
+     * @function module:util-x~$toInteger
+     * @param {*} inputArg The object to be converted to an integer.
+     * @returns {number} If the target value is NaN, null or undefined, 0 is returned. If the target value is false, 0 is returned and if true, 1 is returned.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
+     */
+    function $toInteger(inputArg) {
+        var number = +inputArg,
+            val = 0;
+
+        if ($strictEqual(number, number)) {
+            if (!number || $isInfinities(number)) {
+                val = number;
+            } else {
+                val = (number > 0 || -1) * $floor($abs(number));
+            }
+        }
+
+        return val;
+    }
+
+    /**
+     * Shortcut
+     * Needed now, replaced later
+     */
+    $isInteger = function (inputArg) {
+        return typeof inputArg === 'number' && !$isInfinities(inputArg) && $toInteger(inputArg) === inputArg;
+    };
+
+    /**
+     * Shortcut
+     * Needed now, replaced later
+     */
+    $isSafeInteger = function (inputArg) {
+        return $isInteger(inputArg) && inputArg >= MIN_SAFE_INTEGER && inputArg <= MAX_SAFE_INTEGER;
+    };
+
+    /**
+     * The abstract operation ToLength converts its argument to an integer suitable for use as the length
+     * of an array-like object.
+     *
+     * @private
+     * @function module:util-x~$toLength
+     * @param {*} inputArg The object to be converted to a length.
+     * @returns {number} If len <= +0 then +0 else if len is +Infinity then 2^53-1 else min(len, 2^53-1).
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+     */
+    function $toLength(inputArg) {
+        return $min($max($toInteger(inputArg), 0), MAX_SAFE_INTEGER);
+    }
+
+    /**
+     * Checks if `value` is a valid array-like length.
+     *
+     * **Note:** This function is based on ES `ToLength`. See the
+     * [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
+     * for more details.
+     *
+     * @private
+     * @function module:util-x~$isLength
+     * @param {*} inputArg The value to check.
+     * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+     */
+    function $isLength(inputArg) {
+        return $isSafeInteger(inputArg) && inputArg >= 0;
+    }
+
+    /**
+     * Checks if `value` is a valid array-like index.
+     *
+     * @private
+     * @function module:util-x~$isLength
+     * @param {*} inputArg The value to check.
+     * @param {number} [length] The upper bounds of a valid index otherwise MAX_SAFE_INTEGER.
+     * @returns {boolean} Returns true if inputArg is a valid index, otherwise false.
+     */
+    /*
+    function $isIndex(inputArg, length) {
+        if ($toLength(arguments.length) > 1) {
+            length = $toLength(length);
+        }
+
+        inputArg = +inputArg;
+        return $isLength(inputArg) && inputArg < length;
+    }
+    */
+
+    /**
+     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     *
+     * @private
+     * @function module:util-x~$toObject
+     * @param {*} inputArg The argument to be converted to an object.
+     * @throws {TypeError} If inputArg is not coercible to an object.
+     * @returns {Object} Value of inputArg as type Object.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     */
+    function $toObject(inputArg) {
+        return $Object($checkObjectCoercible(inputArg));
+    }
 
     /**
      * @private
@@ -1990,7 +2096,7 @@
      */
     function $hasProperty(inputArg, property) {
         /*jstwit in: true */
-        return $toString(property) in $throwIfIsPrimitive(inputArg);
+        return $toString(property) in $toObject(inputArg);
     }
 
     /**
@@ -2015,7 +2121,7 @@
      * @returns {Function} The supplied function.
      */
     $throwIfNotFunction = function (inputArg) {
-        if (!$isFun(inputArg)) {
+        if (!$isFunction(inputArg)) {
             $throwNotFunction(inputArg);
         }
 
@@ -2036,74 +2142,7 @@
     function $instanceOf(object, ctr) {
         $throwIfNotFunction(ctr);
 
-        var val = false;
-
-        if (!$isPrimitive(object)) {
-            if (object instanceof ctr) {
-                val = true;
-            } else if (!$isPrimitive(ctr.prototype)) {
-                val = pIsPrototypeOf.call(ctr.prototype, object);
-            }
-        }
-
-        return val;
-    }
-
-    /**
-     * The abstract operation throws an error if its argument is a value that cannot be
-     * converted to an Object, otherwise returns the argument.
-     *
-     * @private
-     * @function module:util-x~$checkObjectCoercible
-     * @param {*} inputArg The object to be tested.
-     * @throws {TypeError} If inputArg is null or undefined.
-     * @returns {*} The inputArg if coercible.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
-     */
-    function $checkObjectCoercible(inputArg) {
-        if (inputArg === null || $isUndefined(inputArg)) {
-            throw new CTypeError('Cannot convert argument to object: ' + inputArg);
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * The function evaluates the passed value and converts it to an integer.
-     *
-     * @private
-     * @function module:util-x~$toInteger
-     * @param {*} inputArg The object to be converted to an integer.
-     * @returns {number} If the target value is NaN, null or undefined, 0 is returned. If the target value is false, 0 is returned and if true, 1 is returned.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
-     */
-    function $toInteger(inputArg) {
-        var number = +inputArg,
-            val = 0;
-
-        if ($strictEqual(number, number)) {
-            if (!number || number === Infinity || number === -Infinity) {
-                val = number;
-            } else {
-                val = (number > 0 || -1) * $floor($abs(number));
-            }
-        }
-
-        return val;
-    }
-
-    /**
-     * The abstract operation ToLength converts its argument to an integer suitable for use as the length
-     * of an array-like object.
-     *
-     * @private
-     * @function module:util-x~$toLength
-     * @param {*} inputArg The object to be converted to a length.
-     * @returns {number} If len <= +0 then +0 else if len is +Infinity then 2^53-1 else min(len, 2^53-1).
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
-     */
-    function $toLength(inputArg) {
-        return $min($max($toInteger(inputArg), 0), MAX_SAFE_INTEGER);
+        return (!$isPrimitive(object) && (object instanceof ctr || (!$isPrimitive(ctr.prototype) && pIsPrototypeOf.call(ctr.prototype, object)))) || false;
     }
 
     /**
@@ -2136,6 +2175,14 @@
     }
 
     /**
+     * Shortcut
+     * Needed now, replaced later
+     */
+    $isPlainObject = function (object) {
+        return !$isPrimitive(object) && !$isFunction(object) && !$isPrimitive(object.constructor) && object.constructor.prototype === protoObject;
+    };
+
+    /**
      * Internal $affirm
      *
      * @private
@@ -2149,32 +2196,34 @@
      * @constructor module:util-x~$affirm.AffirmError
      * @param {Object} opts
      */
-    $affirm.AffirmError = function (opts) {
-        var type = typeof opts;
-
-        if (opts && type === 'object' && !$isFunction(opts) && opts.constructor.prototype !== protoObject) {
-            opts = {};
+    $affirm.AffirmError = (function () {
+        function ClassEmpty() {
+            return;
         }
 
-        if (!$isFunction(opts.stackStartFunction)) {
-            opts.stackStartFunction = $affirm.AffirmError;
-        }
+        var fn = function (opts) {
+            if (!$isPlainObject(opts)) {
+                opts = {};
+            }
 
-        CError.call(this, opts.message, opts.stackStartFunction);
-        this.message = opts.message;
-        this.actual =  opts.actual;
-        this.expected = opts.expected;
-        this.operator = opts.operator;
-    };
+            if (!$isFunction(opts.stackStartFunction)) {
+                opts.stackStartFunction = $affirm.AffirmError;
+            }
 
-    function ClassEmpty() {
-        return;
-    }
+            CError.call(this, opts.message, opts.stackStartFunction);
+            this.message = opts.message;
+            this.actual =  opts.actual;
+            this.expected = opts.expected;
+            this.operator = opts.operator;
+        };
 
-    ClassEmpty.prototype = protoError;
-    $affirm.AffirmError.prototype = new ClassEmpty();
-    $affirm.AffirmError.prototype.name = 'AffirmError';
-    $affirm.AffirmError.prototype.constructor = $affirm.AffirmError;
+        ClassEmpty.prototype = protoError;
+        fn.prototype = new ClassEmpty();
+        fn.prototype.name = 'AffirmError';
+        fn.prototype.constructor = fn;
+
+        return fn;
+    }());
 
     /**
      * @private
@@ -2185,9 +2234,9 @@
      * @returns {number} Arguments length
      */
     function $throwIfNotEnoughArgs(args, requiredLength) {
-        var length = $toLength(args.length);
+        var length = (!$isPrimitive(args) && $toLength(args.length)) || 0;
 
-        if (length < requiredLength) {
+        if (length < $toLength(requiredLength)) {
             throw new CSyntaxError($toString(length) + ' is not enough arguments, requires ' + $toString(requiredLength));
         }
 
@@ -2235,6 +2284,7 @@
     function $optArgs(begin, message, stackStartFunction, caller) {
         var length = $throwIfNotEnoughArgs(arguments, 4);
 
+        begin = $toLength(begin);
         if (length === begin) {
             if ($isFunction(message)) {
                 stackStartFunction = message;
@@ -2512,31 +2562,76 @@
     }
 
     /**
+     * Creates a new array from the arraylike argument, starting at start and ending at end.
+     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
+     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
+     * in the mission critical function {@link module:util-x~$toMethod}.
+     *
+     * @private
+     * @function module:util-x~$pArgSlice
+     * @this {module:util-x~ArrayLike} The object to be sliced.
+     * @throws {TypeError} If args is not coercible to an object.
+     * @param {module:util-x~NumberLike} [start] The starting index.
+     * @param {module:util-x~NumberLike} [end] The ending index.
+     * @returns {Array} A new array containg the selection.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $pArgSlice = function (start, end) {
+        var object = $toObject(this),
+            length = $toLength(object.length),
+            relativeStart = $toInteger(start),
+            val = [],
+            next = 0,
+            relativeEnd,
+            finalEnd,
+            k;
+
+        if (relativeStart < 0) {
+            k = $max(length + relativeStart, 0);
+        } else {
+            k = $min(relativeStart, length);
+        }
+
+        if ($isUndefined(end)) {
+            relativeEnd = length;
+        } else {
+            relativeEnd = $toInteger(end);
+        }
+
+        if (relativeEnd < 0) {
+            finalEnd = $max(length + relativeEnd, 0);
+        } else {
+            finalEnd = $min(relativeEnd, length);
+        }
+
+        finalEnd = $toLength(finalEnd);
+        val.length = $toLength($max(finalEnd - k, 0));
+        while (k < finalEnd) {
+            if ($hasProperty(object, k)) {
+                val[next] = object[k];
+            }
+
+            next += 1;
+            k += 1;
+        }
+
+        return val;
+    };
+
+    /**
      * @private
      * @function module:util-x~$conlog
      * @param {...*} [varArgs]
      */
-    $conlog = (function (console) {
+    $conlog = (function (console, fnCall) {
         var hasLog = !$isPrimitive(console) && !$isPrimitive(console.log),
             log,
             arr,
-            slice,
             fn;
 
         if (hasLog) {
             log = console.log;
             arr = ['Test log', true];
-            slice = function (args) {
-                var length = args.length,
-                    rtn = [],
-                    index;
-
-                for (rtn.length = length, index = 0; index < length; index += 1) {
-                    rtn[index] = args[index];
-                }
-
-                return rtn;
-            };
         }
 
         if (hasLog && !$isPrimitive(log.apply)) {
@@ -2544,7 +2639,7 @@
                 log.apply(console, arr);
                 fn = function () {
                     if (enableLog) {
-                        log.apply(console, slice(arguments));
+                        log.apply(console, $pArgSlice.call(arguments));
                     }
                 };
 
@@ -2557,11 +2652,11 @@
         if (hasLog && !fn) {
             try {
                 arr = pConcat.call([console], arr);
-                Function.prototype.call.apply(log, arr);
+                fnCall.apply(log, arr);
                 arr.length = 1;
                 fn = function () {
                     if (enableLog) {
-                        Function.prototype.call.apply(log, pConcat.call(arr, slice(arguments)));
+                        fnCall.apply(log, pConcat.call(arr, $pArgSlice.call(arguments)));
                     }
                 };
 
@@ -2581,7 +2676,7 @@
                         index;
 
                     if (enableLog) {
-                        args = slice(arguments);
+                        args = $pArgSlice.call(arguments);
                         for (length = args.length, index = 0; index < length; index += 1) {
                             log(args[index]);
                         }
@@ -2601,30 +2696,30 @@
         }
 
         return fn;
-    }(global.console));
+    }(global.console, protoFunction.call));
 
     /**
      * Provides a string representation of the supplied object in the form "[object type]",
      * where type is the object type.
      *
      * @private
-     * @function module:util-x~$toClass
+     * @function module:util-x~$toStringTag
      * @param {*} inputArg The object for which a class string represntation is required.
      * @returns {string} A string value of the form "[object type]".
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.4.2
      */
-    $toClass = $decide(
+    $toStringTag = $decide(
         // test
         function () {
             $affirm.ok(!testShims, 'testing shim');
-            $affirm.strictEqual(pOToString.call(protoRegExp), classRegexp, 'test1');
-            $affirm.strictEqual(pOToString.call(protoString), classString, 'test2');
-            $affirm.strictEqual(pOToString.call(protoNumber), classNumber, 'test3');
-            $affirm.strictEqual(pOToString.call(protoBoolean), classBoolean, 'test3');
-            $affirm.strictEqual(pOToString.call(protoError), classError, 'test4');
-            $affirm.strictEqual(pOToString.call(protoFunction), classFunction, 'test5');
-            $affirm.strictEqual(pOToString.call(protoArray), classArray, 'test6');
-            $affirm.strictEqual(pOToString.call(returnArgs()), classArguments, 'test7');
+            $affirm.strictEqual(pOToString.call(protoRegExp), stringTagRegExp, 'test1');
+            $affirm.strictEqual(pOToString.call(protoString), stringTagString, 'test2');
+            $affirm.strictEqual(pOToString.call(protoNumber), stringTagNumber, 'test3');
+            $affirm.strictEqual(pOToString.call(protoBoolean), stringTagBoolean, 'test3');
+            $affirm.strictEqual(pOToString.call(protoError), stringTagError, 'test4');
+            $affirm.strictEqual(pOToString.call(protoFunction), stringTagFunction, 'test5');
+            $affirm.strictEqual(pOToString.call(protoArray), stringTagArray, 'test6');
+            $affirm.strictEqual(pOToString.call(returnArgs()), stringTagArguments, 'test7');
         },
 
         // pass
@@ -2640,19 +2735,19 @@
                         toC();
                     }, 'test1');
 
-                    $affirm.strictEqual(toC(), classUndefined, 'test2');
+                    $affirm.strictEqual(toC(), stringTagUndefined, 'test2');
 
                     $affirm.doesNotThrow(function () {
                         toC(Undefined);
                     }, 'test3');
 
-                    $affirm.strictEqual(toC(Undefined), classUndefined, 'test3');
+                    $affirm.strictEqual(toC(Undefined), stringTagUndefined, 'test3');
 
                     $affirm.doesNotThrow(function () {
                         toC(null);
                     }, 'test4');
 
-                    $affirm.strictEqual(toC(null), classNull, 'test5');
+                    $affirm.strictEqual(toC(null), stringTagNull, 'test5');
                 },
 
                 // pass
@@ -2666,9 +2761,9 @@
                         var val;
 
                         if (inputArg === null) {
-                            val = classNull;
+                            val = stringTagNull;
                         } else if ($isUndefined(inputArg)) {
-                            val = classUndefined;
+                            val = stringTagUndefined;
                         } else {
                             val = toC(inputArg);
                         }
@@ -2681,48 +2776,42 @@
                 ['inputArg'],
 
                 // message
-                '$toClass basic patch'
+                '$toStringTag basic patch'
             );
         },
 
         // fail
         function () {
             return function (inputArg) {
-                var type = typeof inputArg,
-                    object,
+                var object,
                     val;
 
-                if (type === 'undefined') {
-                    val = classUndefined;
+                if ($isUndefined(inputArg)) {
+                    val = stringTagUndefined;
                 } else if (inputArg === null) {
-                    val = classNull;
-                } else if (type === 'object' &&
-                        !pHasOwn.call(inputArg, 'arguments') &&
-                        pHasOwn.call(inputArg, 'callee') &&
-                        pHasOwn.call(inputArg, 'length') &&
-                        typeof inputArg.length === 'number') {
-
-                    val = classArguments;
+                    val = stringTagNull;
+                } else if (!$isPrimitive(inputArg) && !pHasOwn.call(inputArg, 'arguments') && pHasOwn.call(inputArg, 'callee') && pHasOwn.call(inputArg, 'length') && $isLength(inputArg.length)) {
+                    val = stringTagArguments;
                 } else {
                     object = $Object(inputArg);
                     if ($instanceOf(object, CNumber)) {
-                        val = classNumber;
+                        val = stringTagNumber;
                     } else if ($instanceOf(object, CBoolean) || object === protoBoolean) {
-                        val = classBoolean;
+                        val = stringTagBoolean;
                     } else if ($instanceOf(object, CString) || object === protoString) {
-                        val = classString;
+                        val = stringTagString;
                     } else if ($instanceOf(object, CDate) || object === protoDate) {
-                        val = classDate;
+                        val = stringTagDate;
                     } else if ($instanceOf(object, CRegExp) || object === protoRegExp) {
-                        val = classRegexp;
+                        val = stringTagRegExp;
                     } else if ($instanceOf(object, CError) || object === protoError) {
-                        val = classError;
+                        val = stringTagError;
                     } else if ($instanceOf(object, CArray) || object === protoArray) {
-                        val = classArray;
+                        val = stringTagArray;
                     } else if ($instanceOf(object, CFunction) || object === protoFunction) {
-                        val = classFunction;
+                        val = stringTagFunction;
                     } else if (object === protoObject) {
-                        val = classObject;
+                        val = stringTagObject;
                     }
                 }
 
@@ -2738,7 +2827,7 @@
         ['inputArg'],
 
         // message
-        '$toClass extended patch'
+        '$toStringTag extended patch'
     );
 
     /**
@@ -2761,7 +2850,7 @@
      * @type {boolean}
      * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
      */
-    hasProtoEnumBug = base.Object.propertyIsEnumerable.call(function () { return; }, 'prototype');
+    hasProtoEnumBug = base.Object.propertyIsEnumerable.call(function () { return; }, 'prototype') || false;
 
     /**
      * Indicates if the arguments object suffers the "index enumeration bug".
@@ -2890,30 +2979,6 @@
     }()) || false;
 
     /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     *
-     * @private
-     * @function module:util-x~$toObject
-     * @param {*} inputArg The argument to be converted to an object.
-     * @throws {TypeError} If inputArg is not coercible to an object.
-     * @returns {Object} Value of inputArg as type Object.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
-     */
-    function $toObject(inputArg) {
-        var object = $Object($checkObjectCoercible(inputArg)),
-            length,
-            index;
-
-        if (hasBoxedStringBug && $toClass(object) === classString) {
-            for (index = 0, length = object.length; index < length; index += 1) {
-                object[index] = pCharAt.call(object, index);
-            }
-        }
-
-        return object;
-    }
-
-    /**
      * Indicates if the this argument used with call does not convert to an object when not strict mode.
      * True if it does, otherwise false.
      *
@@ -2940,81 +3005,17 @@
      */
     function $toObjectCallFix(inputArg) {
         var object = inputArg,
-            length,
-            index,
             type;
 
         if (hasCallBug) {
             type = typeof inputArg;
             if (type === 'boolean' || type === 'number' || type === 'string') {
-                object = $Object(inputArg);
-            }
-        }
-
-        if (hasBoxedStringBug && $toClass(object) === classString) {
-            for (index = 0, length = object.length; index < length; index += 1) {
-                object[index] = pCharAt.call(object, index);
+                object = $toObject(inputArg);
             }
         }
 
         return object;
     }
-
-    /**
-     * Creates a new array from the arraylike argument, starting at start and ending at end.
-     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
-     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
-     * in the mission critical function {@link module:util-x~$toMethod}.
-     *
-     * @private
-     * @function module:util-x~$pArgSlice
-     * @this {module:util-x~ArrayLike} The object to be sliced.
-     * @throws {TypeError} If args is not coercible to an object.
-     * @param {module:util-x~NumberLike} [start] The starting index.
-     * @param {module:util-x~NumberLike} [end] The ending index.
-     * @returns {Array} A new array containg the selection.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
-    $pArgSlice = function (start, end) {
-        var object = $toObject(this),
-            length = $toLength(object.length),
-            relativeStart = $toInteger(start),
-            val = [],
-            next = 0,
-            relativeEnd,
-            finalEnd,
-            k;
-
-        if (relativeStart < 0) {
-            k = $max(length + relativeStart, 0);
-        } else {
-            k = $min(relativeStart, length);
-        }
-
-        if ($isUndefined(end)) {
-            relativeEnd = length;
-        } else {
-            relativeEnd = $toInteger(end);
-        }
-
-        if (relativeEnd < 0) {
-            finalEnd = $max(length + relativeEnd, 0);
-        } else {
-            finalEnd = $min(relativeEnd, length);
-        }
-
-        val.length = $max(finalEnd - k, 0);
-        while (k < finalEnd) {
-            if ($hasProperty(object, k)) {
-                val[next] = object[k];
-            }
-
-            next += 1;
-            k += 1;
-        }
-
-        return val;
-    };
 
     /**
      * The function takes an argument protoFn, and returns a bound function as a stand alone method.
@@ -3487,7 +3488,7 @@
      * @returns {boolean}
      */
     exports.Object.isArguments = function (inputArg) {
-        return inputArg && typeof inputArg === 'object' && $toClass(inputArg) === classArguments;
+        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'length') && $toStringTag(inputArg) === stringTagArguments) || false;
     };
 
     exports.Object.isArguments.argNames = ['inputArg'];
@@ -3497,7 +3498,7 @@
      * Returns true if the operand inputArg is an {@link Arguments arguments} object.
      *
      * @private
-     * @function module:util-x~.isArguments
+     * @function module:util-x~.$isArguments
      * @param {*} inputArg
      * @returns {boolean}
      */
@@ -3508,22 +3509,22 @@
      * Returns true if the operand inputArg is a RegExp.
      *
      * @private
-     * @function module:util-x~isRegExp
+     * @function module:util-x~$isRegExp
      * @param {*} inputArg
      * @returns {boolean}
      */
-    function isRegExp(inputArg) {
-        return inputArg && (typeof inputArg === 'object' || $typeofFunction(inputArg)) && $toClass(inputArg) === classRegexp;
+    function $isRegExp(inputArg) {
+        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp) || false;
     }
 
     /**
      * Returns true if the operand inputArg is a RegExp.
      *
-     * @function module:util-x~.exports.RegExp.isRegExp
+     * @function module:util-x~.exports.RegExp.$isRegExp
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.RegExp.isRegExp = isRegExp;
+    exports.RegExp.isRegExp = $isRegExp;
     exports.RegExp.isRegExp.argNames = ['inputArg'];
 
     /**
@@ -3598,7 +3599,7 @@
      * @returns {boolean}
      */
     exports.Error.isError = function (inputArg) {
-        return inputArg && typeof inputArg === 'object' && $toClass(inputArg) === classError;
+        return inputArg && typeof inputArg === 'object' && $toStringTag(inputArg) === stringTagError;
     };
 
     exports.Error.isError.argNames = ['inputArg'];
@@ -3611,7 +3612,7 @@
      * @returns {boolean}
      */
     exports.Date.isDate = function (inputArg) {
-        return inputArg && typeof inputArg === 'object' && $toClass(inputArg) === classDate;
+        return inputArg && typeof inputArg === 'object' && $toStringTag(inputArg) === stringTagDate;
     };
 
     exports.Date.isDate.argNames = ['inputArg'];
@@ -3630,12 +3631,12 @@
         var plusMinus = new CRegExp('^[+\\-]?');
 
         return function (inputArg) {
-            var thisClass = $toClass(inputArg),
+            var thisClass = $toStringTag(inputArg),
                 val,
                 string,
                 number;
 
-            if (thisClass === classNumber || thisClass === classString) {
+            if (thisClass === stringTagNumber || thisClass === stringTagString) {
                 string = pReplace.call(inputArg, plusMinus, '');
                 number = $parseFloat(string);
                 val = $strictEqual(number, number) && mIsFinite(string);
@@ -3669,12 +3670,12 @@
      */
     exports.Number.inRange = function (value, min, max) {
         min = $toPrimitive(min);
-        if ($toClass(min) !== classNumber && !$isNumeric(min)) {
+        if ($toStringTag(min) !== stringTagNumber && !$isNumeric(min)) {
             min = NaN;
         }
 
         max = $toPrimitive(max);
-        if ($toClass(max) !== classNumber && !$isNumeric(max)) {
+        if ($toStringTag(max) !== stringTagNumber && !$isNumeric(max)) {
             max = NaN;
         }
 
@@ -3707,17 +3708,17 @@
      */
     exports.Number.outRange = function (value, min, max) {
         value = $toPrimitive(value);
-        if (($toClass(value) !== classNumber || !$strictEqual(value, value)) && !$isNumeric(value)) {
+        if (($toStringTag(value) !== stringTagNumber || !$strictEqual(value, value)) && !$isNumeric(value)) {
             return true;
         }
 
         min = $toPrimitive(min);
-        if (($toClass(min) !== classNumber || !$strictEqual(min, min)) && !$isNumeric(min)) {
+        if (($toStringTag(min) !== stringTagNumber || !$strictEqual(min, min)) && !$isNumeric(min)) {
             return true;
         }
 
         max = $toPrimitive(max);
-        if (($toClass(max) !== classNumber || !$strictEqual(max, max)) && !$isNumeric(max)) {
+        if (($toStringTag(max) !== stringTagNumber || !$strictEqual(max, max)) && !$isNumeric(max)) {
             return true;
         }
 
@@ -3751,40 +3752,25 @@
      * Returns a string only if the arguments is coercible otherwise throws an error.
      *
      * @private
-     * @function module:util-x~onlyCoercibleToString
+     * @function module:util-x~$onlyCoercibleToString
      * @param {*} inputArg
      * @throws {TypeError} If inputArg is null or undefined.
      * @returns {string}
      */
-    function onlyCoercibleToString(inputArg) {
+    function $onlyCoercibleToString(inputArg) {
         return $toString($checkObjectCoercible(inputArg));
     }
 
     /**
-     * The abstract operation converts its argument to a value of type Object
+     * The abstract operation converts its argument to a value of type Object.
      *
      * @function module:util-x~exports.Object.ToObject
      * @param {*} inputArg
-     * @throws {TypeError} If inputArg is null or undefined.
      * @returns {Object}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
-    exports.Object.ToObject = function (inputArg) {
-        return $Object($checkObjectCoercible(inputArg));
-    };
-
+    exports.Object.ToObject = $toObject;
     exports.Object.ToObject.argNames = ['inputArg'];
-
-    /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     *
-     * @function module:util-x~exports.Object.ToObjectFixIndexedAccess
-     * @param {*} inputArg
-     * @returns {Object}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
-     */
-    exports.Object.ToObjectFixIndexedAccess = $toObject;
-    exports.Object.ToObjectFixIndexedAccess.argNames = ['inputArg'];
 
     /**
      * Returns true if the specified property is in the specified object.
@@ -3795,213 +3781,228 @@
      * @returns {boolean}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
      */
-    exports.Object.hasProperty = function (object, property) {
-        return $hasProperty($toObject(object), property);
-    };
-
+    exports.Object.hasProperty = $hasProperty;
     exports.Object.hasProperty.argNames = ['object', 'property'];
 
-    /**
-     * Returns true if the operand inputArg is a Function. Used by {@link exports.Function.isFunction}.
-     *
-     * @private
-     * @function module:util-x~isFunctionBasic
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isFunctionBasic(inputArg) {
-        return inputArg && $toClass(inputArg) === classFunction && $hasProperty(inputArg, 'call');
-    }
+    //
+    (function () {
+        var runIENativeFunction = false,
+            isIENativeFunction,
+            isNativeFunction,
+            isFunctionInternal;
 
-    try {
-        /**
-         * native function cannot be passed
-         * to native Function.prototype.toString
-         * as scope to evaluate ... only IE, sure
-         */
-        if (!$isPrimitive(global) && global.alert) {
-            base.Function.toString.call(global.alert);
-        }
-    } catch (eRunIENativeFunction) {
-        /**
-         * Run a spcific detection on IE?
-         *
-         * @private
-         * @type {boolean}
-         */
-        runIENativeFunction = true;
-    }
-
-    /**
-     * Are we in IE? How to define isIENativeFunction.
-     */
-    testTemp.runIENativeFunction = runIENativeFunction &&
-                                        !$isPrimitive(global) &&
-                                        !$isPrimitive(global.alert) &&
-                                        typeof global.alert.toString;
-
-    beginsFunction = new CRegExp('^\\s*\\bfunction\\b');
-
-    /**
-     * Returns true if the operand inputArg is a native Function in IE. Used by {@link exports.Function.isFunction}.
-     *
-     * @private
-     * @function module:util-x~isIENativeFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    if ($isUndefined(testTemp.runIENativeFunction) && pTest.call(beginsFunction, global.alert)) {
-        isIENativeFunction = function (inputArg) {
+        try {
             /**
-             * inputArg
-             * we want return true or false
-             *
-             * inputArg.toString === undefined
-             * native functions do not
-             * contain a toString callback
-             * as is for every user defined
-             * function or object, even if deleted
-             * so next step is a "safe" destructuration
-             * assumption
-
-             * test(beginsFunction, inputArg)
-             * we are looking for a function
-             * and IE shows them with function
-             * as first word. Eventually
-             * there could be a space
-             * (never happened, it does not hurt anyway)
+             * native function cannot be passed
+             * to native Function.prototype.toString
+             * as scope to evaluate ... only IE, sure
              */
-            return $isUndefined(inputArg.toString) && pTest.call(beginsFunction, inputArg);
-        };
-    } else {
-        isIENativeFunction = function () {
-            return false;
-        };
-    }
-
-    /**
-     * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
-     * Used by {@link exports.Function.isFunction}.
-     *
-     * @private
-     * @function module:util-x~isNativeFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    try {
-        /*jslint evil: true */
-        eval('(' + base.Function.toString.call(CFunction) + ')');
-        /*jslint evil: false */
+            if (!$isPrimitive(global) && global.alert) {
+                base.Function.toString.call(global.alert);
+            }
+        } catch (eRunIENativeFunction) {
+            /**
+             * Run a spcific detection on IE?
+             *
+             * @private
+             * @type {boolean}
+             */
+            runIENativeFunction = true;
+        }
 
         /**
-         * Opera 10 doesn't play ball so have to test the string.
-         * Only defined on Opera
+         * Are we in IE? How to define isIENativeFunction.
+         */
+        runIENativeFunction = (runIENativeFunction && !$isPrimitive(global) && !$isPrimitive(global.alert) && typeof global.alert.toString) || false;
+
+        /**
+         * Returns true if the operand inputArg is a native Function in IE.
          *
          * @private
-         * @name module:util-x~operaNative
-         * type {RegExp}
+         * @function isIENativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
          */
-        operaNative = new CRegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|' +
-                                 '\\/\\* source code not available \\*\\/) \\}$');
+        isIENativeFunction = (function () {
+            var beginsFunction;
 
-        isNativeFunction = function (inputArg) {
-            return pTest.call(operaNative, inputArg);
-        };
-    } catch (eINF1) {
-        isNativeFunction = function (inputArg) {
-            var val = true,
-                ownToString;
+            if (runIENativeFunction === false) {
+                beginsFunction = new CRegExp('^\\s*\\bfunction\\b');
+                if (pTest.call(beginsFunction, global.alert)) {
+                    return function (inputArg) {
+                        /**
+                         * inputArg
+                         * we want return true or false
+                         *
+                         * inputArg.toString === undefined
+                         * native functions do not
+                         * contain a toString callback
+                         * as is for every user defined
+                         * function or object, even if deleted
+                         * so next step is a "safe" destructuration
+                         * assumption
 
-            try {
-                // no execution
-                // just an error if it is native
-                // every browser manifest native
-                // functions with some weird char
-                // that cannot be evaluated [native]
-                ownToString = inputArg.toString;
-                /*jslint evil: true */
-                eval('(' + ownToString.call(inputArg) + ')');
-                /*jslint evil: false */
-                val = false;
-            } catch (ignore) {}
+                         * test(beginsFunction, inputArg)
+                         * we are looking for a function
+                         * and IE shows them with function
+                         * as first word. Eventually
+                         * there could be a space
+                         * (never happened, it does not hurt anyway)
+                         */
+                        return $isUndefined(inputArg.toString) && pTest.call(beginsFunction, inputArg);
+                    };
+                }
+            }
 
-            return val;
-        };
-    }
+            return function () {
+                return false;
+            };
+        }());
 
-    /**
-     * Returns true if the operand inputArg is a Function. Used by {@link exports.Function.isFunction}.
-     *
-     * @private
-     * @function module:util-x~isFunctionExtended
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function isFunctionExtended(inputArg) {
         /**
-         * it should be a function in any case
-         * before we try to pass it to
-         * Function.prototype.toString
+         * Test if a function is native by simply trying to evaluate its original Function.prototype.toString call.
+         * Used by {@link exports.Function.isFunction}.
+         *
+         * @private
+         * @function isNativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
          */
-        return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
-    }
+        try {
+            /*jslint evil: true */
+            eval('(' + base.Function.toString.call(CFunction) + ')');
+            /*jslint evil: false */
+
+            /**
+             * Opera 10 doesn't play ball so have to test the string.
+             */
+            isNativeFunction = (function () {
+                var operaNative = new CRegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$');
+
+                return function (inputArg) {
+                    return pTest.call(operaNative, inputArg);
+                };
+            }());
+        } catch (eINF1) {
+            isNativeFunction = function (inputArg) {
+                var val;
+
+                try {
+                    // no execution
+                    // just an error if it is native
+                    // every browser manifest native
+                    // functions with some weird char
+                    // that cannot be evaluated [native]
+                    /*jslint evil: true */
+                    eval('(' + inputArg.toString() + ')');
+                    /*jslint evil: false */
+                    val = false;
+                } catch (eFnToString) {
+                    val = true;
+                }
+
+                return val;
+            };
+        }
+
+        /**
+         * Returns true if the operand inputArg is a Function.
+         *
+         * @private
+         * @function isFunctionExtended
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        function isFunctionExtended(inputArg) {
+            /**
+             * it should be a function in any case
+             * before we try to pass it to
+             * Function.prototype.toString
+             */
+            return isFunctionInternal(inputArg, false) && isNativeFunction(inputArg);
+        }
+
+        /**
+         * Returns true if the operand inputArg is a Function.
+         *
+         * @private
+         * @function @function isFunctionInternal
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        if (runIENativeFunction) {
+            // used when IE
+            isFunctionInternal = function (inputArg, n) {
+                var val;
+
+                if (n) {
+                    val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
+                } else {
+                    val = $isFunctionBasic(inputArg);
+                }
+
+                return val;
+            };
+        } else {
+            // this function is for every other browser
+            isFunctionInternal = function (inputArg, n) {
+                var val;
+
+                if (n) {
+                    val = isFunctionExtended(inputArg);
+                } else {
+                    val = $isFunctionBasic(inputArg);
+                }
+
+                return val;
+            };
+        }
+
+        /**
+         * Returns true if the operand inputArg is a native Function.
+         *
+         * @function module:util-x~exports.Function.isNativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        if (runIENativeFunction) {
+            exports.Function.isNativeFunction = function (inputArg) {
+                return $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+            };
+        } else {
+            exports.Function.isNativeFunction = function (inputArg) {
+                return $isFunction(inputArg) && isNativeFunction(inputArg);
+            };
+        }
+
+        exports.Function.isNativeFunction.argNames = ['inputArg'];
+
+        /**
+         * Returns true if the operand inputArg is a Function.
+         *
+         * @function module:util-x~exports.Function.isFunction
+         * @param {*} inputArg
+         * @returns {boolean}
+         * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+         */
+        exports.Function.isFunction = function (inputArg) {
+            return !$isPrimitive(inputArg) && (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
+        };
+
+        exports.Function.isFunction.argNames = ['inputArg'];
+    }());
 
     /**
-     * Returns true if the operand inputArg is a Function. Used by {@link exports.Function.isFunction}.
-     *
-     * @private
-     * @function @function module:util-x~isFunctionInternal
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    if (runIENativeFunction) {
-        // used when IE
-        isFunctionInternal = function (inputArg, n) {
-            var val;
-
-            if (n) {
-                val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
-            } else {
-                val = isFunctionBasic(inputArg);
-            }
-
-            return val;
-        };
-    } else {
-        // this function is for every other browser
-        isFunctionInternal = function (inputArg, n) {
-            var val;
-
-            if (n) {
-                val = isFunctionExtended(inputArg);
-            } else {
-                val = isFunctionBasic(inputArg);
-            }
-
-            return val;
-        };
-    }
-
-    /**
+     * Shortcut
      * Returns true if the operand inputArg is a native Function.
      *
-     * @function module:util-x~exports.Function.isNativeFunction
+     * @private
+     * @function module:util-x~$isFunction
      * @param {*} inputArg
      * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
-    if (runIENativeFunction) {
-        exports.Function.isNativeFunction = function (inputArg) {
-            return $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
-        };
-
-        exports.Function.isNativeFunction.argNames = ['inputArg'];
-    } else {
-        exports.Function.isNativeFunction = function (inputArg) {
-            return $isFunction(inputArg) && isNativeFunction(inputArg);
-        };
-
-        exports.Function.isNativeFunction.argNames = ['inputArg'];
-    }
+    $isFunction = exports.Function.isFunction;
 
     /**
      * Shortcut
@@ -4027,33 +4028,6 @@
     }
 
     /**
-     * Returns true if the operand inputArg is a Function.
-     *
-     * @function module:util-x~exports.Function.isFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    exports.Function.isFunction = function (inputArg) {
-        return !$isPrimitive(inputArg) && (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
-    };
-
-    exports.Function.isFunction.argNames = ['inputArg'];
-
-    /**
-     * Shortcut
-     * Use the new improved function instead of the duck typed.
-     * Returns true if the operand inputArg is a Function.
-     *
-     * @private
-     * @function module:util-x~$isFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunction = exports.Function.isFunction;
-
-    /**
      * Shortcut
      * This method returns a string indicating the type of the unevaluated operand.
      *
@@ -4065,7 +4039,7 @@
     function $typeOf(inputArg) {
         var rtn;
 
-        if (isRegExp(inputArg)) {
+        if ($isRegExp(inputArg)) {
             rtn = 'object';
         } else if ($isFunction(inputArg)) {
             rtn = 'function';
@@ -4127,16 +4101,16 @@
      * @returns {boolean}
      */
     exports.Object.areSameClass = function (a, b) {
-        a = $toClass(a);
+        a = $toStringTag(a);
 
-        var same = a === $toClass(b),
+        var same = a === $toStringTag(b),
             length,
             index;
 
         if (same) {
             length = $toLength(arguments.length);
             for (index = 2; index < length; index += 1) {
-                same = a === $toClass(arguments[index]);
+                same = a === $toStringTag(arguments[index]);
                 if (!same) {
                     break;
                 }
@@ -4323,20 +4297,6 @@
     $slice = exports.Array.slice;
 
     /**
-     * Returns true if argument is an object that has own property of length which is a number of uint32
-     * but is not a {@link Function function}.
-     *
-     * @private
-     * @function module:util-x~hasValidLength
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function hasValidLength(inputArg) {
-        return !$isPrimitive(inputArg) && !$isFunction(inputArg) && pHasOwn.call(inputArg, 'length') && typeof inputArg.length === 'number' && inputArg.length >= 0 && $isSafeInteger(inputArg.length);
-    }
-
-    /**
      * The function takes one argument protoFn, and returns the bound function as a stand alone method.
      * Default this check is to {@link $checkObjectCoercible}.
      *
@@ -4353,12 +4313,12 @@
      * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
      * I.e. [[Class]] A String value indicating a specification defined classification of objects.
      *
-     * @function module:util-x~exports.Object.toClass
+     * @function module:util-x~exports.Object.toStringTag
      * @param {*} inputArg
      * @returns {string}
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
      */
-    exports.Object.toClass = $toClass;
+    exports.Object.toStringTag = $toStringTag;
 
     /**
      * Returns true if the operand inputArg is an Object.
@@ -4368,7 +4328,7 @@
      * @returns {boolean}
      */
     exports.Object.isObject = function (inputArg) {
-        return $toClass(inputArg) === classObject && !$isFunction(inputArg);
+        return $toStringTag(inputArg) === stringTagObject && !$isFunction(inputArg);
     };
 
     exports.Object.isObject.argNames = ['inputArg'];
@@ -4382,13 +4342,15 @@
      * @throws {TypeError} If inputArg is a {@link Function function}.
      * @returns {Function}
      */
+    /*
     function throwIfFunction(inputArg) {
         if ($isFunction(inputArg)) {
-            throw new CTypeError($toClass(inputArg) + ' is a function');
+            throw new CTypeError($toStringTag(inputArg) + ' is a function');
         }
 
         return inputArg;
     }
+    */
 
     /**
      * Target function.
@@ -4536,9 +4498,7 @@
 
         // fail
         function () {
-            return function (inputArg) {
-                return inputArg && typeof inputArg === 'object' && $toClass(inputArg) === classArray;
-            };
+            return $isArray;
         },
 
         // argNames
@@ -4853,9 +4813,7 @@
      */
     $isInteger = $decide(
         // test
-        function () {
-            $affirmBasic(base.Number.isInteger)();
-        },
+        $affirmBasic(base.Number.isInteger),
 
         // pass
         function () {
@@ -4864,12 +4822,7 @@
 
         // fail
         function () {
-            return function (inputArg) {
-                return typeof inputArg === 'number' &&
-                        inputArg !== Infinity &&
-                        inputArg !== -Infinity &&
-                        $toInteger(inputArg) === inputArg;
-            };
+            return $isInteger;
         },
 
         // argNames
@@ -4919,14 +4872,7 @@
 
         // fail
         function () {
-            return function (inputArg) {
-                return typeof inputArg === 'number' &&
-                        inputArg !== Infinity &&
-                        inputArg !== -Infinity &&
-                        $toInteger(inputArg) === inputArg &&
-                        inputArg >= MIN_SAFE_INTEGER &&
-                        inputArg <= MAX_SAFE_INTEGER;
-            };
+            return $isSafeInteger;
         },
 
         // argNames
@@ -4947,6 +4893,20 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.issafeinteger
      */
     exports.Number.isSafeInteger = $isSafeInteger;
+
+    /**
+     * Returns true if argument is an object but not a function that has own property of length
+     * which is a safe integer and is greather or equal to 0.
+     *
+     * @private
+     * @function module:util-x~hasValidLength
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
+     */
+    function hasValidLength(inputArg) {
+        return !$isPrimitive(inputArg) && !$isFunction(inputArg) && pHasOwn.call(inputArg, 'length') && $isLength(inputArg.length);
+    }
 
     /**
      * Shortcut
@@ -5052,16 +5012,10 @@
      *
      * @function module:util-x~exports.Number.isOdd
      * @param {number} inputArg
-     * @returns {boolean|undefined}
+     * @returns {boolean}
      */
     exports.Number.isOdd = function (inputArg) {
-        var rtn;
-
-        if (typeof inputArg === 'number' && $isInteger(inputArg)) {
-            rtn = inputArg % 2 !== 0;
-        }
-
-        return rtn;
+        return $isInteger(inputArg) && inputArg % 2 !== 0;
     };
 
     exports.Number.isOdd.argNames = ['inputArg'];
@@ -5071,16 +5025,10 @@
      *
      * @function module:util-x~exports.Number.isEven
      * @param {number} inputArg
-     * @returns {boolean|undefined}
+     * @returns {boolean}
      */
     exports.Number.isEven = function (inputArg) {
-        var rtn;
-
-        if (typeof inputArg === 'number' && $isInteger(inputArg)) {
-            rtn = inputArg % 2 === 0;
-        }
-
-        return rtn;
+        return $isInteger(inputArg) && inputArg % 2 === 0;
     };
 
     exports.Number.isEven.argNames = ['inputArg'];
@@ -5346,12 +5294,12 @@
      * Throws TypeError if argument has not got a valid length otherwise return the object.
      *
      * @private
-     * @function module:util-x~throwIfIsNotHasValidLength
+     * @function module:util-x~$throwIfNotHasValidLength
      * @param {*} inputArg
      * @returns {*}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
-    function throwIfIsNotHasValidLength(inputArg) {
+    function $throwIfNotHasValidLength(inputArg) {
         if (!hasValidLength(inputArg)) {
             throw new CTypeError('invalid length property: ' + $toString(inputArg));
         }
@@ -5516,7 +5464,7 @@
      * @returns {RegExp}
      */
     function throwIfNotRegExp(inputArg) {
-        if (!isRegExp(inputArg)) {
+        if (!$isRegExp(inputArg)) {
             throw new CTypeError('Type RegExp expected: ' + $toString(inputArg));
         }
 
@@ -5549,7 +5497,7 @@
          * @returns {string}
          */
         exports.String.proto.escapeRegex = function () {
-            return pReplace.call(onlyCoercibleToString(this), escapeThese, '\\$&');
+            return pReplace.call($onlyCoercibleToString(this), escapeThese, '\\$&');
         };
 
         /**
@@ -5574,7 +5522,7 @@
          * @returns {string} String with any duplicate characters removed.
          */
         exports.String.clipDuplicates = function (str) {
-            return pReplace.call(onlyCoercibleToString(str), clipDups, '');
+            return pReplace.call($onlyCoercibleToString(str), clipDups, '');
         };
 
         exports.String.clipDuplicates.argNames = ['str'];
@@ -5596,7 +5544,7 @@
             }
 
             // Get native flags in use
-            flags = onlyCoercibleToString(pExec.call(getNativeFlags, $toString(regExpArg))[1]);
+            flags = $onlyCoercibleToString(pExec.call(getNativeFlags, $toString(regExpArg))[1]);
             if (options.add) {
                 flags = pReplace.call(flags + options.add, clipDups, '');
             }
@@ -5749,7 +5697,7 @@
          * Fixes browser bugs in the native `RegExp.prototype.exec`.
          *
          * @private
-         * @function module:util-x~exportsexec
+         * @function module:util-x~$exec
          * @param {RegExp} regExpArg
          * @param {string} stringArg String to search.
          * @returns {Array} Match array with named backreference properties, or `null`.
@@ -5789,7 +5737,7 @@
          * Fixes browser bugs in the native `RegExp.prototype.test`.
          *
          * @private
-         * @function module:util-x~exportstest
+         * @function module:util-x~$test
          * @param {RegExp} regExpArg
          * @param {string} stringArg String to search.
          * @returns {Boolean} Whether the regex matched the provided value.
@@ -5805,7 +5753,7 @@
          * @returns {Boolean} Is a bytestring or not.
          */
         exports.String.proto.isBytestring = function () {
-            return exports.RegExp.test(/^[\x00-\xFF]*$/, onlyCoercibleToString(this));
+            return exports.RegExp.test(/^[\x00-\xFF]*$/, $onlyCoercibleToString(this));
         };
 
         /**
@@ -5865,7 +5813,7 @@
                         }
                     }
 
-                    val = pSplit.call(onlyCoercibleToString(this), separator, limit);
+                    val = pSplit.call($onlyCoercibleToString(this), separator, limit);
                 }
 
                 return val;
@@ -5895,7 +5843,7 @@
                 }
 
                 return function (separator, limit) {
-                    var str = onlyCoercibleToString(this),
+                    var str = $onlyCoercibleToString(this),
                         isUndef,
                         output,
                         origLastIndex,
@@ -5924,7 +5872,7 @@
                             }
                         }
 
-                        if (!isRegExp(separator)) {
+                        if (!$isRegExp(separator)) {
                             // Browsers handle nonregex split correctly, so use the faster native method
                             output = pSplit.call(str, separator, limit);
                         } else {
@@ -5988,7 +5936,7 @@
          * Splits a String object into an array of strings by separating the string into subbase.str.
          *
          * @private
-         * @function module:util-x~exportssplit
+         * @function module:util-x~$split
          * @param {string} stringArg
          * @param {string|RegExp}} [separator]
          * @param {number} [limit]
@@ -6053,8 +6001,8 @@
         } catch (eReplace) {
             $conlog('EWW', eReplace);
             exports.String.proto.replace = function (search, replacement) {
-                var str = onlyCoercibleToString(this),
-                    isRegex = isRegExp(search),
+                var str = $onlyCoercibleToString(this),
+                    isRegex = $isRegExp(search),
                     origLastIndex,
                     result;
 
@@ -6178,7 +6126,7 @@
          * argument.
          *
          * @private
-         * @function module:util-x~exportsreplace
+         * @function module:util-x~$replace
          * @param {string} inputArg the string on which to perform the replace.
          * @param {RegExp|string} search Search pattern to be replaced.
          * @param {string|Function} replacement Replacement string or a function invoked to create it.
@@ -6199,21 +6147,21 @@
          * @returns {string}
          */
         exports.String.proto.replaceAll = function (pattern, characters) {
-            if ($toClass(pattern) === classString) {
-                pattern = new CRegExp($replace(onlyCoercibleToString(pattern), escapeThese, '\\$&'), 'g');
-            } else if (isRegExp(pattern)) {
+            if ($toStringTag(pattern) === stringTagString) {
+                pattern = new CRegExp($replace($onlyCoercibleToString(pattern), escapeThese, '\\$&'), 'g');
+            } else if ($isRegExp(pattern)) {
                 pattern = copyRegExp(pattern, {
                     add: 'g'
                 });
             }
 
-            if ($toClass(characters) !== classString && $toClass(characters) !== classNumber) {
+            if ($toStringTag(characters) !== stringTagString && $toStringTag(characters) !== stringTagNumber) {
                 characters = '';
             } else {
                 characters = $toString(characters);
             }
 
-            return $replace(onlyCoercibleToString(this), pattern, characters);
+            return $replace($onlyCoercibleToString(this), pattern, characters);
         };
 
         exports.String.proto.replaceAll.argNames = ['pattern', 'characters'];
@@ -6243,10 +6191,10 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match
          */
         exports.String.proto.match = function (regExpArg) {
-            var str = onlyCoercibleToString(this),
+            var str = $onlyCoercibleToString(this),
                 result;
 
-            if (!isRegExp(regExpArg)) {
+            if (!$isRegExp(regExpArg)) {
                 regExpArg = new CRegExp(regExpArg);
             } else if (regExpArg.global) {
                 result = pMatch.apply(str, $slice(arguments));
@@ -6285,7 +6233,7 @@
      * @returns {string}
      */
     exports.String.proto.first = function () {
-        return pCharAt.call(onlyCoercibleToString(this), 0);
+        return pCharAt.call($onlyCoercibleToString(this), 0);
     };
 
     /**
@@ -6310,7 +6258,7 @@
      * @returns {string}
      */
     exports.String.proto.last = function () {
-        var str = onlyCoercibleToString(this);
+        var str = $onlyCoercibleToString(this);
 
         return pCharAt.call(str, str.length - 1);
     };
@@ -6337,8 +6285,8 @@
      * @returns {number}
      */
     exports.String.proto.countCharacter = function (character) {
-        var str = onlyCoercibleToString(this),
-            first = pCharAt.call(onlyCoercibleToString(character), 0),
+        var str = $onlyCoercibleToString(this),
+            first = pCharAt.call($onlyCoercibleToString(character), 0),
             val;
 
         if (first === '') {
@@ -6376,8 +6324,8 @@
      * @returns {string}
      */
     exports.String.proto.padLeadingChar = function (character, size) {
-        var string = onlyCoercibleToString(this),
-            singleChar = pCharAt.call(onlyCoercibleToString(character), 0),
+        var string = $onlyCoercibleToString(this),
+            singleChar = pCharAt.call($onlyCoercibleToString(character), 0),
             count = $toInteger(size) - string.length;
 
         if (count < 0 || count === Infinity) {
@@ -6452,7 +6400,7 @@
             }
 
             return function (count) {
-                var thisString = onlyCoercibleToString(this);
+                var thisString = $onlyCoercibleToString(this);
 
                 count = $toInteger(count);
                 if (count < 0) {
@@ -6490,7 +6438,7 @@
      * Repeat the current string several times, return the new string.
      *
      * @private
-     * @function module:util-x~exportsrepeat
+     * @function module:util-x~$repeat
      * @param {string} string
      * @param {number} count
      * @returns {string}
@@ -6521,7 +6469,7 @@
         // fail
         function () {
             return function (searchString, position) {
-                var thisStr = onlyCoercibleToString(this),
+                var thisStr = $onlyCoercibleToString(this),
                     searchStr = $toString(searchString),
                     start = $min($max($toInteger(position), 0), thisStr.length);
 
@@ -6573,7 +6521,7 @@
         // fail
         function () {
             return function (searchString, position) {
-                var thisStr = onlyCoercibleToString(this),
+                var thisStr = $onlyCoercibleToString(this),
                     searchStr = $toString(searchString),
                     thisLen = thisStr.length,
                     end,
@@ -6636,7 +6584,7 @@
         // fail
         function () {
             return function (searchString, position) {
-                var str = onlyCoercibleToString(this),
+                var str = $onlyCoercibleToString(this),
                     searchStr = $toString(searchString),
                     length = str.length;
 
@@ -6736,7 +6684,7 @@
                     // fail
                     function () {
                         return function (object) {
-                            return mGetPrototypeOf($Object($checkObjectCoercible(object)));
+                            return mGetPrototypeOf($toObject(object));
                         };
                     },
 
@@ -6762,19 +6710,19 @@
                         $affirm.strictEqual(protoObject[stringProto], null, 'has __proto__');
 
                         $affirm.doesNotThrow(function () {
-                            proto = $Object($checkObjectCoercible(1))[stringProto];
+                            proto = $toObject(1)[stringProto];
                         }, 'get number literal proto');
 
                         $affirm.strictEqual(proto, protoNumber, 'work with number literal');
 
                         $affirm.doesNotThrow(function () {
-                            proto = $Object($checkObjectCoercible(true))[stringProto];
+                            proto = $toObject(true)[stringProto];
                         }, 'get boolean literal proto');
 
                         $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
 
                         $affirm.doesNotThrow(function () {
-                            proto = $Object($checkObjectCoercible(''))[stringProto];
+                            proto = $toObject('')[stringProto];
                         }, 'get string literal proto');
 
                         $affirm.strictEqual(proto, protoString, 'work with string literal');
@@ -6784,7 +6732,7 @@
                     // pass
                     function () {
                         return function (object) {
-                            return $Object($checkObjectCoercible(object))[stringProto];
+                            return $toObject(object)[stringProto];
                         };
                     },
 
@@ -6797,7 +6745,7 @@
                         }
 
                         return function (object) {
-                            var obj = $Object($checkObjectCoercible(object)),
+                            var obj = $toObject(object),
                                 ctrProto,
                                 protoObj;
 
@@ -6813,7 +6761,7 @@
                                 }
                             } else {
                                 protoObj = obj[stringProto];
-                                if ($toClass(protoObj) === classObject && !$isFunction(protoObj)) {
+                                if ($toStringTag(protoObj) === stringTagObject && !$isFunction(protoObj)) {
                                     ctrProto = protoObj;
                                 } else {
                                     ctrProto = protoObject;
@@ -6849,7 +6797,7 @@
      * Actually based on the ECMA6 draft, which only throws on undefined or null.
      *
      * @private
-     * @function module:util-x~exportsgetPrototypeOf
+     * @function module:util-x~$getPrototypeOf
      * @param {Object} object
      * @returns {Prototype}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
@@ -6866,7 +6814,7 @@
      * @returns {boolean}
      */
     exports.Object.isPlainObject = function (object) {
-        return $toClass(object) === classObject && !$isFunction(object) && $getPrototypeOf(object) === protoObject;
+        return $toStringTag(object) === stringTagObject && !$isFunction(object) && $getPrototypeOf(object) === protoObject;
     };
 
     exports.Object.isPlainObject.argNames = ['object'];
@@ -6985,7 +6933,7 @@
      * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
      *
      * @private
-     * @function module:util-x~exportshasOwn
+     * @function module:util-x~$hasOwn
      * @param {Object} object
      * @param {StringLike} property
      * @returns {boolean}
@@ -6994,34 +6942,82 @@
     $hasOwn = exports.Object.hasOwnProperty;
 
     /**
-     * The function takes one argument inputArg, if the argument is an object whose class internal
-     * property is "Array" or is an Object whose class internal property is "Arguments";
-     * returns true if length is zero otherwise it returns false.
-     * Otherwise returns null if the argument does not match the rquirements.
+     * Forchecking an objects item by index. Primary use in Array shims.
      *
-     * @function module:util-x~exports.Array.isEmpty
+     * @private
+     * @function module:util-x~$hasItem
+     * @param {Object} object
+     * @param {number} index
+     * @param {string} stringTag
+     * @returns {boolean}
+     */
+    function $hasItem(object, index, stringTag) {
+        return stringTag === stringTagString || $hasProperty(object, index);
+    }
+
+    /**
+     * For getting an objects item by index. Primary use in Array shims.
+     *
+     * @private
+     * @function module:util-x~$getItem
+     * @param {Object} object
+     * @param {number} index
+     * @param {string} stringTag
+     * @returns {*}
+     */
+    function $getItem(object, index, stringTag) {
+        var item;
+
+        if (stringTag === stringTagString) {
+            item = pCharAt.call(object, index);
+        } else {
+            item = object[index];
+        }
+
+        return item;
+    }
+
+    /**
+     * @private
+     * @function module:util-x~$specialToObject
      * @param {module:util-x~ArrayLike} inputArg
      * @returns {(boolean|null)}
      */
+    function $specialToObject(inputArg) {
+        return $throwIfNotHasValidLength($toObject(inputArg));
+    }
+
+    /**
+     * The function takes one argument inputArg of an ArrayLike object and eturns true if length is zero
+     * otherwise it returns false.
+     *
+     * @function module:util-x~exports.Array.isEmpty
+     * @param {module:util-x~ArrayLike} inputArg
+     * @returns {boolean}
+     */
     exports.Array.isEmpty = function (inputArg) {
-        return !throwIfIsNotHasValidLength(throwIfFunction($Object($checkObjectCoercible(inputArg)))).length;
+        return !$specialToObject(inputArg).length;
     };
 
     exports.Array.isEmpty.argNames = ['inputArg'];
 
     /**
-     * Returns the first element of an array; otherwise returns undefined.
+     * Returns the first element of an array i.e. array[0]
+     * Use in combination .isEmpty
      *
      * @function module:util-x~exports.Array.proto.first
      * @this {module:util-x~ArrayLike}
      * @returns {*}
      */
     exports.Array.proto.first = function () {
-        return throwIfIsNotHasValidLength($toObject(this))[0];
+        var object = $specialToObject(this);
+
+        return $getItem(object, 0, $toStringTag(object));
     };
 
     /**
-     * Returns the first element of an array; otherwise returns undefined.
+     * Returns the first element of an array i.e. array[0]
+     * Use in combination .isEmpty
      *
      * @function module:util-x~exports.Array.first
      * @param {module:util-x~ArrayLike} inputArg
@@ -7031,6 +7027,44 @@
     exports.Array.first.argNames = ['inputArg'];
 
     /**
+     * Returns the first populated elements index in an array ignoring holes, otherwise -1.
+     *
+     * @function module:util-x~exports.Array.proto.firstIn
+     * @this {module:util-x~ArrayLike}
+     * @returns {number}
+     */
+    exports.Array.proto.firstIn = function () {
+        var object = $specialToObject(this),
+            length = object.length,
+            stringTag = $toStringTag(object),
+            rtn = -1,
+            index;
+
+        if (stringTag === stringTagString) {
+            rtn = length - 1;
+        } else {
+            for (index = 0; index < length; index += 1) {
+                if ($hasItem(object, index, stringTag)) {
+                    rtn = index;
+                    break;
+                }
+            }
+        }
+
+        return rtn;
+    };
+
+    /**
+     * Returns the first populated elements index in an array ignoring holes, otherwise -1.
+     *
+     * @function module:util-x~exports.Array.firstIn
+     * @param {module:util-x~ArrayLike} inputArg
+     * @returns {*}
+     */
+    exports.Array.firstIn = $toMethod(exports.Array.proto.firstIn);
+    exports.Array.firstIn.argNames = ['inputArg'];
+
+    /**
      * Returns the last element of an array; otherwise returns undefined.
      *
      * @function module:util-x~exports.Array.proto.last
@@ -7038,9 +7072,9 @@
      * @returns {*}
      */
     exports.Array.proto.last = function () {
-        var object = throwIfIsNotHasValidLength($toObject(this));
+        var object = $specialToObject(this);
 
-        return object[object.length - 1];
+        return $getItem(object, object.length - 1, $toStringTag(object));
     };
 
     /**
@@ -7054,85 +7088,42 @@
     exports.Array.last.argNames = ['inputArg'];
 
     /**
-     * The Array.assign() method assigns a value to a specific element of an array and
-     * returns the new length of the array.
+     * Returns the last populated elements index of an array ignoring holes, otherwise -1.
      *
-     * @function module:util-x~exports.Array.proto.assign
+     * @function module:util-x~exports.Array.proto.lastIn
      * @this {module:util-x~ArrayLike}
-     * @param {module:util-x~NumberLike} index
-     * @param {*} value
-     * @returns {(number|undefined)}
+     * @returns {*}
      */
-    exports.Array.proto.assign = (function () {
-        var rxInt = new CRegExp('^[1-9]\\d*$');
+    exports.Array.proto.lastIn = function () {
+        var object = $specialToObject(this),
+            last = object.length - 1,
+            stringTag = $toStringTag(object),
+            rtn = -1,
+            index;
 
-        return function (index, value) {
-            var object = $toObject(this),
-                updateLen,
-                numIndex,
-                number,
-                string,
-                isInt;
-
-            if (arguments.length >= 2) {
-                updateLen = hasValidLength(object) && !$isFunction(object);
-                if (updateLen) {
-                    if ($toClass(index) === classNumber) {
-                        numIndex = +index;
-                        isInt = numIndex >= 0 && $isSafeInteger(numIndex);
-                    } else {
-                        string = $toString(index);
-                        if ($test(rxInt, string)) {
-                            number = +string;
-                            if (number >= 0 && $isSafeInteger(number)) {
-                                numIndex = number;
-                                isInt = true;
-                            }
-                        }
-                    }
-                }
-
-                if (updateLen && isInt) {
-                    if ($isArray(object) || $isArguments(object)) {
-                        if (numIndex <= MAX_UINT32 - 1) {
-                            object[numIndex] = value;
-                            numIndex += 1;
-                            if (numIndex > object.length) {
-                                object.length = numIndex;
-                            }
-                        } else {
-                            object[index] = value;
-                        }
-                    } else {
-                        object[numIndex] = value;
-                        numIndex += 1;
-                        if (numIndex > object.length) {
-                            object.length = numIndex;
-                        }
-                    }
-                } else {
-                    object[index] = value;
+        if (stringTag === stringTagString) {
+            rtn = last;
+        } else {
+            for (index = last; index >= 0; index -= 1) {
+                if ($hasItem(object, index, stringTag)) {
+                    rtn = index;
+                    break;
                 }
             }
+        }
 
-            return object.length;
-        };
-    }());
-
-    exports.Array.proto.assign.argNames = ['index', 'value'];
+        return rtn;
+    };
 
     /**
-     * The Array.assign() method assigns a value to a specific element of an array and
-     * returns the new length of the array.
+     * Returns the last populated elements index of an array ignoring holes, otherwise -1.
      *
-     * @function module:util-x~exports.Array.assign
-     * @param {module:util-x~ArrayLike} array
-     * @param {module:util-x~NumberLike} index
-     * @param {*} value
-     * @returns {(number|undefined)}
+     * @function module:util-x~exports.Array.lastIn
+     * @param {module:util-x~ArrayLike} inputArg
+     * @returns {*}
      */
-    exports.Array.assign = $toMethod(exports.Array.proto.assign);
-    exports.Array.assign.argNames = ['array', 'index', 'value'];
+    exports.Array.lastIn = $toMethod(exports.Array.proto.lastIn);
+    exports.Array.lastIn.argNames = ['inputArg'];
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -7158,12 +7149,9 @@
      * @returns {Array}
      */
     exports.Array.proto.unique = (function () {
-        function defaultEqual(a, b) {
-            return a === b;
-        }
-
         return function (equalFn, thisArg) {
             var object = $toObject(this),
+                stringTag,
                 length,
                 index,
                 arr,
@@ -7172,14 +7160,19 @@
                 it;
 
             if ($isUndefined(equalFn)) {
-                equalFn = defaultEqual;
+                equalFn = $strictEqual;
             }
 
             $throwIfNotFunction(equalFn);
-            for (arr = [], index = 0, length = $toLength(object.length); index < length; index += 1) {
-                if ($hasProperty(object, index)) {
-                    for (it = object[index], val = true, idx = 0; idx < length; idx += 1) {
-                        if (idx < index && $hasProperty(object, idx) && equalFn.call(thisArg, it, object[idx])) {
+            arr = [];
+            length = $toLength(object.length);
+            stringTag = $toStringTag(object);
+            for (index = 0; index < length; index += 1) {
+                if ($hasItem(object, index, stringTag)) {
+                    it = $getItem(object, index, stringTag);
+                    val = true;
+                    for (idx = 0; idx < length; idx += 1) {
+                        if (idx < index && $hasItem(object, idx, stringTag) && equalFn.call(thisArg, it, $getItem(object, idx, stringTag))) {
                             val = false;
                             break;
                         }
@@ -7215,6 +7208,128 @@
     exports.Array.proto.unique.argNames = ['array', 'equalFn', 'thisArg'];
 
     /**
+     * Returns a property descriptor for an own property (that is, one directly present on an object,
+     * not present by dint of being along an object's prototype chain) of a given object.
+     * On environments that do not support it natively, this is just a sham to allow code to work.
+     *
+     * @function module:util-x~exports.Object.getOwnPropertyDescriptor
+     * @param {Object} object
+     * @param {string} property
+     * @returns {Object}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
+     */
+    exports.Object.getOwnPropertyDescriptor = (function () {
+        var argNames = ['object', 'property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirmBasic(mGetOwnPropertyDescriptor)();
+
+                var gOPDsentinel = {
+                        sentinel: null
+                    },
+                    gOPDarray = [10, 20, 30];
+
+                gOPDarray[4] = Undefined;
+
+                $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDsentinel, 'sentinel').value, null, 'test1');
+                $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 2).value, 30, 'test2');
+                $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, '2').value, 30, 'test3');
+                $affirm.ok(pHasOwn.call(mGetOwnPropertyDescriptor(gOPDarray, 4), 'value'), 'test4');
+                $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 4).value, Undefined, 'test5');
+                $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 5), Undefined, 'test6');
+            },
+
+            // pass
+            function () {
+                hasWorkingGOPD = true;
+                return $decide(
+                    // test
+                    function () {
+                        // should patch prototype because it is safe with defineProperty
+                        $affirm.ok(!(mGetOwnPropertyDescriptor(function (a) {
+                            return a;
+                        }, 'length').writable));
+                    },
+
+                    // pass
+                    function () {
+                        return mGetOwnPropertyDescriptor;
+                    },
+
+                    // fail
+                    function () {
+                        return function (object, property) {
+                            var descriptor = mGetOwnPropertyDescriptor(object, property);
+
+                            if ($isFunction(object) && property === 'length' && descriptor.writable) {
+                                descriptor.writable = false;
+                            }
+
+                            return descriptor;
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'getOwnPropertyDescriptor length patch'
+                );
+            },
+
+            // fail
+            function () {
+                return function (object, property) {
+                    var descriptor,
+                        prototype,
+                        getter,
+                        setter;
+
+                    if ($hasOwn($throwIfIsPrimitive(object), property)) {
+                        descriptor = {};
+                        descriptor.configurable = true;
+                        descriptor.enumerable = true;
+                        if (hasGetSet) {
+                            prototype = object[stringProto];
+                            object[stringProto] = protoObject;
+                            getter = mLookupGetter.call(object, property);
+                            setter = mLookupSetter.call(object, property);
+                            if ($isUndefined(prototype)) {
+                                delete object[stringProto];
+                            } else {
+                                object[stringProto] = prototype;
+                            }
+
+                            if ($isNative(getter) || $isNative(setter)) {
+                                if ($isNative(getter)) {
+                                    descriptor.get = getter;
+                                }
+
+                                if ($isNative(setter)) {
+                                    descriptor.set = setter;
+                                }
+                            }
+                        }
+
+                        descriptor.value = object[property];
+                        descriptor.writable = true;
+                    }
+
+                    return descriptor;
+                };
+            },
+
+            // argNames
+            argNames,
+
+            //message
+            'getOwnPropertyDescriptor shim'
+        );
+    }());
+
+    /**
      * This method changes the content of an array,
      * adding new elements while removing old elements.
      *
@@ -7227,7 +7342,35 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
     exports.Array.proto.splice = (function () {
-        var argNames = ['start', 'deleteCount'];
+        var argNames = ['start', 'deleteCount'],
+            readOnlyLengths = {};
+
+        // Used to identify `toStringTag` values of object with read only length.
+        readOnlyLengths[stringTagFunction] = true;
+        readOnlyLengths[stringTagString] = true;
+        readOnlyLengths[stringTagArrayBuffer] = true;
+        readOnlyLengths[stringTagFloat32Array] = true;
+        readOnlyLengths[stringTagFloat64Array] = true;
+        readOnlyLengths[stringTagInt8Array] = true;
+        readOnlyLengths[stringTagInt16Array] = true;
+        readOnlyLengths[stringTagInt32Array] = true;
+        readOnlyLengths[stringTagUint8Array] = true;
+        readOnlyLengths[stringTagUint8ClampedArray] = true;
+        readOnlyLengths[stringTagUint16Array] = true;
+        readOnlyLengths[stringTagUint32Array] = true;
+        readOnlyLengths[stringTagHTMLCollection] = true;
+        readOnlyLengths[stringTagNodeList] = true;
+
+        // this is by no means perfect but it's better than nothing
+        function readOnlyLength(inputArg) {
+            var stringTag = $toStringTag(inputArg);
+
+            if (readOnlyLengths[stringTag] || (hasWorkingGOPD && pHasOwn.call(inputArg, 'length') && !exports.Object.getOwnPropertyDescriptor(inputArg, 'length').writable)) {
+                throw new CTypeError('Cannot assign to read only property \'length\' of ' + stringTag);
+            }
+
+            return inputArg;
+        }
 
         return $decide(
             // test
@@ -7241,7 +7384,15 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.strictEqual(pSplice.call([1, 2]).length, 0, 'not zero');
+                        $affirm.strictEqual(pSplice.call([1, 2]).length, 0, 'is zero');
+
+                        $affirm.throws(function () {
+                            pSplice.call('abc');
+                        }, CTypeError, 'string should throw');
+
+                        $affirm.throws(function () {
+                            pSplice.call(function () { return; });
+                        }, CTypeError, 'function should throw');
                     },
 
                     // pass
@@ -7252,12 +7403,13 @@
                     // fail
                     function () {
                         return function () {
-                            var val;
+                            var object = readOnlyLength($toObject(this)),
+                                val;
 
-                            if (arguments.length < 1) {
+                            if ($toLength(arguments.length) < 1) {
                                 val = [];
                             } else {
-                                val = pSplice.apply(this, $slice(arguments));
+                                val = pSplice.apply(object, $slice(arguments));
                             }
 
                             return val;
@@ -7275,7 +7427,7 @@
             // fail
             function () {
                 return function (start, deleteCount) {
-                    var object = $toObject(this),
+                    var object = readOnlyLength($toObject(this)),
                         length = $toLength(object.length),
                         removed = [],
                         relativeStart = $toInteger(start),
@@ -7391,7 +7543,7 @@
      * adding new elements while removing old elements.
      *
      * @private
-     * @function module:util-x~exportssplice
+     * @function module:util-x~$splice
      * @param {module:util-x~ArrayLike} array
      * @param {number} start
      * @param {number} [deleteCount]
@@ -7451,7 +7603,7 @@
             });
 
             $affirm.strictEqual($typeOf(result), 'object', 'is object');
-            $affirm.strictEqual($toClass(result), classString, 'is string');
+            $affirm.strictEqual($toStringTag(result), stringTagString, 'is string');
         };
     }
 
@@ -7492,6 +7644,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     length,
                     index;
 
@@ -7501,9 +7654,10 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
-                    if ($hasProperty(object, index)) {
-                        fn.call(thisArg, object[index], index, object);
+                    if ($hasItem(object, index, stringTag)) {
+                        fn.call(thisArg, $getItem(object, index, stringTag), index, object);
                     }
                 }
             };
@@ -7535,7 +7689,7 @@
      * Executes a provided function once per array element.
      *
      * @private
-     * @function module:util-x~exportsforEach
+     * @function module:util-x~$forEach
      * @param {module:util-x~ArrayLike} array
      * @throws {TypeError} If array is null or undefined
      * @param {module:util-x~forEachCallback} fn
@@ -7560,6 +7714,7 @@
      */
     exports.Array.proto.forAll = function (fn, thisArg) {
         var object = $toObject(this),
+            stringTag,
             length,
             index,
             val;
@@ -7570,8 +7725,9 @@
             thisArg = $toObjectCallFix(thisArg);
         }
 
+        stringTag = $toStringTag(object);
         for (val = false, index = 0; index < length; index += 1) {
-            val = !!fn.call(thisArg, object[index], index, object);
+            val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
             if (val) {
                 break;
             }
@@ -7634,6 +7790,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     val,
                     length,
                     index;
@@ -7644,9 +7801,10 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (val = false, index = 0; index < length; index += 1) {
-                    if ($hasProperty(object, index)) {
-                        val = !!fn.call(thisArg, object[index], index, object);
+                    if ($hasItem(object, index, stringTag)) {
+                        val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
                         if (val) {
                             break;
                         }
@@ -7731,6 +7889,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     length,
                     index,
                     val,
@@ -7742,8 +7901,9 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
-                    it = object[index];
+                    it = $getItem(object, index, stringTag);
                     if (fn.call(thisArg, it, index, object)) {
                         val = it;
                         break;
@@ -7829,6 +7989,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     val,
                     length,
                     index;
@@ -7839,8 +8000,9 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (val = -1, index = 0; index < length; index += 1) {
-                    if (fn.call(thisArg, object[index], index, object)) {
+                    if (fn.call(thisArg, $getItem(object, index, stringTag), index, object)) {
                         val = index;
                         break;
                     }
@@ -7905,6 +8067,7 @@
         function () {
             return function (arrayLike, mapfn, thisArg) {
                 var object = $toObject(arrayLike),
+                    stringTag,
                     length,
                     array,
                     mapping,
@@ -7927,8 +8090,9 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
-                    it = object[index];
+                    it = $getItem(object, index, stringTag);
                     if (mapping) {
                         it = mapfn.call(thisArg, it, index);
                     }
@@ -7984,6 +8148,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     length,
                     val,
                     index;
@@ -7994,9 +8159,10 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (val = true, index = 0; index < length; index += 1) {
-                    if ($hasProperty(object, index)) {
-                        val = !!fn.call(thisArg, object[index], index, object);
+                    if ($hasItem(object, index, stringTag)) {
+                        val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
                         if (!val) {
                             break;
                         }
@@ -8066,6 +8232,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     length,
                     arr,
                     index;
@@ -8077,9 +8244,10 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
-                    if ($hasProperty(object, index)) {
-                        arr[index] =  fn.call(thisArg, object[index], index, object);
+                    if ($hasItem(object, index, stringTag)) {
+                        arr[index] =  fn.call(thisArg, $getItem(object, index, stringTag), index, object);
                     }
                 }
 
@@ -8182,6 +8350,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
+                    stringTag,
                     length,
                     arr,
                     index,
@@ -8193,10 +8362,13 @@
                     thisArg = $toObjectCallFix(thisArg);
                 }
 
+                stringTag = $toStringTag(object);
                 for (arr = [], index = 0; index < length; index += 1) {
-                    it = object[index];
-                    if ($hasProperty(object, index) && fn.call(thisArg, it, index, object)) {
-                        pPush.call(arr, it);
+                    if ($hasItem(object, index, stringTag)) {
+                        it = $getItem(object, index, stringTag);
+                        if (fn.call(thisArg, it, index, object)) {
+                            pPush.call(arr, it);
+                        }
                     }
                 }
 
@@ -8254,6 +8426,7 @@
 
             return function (fn, initialValue) {
                 var object = $toObject(this),
+                    stringTag,
                     accumulator,
                     length,
                     kPresent,
@@ -8266,14 +8439,15 @@
                 }
 
                 index = 0;
+                stringTag = $toStringTag(object);
                 if (arguments.length > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
                     while (!kPresent && index < length) {
-                        kPresent = $hasProperty(object, index);
+                        kPresent = $hasItem(object, index, stringTag);
                         if (kPresent) {
-                            accumulator = object[index];
+                            accumulator = $getItem(object, index, stringTag);
                             index += 1;
                         }
                     }
@@ -8284,8 +8458,8 @@
                 }
 
                 while (index < length) {
-                    if ($hasProperty(object, index)) {
-                        accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    if ($getItem(object, index, stringTag)) {
+                        accumulator = fn.call(Undefined, accumulator, $getItem(object, index, stringTag), index, object);
                     }
 
                     index += 1;
@@ -8346,6 +8520,7 @@
 
             return function (fn, initialValue) {
                 var object = $toObject(this),
+                    stringTag,
                     accumulator,
                     length,
                     kPresent,
@@ -8357,15 +8532,16 @@
                     throw new CTypeError(reduceRightTypeErrorMessage);
                 }
 
+                stringTag = $toStringTag(object);
                 index = length - 1;
                 if (arguments.length > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
                     while (!kPresent && index >= 0) {
-                        kPresent = $hasProperty(object, index);
+                        kPresent = $hasItem(object, index, stringTag);
                         if (kPresent) {
-                            accumulator = object[index];
+                            accumulator = $getItem(object, index, stringTag);
                             index -= 1;
                         }
                     }
@@ -8376,8 +8552,8 @@
                 }
 
                 while (index >= 0) {
-                    if ($hasProperty(object, index)) {
-                        accumulator = fn.call(Undefined, accumulator, object[index], index, object);
+                    if ($hasItem(object, index, stringTag)) {
+                        accumulator = fn.call(Undefined, accumulator, $getItem(object, index, stringTag), index, object);
                     }
 
                     index -= 1;
@@ -8943,7 +9119,7 @@
             var wsTrim = new CRegExp('^[' + wspaceStrings.wsStr + ']+|[' + wspaceStrings.wsStr + ']+$', 'g');
 
             return function () {
-                return $replace(onlyCoercibleToString(this), wsTrim, '');
+                return $replace($onlyCoercibleToString(this), wsTrim, '');
             };
         },
 
@@ -9959,7 +10135,7 @@
                 return function (object) {
                     object = $toObject(object);
 
-                    var isArgs = $isArguments(object),
+                    var skipEnumArgs = hasEnumArgsBug && $isArguments(object),
                         length,
                         dontEnum,
                         theKeys = [],
@@ -9969,13 +10145,13 @@
                         ctor,
                         index;
 
-                    if ((hasEnumStringBug && $toClass(object) === classString) || isArgs) {
-                        for (index = 0, length = object.length; index < length; index += 1) {
+                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
+                        for (index = 0, length = $toLength(object.length); index < length; index += 1) {
                             pPush.call(theKeys, $toString(index));
                         }
                     }
 
-                    if (!isArgs) {
+                    if (!skipEnumArgs) {
                         /*jslint forin: true */
                         for (name in object) {
                             if (!(skipProto && name === 'prototype') && pHasOwn.call(object, name)) {
@@ -9987,7 +10163,7 @@
                     if (hasDontEnumBug) {
                         ctor = object.constructor;
                         skipConstructor = ctor && ctor.prototype === object;
-                        for (index = 0, length = shadowed.length; index < length; index += 1) {
+                        for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
                             dontEnum = shadowed[index];
                             if (!(skipConstructor && dontEnum === 'constructor') && pHasOwn.call(object, dontEnum)) {
                                 pPush.call(theKeys, dontEnum);
@@ -10025,7 +10201,7 @@
      * environments.
      *
      * @private
-     * @function module:util-x~exportsobjectKeys
+     * @function module:util-x~exports.Object.keys
      * @param {Object} object
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
@@ -10065,7 +10241,7 @@
             it;
 
         $throwIfNotFunction(fn);
-        keys = $objectKeys($Object(this));
+        keys = $objectKeys(object);
         len = keys.length;
         if (len) {
             thisArg = $toObjectCallFix(thisArg);
@@ -10136,7 +10312,7 @@
         var notDigits = new CRegExp('^\\d+$');
 
         return function () {
-            return $test(notDigits, onlyCoercibleToString(this));
+            return $test(notDigits, $onlyCoercibleToString(this));
         };
     }());
 
@@ -10156,7 +10332,7 @@
      * only contains numerical digits.
      *
      * @private
-     * @function module:util-x~exportsisDigits
+     * @function module:util-x~exports.String.isDigits
      * @param {*} string
      * @returns {boolean}
      */
@@ -10376,7 +10552,7 @@
                                     property = +property;
                                 }
 
-                                if ($toClass(property) === classString && $isNumeric(property)) {
+                                if ($toStringTag(property) === stringTagString && $isNumeric(property)) {
                                     return defProp(object, property, descriptor);
                                 }
                             }
@@ -10441,7 +10617,7 @@
          * @returns {Object}
          */
         function throwString(props) {
-            if ($toClass(props) === classString) {
+            if ($toStringTag(props) === stringTagString) {
                 throw new CTypeError('Property description must be an object: ' + $toString(props));
             }
 
@@ -10688,7 +10864,7 @@
         // fail
         function () {
             return function (target) {
-                var to = $Object($checkObjectCoercible(target)),
+                var to = $toObject(target),
                     length = $toLength(arguments.length),
                     from,
                     index,
@@ -10702,7 +10878,7 @@
                     for (index = 1; index < length; index += 1) {
                         arg = arguments[index];
                         if (arg !== null && !$isUndefined(arg)) {
-                            from = $Object(arguments[index]);
+                            from = $toObject(arguments[index]);
                             keysArray = $objectKeys(from);
                             for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
                                 nextKey = keysArray[nextIndex];
@@ -10841,7 +11017,7 @@
      * @returns {boolean}
      */
     exports.Date.proto.isValid = function () {
-        if ($toClass(this) !== classDate) {
+        if ($toStringTag(this) !== stringTagDate) {
             throw new CTypeError('this is not a Date object.');
         }
 
@@ -10896,13 +11072,13 @@
      * @returns {string}
      */
     exports.String.proto.wrapInChars = function (characters) {
-        if ($toClass(characters) !== classString && $toClass(characters) !== classNumber) {
+        if ($toStringTag(characters) !== stringTagString && $toStringTag(characters) !== stringTagNumber) {
             characters = '';
         } else {
             characters = $toString(characters);
         }
 
-        return characters + onlyCoercibleToString(this) + characters;
+        return characters + $onlyCoercibleToString(this) + characters;
     };
 
     exports.String.proto.wrapInChars.argNames = ['characters'];
@@ -10932,11 +11108,11 @@
             return true;
         }
 
-        if ($toClass(a) === classDate && $toClass(b) === classDate) {
+        if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
             return pGetTime.call(a) === pGetTime.call(b);
         }
 
-        if (isRegExp(a) && isRegExp(b)) {
+        if ($isRegExp(a) && $isRegExp(b)) {
             return a.source === b.source &&
                 a.global === b.global &&
                 a.multiline === b.multiline &&
@@ -11031,11 +11207,11 @@
             return true;
         }
 
-        if ($toClass(a) === classDate && $toClass(b) === classDate) {
+        if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
             return pGetTime.call(a) === pGetTime.call(b);
         }
 
-        if (isRegExp(a) && isRegExp(b)) {
+        if ($isRegExp(a) && $isRegExp(b)) {
             return a.source === b.source &&
                 a.global === b.global &&
                 a.multiline === b.multiline &&
@@ -11125,7 +11301,7 @@
      * @returns {string}
      */
     exports.String.proto.truncate = function (n) {
-        var s = onlyCoercibleToString(this);
+        var s = $onlyCoercibleToString(this);
 
         n = +n;
         if ($strictEqual(n, n) && n >= 0) {
@@ -11275,7 +11451,7 @@
                     value === -Infinity ||
                     exports.Number.isNaN(value) ||
                     $isFunction(value) ||
-                    isRegExp(value)) {
+                    $isRegExp(value)) {
 
             result = $toString(value);
         } else {
@@ -11305,7 +11481,7 @@
             try {
                 throw new CError(message);
             } catch (ePatch) {
-                if (ePatch.message === message && ePatch.toString() === classError) {
+                if (ePatch.message === message && ePatch.toString() === stringTagError) {
                     previousIEErrorToString = protoError.toString;
                     $defineProperties(protoError, {
                         toString: $assign({
@@ -11518,122 +11694,6 @@
     exports.customError.argNames = ['name', 'ErrorConstructor', 'maxMessageLength'];
 
     /**
-     * Returns a property descriptor for an own property (that is, one directly present on an object,
-     * not present by dint of being along an object's prototype chain) of a given object.
-     * On environments that do not support it natively, this is just a sham to allow code to work.
-     *
-     * @function module:util-x~exports.Object.getOwnPropertyDescriptor
-     * @param {Object} object
-     * @param {string} property
-     * @returns {Object}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
-     */
-    exports.Object.getOwnPropertyDescriptor = $decide(
-        // test
-        function () {
-            $affirmBasic(mGetOwnPropertyDescriptor)();
-
-            var gOPDsentinel = {
-                    sentinel: null
-                },
-                gOPDarray = [10, 20, 30];
-
-            gOPDarray[4] = Undefined;
-
-            $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDsentinel, 'sentinel').value, null, 'test1');
-            $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 2).value, 30, 'test2');
-            $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, '2').value, 30, 'test3');
-            $affirm.ok(pHasOwn.call(mGetOwnPropertyDescriptor(gOPDarray, 4), 'value'), 'test4');
-            $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 4).value, Undefined, 'test5');
-            $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 5), Undefined, 'test6');
-        },
-
-        // pass
-        function () {
-            return $decide(
-                // test
-                function () {
-                    $affirm.ok(!(mGetOwnPropertyDescriptor(function (a) {
-                        return a;
-                    }, 'length').writable));
-                },
-
-                // pass
-                function () {
-                    return mGetOwnPropertyDescriptor;
-                },
-
-                // fail
-                function () {
-                    return function (object, property) {
-                        var descriptor = mGetOwnPropertyDescriptor(object, property);
-
-                        if ($isFunction(object) && property === 'length' && descriptor.writable) {
-                            descriptor.writable = false;
-                        }
-
-                        return descriptor;
-                    };
-                },
-
-                // argNames
-                ['object', 'property'],
-
-                // message
-                'getOwnPropertyDescriptor length patch'
-            );
-        },
-
-        // fail
-        function () {
-            return function (object, property) {
-                var descriptor,
-                    prototype,
-                    getter,
-                    setter;
-
-                if ($hasOwn($throwIfIsPrimitive(object), property)) {
-                    descriptor = {};
-                    descriptor.configurable = true;
-                    descriptor.enumerable = true;
-                    if (hasGetSet) {
-                        prototype = object[stringProto];
-                        object[stringProto] = protoObject;
-                        getter = mLookupGetter.call(object, property);
-                        setter = mLookupSetter.call(object, property);
-                        if ($isUndefined(prototype)) {
-                            delete object[stringProto];
-                        } else {
-                            object[stringProto] = prototype;
-                        }
-
-                        if ($isNative(getter) || $isNative(setter)) {
-                            if ($isNative(getter)) {
-                                descriptor.get = getter;
-                            }
-
-                            if ($isNative(setter)) {
-                                descriptor.set = setter;
-                            }
-                        }
-                    }
-
-                    descriptor.value = object[property];
-                    descriptor.writable = true;
-                }
-
-                return descriptor;
-            };
-        },
-
-        // argNames
-        ['object', 'property'],
-
-        //message
-        'getOwnPropertyDescriptor shim'
-    );
-
-    /**
      * Swap places of 2 item values on an object's properties.
      *
      * @function module:util-x~exports.Object.swapItems
@@ -11650,7 +11710,6 @@
         var temp1,
             temp2,
             num,
-            notFunc,
             cond1,
             cond2;
 
@@ -11658,16 +11717,15 @@
             temp1 = exports.Object.getOwnPropertyDescriptor(object, prop1) || {};
             temp2 = exports.Object.getOwnPropertyDescriptor(object, prop2) || {};
             num = $toLength(prop2);
-            notFunc = !$isFunction(object);
-            cond1 =  notFunc && hasValidLength(object) && $toString(num) === prop2;
+            cond1 = hasValidLength(object) && $toString(num) === prop2;
             if (!$isPlainObject(temp1) || !pHasOwn.call(temp1, 'value')) {
-                if (cond1 && num === object.length - 1) {
+                if (cond1 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
                 }
 
                 delete object[prop2];
             } else {
-                if (cond1 && num === object.length) {
+                if (cond1 && num === $toLength(object.length)) {
                     object.length += 1;
                 }
 
@@ -11675,16 +11733,16 @@
             }
 
             num = $toLength(prop1);
-            cond2 = notFunc && hasValidLength(object) && $toString(num) === prop1;
+            cond2 = hasValidLength(object) && $toString(num) === prop1;
             if (!$isPlainObject(temp2) || !pHasOwn.call(temp2, 'value')) {
-                if (cond2 && num === object.length - 1) {
+                if (cond2 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
                 }
 
                 delete object[prop1];
             } else {
                 $defineProperty(object, prop1, temp2);
-                if (cond2 && num === object.length) {
+                if (cond2 && num === $toLength(object.length)) {
                     object.length += 1;
                 }
 
@@ -11720,7 +11778,7 @@
 
         if ($hasProperty(object, 'length') && !$isFunction(object)) {
             inLen = $toLength(object.length);
-            isString = $toClass(object) === classString;
+            isString = $toStringTag(object) === stringTagString;
             if (isString) {
                 for (tempVal = {}, inIndex = 0; inIndex < inLen; inIndex += 1) {
                     tempVal[inIndex] = object[inIndex];
@@ -11757,7 +11815,7 @@
                     tempVal += object[inIndex];
                 }
 
-                object = $Object(tempVal);
+                object = $toObject(tempVal);
             }
         }
 
@@ -12235,8 +12293,8 @@
                     }
 
                     if (!$isPrimitive(value)) {
-                        cl = $toClass(value);
-                        if (cl === classString || cl === classNumber || cl === classBoolean) {
+                        cl = $toStringTag(value);
+                        if (cl === stringTagString || cl === stringTagNumber || cl === stringTagBoolean) {
                             value = $toPrimitive(value);
                         }
                     }
@@ -12670,7 +12728,7 @@
                 if (len < 1) {
                     pPush.call(val, []);
                 } else {
-                    if ($toClass(thisObj) === classString) {
+                    if ($toStringTag(thisObj) === stringTagString) {
                         lastElement = thisObj[len - 1];
                         object = pSSlice.call(thisObj, 0, -1);
                     } else {
@@ -15572,7 +15630,7 @@
                 return false;
             }
 
-            if (isRegExp(expected) && $instanceOf(actual, Error)) {
+            if ($isRegExp(expected) && $instanceOf(actual, Error)) {
                 storeState = exports.normaliseErrorIEToStringState();
                 if (storeState === false) {
                     exports.normaliseErrorIEToStringOn();
@@ -16069,7 +16127,7 @@
 
             args = $join(args, ', ');
         } else {
-            args = $bindArgs($toLength(fnLen));
+            args = $bindArgs(fnLen);
         }
 
         /*jslint evil: true */
