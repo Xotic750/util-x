@@ -1,22 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
-    <head>
-        <title>util-x</title>
-        <link rel="stylesheet" href="./mocha.css" />
-    </head>
-    <body>
-        <div id="mocha"></div>
-        <script type="text/javascript" src="./mocha.js"></script>
-        <script>
-            mocha.setup({
-                ui: 'bdd',
-                timeout: 1200000
-            });
-        </script>
-        <script type="text/javascript" src="./brow.js"></script>
-        <script>
-            mocha.checkLeaks();
-            mocha.run();
-        </script>
-    </body>
+
+<head>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/log4javascript/1.4.9/log4javascript.js"></script>
+    <script type="text/javascript" src="./run.js"></script>
+    <link rel="stylesheet" href="./mocha.css" />
+    <title>util-x</title>
+</head>
+
+<body>
+    <div id="mocha"></div>
+</body>
+
 </html>

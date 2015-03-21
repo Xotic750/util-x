@@ -78,7 +78,7 @@
     toLowerCase, toObject, toPrecision, toPrimitive, toSource, toString,
     toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase, trim,
     trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift, unwatch,
-    value, valueOf, version, watch, wrapInChars, writable, wsStr
+    value, valueOf, version, watch, wrapInChars, writable, wsStr, debug
 */
 
 /**
@@ -277,6 +277,7 @@
         isStrictMode,
         hasCallBug,
         $pArgSlice,
+        $pConcat,
 
         //hasWorkingCreate,
 
@@ -346,6 +347,8 @@
 
         //iBind,
 
+        $unshift,
+        $shift,
         $hasOwn,
         $repeat,
         $isNative,
@@ -361,6 +364,7 @@
         $modulo,
         $forEach,
         $push,
+        $pop,
         $deepEqual,
         $deepStrictEqual,
         $defineProperty,
@@ -385,6 +389,7 @@
         $trim,
         $substr,
         $parseFloat,
+        $concat,
 
         BigNum,
 
@@ -1569,33 +1574,6 @@
     }
 
     /**
-     * Returns the first argument unchanged.
-     * Primary use with ToMethod.
-     *
-     * @private
-     * @function module:util-x~justArg
-     * @argument {*} [arg]
-     * @returns {*}
-     */
-    function justArg(arg) {
-        return arg;
-    }
-
-    /**
-     * Returns an arguments object of the arguments supplied.
-     *
-     * @private
-     * @name module:util-x~returnArgs
-     * @argument {...*} [varArgs]
-     * @returns {Arguments}
-     */
-    function returnArgs(varArgs) {
-        /*jslint unparam:true */
-        /*jshint unused:false */
-        return arguments;
-    }
-
-    /**
      * Prototypal function, as usually used in
      * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain inheritance and the prototype chain}.
      * @typedef {Function} module:util-x~prototypalFunction
@@ -1808,6 +1786,33 @@
     //$round = base.Math.round;
 
     /**
+     * Returns the first argument unchanged.
+     * Primary use with ToMethod.
+     *
+     * @private
+     * @function module:util-x~$justArg
+     * @argument {*} [arg]
+     * @returns {*}
+     */
+    function $justArg(arg) {
+        return arg;
+    }
+
+    /**
+     * Returns an arguments object of the arguments supplied.
+     *
+     * @private
+     * @name module:util-x~$returnArgs
+     * @argument {...*} [varArgs]
+     * @returns {Arguments}
+     */
+    function $returnArgs(varArgs) {
+        /*jslint unparam:true */
+        /*jshint unused:false */
+        return arguments;
+    }
+
+    /**
      * Shortcut
      * Returns true if the operands are strictly equal with no type conversion.
      *
@@ -1896,7 +1901,6 @@
             return pOToString.call(inputArg) === stringTagFunction || false;
         };
     }());
-
 
     /**
      * Returns true if the operand inputArg is a primitive object.
@@ -2619,6 +2623,88 @@
     };
 
     /**
+     * Shortcut
+     * Replaced later
+     * Creates a new array from arguments, starting at start and ending at end.
+     *
+     * @private
+     * @function module:util-x~$slice
+     * @param {module:util-x~ArrayLike} array
+     * @param {module:util-x~NumberLike} [start]
+     * @param {module:util-x~NumberLike} [end]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $slice = function (array, start, end) {
+        return $pArgSlice.call(array, start, end);
+    };
+
+    /**
+     * When the concat method is called with zero or more arguments item1, item2, etc.,
+     * it returns an array containing the array elements of the object followed by the array elements
+     * of each argument in order.
+     *
+     * @function module:util-x~$concat
+     * @this {Array} array
+     * @param {...*} [varArgs]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
+     */
+    $pConcat = function () {
+        var object = $toObject(this),
+            length = $toLength(arguments.length),
+            len,
+            val = [],
+            next = 0,
+            index,
+            element,
+            k;
+
+        for (index = -1; index < length; index += 1) {
+            if (index === -1) {
+                element = object;
+            } else {
+                element = arguments[index];
+            }
+
+            if ($isArray(element)) {
+                k = 0;
+                len = $toLength(element.length);
+                while (k < len) {
+                    if ($hasProperty(element, k)) {
+                        val[next] = element[k];
+                        k += 1;
+                    } else {
+                        val[next] = element;
+                    }
+
+                    next += 1;
+                }
+            }
+        }
+
+        return val;
+    };
+
+    /**
+     * Shortcut
+     * Replaced later
+     * When the concat method is called with zero or more arguments item1, item2, etc.,
+     * it returns an array containing the array elements of the object followed by the array elements
+     * of each argument in order.
+     *
+     * @private
+     * @function module:util-x~$concat
+     * @param {Array} array
+     * @param {...*} [varArgs]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
+     */
+    $concat = function (array) {
+        return $pConcat.apply(array, $slice(arguments, 1));
+    };
+
+    /**
      * @private
      * @function module:util-x~$conlog
      * @param {...*} [varArgs]
@@ -2639,7 +2725,7 @@
                 log.apply(console, arr);
                 fn = function () {
                     if (enableLog) {
-                        log.apply(console, $pArgSlice.call(arguments));
+                        log.apply(console, $slice(arguments));
                     }
                 };
 
@@ -2651,12 +2737,12 @@
 
         if (hasLog && !fn) {
             try {
-                arr = pConcat.call([console], arr);
+                arr = $concat([console], arr);
                 fnCall.apply(log, arr);
                 arr.length = 1;
                 fn = function () {
                     if (enableLog) {
-                        fnCall.apply(log, pConcat.call(arr, $pArgSlice.call(arguments)));
+                        fnCall.apply(log, $concat(arr, $slice(arguments)));
                     }
                 };
 
@@ -2676,7 +2762,7 @@
                         index;
 
                     if (enableLog) {
-                        args = $pArgSlice.call(arguments);
+                        args = $slice(arguments);
                         for (length = args.length, index = 0; index < length; index += 1) {
                             log(args[index]);
                         }
@@ -2695,7 +2781,15 @@
             };
         }
 
-        return fn;
+        return function () {
+            if (global.log && global.log.debug) {
+                try {
+                    global.log.debug.apply(global.log, arguments);
+                } catch (ignore) {}
+            }
+
+            fn.apply(null, arguments);
+        };
     }(global.console, protoFunction.call));
 
     /**
@@ -2719,7 +2813,7 @@
             $affirm.strictEqual(pOToString.call(protoError), stringTagError, 'test4');
             $affirm.strictEqual(pOToString.call(protoFunction), stringTagFunction, 'test5');
             $affirm.strictEqual(pOToString.call(protoArray), stringTagArray, 'test6');
-            $affirm.strictEqual(pOToString.call(returnArgs()), stringTagArguments, 'test7');
+            $affirm.strictEqual(pOToString.call($returnArgs()), stringTagArguments, 'test7');
         },
 
         // pass
@@ -2861,7 +2955,7 @@
      * @type {boolean}
      */
     hasEnumArgsBug = (function () {
-        var argObj = returnArgs('h', 'e', 'j'),
+        var argObj = $returnArgs('h', 'e', 'j'),
             expected = {},
             prop;
 
@@ -2916,7 +3010,7 @@
                 protoReferenceError,
                 protoURIError
             ],
-            length1 = errObjs.length,
+            length1 = $toLength(errObjs.length),
             index1,
             length2,
             index2,
@@ -2929,7 +3023,7 @@
             /*jslint forin: true */
             for (prop in obj) {
                 if (pHasOwn.call(obj, prop)) {
-                    for (found = false, index2 = 0, length2 = unwantedError.length; index2 < length2; index2 += 1) {
+                    for (found = false, index2 = 0, length2 = $toLength(unwantedError.length); index2 < length2; index2 += 1) {
                         if (prop === unwantedError[index2]) {
                             found = true;
                             break;
@@ -2937,7 +3031,8 @@
                     }
 
                     if (!found) {
-                        pPush.call(unwantedError, prop);
+                        unwantedError.length += 1;
+                        unwantedError[length2] = prop;
                     }
                 }
             }
@@ -3036,7 +3131,7 @@
         }
 
         /*jslint evil: true */
-        return new Function('fn', 'check', 'pSlice', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return fn.apply(check(pSlice.call(arguments, 0, 1)[0]), pSlice.call(arguments, 1)); }')(protoFn, checkThisArgFn, $pArgSlice);
+        return new Function('fn', 'check', 'slice', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return fn.apply(check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice);
     }
 
     /**
@@ -3318,7 +3413,7 @@
      * @argument {...*} [varArgs]
      * @returns {Arguments}
      */
-    exports.Function.returnArgs = returnArgs;
+    exports.Function.returnArgs = $returnArgs;
     exports.Function.returnArgs.argNames = ['varArgs'];
 
     /**
@@ -4176,7 +4271,7 @@
                 return result;
             }
 
-            var someArgs = returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined),
+            var someArgs = $returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined),
                 someArray = createArray(Undefined, null, 1, 'a', 2, 'b', null, Undefined),
                 someObject = {
                     0: Undefined,
@@ -4197,7 +4292,7 @@
                     index,
                     isOk = true;
 
-                if (testSlice.length !== length) {
+                if ($toLength(testSlice.length) !== length) {
                     isOk = false;
                 } else {
                     for (index = 0; index < length; index += 1) {
@@ -4222,14 +4317,14 @@
             $affirm.ok(sOk(someArray, [3, 6], createArray('a', 2, 'b')), 'test8');
 
             // works on arguments
-            $affirm.ok(sOk(someArgs, [], returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test9');
-            $affirm.ok(sOk(someArgs, [Undefined, Undefined], returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test10');
-            $affirm.ok(sOk(someArgs, [-1], returnArgs(Undefined)), 'test11');
-            $affirm.ok(sOk(someArgs, [0], returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test12');
-            $affirm.ok(sOk(someArgs, [3], returnArgs('a', 2, 'b', null, Undefined)), 'test13');
+            $affirm.ok(sOk(someArgs, [], $returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test9');
+            $affirm.ok(sOk(someArgs, [Undefined, Undefined], $returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test10');
+            $affirm.ok(sOk(someArgs, [-1], $returnArgs(Undefined)), 'test11');
+            $affirm.ok(sOk(someArgs, [0], $returnArgs(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test12');
+            $affirm.ok(sOk(someArgs, [3], $returnArgs('a', 2, 'b', null, Undefined)), 'test13');
             $affirm.ok(sOk(someArgs, [-1, 4], []), 'test14');
-            $affirm.ok(sOk(someArgs, [0, 4], returnArgs(Undefined, null, 1, 'a')), 'test15');
-            $affirm.ok(sOk(someArgs, [3, 6], returnArgs('a', 2, 'b')), 'test16');
+            $affirm.ok(sOk(someArgs, [0, 4], $returnArgs(Undefined, null, 1, 'a')), 'test15');
+            $affirm.ok(sOk(someArgs, [3, 6], $returnArgs('a', 2, 'b')), 'test16');
 
             // works on object with length
             $affirm.ok(sOk(someObject, [], createArray(Undefined, null, 1, 'a', 2, 'b', null, Undefined)), 'test17');
@@ -4426,7 +4521,7 @@
                 var fn = $throwIfNotFunction(this),
                     args = $slice(arguments, 1),
                     bound = makeBound(function () {
-                        var binderArgs = pConcat.call(args, $slice(arguments)),
+                        var binderArgs = $concat(args, $slice(arguments)),
                             result;
 
                         if ($instanceOf(this, bound)) {
@@ -4989,7 +5084,7 @@
      * @param {number} divisor
      * @returns {number}
      */
-    exports.Number.modulo = $toMethod(exports.Number.proto.modulo, justArg);
+    exports.Number.modulo = $toMethod(exports.Number.proto.modulo, $justArg);
     exports.Number.modulo.argNames = ['dividend', 'divisor'];
 
     /**
@@ -5308,6 +5403,84 @@
     }
 
     /**
+     * When the concat method is called with zero or more arguments item1, item2, etc.,
+     * it returns an array containing the array elements of the object followed by the array elements
+     * of each argument in order.
+     *
+     * @function module:util-x~$concat
+     * @this {Array} array
+     * @param {...*} [varArgs]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
+     */
+    exports.Array.proto.concat = $decide(
+        // test
+        function () {
+            $affirmBasic(pConcat)();
+            $affirm.doesNotThrow(function () {
+                pConcat.call([], true);
+            });
+
+            var concatArr = [1, 2, 3],
+                expected = $slice($returnArgs(1, 2, 3, undefined, null, false)),
+                resArr,
+                index;
+
+            $affirm.doesNotThrow(function () {
+                resArr = pConcat.call(concatArr, $slice($returnArgs(undefined, null, false)));
+            });
+
+            $affirm.strictEqual(resArr.length, 6, 'array length incorrect');
+            for (index = 0; index < resArr.length; index += 1) {
+                $affirm.ok(pHasOwn.call(resArr, index), 'array value not set');
+                $affirm.strictEqual(resArr[index], expected[index], 'array wrong return value');
+            }
+        },
+
+        // pass
+        function () {
+            return pConcat;
+        },
+
+        // fail
+        function () {
+            return $pConcat;
+        },
+
+        // message
+        'Array.concat shim'
+    );
+
+    /**
+     * When the concat method is called with zero or more arguments item1, item2, etc.,
+     * it returns an array containing the array elements of the object followed by the array elements
+     * of each argument in order.
+     *
+     * @function module:util-x~$concat
+     * @param {Array} array
+     * @param {...*} [varArgs]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
+     */
+    exports.Array.concat = $toMethod(exports.Array.proto.concat);
+    exports.Array.concat.argNames = ['array', 'varArgs'];
+
+    /**
+     * Shortcut
+     * When the concat method is called with zero or more arguments item1, item2, etc.,
+     * it returns an array containing the array elements of the object followed by the array elements
+     * of each argument in order.
+     *
+     * @private
+     * @function module:util-x~$concat
+     * @param {Array} array
+     * @param {...*} [varArgs]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
+     */
+    $concat = exports.Array.concat;
+
+    /**
      * This method adds one or more elements to the end of the array and
      * returns the new length of the array.
      *
@@ -5320,15 +5493,33 @@
     exports.Array.proto.push = $decide(
         // test
         function () {
-            $affirm.ok(!testShims, 'testing shim');
+            $affirmBasic(pPush)();
+            $affirm.doesNotThrow(function () {
+                pPush.call([], true);
+            });
 
             var pushArr = [],
                 pushObj = {};
 
-            $affirm.strictEqual(pPush.call(pushArr, 0), 1, 'array wrong return count');
-            $affirm.strictEqual(pushArr[0], 0, 'array value not set');
-            $affirm.strictEqual(pPush.call(pushObj, 0), 1, 'object wrong return count');
-            $affirm.strictEqual(pushObj[0], 0, 'object value not set');
+            $affirm.strictEqual(pPush.call(pushArr, Undefined), 1, 'array wrong return count');
+            $affirm.strictEqual(pushArr.length, 1, 'array length incorrect');
+            $affirm.ok(pHasOwn.call(pushArr, 0), 'array value not set');
+            $affirm.strictEqual(pushArr[0], Undefined, 'array value incorrect');
+
+            $affirm.strictEqual(pPush.call(pushObj, Undefined), 1, 'object wrong return count');
+            $affirm.strictEqual(pushObj.length, 1, 'object length incorrect');
+            $affirm.ok(pHasOwn.call(pushObj, 0), 'object value not set');
+            $affirm.strictEqual(pushObj[0], Undefined, 'object value incorrect');
+
+            $affirm.strictEqual(pPush.call(pushArr, 0), 2, 'array wrong return count');
+            $affirm.strictEqual(pushArr.length, 2, 'array length incorrect');
+            $affirm.ok(pHasOwn.call(pushArr, 1), 'array value not set');
+            $affirm.strictEqual(pushArr[1], 0, 'array value incorrect');
+
+            $affirm.strictEqual(pPush.call(pushObj, 0), 2, 'object wrong return count');
+            $affirm.strictEqual(pushObj.length, 2, 'object length incorrect');
+            $affirm.ok(pHasOwn.call(pushObj, 1), 'object value not set');
+            $affirm.strictEqual(pushObj[1], 0, 'object value incorrect');
         },
 
         // pass
@@ -5339,21 +5530,26 @@
         // fail
         function () {
             return function () {
-                var object = $toObject(this);
+                var object = $toObject(this),
+                    length = $toLength(object.length),
+                    len = $toLength(arguments.length),
+                    index;
 
-                object.length = $toLength(object.length);
-                pPush.apply(object, $slice(arguments));
+                object.length = length + len;
+                for (index = 0; index < len; index += 1) {
+                    object[length + index] = arguments[index];
+                }
 
                 return object.length;
             };
         },
 
         // message
-        'Array.push patch'
+        'Array.push shim'
     );
 
     /**
-     * This {@link module:util-x~boundPrototypalFunction method} adds one or more elements to the end of an array and
+     * This method adds one or more elements to the end of the array and
      * returns the new length of the array.
      *
      * @function module:util-x~exports.Array.push
@@ -5367,7 +5563,7 @@
 
     /**
      * Shortcut
-     * This {@link module:util-x~boundPrototypalFunction method} adds one or more elements to the end of an array and
+     * This method adds one or more elements to the end of the array and
      * returns the new length of the array.
      *
      * @private
@@ -5378,6 +5574,205 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
     $push = exports.Array.push;
+
+    /**
+     * This method removes the last element from an array and returns that element.
+     *
+     *
+     * @function module:util-x~exports.Array.proto.pop
+     * @this {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop
+     */
+    exports.Array.proto.pop = $decide(
+        // test
+        function () {
+            $affirmBasic(pPop)();
+            $affirm.doesNotThrow(function () {
+                pPop.call([]);
+            });
+
+            var popArr = [1, 2, 3],
+                popObj = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+
+            $affirm.strictEqual(pPop.call(popArr), 3, 'array wrong return value');
+            $affirm.strictEqual(popArr.length, 2, 'array length incorrect');
+            $affirm.ok(!pHasOwn.call(popArr, 2), 'array value 2 not deleted');
+
+            $affirm.strictEqual(pPop.call(popObj), 3, 'object wrong return value');
+            $affirm.strictEqual(popObj.length, 2, 'object length incorrect');
+            $affirm.ok(!pHasOwn.call(popObj, 2), 'object value 2 not deleted');
+
+            $affirm.strictEqual(pPop.call(popArr), 2, 'array wrong return value');
+            $affirm.strictEqual(popArr.length, 1, 'array length incorrect');
+            $affirm.ok(!pHasOwn.call(popArr, 1), 'array value 1 not deleted');
+
+            $affirm.strictEqual(pPop.call(popObj), 2, 'object wrong return value');
+            $affirm.strictEqual(popObj.length, 1, 'object length incorrect');
+            $affirm.ok(!pHasOwn.call(popObj, 1), 'object value 1 not deleted');
+        },
+
+        // pass
+        function () {
+            return pPop;
+        },
+
+        // fail
+        function () {
+            return function () {
+                var object = $toObject(this),
+                    len = $toLength(object.length),
+                    index,
+                    value;
+
+                if (len === 0) {
+                    object.length = 0;
+                } else {
+                    index = len - 1;
+                    value = object[index];
+                    delete object[index];
+                    object.length = index;
+                }
+
+                return value;
+            };
+        },
+
+        // message
+        'Array.pop shim'
+    );
+
+    /**
+     * This method removes the last element from an array and returns that element.
+     *
+     * @function module:util-x~$pop
+     * @param {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop
+     */
+    exports.Array.pop = $toMethod(exports.Array.proto.pop);
+    exports.Array.pop.argNames = ['array'];
+
+    /**
+     * Shortcut
+     * This method removes the last element from an array and returns that element.
+     *
+     * @private
+     * @function module:util-x~$pop
+     * @param {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop
+     */
+    $pop = exports.Array.pop;
+
+    /**
+     * The first element of the array is removed from the array and returned.
+     *
+     *
+     * @function module:util-x~exports.Array.proto.shift
+     * @this {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift
+     */
+    exports.Array.proto.shift = $decide(
+        // test
+        function () {
+            $affirmBasic(pShift)();
+            $affirm.doesNotThrow(function () {
+                pShift.call([]);
+            });
+
+            var shiftArr = [1, 2, 3],
+                shiftObj = {
+                    0: 1,
+                    1: 2,
+                    2: 3,
+                    length: 3
+                };
+
+            $affirm.strictEqual(pShift.call(shiftArr), 1, 'array wrong return value');
+            $affirm.strictEqual(shiftArr.length, 2, 'array length incorrect');
+            $affirm.ok(!pHasOwn.call(shiftArr, 2), 'array value 2 not deleted');
+
+            $affirm.strictEqual(pShift.call(shiftObj), 1, 'object wrong return value');
+            $affirm.strictEqual(shiftObj.length, 2, 'object length incorrect');
+            $affirm.ok(!pHasOwn.call(shiftObj, 2), 'object value 2 not deleted');
+
+            $affirm.strictEqual(pShift.call(shiftArr), 2, 'array wrong return value');
+            $affirm.strictEqual(shiftArr.length, 1, 'array length incorrect');
+            $affirm.ok(!pHasOwn.call(shiftArr, 1), 'array value 1 not deleted');
+
+            $affirm.strictEqual(pShift.call(shiftObj), 2, 'object wrong return value');
+            $affirm.strictEqual(shiftObj.length, 1, 'object length incorrect');
+            $affirm.ok(!pHasOwn.call(shiftObj, 1), 'object value 1 not deleted');
+        },
+
+        // pass
+        function () {
+            return pShift;
+        },
+
+        // fail
+        function () {
+            return function () {
+                var object = $toObject(this),
+                    len = $toLength(object.length),
+                    index,
+                    value,
+                    to;
+
+                if (len === 0) {
+                    object.length = 0;
+                } else {
+                    value = object[0];
+                    for (index = 1; index < len; index += 1) {
+                        to = index - 1;
+                        if ($hasProperty(object, index)) {
+                            object[to] =  object[index];
+                        } else {
+                            delete object[to];
+                        }
+                    }
+
+                    delete object[len - 1];
+                    object.length = len - 1;
+                }
+
+                return value;
+            };
+        },
+
+        // message
+        'Array.shift shim'
+    );
+
+    /**
+     * The first element of the array is removed from the array and returned.
+     *
+     * @function module:util-x~$shift
+     * @param {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift
+     */
+    exports.Array.shift = $toMethod(exports.Array.proto.shift);
+    exports.Array.shift.argNames = ['array'];
+
+    /**
+     * Shortcut
+     * The first element of the array is removed from the array and returned.
+     *
+     * @private
+     * @function module:util-x~$shift
+     * @param {module:util-x~ArrayLike} array
+     * @returns {*}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift
+     */
+    $shift = exports.Array.shift;
 
     /**
      * This method adds one or more elements to the beginning of an array and
@@ -5393,15 +5788,33 @@
     exports.Array.proto.unshift = $decide(
         // test
         function () {
-            $affirm.ok(!testShims, 'testing shim');
+            $affirmBasic(pUnshift)();
+            $affirm.doesNotThrow(function () {
+                pUnshift.call([], true);
+            });
 
             var unshiftArr = [],
                 unshiftObj = {};
 
-            $affirm.strictEqual(pPush.call(unshiftArr, 0), 1, 'array wrong return count');
-            $affirm.strictEqual(unshiftArr[0], 0, 'array value not set');
-            $affirm.strictEqual(pPush.call(unshiftObj, 0), 1, 'object wrong return count');
-            $affirm.strictEqual(unshiftObj[0], 0, 'object value not set');
+            $affirm.strictEqual(pUnshift.call(unshiftArr, Undefined), 1, 'array wrong return count');
+            $affirm.strictEqual(unshiftArr.length, 1, 'array length incorrect');
+            $affirm.ok(pHasOwn.call(unshiftArr, 0), 'array value not set');
+            $affirm.strictEqual(unshiftArr[0], Undefined, 'array value incorrect');
+
+            $affirm.strictEqual(pUnshift.call(unshiftObj, Undefined), 1, 'object wrong return count');
+            $affirm.strictEqual(unshiftObj.length, 1, 'object length incorrect');
+            $affirm.ok(pHasOwn.call(unshiftObj, 0), 'object value not set');
+            $affirm.strictEqual(unshiftObj[0], Undefined, 'object value incorrect');
+
+            $affirm.strictEqual(pUnshift.call(unshiftArr, 0), 2, 'array wrong return count');
+            $affirm.strictEqual(unshiftArr.length, 2, 'array length incorrect');
+            $affirm.ok(pHasOwn.call(unshiftArr, 0), 'array value not set');
+            $affirm.strictEqual(unshiftArr[0], 0, 'array value incorrect');
+
+            $affirm.strictEqual(pUnshift.call(unshiftObj, 0), 2, 'object wrong return count');
+            $affirm.strictEqual(unshiftObj.length, 2, 'object length incorrect');
+            $affirm.ok(pHasOwn.call(unshiftObj, 0), 'object value not set');
+            $affirm.strictEqual(unshiftObj[0], 0, 'object value incorrect');
         },
 
         //pass
@@ -5412,10 +5825,28 @@
         // fail
         function () {
             return function () {
-                var object = $toObject(this);
+                var object = $toObject(this),
+                    len = $toLength(object.length),
+                    k = len,
+                    argCount = $toLength(arguments.length),
+                    from,
+                    to,
+                    j;
 
-                object.length = $toLength(object.length);
-                pUnshift.apply(object, $slice(arguments));
+                object.length = len + argCount;
+                for (k = len; k > 0; k -= 1) {
+                    from = k - 1;
+                    to = k + argCount - 1;
+                    if ($hasProperty(object, from)) {
+                        object[to] = object[from];
+                    } else {
+                        delete object[to];
+                    }
+                }
+
+                for (j = 0; j < argCount; j += 1) {
+                    object[j] = arguments[j];
+                }
 
                 return object.length;
             };
@@ -5437,6 +5868,20 @@
      */
     exports.Array.unshift = $toMethod(exports.Array.proto.unshift);
     exports.Array.unshift.argNames = ['array', 'varArgs'];
+
+    /**
+     * Shortcut
+     * This method adds one or more elements to the beginning of an array and
+     * returns the new length of the array.
+     *
+     * @private
+     * @function module:util-x~$unshift
+     * @param {module:util-x~ArrayLike} array
+     * @param {...*} [varArgs]
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
+     */
+    $unshift = exports.Array.unshift;
 
     /**
      * Returns an integer clamped to the range set by min and max.
@@ -5883,13 +6328,13 @@
                             match = search(str, separator, pos);
                             while (match) {
                                 // This condition is not the same as `if (match[0].length)`
-                                if ((match.index + match[0].length) > lastLastIndex) {
-                                    pPush.call(output, pSSlice.call(str, lastLastIndex, match.index));
-                                    if (match.length > 1 && match.index < length) {
-                                        pPush.apply(output, $slice(match, 1));
+                                if ((match.index + $toLength(match[0].length)) > lastLastIndex) {
+                                    $push(output, pSSlice.call(str, lastLastIndex, match.index));
+                                    if ($toLength(match.length) > 1 && match.index < length) {
+                                        output = $concat(output, $slice(match, 1));
                                     }
 
-                                    lastLength = match[0].length;
+                                    lastLength = $toLength(match[0].length);
                                     lastLastIndex = match.index + lastLength;
                                 }
 
@@ -5899,10 +6344,10 @@
 
                             if (lastLastIndex === str.length) {
                                 if (!pTest.call(separator, '') || lastLength) {
-                                    pPush.call(output, '');
+                                    $push(output, '');
                                 }
                             } else {
-                                pPush.call(output, pSSlice.call(str, lastLastIndex));
+                                $push(output, pSSlice.call(str, lastLastIndex));
                             }
 
                             separator.lastIndex = origLastIndex;
@@ -6740,7 +7185,7 @@
                     function () {
                         var fixOpera10GetPrototypeOf;
 
-                        if (returnArgs().constructor.prototype !== protoObject) {
+                        if ($returnArgs().constructor.prototype !== protoObject) {
                             fixOpera10GetPrototypeOf = true;
                         }
 
@@ -7179,7 +7624,7 @@
                     }
 
                     if (val) {
-                        pPush.call(arr, it);
+                        $push(arr, it);
                     }
                 }
             }
@@ -7460,7 +7905,7 @@
                     while (k < actualDeleteCount) {
                         from = actualStart + k;
                         if ($hasOwn(object, from)) {
-                            pPush.call(removed, object[from]);
+                            $push(removed, object[from]);
                         }
 
                         k += 1;
@@ -8367,7 +8812,7 @@
                     if ($hasItem(object, index, stringTag)) {
                         it = $getItem(object, index, stringTag);
                         if (fn.call(thisArg, it, index, object)) {
-                            pPush.call(arr, it);
+                            $push(arr, it);
                         }
                     }
                 }
@@ -8458,7 +8903,7 @@
                 }
 
                 while (index < length) {
-                    if ($getItem(object, index, stringTag)) {
+                    if ($hasItem(object, index, stringTag)) {
                         accumulator = fn.call(Undefined, accumulator, $getItem(object, index, stringTag), index, object);
                     }
 
@@ -8610,7 +9055,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
      */
     exports.Number.randomInt = function (min, max) {
-        if (arguments.length === 1) {
+        if ($toLength(arguments.length) === 1) {
             max = min;
             min = 0;
         }
@@ -8640,19 +9085,46 @@
      * Default compare function for stableSort.
      *
      * @private
-     * @function module:util-x~$defaultComparison
+     * @function module:util-x~$ascending
      * @param {*} left
      * @param {*} right
      * @returns {number}
      */
-    function $defaultComparison(left, right) {
+    function $ascending(left, right) {
         var leftS = $toString(left),
             rightS = $toString(right),
-            val = 1;
+            val;
 
         if (leftS === rightS) {
             val = +0;
         } else if (leftS < rightS) {
+            val = -1;
+        } else {
+            val = 1;
+        }
+
+        return val;
+    }
+
+    /**
+     * Default compare function for stableSort.
+     *
+     * @private
+     * @function module:util-x~$descending
+     * @param {*} left
+     * @param {*} right
+     * @returns {number}
+     */
+    function $descending(left, right) {
+        var leftS = $toString(left),
+            rightS = $toString(right),
+            val;
+
+        if (leftS === rightS) {
+            val = +0;
+        } else if (leftS < rightS) {
+            val = 1;
+        } else {
             val = -1;
         }
 
@@ -8726,8 +9198,8 @@
                 next = 0,
                 sComp;
 
-            result.length = left.length + right.length;
-            while (left.length && right.length) {
+            result.length = $toLength($toLength(left.length) + $toLength(right.length));
+            while ($toLength(left.length) && $toLength(right.length)) {
                 sComp = sortCompare(left, right);
                 if (typeof sComp !== 'number') {
                     if (comparison(left[0], right[0]) <= 0) {
@@ -8735,46 +9207,46 @@
                             result[next] = left[0];
                         }
 
-                        pShift.call(left);
+                        $shift(left);
                     } else {
                         if ($hasOwn(right, 0)) {
                             result[next] = right[0];
                         }
 
-                        pShift.call(right);
+                        $shift(right);
                     }
                 } else if (sComp <= 0) {
                     if ($hasOwn(left, 0)) {
                         result[next] = left[0];
                     }
 
-                    pShift.call(left);
+                    $shift(left);
                 } else {
                     if ($hasOwn(right, 0)) {
                         result[next] = right[0];
                     }
 
-                    pShift.call(right);
+                    $shift(right);
                 }
 
                 next += 1;
             }
 
-            while (left.length) {
+            while ($toLength(left.length)) {
                 if ($hasOwn(left, 0)) {
                     result[next] = left[0];
                 }
 
-                pShift.call(left);
+                $shift(left);
                 next += 1;
             }
 
-            while (right.length) {
+            while ($toLength(right.length)) {
                 if ($hasOwn(right, 0)) {
                     result[next] = right[0];
                 }
 
-                pShift.call(right);
+                $shift(right);
                 next += 1;
             }
 
@@ -8791,7 +9263,7 @@
          * @returns {Array}
          */
         function mergeSort(array, comparefn) {
-            var length = array.length,
+            var length = $toLength(array.length),
                 middle,
                 front,
                 back,
@@ -8816,7 +9288,7 @@
                 sorted;
 
             if ($isUndefined(comparefn)) {
-                comparefn = $defaultComparison;
+                comparefn = $ascending;
             }
 
             $throwIfNotFunction(comparefn);
@@ -8825,10 +9297,10 @@
                 if ($isArray(object) || $isArguments(object)) {
                     object.length = 0;
                 } else {
-                    $splice(object, 0, object.length);
+                    $splice(object, 0, $toLength(object.length));
                 }
 
-                object.length = sorted.length;
+                object.length = $toLength(sorted.length);
                 for (index = 0; index < length; index += 1) {
                     if ($hasOwn(sorted, index)) {
                         object[index] = sorted[index];
@@ -8878,22 +9350,6 @@
             function () {
                 $affirmBasic(pSort)();
 
-                function descending(left, right) {
-                    var leftS = $toString(left),
-                        rightS = $toString(right),
-                        val;
-
-                    if (leftS === rightS) {
-                        val = +0;
-                    } else if (leftS < rightS) {
-                        val = 1;
-                    } else {
-                        val = -1;
-                    }
-
-                    return val;
-                }
-
                 var sortObj = {
                     0: 5,
                     1: 2,
@@ -8904,7 +9360,7 @@
                     length: 8
                 };
 
-                pSort.call(sortObj, descending);
+                pSort.call(sortObj, $descending);
                 $affirm.strictEqual(sortObj[0], null, 'test1');
                 $affirm.strictEqual(sortObj[1], 5, 'test2');
                 $affirm.strictEqual(sortObj[2], 4, 'test3');
@@ -8963,7 +9419,7 @@
                     function () {
                         return function (comparefn) {
                             if ($isUndefined(comparefn)) {
-                                comparefn = $defaultComparison;
+                                comparefn = $ascending;
                             }
 
                             return pSort.call($checkObjectCoercible(this), $throwIfNotFunction(comparefn));
@@ -9635,7 +10091,7 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
-    exports.Number.toFixed = $toMethod(exports.Number.proto.toFixed, justArg);
+    exports.Number.toFixed = $toMethod(exports.Number.proto.toFixed, $justArg);
     exports.Number.toFixed.argNames = ['number', 'fractionDigits'];
 
     /**
@@ -10070,7 +10526,7 @@
                 var value;
 
                 $affirm.doesNotThrow(function () {
-                    value = mKeys(returnArgs(1, 2));
+                    value = mKeys($returnArgs(1, 2));
                 }, 'test1');
 
                 $affirm.strictEqual(value.length, 2, 'works with arguments object');
@@ -10147,7 +10603,7 @@
 
                     if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
                         for (index = 0, length = $toLength(object.length); index < length; index += 1) {
-                            pPush.call(theKeys, $toString(index));
+                            $push(theKeys, $toString(index));
                         }
                     }
 
@@ -10155,7 +10611,7 @@
                         /*jslint forin: true */
                         for (name in object) {
                             if (!(skipProto && name === 'prototype') && pHasOwn.call(object, name)) {
-                                pPush.call(theKeys, String(name));
+                                $push(theKeys, String(name));
                             }
                         }
                     }
@@ -10166,7 +10622,7 @@
                         for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
                             dontEnum = shadowed[index];
                             if (!(skipConstructor && dontEnum === 'constructor') && pHasOwn.call(object, dontEnum)) {
-                                pPush.call(theKeys, dontEnum);
+                                $push(theKeys, dontEnum);
                             }
                         }
                     }
@@ -11640,7 +12096,7 @@
                             for (tempArr = [], index = 0; index < length; index += 1) {
                                 element = arr[index];
                                 if (!$stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
-                                    pPush.call(tempArr, element);
+                                    $push(tempArr, element);
                                 }
                             }
 
@@ -12319,7 +12775,7 @@
                         sfyGap += sfyIndent;
                         if ($isArray(value)) {
                             for (partial = [], index = 0, length = value.length; index < length; index += 1) {
-                                pPush.call(partial, stringifyToString(index, value) || 'null');
+                                $push(partial, stringifyToString(index, value) || 'null');
                             }
 
                             if (!partial.length) {
@@ -12348,7 +12804,7 @@
                                 if (typeof element === 'string') {
                                     v = stringifyToString(element, value);
                                     if (!$isUndefined(v)) {
-                                        pPush.call(partial, stringifyQuote(element) + theGap + v);
+                                        $push(partial, stringifyQuote(element) + theGap + v);
                                     }
                                 }
                             }
@@ -12357,7 +12813,7 @@
                                 element = keys[index];
                                 v = stringifyToString(element, value);
                                 if (!$isUndefined(v)) {
-                                    pPush.call(partial, stringifyQuote(element) + theGap + v);
+                                    $push(partial, stringifyQuote(element) + theGap + v);
                                 }
                             }
                         }
@@ -12726,27 +13182,27 @@
             if ($hasProperty(thisObj, 'length') && !$isFunction(thisObj)) {
                 len = $toLength(thisObj.length);
                 if (len < 1) {
-                    pPush.call(val, []);
+                    $push(val, []);
                 } else {
                     if ($toStringTag(thisObj) === stringTagString) {
                         lastElement = thisObj[len - 1];
                         object = pSSlice.call(thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
-                        lastElement = pPop.call(object);
+                        lastElement = $pop(object);
                     }
 
                     pSet = pPowerSet.call(object);
                     for (idx = 0, len = pSet.length; idx < len; idx += 1) {
                         it = pSet[idx];
-                        pPush.call(val, it);
+                        $push(val, it);
                         pSet[idx] = it = $slice(it);
-                        pPush.call(it, lastElement);
-                        pPush.call(val, it);
+                        $push(it, lastElement);
+                        $push(val, it);
                     }
                 }
             } else {
-                pPush.call(val, []);
+                $push(val, []);
             }
 
             return val;
@@ -13202,7 +13658,7 @@
                         xc[i] = 0;
                         if (!i) {
                             this.e += 1;
-                            pUnshift.call(xc, 1);
+                            $unshift(xc, 1);
                         }
 
                         i -= 1;
@@ -13354,7 +13810,7 @@
 
             // Append zeros?
             while ($toLength(c.length) < i) {
-                pPush.call(c, 0);
+                $push(c, 0);
             }
 
             i = x.e;
@@ -13578,10 +14034,10 @@
             }
 
             // Create version of divisor with leading zero.
-            pUnshift.call(dvsZ, 0);
+            $unshift(dvsZ, 0);
             // Add zeros to make remainder as long as divisor.
             while (remL < dvsL) {
-                pPush.call(rem, 0);
+                $push(rem, 0);
                 remL += 1;
             }
 
@@ -13636,7 +14092,7 @@
                         }
 
                         while (!rem[0]) {
-                            pShift.call(rem);
+                            $shift(rem);
                         }
                     } else {
                         break;
@@ -13774,12 +14230,12 @@
 
             // Remove any leading zero.
             if (!c[0]) {
-                pShift.call(c);
+                $shift(c);
             }
 
             // Remove trailing zeros.
-            for (i = c.length - 1; !c[i]; i -= 1) {
-                pPop.call(c);
+            for (i = $toLength(c.length) - 1; !c[i]; i -= 1) {
+                $pop(c);
             }
 
             y.c = c;
@@ -13862,7 +14318,7 @@
 
                 pReverse.call(t);
                 for (b = a; b; b -= 1) {
-                    pPush.call(t, 0);
+                    $push(t, 0);
                 }
 
                 pReverse.call(t);
@@ -13927,7 +14383,7 @@
 
             // Remove trailing zeros.
             while (xc[b] === 0) {
-                pPop.call(xc);
+                $pop(xc);
                 b -= 1;
             }
 
@@ -14021,7 +14477,7 @@
 
                 pReverse.call(t);
                 while (a) {
-                    pPush.call(t, 0);
+                    $push(t, 0);
                     a -= 1;
                 }
 
@@ -14053,7 +14509,7 @@
             // No need to check for zero, as +x + +y != 0 && -x + -y != 0
 
             if (b) {
-                pUnshift.call(xc, b);
+                $unshift(xc, b);
                 ye += 1;
             }
 
