@@ -390,6 +390,7 @@
         $substr,
         $parseFloat,
         $concat,
+        $randomInt,
 
         BigNum,
 
@@ -4994,12 +4995,12 @@
      * which is a safe integer and is greather or equal to 0.
      *
      * @private
-     * @function module:util-x~hasValidLength
+     * @function module:util-x~$hasValidLength
      * @param {*} inputArg
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
-    function hasValidLength(inputArg) {
+    function $hasValidLength(inputArg) {
         return !$isPrimitive(inputArg) && !$isFunction(inputArg) && pHasOwn.call(inputArg, 'length') && $isLength(inputArg.length);
     }
 
@@ -5395,7 +5396,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
     function $throwIfNotHasValidLength(inputArg) {
-        if (!hasValidLength(inputArg)) {
+        if (!$hasValidLength(inputArg)) {
             throw new CTypeError('invalid length property: ' + $toString(inputArg));
         }
 
@@ -8879,13 +8880,13 @@
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                if (!length && arguments.length === 1) {
+                if (!length && $toLength(arguments.length) === 1) {
                     throw new CTypeError(reduceTypeErrorMessage);
                 }
 
                 index = 0;
                 stringTag = $toStringTag(object);
-                if (arguments.length > 1) {
+                if ($toLength(arguments.length) > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
@@ -8973,13 +8974,13 @@
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                if (!length && arguments.length === 1) {
+                if (!length && $toLength(arguments.length) === 1) {
                     throw new CTypeError(reduceRightTypeErrorMessage);
                 }
 
                 stringTag = $toStringTag(object);
                 index = length - 1;
-                if (arguments.length > 1) {
+                if ($toLength(arguments.length) > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
@@ -9081,6 +9082,20 @@
 
     exports.Number.randomInt.argNames = ['min', 'max'];
 
+    /**
+     * Shortcut
+     * Returns a uniformly distributed random safe integer between the supplied min and max arguments.
+     * Max: MAX_SAFE_INTEGER, Min: MIN_SAFE_INTEGER
+     * If min is not supplied then 0 is used.
+     *
+     * @private
+     * @function module:util-x~$randomInt
+     * @param {number} [min]
+     * @param {number} max
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+     */
+    $randomInt = exports.Number.randomInt;
     /**
      * Default compare function for stableSort.
      *
@@ -9905,7 +9920,7 @@
         function () {
             var baseNum = 1e7,
                 data = [0, 0, 0, 0, 0, 0],
-                size = data.length,
+                size = $toLength(data.length),
                 last = size - 1;
 
             function multiply(n, c) {
@@ -10130,6 +10145,7 @@
             return function (searchElement, fromIndex) {
                 var object = $toObject(this),
                     length = $toLength(object.length),
+                    stringTag = $toStringTag(object),
                     val = -1,
                     index;
 
@@ -10149,7 +10165,7 @@
                         }
 
                         for (index = fromIndex; index < length; index += 1) {
-                            if ($hasProperty(object, index) && searchElement === object[index]) {
+                            if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
                                 val = index;
                                 break;
                             }
@@ -10252,6 +10268,7 @@
             return function (searchElement, fromIndex) {
                 var object = $toObject(this),
                     length = $toLength(object.length),
+                    stringTag = $toStringTag(object),
                     val = -1,
                     index;
 
@@ -10269,7 +10286,7 @@
                     }
 
                     for (index = fromIndex; index >= 0; index -= 1) {
-                        if ($hasProperty(object, index) && searchElement === object[index]) {
+                        if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
                             val = index;
                             break;
                         }
@@ -10690,22 +10707,31 @@
      */
     exports.Object.proto.forKeys = function (fn, thisArg) {
         var object = $toObject(this),
+            isString,
             keys,
             len,
             val,
             index,
-            it;
+            it,
+            item;
 
         $throwIfNotFunction(fn);
         keys = $objectKeys(object);
-        len = keys.length;
+        len = $toLength(keys.length);
         if (len) {
             thisArg = $toObjectCallFix(thisArg);
         }
 
+        isString = $toStringTag(object) === stringTagString;
         for (val = false, index = 0; index < len; index += 1) {
             it = keys[index];
-            val = !!fn.call(thisArg, object[it], it, object);
+            if (isString && $toString($toInteger(it)) === it && it >= 0 && it <= MAX_SAFE_INTEGER) {
+                item = pCharAt.call(object, it);
+            } else {
+                item = object[it];
+            }
+
+            val = !!fn.call(thisArg, item, it, object);
             if (val) {
                 break;
             }
@@ -11144,7 +11170,7 @@
                     props = throwString($toObject(props));
 
                     var keys = $objectKeys(props),
-                        length = keys.length,
+                        length = $toLength(keys.length),
                         key,
                         index;
 
@@ -11286,7 +11312,7 @@
         exports.Object.freeze(object);
         for (propKey in object) {
             /*jslint forin: false*/
-            propVal = object[propKey];
+            propVal = $getItem(object, propKey, $toStringTag(object));
             if (!$isPrimitive(propVal) && !exports.Object.isFrozen(propVal)) {
                 exports.Object.deepFreeze(propVal);
             }
@@ -11322,6 +11348,7 @@
             return function (target) {
                 var to = $toObject(target),
                     length = $toLength(arguments.length),
+                    stringTag,
                     from,
                     index,
                     keysArray,
@@ -11336,10 +11363,11 @@
                         if (arg !== null && !$isUndefined(arg)) {
                             from = $toObject(arguments[index]);
                             keysArray = $objectKeys(from);
-                            for (nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex += 1) {
+                            for (nextIndex = 0, len = $toLength(keysArray.length); nextIndex < len; nextIndex += 1) {
                                 nextKey = keysArray[nextIndex];
-                                if ($hasOwn(from, nextKey)) {
-                                    to[nextKey] = from[nextKey];
+                                stringTag = $toStringTag(from);
+                                if ($hasItem(from, nextKey, stringTag)) {
+                                    to[nextKey] = $getItem(from, nextKey, stringTag);
                                 }
                             }
                         }
@@ -11607,10 +11635,10 @@
             return false;
         }
 
-        length = ka.length;
-        if (length !== kb.length) {
+        length = $toLength(ka.length);
+        if (length !== $toLength(kb.length)) {
             if ($isArray(a) && $isArray(b)) {
-                if (a.length !== b.length) {
+                if ($toLength(a.length) !== $toLength(b.length)) {
                     return false;
                 }
             } else {
@@ -11705,10 +11733,10 @@
             return false;
         }
 
-        length = ka.length;
-        if (length !== kb.length) {
+        length = $toLength(ka.length);
+        if (length !== $toLength(kb.length)) {
             if ($isArray(a) && $isArray(b)) {
-                if (a.length !== b.length) {
+                if ($toLength(a.length) !== $toLength(b.length)) {
                     return false;
                 }
             } else {
@@ -11760,10 +11788,8 @@
         var s = $onlyCoercibleToString(this);
 
         n = +n;
-        if ($strictEqual(n, n) && n >= 0) {
-            if (s.length > n) {
-                s = pSSlice.call(s, 0, n);
-            }
+        if ($strictEqual(n, n) && n >= 0 && s.length > n) {
+            s = pSSlice.call(s, 0, n);
         }
 
         return s;
@@ -11903,8 +11929,7 @@
         if (type === 'string') {
             result = value;
         } else if (type === 'undefined' ||
-                    value === Infinity ||
-                    value === -Infinity ||
+                    $isInfinities(value) ||
                     exports.Number.isNaN(value) ||
                     $isFunction(value) ||
                     $isRegExp(value)) {
@@ -12087,7 +12112,7 @@
                     value: function () {
                         var arr = $split(this.message, splitNewLine),
                             messageToString = this.name + ': ',
-                            length = arr.length,
+                            length = $toLength(arr.length),
                             tempArr,
                             element,
                             index;
@@ -12173,7 +12198,7 @@
             temp1 = exports.Object.getOwnPropertyDescriptor(object, prop1) || {};
             temp2 = exports.Object.getOwnPropertyDescriptor(object, prop2) || {};
             num = $toLength(prop2);
-            cond1 = hasValidLength(object) && $toString(num) === prop2;
+            cond1 = $hasValidLength(object) && $toString(num) === prop2;
             if (!$isPlainObject(temp1) || !pHasOwn.call(temp1, 'value')) {
                 if (cond1 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
@@ -12189,7 +12214,7 @@
             }
 
             num = $toLength(prop1);
-            cond2 = hasValidLength(object) && $toString(num) === prop1;
+            cond2 = $hasValidLength(object) && $toString(num) === prop1;
             if (!$isPlainObject(temp2) || !pHasOwn.call(temp2, 'value')) {
                 if (cond2 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
@@ -12232,12 +12257,13 @@
             tempVal,
             hasItem;
 
-        if ($hasProperty(object, 'length') && !$isFunction(object)) {
+            // hasValidLength
+        if (pHasOwn.call(object, 'length') && $isLength(object.length) && !$isFunction(object)) {
             inLen = $toLength(object.length);
             isString = $toStringTag(object) === stringTagString;
             if (isString) {
                 for (tempVal = {}, inIndex = 0; inIndex < inLen; inIndex += 1) {
-                    tempVal[inIndex] = object[inIndex];
+                    tempVal[inIndex] = pCharAt.call(object, inIndex);
                 }
 
                 object = tempVal;
@@ -12248,7 +12274,7 @@
                 outLen = $min($max($toInteger(rounds), 1), MAX_SAFE_INTEGER);
                 for (outIndex = 0; outIndex < outLen; outIndex += 1) {
                     for (inIndex = 0; inIndex < inLen; inIndex += 1) {
-                        rand = $floor($random() * inIndex);
+                        rand = $randomInt(inIndex);
                         hasItem = $hasOwn(object, inIndex);
                         tempVal = object[inIndex];
                         if ($hasOwn(object, rand)) {
@@ -12713,7 +12739,7 @@
                             if (typeof c === 'string') {
                                 r = c;
                             } else {
-                                hex = pNToString.call(pCharCodeAt.call(a, 0), 16);
+                                hex = $toString(pCharCodeAt.call(a, 0), 16);
                                 r = '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
                             }
 
@@ -12740,7 +12766,7 @@
                         cl,
                         v;
 
-                    if (value && $isFunction(value.toJSON)) {
+                    if (value !== null && !$isUndefined(value) && $isFunction(value.toJSON)) {
                         value = value.toJSON(key);
                     }
 
@@ -12755,11 +12781,11 @@
                         }
                     }
 
-                    switch (typeof value) {
+                    switch ($typeOf(value)) {
                     case 'string':
                         return stringifyQuote(value);
                     case 'number':
-                        if (value !== Infinity && value !== -Infinity) {
+                        if (!$isInfinities(value)) {
                             return $toString(value);
                         }
 
@@ -12774,11 +12800,11 @@
 
                         sfyGap += sfyIndent;
                         if ($isArray(value)) {
-                            for (partial = [], index = 0, length = value.length; index < length; index += 1) {
+                            for (partial = [], index = 0, length = $toLength(value.length); index < length; index += 1) {
                                 $push(partial, stringifyToString(index, value) || 'null');
                             }
 
-                            if (!partial.length) {
+                            if (!$toLength(partial.length)) {
                                 member = '[]';
                             } else if (typeof sfyGap === 'string' && sfyGap !== '') {
                                 member = '[\n' + sfyGap +  $join(partial, ',\n' + sfyGap) + '\n' + mind + ']';
@@ -12799,7 +12825,7 @@
 
                         partial = [];
                         if ($isArray(sfyReplacer)) {
-                            for (partial = [], index = 0, length = sfyReplacer.length; index < length; index += 1) {
+                            for (partial = [], index = 0, length = $toLength(sfyReplacer.length); index < length; index += 1) {
                                 element = sfyReplacer[index];
                                 if (typeof element === 'string') {
                                     v = stringifyToString(element, value);
@@ -12809,7 +12835,7 @@
                                 }
                             }
                         } else {
-                            for (index = 0, keys = $objectKeys(value), length = keys.length; index < length; index += 1) {
+                            for (index = 0, keys = $objectKeys(value), length = $toLength(keys.length); index < length; index += 1) {
                                 element = keys[index];
                                 v = stringifyToString(element, value);
                                 if (!$isUndefined(v)) {
@@ -12818,7 +12844,7 @@
                             }
                         }
 
-                        if (!partial.length) {
+                        if (!$toLength(partial.length)) {
                             member = '{}';
                         } else if (typeof sfyGap === 'string' && sfyGap !== '') {
                             member = '{\n' + sfyGap + $join(partial, ',\n' + sfyGap) + '\n' + mind + '}';
@@ -12966,9 +12992,9 @@
                         k,
                         v;
 
-                    if (value && $typeOf(value) === 'object') {
+                    if (!$isPrimitive(value) && $typeOf(value) === 'object') {
                         keys = $objectKeys(value);
-                        length = keys.length;
+                        length = $toLength(keys.length);
                         for (index = 0; index < length; index += 1) {
                             k = keys[index];
                             v = walk(value, k);
@@ -12990,7 +13016,7 @@
                     parseCharacterTest.lastIndex = 0;
                     if ($test(parseCharacterTest, text)) {
                         text = $replace(text, parseCharacterTest, function (a) {
-                            var hex = pNToString.call(pCharCodeAt.call(a, 0), 16);
+                            var hex = $toString(pCharCodeAt.call(a, 0), 16);
 
                             return '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
                         });
@@ -13161,6 +13187,7 @@
 
     /**
      * This method calculates the Power Set of the array.
+     * Sparseness is ignored.
      *
      * @function module:util-x~exports.Array.proto.powerSet
      * @this {(ArrayLike|string)}
@@ -13179,13 +13206,13 @@
                 idx,
                 it;
 
-            if ($hasProperty(thisObj, 'length') && !$isFunction(thisObj)) {
+            if (pHasOwn.call(thisObj, 'length') && $isLength(thisObj.length) && !$isFunction(thisObj)) {
                 len = $toLength(thisObj.length);
                 if (len < 1) {
                     $push(val, []);
                 } else {
                     if ($toStringTag(thisObj) === stringTagString) {
-                        lastElement = thisObj[len - 1];
+                        lastElement = pCharAt.call(thisObj, len - 1);
                         object = pSSlice.call(thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
@@ -13204,6 +13231,8 @@
             } else {
                 $push(val, []);
             }
+
+            val.length = $toLength(val.length);
 
             return val;
         };
@@ -13230,14 +13259,16 @@
     exports.Array.proto.toObject = function () {
         var object = $toObject(this),
             accumulator = {},
+            stringTag,
             length,
             index;
 
         if ($hasProperty(object, 'length') && !$isFunction(object)) {
+            stringTag = $toStringTag(object);
             accumulator.length = length = $toLength(object.length);
             for (index = 0; index < length; index += 1) {
-                if ($hasProperty(object, index)) {
-                    accumulator[index] = object[index];
+                if ($hasItem(object, index, stringTag)) {
+                    accumulator[index] = $getItem(object, index, stringTag);
                 }
             }
         } else {
@@ -13261,29 +13292,26 @@
      * if the supplied object has the matching 'classId' on its constructor property.
      *
      * @private
-     * @function module:util-x~isInstance
+     * @function module:util-x~$isInstance
      * @param {*} object The object to be tested.
      * @param {Function} Ctor The constructor to test the object against.
      * @throws {TypeError} If Ctor is not a constructor.
      * @returns {boolean} True if object is an instance of Ctor or
      *                    has the matching `classId` otherwise false.
      */
-    function isInstance(object, Ctor) {
+    function $isInstance(object, Ctor) {
         if (!$isFunction(Ctor)) {
             throw new CTypeError('Ctor is not a constructor.');
         }
 
-        var rtn = false,
-            testType;
+        var rtn = false;
 
-        if (object !== null) {
-            testType = typeof object;
-            if (testType !== 'undefined') {
-                if ($instanceOf(object, Ctor)) {
-                    rtn = true;
-                } else if (testType === 'object' && !$isPlainObject(object) && !$isFunction(object) && typeof object.classId === 'string') {
-                    rtn = object.classId === Ctor.prototype.classId;
-                }
+        if (object !== null && !$isUndefined(object)) {
+            if ($instanceOf(object, Ctor)) {
+                rtn = true;
+            } else if (!$isPrimitive(object) && !$isPlainObject(object) && !$isFunction(object) && typeof object.classId === 'string') {
+                // this could be more robust
+                rtn = object.classId === Ctor.prototype.classId;
             }
         }
 
@@ -13525,15 +13553,11 @@
              */
             if (object) {
                 testType = typeof object;
-                if (testType === 'object' && !$isFunction(object) && object.constructor.prototype !== Object.prototype &&
+                if (testType === 'object' && !$isFunction(object) && object.constructor.prototype !== protoObject &&
                         (object.s === null || object.s === 1 || object.s === -1) &&
-                            (object.c === null ||
-                                (typeof object.c === 'object' &&
-                                    $isFunction(object.c.slice) &&
-                                    $isFunction(object.c.push) &&
-                                    typeof object.c[0] === 'number')) &&
+                            (object.c === null || $isArray(object.c)) &&
                             (object.e === null || typeof object.e === 'number') &&
-                            ($isFunction(object.plus) && $isFunction(object.minus))) {
+                            $isFunction(object.plus) && $isFunction(object.minus)) {
 
                     rtn = true;
                 }
@@ -13667,7 +13691,7 @@
 
                 // Remove trailing zeros.
                 for (i = $toLength(xc.length) - 1; !xc[i]; i -= 1) {
-                    xc.pop();
+                    $pop(xc);
                 }
             }
 
@@ -14120,7 +14144,7 @@
             // Leading zero? Do not remove if result is simply zero (qi == 1).
             if (!qc[0] && qi !== 1) {
                 // There can't be more than one zero.
-                qc.shift();
+                $shift(qc);
                 q.e -= 1;
             }
 
@@ -14389,7 +14413,7 @@
 
             // Remove leading zeros and adjust exponent accordingly.
             while (xc[0] === 0) {
-                xc.shift();
+                $shift(xc);
                 ye -= 1;
             }
 
@@ -14491,7 +14515,7 @@
                 xc = t;
             }
 
-            a = yc.length;
+            a = $toLength(yc.length);
             /*
              * Only start adding at yc.length - 1 as the further digits of xc can be
              * left as they are.
@@ -14515,7 +14539,7 @@
 
             // Remove trailing zeros.
             for (a = $toLength(xc.length) - 1; xc[a] === 0; a -= 1) {
-                xc.pop();
+                $pop(xc);
             }
 
             y.c = xc;
@@ -14621,8 +14645,8 @@
                 return rtn;
             }
 
-            k = xc.length;
-            l = yc.length;
+            k = $toLength(xc.length);
+            l = $toLength(yc.length);
             if (k < l) {
                 j = k;
             } else {
@@ -14747,7 +14771,7 @@
                 var rtn;
 
                 // Enable constructor usage without new.
-                if (!isInstance(this, Big)) {
+                if (!$isInstance(this, Big)) {
                     if ($toLength(arguments.length) === 0) {
                         return bigFactory();
                     }
@@ -14774,7 +14798,7 @@
                     });
 
                     // set the values of the properties on this {@link module:util-x~bigobject}
-                    if (isInstance(n, Big) || isBigDuck(n)) {
+                    if ($isInstance(n, Big) || isBigDuck(n)) {
                         // Duplicate.
                         this.s = n.s;
                         this.e = n.e;
@@ -15873,7 +15897,7 @@
              */
             $defineProperty(Big, 'isBig', {
                 value: function (inputArg) {
-                    return isInstance(inputArg, Big);
+                    return $isInstance(inputArg, Big);
                 },
                 writable: true,
                 configurable: true,
@@ -15903,7 +15927,7 @@
              */
             $defineProperty(Big, 'isBigSibling', {
                 value: function (inputArg) {
-                    return !isInstance(inputArg, Big) && isBigDuck(inputArg);
+                    return !$isInstance(inputArg, Big) && isBigDuck(inputArg);
                 },
                 writable: true,
                 configurable: true,
@@ -15970,7 +15994,7 @@
             var rtn;
 
             // Enable constructor usage without new.
-            if (!isInstance(this, AssertionError)) {
+            if (!$isInstance(this, AssertionError)) {
                 rtn = new AssertionError(opts);
             } else {
                 if (!$isPlainObject(opts)) {
@@ -16053,7 +16077,7 @@
 
                     if (typeof this.message === 'string' && this.message.length) {
                         theString = this.name + ': ' + $truncate(this.message, maxMessageLength);
-                    } else if (isInstance(this, AssertionError)) {
+                    } else if ($isInstance(this, AssertionError)) {
                         theString = this.name + ': ';
                         theString += $truncate($stringify(this.actual, exports.customErrorReplacer), maxMessageLength) + ' ';
                         theString += this.operator + ' ';
