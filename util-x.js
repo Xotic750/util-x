@@ -12852,8 +12852,7 @@
                 //mStringify(null, testTemp.customJSON) === '"1"' &&
                 $affirm.strictEqual(mStringify([1, 2], null, 1), '[\n 1,\n 2\n]', 'test19');
 
-                var date = $makeDate(-8.64e15),
-                    a;
+                var date = $makeDate(-8.64e15);
 
                 $affirm.strictEqual(mStringify(date), '"-271821-04-20T00:00:00.000Z"', 'test20');
                 date = $makeDate(8.64e15);
@@ -12865,14 +12864,6 @@
 
                 date.toJSON = undefined;
                 $affirm.strictEqual(mStringify(date), '{}', 'test23');
-
-                // safari 4.1 throws ReferenceError instead of TypeError
-                a = [];
-                a[0] = a;
-
-                $affirm.throws(function () {
-                    JSON.stringify(a);
-                }, TypeError, 'correct error type');
             },
 
             // pass
