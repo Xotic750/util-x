@@ -1,9 +1,8 @@
 /*global document, window */
 
 /*properties
-    InPageAppender, addAppender, appendChild, apply, checkLeaks, createElement, debug,
-    getElementsByTagName, getLogger, log, onload, run, setup, src, timeout, type,
-    ui, log4javascript, mocha
+    appendChild, checkLeaks, createElement, getElementsByTagName, mocha, onload,
+    run, setup, src, timeout, type, ui
 */
 
 (function (oldOnload) {
