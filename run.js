@@ -18,11 +18,6 @@
 
         var script = document.createElement('script');
 
-        window.log = window.log4javascript.getLogger("main");
-        window.log.addAppender(new window.log4javascript.InPageAppender());
-        window.log.debug.apply(window.log, ['test', Object]);
-
-        script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = './mocha.js';
         script.onload = function () {

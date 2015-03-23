@@ -153,7 +153,7 @@
         MIN_VALUE = 5e-324,
         EPSILON = 2.220446049250313e-16,
 
-        /** `Object#toString` result references. */
+        // 'Object#toString' result references.
         stringTagArguments = '[object Arguments]',
         stringTagFunction = '[object Function]',
         stringTagObject = '[object Object]',
@@ -261,6 +261,7 @@
         hasEnumArgsBug,
         hasEnumStringBug,
         hasBoxedStringBug,
+        hasArrayLengthBug,
 
         unwantedError,
 
@@ -276,7 +277,8 @@
         hasGetSet,
         isStrictMode,
         hasCallBug,
-        $pArgSlice,
+        hasApplyArrayBug,
+        $pSlice,
         $pConcat,
 
         //hasWorkingCreate,
@@ -391,6 +393,10 @@
         $parseFloat,
         $concat,
         $randomInt,
+        $pApply,
+        $pCall,
+        $call,
+        $apply,
 
         BigNum,
 
@@ -1865,98 +1871,6 @@
     }
 
     /**
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFunctionBasic
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunctionBasic = (function () {
-        /**
-        * Avoid a Chakra JIT bug in compatibility modes of IE 11.
-        *
-        * @private
-        * @function
-        * @param {*} [inputArg] The object to be tested.
-        * @returns {boolean} True if the typeof object is 'function', otherwise false.
-        * @see https://github.com/jashkenas/underscore/issues/1621 for more details.
-        */
-        function typeofFunction(inputArg) {
-            return typeof inputArg === 'function' || false;
-        }
-
-        if (!(typeofFunction(/x/) || (global.Uint8Array && !typeofFunction(global.Uint8Array)))) {
-            return typeofFunction;
-        }
-
-        return function (inputArg) {
-            /**
-             * The use of 'Object#toString' avoids issues with the 'typeof' operator
-             * in older versions of Chrome and Safari which return 'function' for regexes
-             * and Safari 8 equivalents which return 'object' for typed array constructors.
-             */
-            return pOToString.call(inputArg) === stringTagFunction || false;
-        };
-    }());
-
-    /**
-     * Returns true if the operand inputArg is a primitive object.
-     *
-     * @private
-     * @function module:util-x~isPrimitive
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
-     */
-    function $isPrimitive(inputArg) {
-        var type = typeof inputArg;
-
-        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || false;
-    }
-
-    /**
-     * Throws a TypeError if the operand inputArg is not an object or not a function,
-     * otherise returns the object.
-     *
-     * @private
-     * @function module:util-x~$throwIfIsPrimitive
-     * @param {*} inputArg
-     * @throws {TypeError} If inputArg is not an object or a function.
-     * @returns {(Object|Function)}
-     */
-    function $throwIfIsPrimitive(inputArg) {
-        if ($isPrimitive(inputArg)) {
-            throw new CTypeError('called on non-object: ' + $toString(inputArg));
-        }
-
-        return inputArg;
-    }
-
-    /**
-     * Needed now, replaced later
-     */
-    $isArray = function (inputArg) {
-        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'length') && pOToString.call(inputArg) === stringTagArray) || false;
-    };
-
-    /**
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFunction
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunction = $isFunctionBasic;
-
-    /**
      * The abstract operation throws an error if its argument is a value that cannot be
      * converted to an Object, otherwise returns the argument.
      *
@@ -1973,6 +1887,20 @@
         }
 
         return inputArg;
+    }
+
+    /**
+     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     *
+     * @private
+     * @function module:util-x~$toObject
+     * @param {*} inputArg The argument to be converted to an object.
+     * @throws {TypeError} If inputArg is not coercible to an object.
+     * @returns {Object} Value of inputArg as type Object.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     */
+    function $toObject(inputArg) {
+        return $Object($checkObjectCoercible(inputArg));
     }
 
     /**
@@ -2079,17 +2007,80 @@
     */
 
     /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     * Indicates if running in strict mode.
+     * True if we are, otherwise false.
      *
      * @private
-     * @function module:util-x~$toObject
-     * @param {*} inputArg The argument to be converted to an object.
-     * @throws {TypeError} If inputArg is not coercible to an object.
-     * @returns {Object} Value of inputArg as type Object.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     * @name module:util-x~isStrictMode
+     * @type {boolean}
      */
-    function $toObject(inputArg) {
-        return $Object($checkObjectCoercible(inputArg));
+    isStrictMode = (function () {
+        return !this;
+    }()) || false;
+
+    /**
+     * Indicates if the this argument used with call does not convert to an object when not strict mode.
+     * True if it does, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasCallBug
+     * @type {boolean}
+     */
+    hasCallBug = (function () {
+        var returnThis = function () {
+                return this;
+            },
+            rtn;
+
+        // try in case call is missing
+        try {
+            rtn = (!isStrictMode && typeof $call(returnThis, 'foo') === 'string') || false;
+        } catch (eHasCallBug) {
+            rtn = false;
+        }
+
+        return rtn;
+    }());
+
+    hasApplyArrayBug = (function () {
+        var returnThis = function (arg1) {
+                return [this, arg1];
+            },
+            result,
+            rtn;
+
+        // try in case apply is missing
+        try {
+            result = returnThis.apply('foo', $returnArgs(1));
+            rtn = (!isStrictMode && (typeof result[0] === 'string' || result[1] !== 1)) || false;
+        } catch (eHasApplyArrayBug) {
+            rtn = false;
+        }
+
+        return rtn;
+    }());
+
+    /**
+     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     * For use with call.
+     *
+     * @private
+     * @function module:util-x~$toObjectCallFix
+     * @param {*} inputArg The argument to be converted to an object.
+     * @returns {Object} Value of inputArg as type Object.
+     */
+    function $toObjectCallFix(inputArg) {
+        var object = inputArg,
+            type;
+
+        if (hasCallBug) {
+            type = typeof inputArg;
+            if (type === 'boolean' || type === 'number' || type === 'string') {
+                object = $toObject(inputArg);
+            }
+        }
+
+        return object;
     }
 
     /**
@@ -2103,6 +2094,227 @@
         /*jstwit in: true */
         return $toString(property) in $toObject(inputArg);
     }
+
+    /**
+     * Creates a new array from the arraylike argument, starting at start and ending at end.
+     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
+     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
+     * in the mission critical function {@link module:util-x~$toMethod}.
+     *
+     * @private
+     * @function module:util-x~$pSlice
+     * @this {module:util-x~ArrayLike} The object to be sliced.
+     * @throws {TypeError} If args is not coercible to an object.
+     * @param {module:util-x~NumberLike} [start] The starting index.
+     * @param {module:util-x~NumberLike} [end] The ending index.
+     * @returns {Array} A new array containg the selection.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $pSlice = function (start, end) {
+        var object = $toObject(this),
+            length = $toLength(object.length),
+            relativeStart = $toInteger(start),
+            val = [],
+            next = 0,
+            relativeEnd,
+            finalEnd,
+            k;
+
+        if (relativeStart < 0) {
+            k = $max(length + relativeStart, 0);
+        } else {
+            k = $min(relativeStart, length);
+        }
+
+        if ($isUndefined(end)) {
+            relativeEnd = length;
+        } else {
+            relativeEnd = $toInteger(end);
+        }
+
+        if (relativeEnd < 0) {
+            finalEnd = $max(length + relativeEnd, 0);
+        } else {
+            finalEnd = $min(relativeEnd, length);
+        }
+
+        finalEnd = $toLength(finalEnd);
+        val.length = $toLength($max(finalEnd - k, 0));
+        while (k < finalEnd) {
+            if ($hasProperty(object, k)) {
+                val[next] = object[k];
+            }
+
+            next += 1;
+            k += 1;
+        }
+
+        return val;
+    };
+
+    /**
+     * Returns true if the operand inputArg is a primitive object.
+     *
+     * @private
+     * @function module:util-x~isPrimitive
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     */
+    function $isPrimitive(inputArg) {
+        var type = typeof inputArg;
+
+        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || false;
+    }
+
+    function $evalCallApply(thisArg, name, func, args, start) {
+        var length = $toLength(args.length),
+            last = length - 1,
+            argsStrings = '',
+            index,
+            rtn;
+
+        for (index = start; index < length; index += 1) {
+            argsStrings += 'args[' + index + ']';
+            if (index < last) {
+                argsStrings += ',';
+            }
+        }
+
+        while (!$isUndefined(thisArg[name])) {
+            name += $toString($toInteger($random() * 100));
+        }
+
+        thisArg[name] = func;
+        /*jslint evil: true */
+        rtn = eval('(thisArg[name](' + argsStrings + '))');
+        /*jslint evil: false */
+        delete thisArg[name];
+
+        return rtn;
+    }
+
+    function $toObjectThisArg(thisArg) {
+        if (thisArg === null || $isUndefined(thisArg)) {
+            thisArg = global;
+        } else {
+            thisArg = $Object(thisArg);
+        }
+
+        return thisArg;
+    }
+
+    $pCall = (function () {
+        var fn;
+
+        if (!base.Function.call || hasCallBug) {
+            fn = function (thisArg) {
+                return $evalCallApply($toObjectThisArg(thisArg), '__$pCall__', this, arguments, 1);
+            };
+        } else {
+            fn = base.Function.call;
+        }
+
+        return fn;
+    }());
+
+    /**
+     * Shortcut
+     *
+     * @private
+     * @function module:util-x~$pApply
+     */
+    $pApply = (function () {
+        var fn;
+
+        if (!base.Function.apply || hasApplyArrayBug) {
+            fn = function (thisArg, arrayLike) {
+                return $evalCallApply($toObjectThisArg(thisArg), '__$pApply__', this, arrayLike, 0);
+            };
+        } else {
+            fn = base.Function.apply;
+        }
+
+        return fn;
+    }());
+
+    $call = function (func, thisArg) {
+        var length = $toLength(arguments.length),
+            name = '__$call__',
+            args = [],
+            index,
+            rtn;
+
+        args.length = $toLength(length - 2);
+        for (index = 2; index < length; index += 1) {
+            args[index - 2] = arguments[index];
+        }
+
+        while (!$isUndefined(func[name])) {
+            name += $toString($toInteger($random() * 100));
+        }
+
+        func[name] = $pApply;
+        rtn = func[name](thisArg, args);
+        delete func[name];
+
+        return rtn;
+    };
+
+    $apply = function (func, thisArg, arrayLike) {
+        var length = $toLength(arrayLike.length),
+            name = '__$apply__',
+            args = [],
+            index,
+            rtn;
+
+        args.length = length;
+        for (index = 0; index < length; index += 1) {
+            args[index] = arrayLike[index];
+        }
+
+        while (!$isUndefined(func[name])) {
+            name += $toString($toInteger($random() * 100));
+        }
+
+        func[name] = $pApply;
+        rtn = func[name](thisArg, args);
+        delete func[name];
+
+        return rtn;
+    };
+
+    /**
+     * Shortcut
+     * Replaced later
+     * Creates a new array from arguments, starting at start and ending at end.
+     *
+     * @private
+     * @function module:util-x~$slice
+     * @param {module:util-x~ArrayLike} array
+     * @param {module:util-x~NumberLike} [start]
+     * @param {module:util-x~NumberLike} [end]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $slice = function (array, start, end) {
+        return $call($pSlice, array, start, end);
+    };
+
+    /**
+     * Returns true if the operand inputArg is a Function. (Duck typed)
+     * Replaced later on with a more reliable method, but we need to define
+     * more functions first.
+     *
+     * @private
+     * @function module:util-x~$isFunction
+     * @param {*} [inputArg] The object to be tested.
+     * @returns {boolean} True if the object matches the duck typing, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+     */
+    $isFunction = function (inputArg) {
+        return typeof inputArg === 'function' || false;
+    };
 
     /**
      * Throws a TypeError for argument not a fuction.
@@ -2134,6 +2346,83 @@
     };
 
     /**
+     * Returns true if the operand inputArg is a Function. (Duck typed)
+     * Replaced later on with a more reliable method, but we need to define
+     * more functions first.
+     *
+     * @private
+     * @function module:util-x~$isFunctionBasic
+     * @param {*} [inputArg] The object to be tested.
+     * @returns {boolean} True if the object matches the duck typing, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+     */
+    $isFunctionBasic = (function () {
+        /**
+        * Avoid a Chakra JIT bug in compatibility modes of IE 11.
+        *
+        * @private
+        * @function
+        * @param {*} [inputArg] The object to be tested.
+        * @returns {boolean} True if the typeof object is 'function', otherwise false.
+        * @see https://github.com/jashkenas/underscore/issues/1621 for more details.
+        */
+        function typeofFunction(inputArg) {
+            return typeof inputArg === 'function' || false;
+        }
+
+        if (!(typeofFunction(/x/) || (global.Uint8Array && !typeofFunction(global.Uint8Array)))) {
+            return typeofFunction;
+        }
+
+        return function (inputArg) {
+            /*
+             * The use of 'Object#toString' avoids issues with the 'typeof' operator
+             * in older versions of Chrome and Safari which return 'function' for regexes
+             * and Safari 8 equivalents which return 'object' for typed array constructors.
+             */
+            return $call(pOToString, inputArg) === stringTagFunction || false;
+        };
+    }());
+
+    /**
+     * Throws a TypeError if the operand inputArg is not an object or not a function,
+     * otherise returns the object.
+     *
+     * @private
+     * @function module:util-x~$throwIfIsPrimitive
+     * @param {*} inputArg
+     * @throws {TypeError} If inputArg is not an object or a function.
+     * @returns {(Object|Function)}
+     */
+    function $throwIfIsPrimitive(inputArg) {
+        if ($isPrimitive(inputArg)) {
+            throw new CTypeError('called on non-object: ' + $toString(inputArg));
+        }
+
+        return inputArg;
+    }
+
+    /**
+     * Needed now, replaced later
+     */
+    $isArray = function (inputArg) {
+        return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray) || false;
+    };
+
+    /**
+     * Returns true if the operand inputArg is a Function. (Duck typed)
+     * Replaced later on with a more reliable method, but we need to define
+     * more functions first.
+     *
+     * @private
+     * @function module:util-x~$isFunction
+     * @param {*} [inputArg] The object to be tested.
+     * @returns {boolean} True if the object matches the duck typing, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+     */
+    $isFunction = $isFunctionBasic;
+
+    /**
      * The function tests whether an object has in its prototype chain the prototype property of a constructor.
      *
      * @private
@@ -2147,7 +2436,7 @@
     function $instanceOf(object, ctr) {
         $throwIfNotFunction(ctr);
 
-        return (!$isPrimitive(object) && (object instanceof ctr || (!$isPrimitive(ctr.prototype) && pIsPrototypeOf.call(ctr.prototype, object)))) || false;
+        return (!$isPrimitive(object) && (object instanceof ctr || (!$isPrimitive(ctr.prototype) && $call(pIsPrototypeOf, ctr.prototype, object)))) || false;
     }
 
     /**
@@ -2164,7 +2453,7 @@
             index;
 
         if (len) {
-            if (typeof separator !== 'string' || !pTest.call(/^ *, *$/, separator)) {
+            if (typeof separator !== 'string' || !$call(pTest, /^ *, *$/, separator)) {
                 separator = ',';
             }
 
@@ -2215,7 +2504,7 @@
                 opts.stackStartFunction = $affirm.AffirmError;
             }
 
-            CError.call(this, opts.message, opts.stackStartFunction);
+            $call(CError, this, opts.message, opts.stackStartFunction);
             this.message = opts.message;
             this.actual =  opts.actual;
             this.expected = opts.expected;
@@ -2567,80 +2856,6 @@
     }
 
     /**
-     * Creates a new array from the arraylike argument, starting at start and ending at end.
-     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
-     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
-     * in the mission critical function {@link module:util-x~$toMethod}.
-     *
-     * @private
-     * @function module:util-x~$pArgSlice
-     * @this {module:util-x~ArrayLike} The object to be sliced.
-     * @throws {TypeError} If args is not coercible to an object.
-     * @param {module:util-x~NumberLike} [start] The starting index.
-     * @param {module:util-x~NumberLike} [end] The ending index.
-     * @returns {Array} A new array containg the selection.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
-    $pArgSlice = function (start, end) {
-        var object = $toObject(this),
-            length = $toLength(object.length),
-            relativeStart = $toInteger(start),
-            val = [],
-            next = 0,
-            relativeEnd,
-            finalEnd,
-            k;
-
-        if (relativeStart < 0) {
-            k = $max(length + relativeStart, 0);
-        } else {
-            k = $min(relativeStart, length);
-        }
-
-        if ($isUndefined(end)) {
-            relativeEnd = length;
-        } else {
-            relativeEnd = $toInteger(end);
-        }
-
-        if (relativeEnd < 0) {
-            finalEnd = $max(length + relativeEnd, 0);
-        } else {
-            finalEnd = $min(relativeEnd, length);
-        }
-
-        finalEnd = $toLength(finalEnd);
-        val.length = $toLength($max(finalEnd - k, 0));
-        while (k < finalEnd) {
-            if ($hasProperty(object, k)) {
-                val[next] = object[k];
-            }
-
-            next += 1;
-            k += 1;
-        }
-
-        return val;
-    };
-
-    /**
-     * Shortcut
-     * Replaced later
-     * Creates a new array from arguments, starting at start and ending at end.
-     *
-     * @private
-     * @function module:util-x~$slice
-     * @param {module:util-x~ArrayLike} array
-     * @param {module:util-x~NumberLike} [start]
-     * @param {module:util-x~NumberLike} [end]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
-    $slice = function (array, start, end) {
-        return $pArgSlice.call(array, start, end);
-    };
-
-    /**
      * When the concat method is called with zero or more arguments item1, item2, etc.,
      * it returns an array containing the array elements of the object followed by the array elements
      * of each argument in order.
@@ -2702,7 +2917,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
      */
     $concat = function (array) {
-        return $pConcat.apply(array, $slice(arguments, 1));
+        return $apply($pConcat, array, $slice(arguments, 1));
     };
 
     /**
@@ -2710,7 +2925,7 @@
      * @function module:util-x~$conlog
      * @param {...*} [varArgs]
      */
-    $conlog = (function (console, fnCall) {
+    $conlog = (function (console) {
         var hasLog = !$isPrimitive(console) && !$isPrimitive(console.log),
             log,
             arr,
@@ -2719,31 +2934,13 @@
         if (hasLog) {
             log = console.log;
             arr = ['Test log', true];
-        }
 
-        if (hasLog && !$isPrimitive(log.apply)) {
             try {
-                log.apply(console, arr);
-                fn = function () {
-                    if (enableLog) {
-                        log.apply(console, $slice(arguments));
-                    }
-                };
-
-                fn('Using standard apply for logging');
-            } catch (eApply) {
-                fn = null;
-            }
-        }
-
-        if (hasLog && !fn) {
-            try {
-                arr = $concat([console], arr);
-                fnCall.apply(log, arr);
+                $apply(log, console, arr);
                 arr.length = 1;
                 fn = function () {
                     if (enableLog) {
-                        fnCall.apply(log, $concat(arr, $slice(arguments)));
+                        $apply(log, console, $slice(arguments));
                     }
                 };
 
@@ -2751,28 +2948,28 @@
             } catch (eFunction) {
                 fn = null;
             }
-        }
 
-        if (hasLog && !fn) {
-            try {
-                log(arr[0]);
-                log(arr[1]);
-                fn = function () {
-                    var args,
-                        length,
-                        index;
+            if (!fn) {
+                try {
+                    log(arr[0]);
+                    log(arr[1]);
+                    fn = function () {
+                        var args,
+                            length,
+                            index;
 
-                    if (enableLog) {
-                        args = $slice(arguments);
-                        for (length = args.length, index = 0; index < length; index += 1) {
-                            log(args[index]);
+                        if (enableLog) {
+                            args = $slice(arguments);
+                            for (length = args.length, index = 0; index < length; index += 1) {
+                                log(args[index]);
+                            }
                         }
-                    }
-                };
+                    };
 
-                fn('Using for loop for logging');
-            } catch (eLoop) {
-                fn = null;
+                    fn('Using for loop for logging');
+                } catch (eLoop) {
+                    fn = null;
+                }
             }
         }
 
@@ -2785,13 +2982,13 @@
         return function () {
             if (global.log && global.log.debug) {
                 try {
-                    global.log.debug.apply(global.log, arguments);
+                    $apply(global.log.debug, global.log, $slice(arguments));
                 } catch (ignore) {}
             }
 
-            fn.apply(null, arguments);
+            $apply(fn, null, $slice(arguments));
         };
-    }(global.console, protoFunction.call));
+    }(global.console));
 
     /**
      * Provides a string representation of the supplied object in the form "[object type]",
@@ -2807,20 +3004,20 @@
         // test
         function () {
             $affirm.ok(!testShims, 'testing shim');
-            $affirm.strictEqual(pOToString.call(protoRegExp), stringTagRegExp, 'test1');
-            $affirm.strictEqual(pOToString.call(protoString), stringTagString, 'test2');
-            $affirm.strictEqual(pOToString.call(protoNumber), stringTagNumber, 'test3');
-            $affirm.strictEqual(pOToString.call(protoBoolean), stringTagBoolean, 'test3');
-            $affirm.strictEqual(pOToString.call(protoError), stringTagError, 'test4');
-            $affirm.strictEqual(pOToString.call(protoFunction), stringTagFunction, 'test5');
-            $affirm.strictEqual(pOToString.call(protoArray), stringTagArray, 'test6');
-            $affirm.strictEqual(pOToString.call($returnArgs()), stringTagArguments, 'test7');
+            $affirm.strictEqual($call(pOToString, protoRegExp), stringTagRegExp, 'test1');
+            $affirm.strictEqual($call(pOToString, protoString), stringTagString, 'test2');
+            $affirm.strictEqual($call(pOToString, protoNumber), stringTagNumber, 'test3');
+            $affirm.strictEqual($call(pOToString, protoBoolean), stringTagBoolean, 'test3');
+            $affirm.strictEqual($call(pOToString, protoError), stringTagError, 'test4');
+            $affirm.strictEqual($call(pOToString, protoFunction), stringTagFunction, 'test5');
+            $affirm.strictEqual($call(pOToString, protoArray), stringTagArray, 'test6');
+            $affirm.strictEqual($call(pOToString, $returnArgs()), stringTagArguments, 'test7');
         },
 
         // pass
         function () {
             function toC(inputArg) {
-                return pOToString.call(inputArg);
+                return $call(pOToString, inputArg);
             }
 
             return $decide(
@@ -2885,7 +3082,7 @@
                     val = stringTagUndefined;
                 } else if (inputArg === null) {
                     val = stringTagNull;
-                } else if (!$isPrimitive(inputArg) && !pHasOwn.call(inputArg, 'arguments') && pHasOwn.call(inputArg, 'callee') && pHasOwn.call(inputArg, 'length') && $isLength(inputArg.length)) {
+                } else if (!$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length')) {
                     val = stringTagArguments;
                 } else {
                     object = $Object(inputArg);
@@ -2911,7 +3108,7 @@
                 }
 
                 if (!val) {
-                    val = pOToString.call(object);
+                    val = $call(pOToString, object);
                 }
 
                 return val;
@@ -2934,7 +3131,7 @@
      * @type {boolean}
      * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
      */
-    hasDontEnumBug = !base.Object.propertyIsEnumerable.call({'toString': null}, 'toString') || false;
+    hasDontEnumBug = !$call(base.Object.propertyIsEnumerable, {'toString': null}, 'toString') || false;
 
     /**
      * Indicates if the environment's function objects suffer the "prototype is enumerable bug".
@@ -2945,7 +3142,7 @@
      * @type {boolean}
      * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
      */
-    hasProtoEnumBug = base.Object.propertyIsEnumerable.call(function () { return; }, 'prototype') || false;
+    hasProtoEnumBug = $call(base.Object.propertyIsEnumerable, function () { return; }, 'prototype') || false;
 
     /**
      * Indicates if the arguments object suffers the "index enumeration bug".
@@ -2977,7 +3174,7 @@
      * @name module:util-x~hasEnumStringBug
      * @type {boolean}
      */
-    hasEnumStringBug = !pHasOwn.call('x', '0') || false;
+    hasEnumStringBug = !$call(pHasOwn, 'x', '0') || false;
 
     /**
      * Indicates if a string suffers the "indexed accessability bug".
@@ -2992,6 +3189,16 @@
 
         return boxedString[0] !== 'a' || !$hasProperty(boxedString, 0) || false;
     }());
+
+    /**
+     * Indicates if a arra suffers the "zero length array's length is not a number bug".
+     * True if it does, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasArrayLengthBug
+     * @type {boolean}
+     */
+    hasArrayLengthBug = typeof [].length !== 'number' || false;
 
     /**
      * Indicates if the Error object has additional enumerable properties.
@@ -3023,7 +3230,7 @@
             obj = errObjs[index1];
             /*jslint forin: true */
             for (prop in obj) {
-                if (pHasOwn.call(obj, prop)) {
+                if ($call(pHasOwn, obj, prop)) {
                     for (found = false, index2 = 0, length2 = $toLength(unwantedError.length); index2 < length2; index2 += 1) {
                         if (prop === unwantedError[index2]) {
                             found = true;
@@ -3063,57 +3270,6 @@
     hasGetSet = ($isFunction(mLookupGetter) && $isFunction(mLookupSetter)) || false;
 
     /**
-     * Indicates if running in strict mode.
-     * True if we are, otherwise false.
-     *
-     * @private
-     * @name module:util-x~isStrictMode
-     * @type {boolean}
-     */
-    isStrictMode = (function () {
-        return !this;
-    }()) || false;
-
-    /**
-     * Indicates if the this argument used with call does not convert to an object when not strict mode.
-     * True if it does, otherwise false.
-     *
-     * @private
-     * @name module:util-x~hasCallBug
-     * @type {boolean}
-     */
-    hasCallBug = (function () {
-        var returnThis = function () {
-            return this;
-        };
-
-        return !isStrictMode && typeof returnThis.call('foo') === 'string';
-    }()) || false;
-
-    /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     * For use with call.
-     *
-     * @private
-     * @function module:util-x~$toObjectCallFix
-     * @param {*} inputArg The argument to be converted to an object.
-     * @returns {Object} Value of inputArg as type Object.
-     */
-    function $toObjectCallFix(inputArg) {
-        var object = inputArg,
-            type;
-
-        if (hasCallBug) {
-            type = typeof inputArg;
-            if (type === 'boolean' || type === 'number' || type === 'string') {
-                object = $toObject(inputArg);
-            }
-        }
-
-        return object;
-    }
-
-    /**
      * The function takes an argument protoFn, and returns a bound function as a stand alone method.
      *
      * @private
@@ -3132,7 +3288,7 @@
         }
 
         /*jslint evil: true */
-        return new Function('fn', 'check', 'slice', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return fn.apply(check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice);
+        return new Function('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice, $apply);
     }
 
     /**
@@ -3147,7 +3303,7 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
-    $slice = $toMethod($pArgSlice);
+    $slice = $toMethod($pSlice);
 
     $conlog('+++++++++ hasDontEnumBug: ' + hasDontEnumBug);
     $conlog('+++++++++ hasProtoEnumBug: ' + hasProtoEnumBug);
@@ -3155,7 +3311,9 @@
     $conlog('+++++++++ hasErrorProps: ' + hasErrorProps);
     $conlog('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
     $conlog('+++++++++ hasEnumStringBug: ' + hasEnumStringBug);
+    $conlog('+++++++++ hasArrayLengthBug: ' + hasArrayLengthBug);
     $conlog('+++++++++ hasCallBug: ' + hasCallBug);
+    $conlog('+++++++++ hasApplyArrayBug: ' + hasApplyArrayBug);
     $conlog('+++++++++ hasProto: ' + hasProto);
     $conlog('+++++++++ hasGetSet: ' + hasGetSet);
     $conlog('+++++++++ isStrictMode: ' + isStrictMode);
@@ -3584,7 +3742,7 @@
      * @returns {boolean}
      */
     exports.Object.isArguments = function (inputArg) {
-        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'length') && $toStringTag(inputArg) === stringTagArguments) || false;
+        return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $toStringTag(inputArg) === stringTagArguments) || false;
     };
 
     exports.Object.isArguments.argNames = ['inputArg'];
@@ -3610,7 +3768,7 @@
      * @returns {boolean}
      */
     function $isRegExp(inputArg) {
-        return (!$isPrimitive(inputArg) && pHasOwn.call(inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp) || false;
+        return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp) || false;
     }
 
     /**
@@ -3733,7 +3891,7 @@
                 number;
 
             if (thisClass === stringTagNumber || thisClass === stringTagString) {
-                string = pReplace.call(inputArg, plusMinus, '');
+                string = $call(pReplace, inputArg, plusMinus, '');
                 number = $parseFloat(string);
                 val = $strictEqual(number, number) && mIsFinite(string);
             } else {
@@ -3888,13 +4046,13 @@
             isFunctionInternal;
 
         try {
-            /**
+            /*
              * native function cannot be passed
              * to native Function.prototype.toString
              * as scope to evaluate ... only IE, sure
              */
             if (!$isPrimitive(global) && global.alert) {
-                base.Function.toString.call(global.alert);
+                $call(base.Function.toString, global.alert);
             }
         } catch (eRunIENativeFunction) {
             /**
@@ -3906,7 +4064,7 @@
             runIENativeFunction = true;
         }
 
-        /**
+        /*
          * Are we in IE? How to define isIENativeFunction.
          */
         runIENativeFunction = (runIENativeFunction && !$isPrimitive(global) && !$isPrimitive(global.alert) && typeof global.alert.toString) || false;
@@ -3924,9 +4082,9 @@
 
             if (runIENativeFunction === false) {
                 beginsFunction = new CRegExp('^\\s*\\bfunction\\b');
-                if (pTest.call(beginsFunction, global.alert)) {
+                if ($call(pTest, beginsFunction, global.alert)) {
                     return function (inputArg) {
-                        /**
+                        /*
                          * inputArg
                          * we want return true or false
                          *
@@ -3945,7 +4103,7 @@
                          * there could be a space
                          * (never happened, it does not hurt anyway)
                          */
-                        return $isUndefined(inputArg.toString) && pTest.call(beginsFunction, inputArg);
+                        return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
                     };
                 }
             }
@@ -3966,17 +4124,17 @@
          */
         try {
             /*jslint evil: true */
-            eval('(' + base.Function.toString.call(CFunction) + ')');
+            eval('(' + $call(base.Function.toString, CFunction) + ')');
             /*jslint evil: false */
 
-            /**
+            /*
              * Opera 10 doesn't play ball so have to test the string.
              */
             isNativeFunction = (function () {
                 var operaNative = new CRegExp('^function \\S*\\(\\) \\{ (\\[native code\\]|\\/\\* source code not available \\*\\/) \\}$');
 
                 return function (inputArg) {
-                    return pTest.call(operaNative, inputArg);
+                    return $call(pTest, operaNative, inputArg);
                 };
             }());
         } catch (eINF1) {
@@ -4010,7 +4168,7 @@
          * @returns {boolean}
          */
         function isFunctionExtended(inputArg) {
-            /**
+            /*
              * it should be a function in any case
              * before we try to pass it to
              * Function.prototype.toString
@@ -4022,7 +4180,7 @@
          * Returns true if the operand inputArg is a Function.
          *
          * @private
-         * @function @function isFunctionInternal
+         * @function isFunctionInternal
          * @param {*} inputArg
          * @returns {boolean}
          */
@@ -4247,15 +4405,15 @@
 
             // should throw
             $affirm.throws(function () {
-                pSlice.call();
+                $call(pSlice);
             }, CTypeError, 'no arguments');
 
             $affirm.throws(function () {
-                pSlice.call(Undefined);
+                $call(pSlice, Undefined);
             }, CTypeError, 'argument is undefined');
 
             $affirm.throws(function () {
-                pSlice.call(null);
+                $call(pSlice, null);
             }, CTypeError, 'argument is null');
 
             function createArray() {
@@ -4288,7 +4446,7 @@
                 someString = '1234567890';
 
             function sOk(original, sliceArgs, expected) {
-                var testSlice = pSlice.apply(original, sliceArgs),
+                var testSlice = $apply(pSlice, original, sliceArgs),
                     length = $toLength(expected.length),
                     index,
                     isOk = true;
@@ -4355,7 +4513,7 @@
 
         // fail
         function () {
-            return $pArgSlice;
+            return $pSlice;
         },
 
         // argNames
@@ -4483,7 +4641,7 @@
             $affirmBasic(base.Function.bind)();
 
             var bindArr = [1, 2, 3],
-                BindCtr = base.Function.bind.call(function () {
+                BindCtr = $call(base.Function.bind, function () {
                     return bindArr;
                 }, null),
                 bindObj = new BindCtr();
@@ -4494,7 +4652,7 @@
                 this.name = x || 'A';
             }
 
-            BindCtr = base.Function.bind.call(BindFn, null, 'B');
+            BindCtr = $call(base.Function.bind, BindFn, null, 'B');
             bindObj = new BindCtr();
 
             $affirm.ok(bindObj instanceof BindFn, 'instanceof a');
@@ -4515,7 +4673,7 @@
 
             function makeBound(binder, args) {
                 /*jslint evil: true */
-                return new Function('binder', 'slice', 'return function (' + args + '){ return binder.apply(this, slice(arguments)); }')(binder, $slice);
+                return new Function('binder', 'slice', 'apply', 'return function (' + args + '){ return apply(binder, this, slice(arguments)); }')(binder, $slice, $apply);
             }
 
             return function (thisArg) {
@@ -4526,7 +4684,7 @@
                             result;
 
                         if ($instanceOf(this, bound)) {
-                            result = fn.apply(this, binderArgs);
+                            result = $apply(fn, this, binderArgs);
                             if ($Object(result) === result) {
                                 return result;
                             }
@@ -4534,7 +4692,7 @@
                             return this;
                         }
 
-                        return fn.apply(thisArg, binderArgs);
+                        return $apply(fn, thisArg, binderArgs);
                     }, $bindArgs(fn.length - args.length));
 
                 if ($Object(fn.prototype) === fn.prototype) {
@@ -4641,7 +4799,7 @@
                 return $decide(
                     // test
                     function name() {
-                        $affirm.strictEqual(pJoin.call([1, 2]), '1,2', 'defaults to comma');
+                        $affirm.strictEqual($call(pJoin, [1, 2]), '1,2', 'defaults to comma');
                     },
 
                     // pass
@@ -4657,7 +4815,7 @@
                                 separator = ',';
                             }
 
-                            return pJoin.call(this, separator);
+                            return $call(pJoin, this, separator);
                         };
                     },
 
@@ -4991,17 +5149,19 @@
     exports.Number.isSafeInteger = $isSafeInteger;
 
     /**
-     * Returns true if argument is an object but not a function that has own property of length
+     * Returns true if argument has own property of length
      * which is a safe integer and is greather or equal to 0.
      *
      * @private
-     * @function module:util-x~$hasValidLength
+     * @function module:util-x~$hasOwnValidLength
      * @param {*} inputArg
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
      */
-    function $hasValidLength(inputArg) {
-        return !$isPrimitive(inputArg) && !$isFunction(inputArg) && pHasOwn.call(inputArg, 'length') && $isLength(inputArg.length);
+    function $hasOwnValidLength(inputArg) {
+        var object = $toObject(inputArg);
+
+        return ($call(pHasOwn, object, 'length') && $isLength(object.length)) || (hasArrayLengthBug && $isArray(object));
     }
 
     /**
@@ -5387,23 +5547,6 @@
     exports.Number.isUint8.argNames = ['inputArg'];
 
     /**
-     * Throws TypeError if argument has not got a valid length otherwise return the object.
-     *
-     * @private
-     * @function module:util-x~$throwIfNotHasValidLength
-     * @param {*} inputArg
-     * @returns {*}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function $throwIfNotHasValidLength(inputArg) {
-        if (!$hasValidLength(inputArg)) {
-            throw new CTypeError('invalid length property: ' + $toString(inputArg));
-        }
-
-        return inputArg;
-    }
-
-    /**
      * When the concat method is called with zero or more arguments item1, item2, etc.,
      * it returns an array containing the array elements of the object followed by the array elements
      * of each argument in order.
@@ -5419,7 +5562,7 @@
         function () {
             $affirmBasic(pConcat)();
             $affirm.doesNotThrow(function () {
-                pConcat.call([], true);
+                $call(pConcat, [], true);
             });
 
             var concatArr = [1, 2, 3],
@@ -5428,12 +5571,12 @@
                 index;
 
             $affirm.doesNotThrow(function () {
-                resArr = pConcat.call(concatArr, $slice($returnArgs(undefined, null, false)));
+                resArr = $call(pConcat, concatArr, $slice($returnArgs(undefined, null, false)));
             });
 
             $affirm.strictEqual(resArr.length, 6, 'array length incorrect');
             for (index = 0; index < resArr.length; index += 1) {
-                $affirm.ok(pHasOwn.call(resArr, index), 'array value not set');
+                $affirm.ok($call(pHasOwn, resArr, index), 'array value not set');
                 $affirm.strictEqual(resArr[index], expected[index], 'array wrong return value');
             }
         },
@@ -5496,30 +5639,30 @@
         function () {
             $affirmBasic(pPush)();
             $affirm.doesNotThrow(function () {
-                pPush.call([], true);
+                $call(pPush, [], true);
             });
 
             var pushArr = [],
                 pushObj = {};
 
-            $affirm.strictEqual(pPush.call(pushArr, Undefined), 1, 'array wrong return count');
+            $affirm.strictEqual($call(pPush, pushArr, Undefined), 1, 'array wrong return count');
             $affirm.strictEqual(pushArr.length, 1, 'array length incorrect');
-            $affirm.ok(pHasOwn.call(pushArr, 0), 'array value not set');
+            $affirm.ok($call(pHasOwn, pushArr, 0), 'array value not set');
             $affirm.strictEqual(pushArr[0], Undefined, 'array value incorrect');
 
-            $affirm.strictEqual(pPush.call(pushObj, Undefined), 1, 'object wrong return count');
+            $affirm.strictEqual($call(pPush, pushObj, Undefined), 1, 'object wrong return count');
             $affirm.strictEqual(pushObj.length, 1, 'object length incorrect');
-            $affirm.ok(pHasOwn.call(pushObj, 0), 'object value not set');
+            $affirm.ok($call(pHasOwn, pushObj, 0), 'object value not set');
             $affirm.strictEqual(pushObj[0], Undefined, 'object value incorrect');
 
-            $affirm.strictEqual(pPush.call(pushArr, 0), 2, 'array wrong return count');
+            $affirm.strictEqual($call(pPush, pushArr, 0), 2, 'array wrong return count');
             $affirm.strictEqual(pushArr.length, 2, 'array length incorrect');
-            $affirm.ok(pHasOwn.call(pushArr, 1), 'array value not set');
+            $affirm.ok($call(pHasOwn, pushArr, 1), 'array value not set');
             $affirm.strictEqual(pushArr[1], 0, 'array value incorrect');
 
-            $affirm.strictEqual(pPush.call(pushObj, 0), 2, 'object wrong return count');
+            $affirm.strictEqual($call(pPush, pushObj, 0), 2, 'object wrong return count');
             $affirm.strictEqual(pushObj.length, 2, 'object length incorrect');
-            $affirm.ok(pHasOwn.call(pushObj, 1), 'object value not set');
+            $affirm.ok($call(pHasOwn, pushObj, 1), 'object value not set');
             $affirm.strictEqual(pushObj[1], 0, 'object value incorrect');
         },
 
@@ -5590,7 +5733,7 @@
         function () {
             $affirmBasic(pPop)();
             $affirm.doesNotThrow(function () {
-                pPop.call([]);
+                $call(pPop, []);
             });
 
             var popArr = [1, 2, 3],
@@ -5601,21 +5744,21 @@
                     length: 3
                 };
 
-            $affirm.strictEqual(pPop.call(popArr), 3, 'array wrong return value');
+            $affirm.strictEqual($call(pPop, popArr), 3, 'array wrong return value');
             $affirm.strictEqual(popArr.length, 2, 'array length incorrect');
-            $affirm.ok(!pHasOwn.call(popArr, 2), 'array value 2 not deleted');
+            $affirm.ok(!$call(pHasOwn, popArr, 2), 'array value 2 not deleted');
 
-            $affirm.strictEqual(pPop.call(popObj), 3, 'object wrong return value');
+            $affirm.strictEqual($call(pPop, popObj), 3, 'object wrong return value');
             $affirm.strictEqual(popObj.length, 2, 'object length incorrect');
-            $affirm.ok(!pHasOwn.call(popObj, 2), 'object value 2 not deleted');
+            $affirm.ok(!$call(pHasOwn, popObj, 2), 'object value 2 not deleted');
 
-            $affirm.strictEqual(pPop.call(popArr), 2, 'array wrong return value');
+            $affirm.strictEqual($call(pPop, popArr), 2, 'array wrong return value');
             $affirm.strictEqual(popArr.length, 1, 'array length incorrect');
-            $affirm.ok(!pHasOwn.call(popArr, 1), 'array value 1 not deleted');
+            $affirm.ok(!$call(pHasOwn, popArr, 1), 'array value 1 not deleted');
 
-            $affirm.strictEqual(pPop.call(popObj), 2, 'object wrong return value');
+            $affirm.strictEqual($call(pPop, popObj), 2, 'object wrong return value');
             $affirm.strictEqual(popObj.length, 1, 'object length incorrect');
-            $affirm.ok(!pHasOwn.call(popObj, 1), 'object value 1 not deleted');
+            $affirm.ok(!$call(pHasOwn, popObj, 1), 'object value 1 not deleted');
         },
 
         // pass
@@ -5685,7 +5828,7 @@
         function () {
             $affirmBasic(pShift)();
             $affirm.doesNotThrow(function () {
-                pShift.call([]);
+                $call(pShift, []);
             });
 
             var shiftArr = [1, 2, 3],
@@ -5696,21 +5839,21 @@
                     length: 3
                 };
 
-            $affirm.strictEqual(pShift.call(shiftArr), 1, 'array wrong return value');
+            $affirm.strictEqual($call(pShift, shiftArr), 1, 'array wrong return value');
             $affirm.strictEqual(shiftArr.length, 2, 'array length incorrect');
-            $affirm.ok(!pHasOwn.call(shiftArr, 2), 'array value 2 not deleted');
+            $affirm.ok(!$call(pHasOwn, shiftArr, 2), 'array value 2 not deleted');
 
-            $affirm.strictEqual(pShift.call(shiftObj), 1, 'object wrong return value');
+            $affirm.strictEqual($call(pShift, shiftObj), 1, 'object wrong return value');
             $affirm.strictEqual(shiftObj.length, 2, 'object length incorrect');
-            $affirm.ok(!pHasOwn.call(shiftObj, 2), 'object value 2 not deleted');
+            $affirm.ok(!$call(pHasOwn, shiftObj, 2), 'object value 2 not deleted');
 
-            $affirm.strictEqual(pShift.call(shiftArr), 2, 'array wrong return value');
+            $affirm.strictEqual($call(pShift, shiftArr), 2, 'array wrong return value');
             $affirm.strictEqual(shiftArr.length, 1, 'array length incorrect');
-            $affirm.ok(!pHasOwn.call(shiftArr, 1), 'array value 1 not deleted');
+            $affirm.ok(!$call(pHasOwn, shiftArr, 1), 'array value 1 not deleted');
 
-            $affirm.strictEqual(pShift.call(shiftObj), 2, 'object wrong return value');
+            $affirm.strictEqual($call(pShift, shiftObj), 2, 'object wrong return value');
             $affirm.strictEqual(shiftObj.length, 1, 'object length incorrect');
-            $affirm.ok(!pHasOwn.call(shiftObj, 1), 'object value 1 not deleted');
+            $affirm.ok(!$call(pHasOwn, shiftObj, 1), 'object value 1 not deleted');
         },
 
         // pass
@@ -5791,30 +5934,30 @@
         function () {
             $affirmBasic(pUnshift)();
             $affirm.doesNotThrow(function () {
-                pUnshift.call([], true);
+                $call(pUnshift, [], true);
             });
 
             var unshiftArr = [],
                 unshiftObj = {};
 
-            $affirm.strictEqual(pUnshift.call(unshiftArr, Undefined), 1, 'array wrong return count');
+            $affirm.strictEqual($call(pUnshift, unshiftArr, Undefined), 1, 'array wrong return count');
             $affirm.strictEqual(unshiftArr.length, 1, 'array length incorrect');
-            $affirm.ok(pHasOwn.call(unshiftArr, 0), 'array value not set');
+            $affirm.ok($call(pHasOwn, unshiftArr, 0), 'array value not set');
             $affirm.strictEqual(unshiftArr[0], Undefined, 'array value incorrect');
 
-            $affirm.strictEqual(pUnshift.call(unshiftObj, Undefined), 1, 'object wrong return count');
+            $affirm.strictEqual($call(pUnshift, unshiftObj, Undefined), 1, 'object wrong return count');
             $affirm.strictEqual(unshiftObj.length, 1, 'object length incorrect');
-            $affirm.ok(pHasOwn.call(unshiftObj, 0), 'object value not set');
+            $affirm.ok($call(pHasOwn, unshiftObj, 0), 'object value not set');
             $affirm.strictEqual(unshiftObj[0], Undefined, 'object value incorrect');
 
-            $affirm.strictEqual(pUnshift.call(unshiftArr, 0), 2, 'array wrong return count');
+            $affirm.strictEqual($call(pUnshift, unshiftArr, 0), 2, 'array wrong return count');
             $affirm.strictEqual(unshiftArr.length, 2, 'array length incorrect');
-            $affirm.ok(pHasOwn.call(unshiftArr, 0), 'array value not set');
+            $affirm.ok($call(pHasOwn, unshiftArr, 0), 'array value not set');
             $affirm.strictEqual(unshiftArr[0], 0, 'array value incorrect');
 
-            $affirm.strictEqual(pUnshift.call(unshiftObj, 0), 2, 'object wrong return count');
+            $affirm.strictEqual($call(pUnshift, unshiftObj, 0), 2, 'object wrong return count');
             $affirm.strictEqual(unshiftObj.length, 2, 'object length incorrect');
-            $affirm.ok(pHasOwn.call(unshiftObj, 0), 'object value not set');
+            $affirm.ok($call(pHasOwn, unshiftObj, 0), 'object value not set');
             $affirm.strictEqual(unshiftObj[0], 0, 'object value incorrect');
         },
 
@@ -5921,15 +6064,15 @@
     (function () {
         var clipDups = new CRegExp('([\\s\\S])(?=[\\s\\S]*\\1)', 'g'),
             // Check for correct `exec` handling of nonparticipating capturing groups
-            npcgType = typeof pExec.call(new CRegExp('()??'), '')[1],
+            npcgType = typeof $call(pExec, new CRegExp('()??'), '')[1],
             escapeThese = new CRegExp('[\\[\\](){}?*+\\^$\\\\.|]', 'g'),
             correctExecNpcg = npcgType === 'undefined',
             replacementToken = new CRegExp('\\$(?:\\{(\\$+)\\}|(\\d\\d?|[\\s\\S]))', 'g'),
             getNativeFlags = new CRegExp('\\/([a-z]*)$', 'i'),
-            es5limit = $join(pSplit.call('test', /(?:)/, -1), '') === 'test' &&
-                        $join(pSplit.call('a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
-                        $join(pSplit.call('a b c d', / /, UWORD32 + 1), '') === 'a' &&
-                        $join(pSplit.call('a b c d', / /, Infinity), '') === '';
+            es5limit = $join($call(pSplit, 'test', /(?:)/, -1), '') === 'test' &&
+                        $join($call(pSplit, 'a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
+                        $join($call(pSplit, 'a b c d', / /, UWORD32 + 1), '') === 'a' &&
+                        $join($call(pSplit, 'a b c d', / /, Infinity), '') === '';
 
         /**
          * This method takes a string and puts a backslash in front of every character
@@ -5943,7 +6086,7 @@
          * @returns {string}
          */
         exports.String.proto.escapeRegex = function () {
-            return pReplace.call($onlyCoercibleToString(this), escapeThese, '\\$&');
+            return $call(pReplace, $onlyCoercibleToString(this), escapeThese, '\\$&');
         };
 
         /**
@@ -5968,7 +6111,7 @@
          * @returns {string} String with any duplicate characters removed.
          */
         exports.String.clipDuplicates = function (str) {
-            return pReplace.call($onlyCoercibleToString(str), clipDups, '');
+            return $call(pReplace, $onlyCoercibleToString(str), clipDups, '');
         };
 
         exports.String.clipDuplicates.argNames = ['str'];
@@ -5990,14 +6133,14 @@
             }
 
             // Get native flags in use
-            flags = $onlyCoercibleToString(pExec.call(getNativeFlags, $toString(regExpArg))[1]);
+            flags = $onlyCoercibleToString($call(pExec, getNativeFlags, $toString(regExpArg))[1]);
             if (options.add) {
-                flags = pReplace.call(flags + options.add, clipDups, '');
+                flags = $call(pReplace, flags + options.add, clipDups, '');
             }
 
             if (options.remove) {
                 // Would need to escape `options.remove` if this was public
-                flags = pReplace.call(flags, new CRegExp('[' + options.remove + ']+', 'g'), '');
+                flags = $call(pReplace, flags, new CRegExp('[' + options.remove + ']+', 'g'), '');
             }
 
             return new CRegExp(regExpArg.source, flags);
@@ -6020,42 +6163,42 @@
 
             testTemp.regex = /x/;
             testTemp.regex.lastIndex = 4;
-            testTemp.execSlice = $slice(pExec.call(testTemp.regex, '123x5'));
+            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
             if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
                 throw new CError();
             }
 
             testTemp.regex = /x/g;
             testTemp.regex.lastIndex = 4;
-            if (pExec.call(testTemp.regex, '123x5') !== null) {
+            if ($call(pExec, testTemp.regex, '123x5') !== null) {
                 throw new CError();
             }
 
             testTemp.regex.lastIndex = 2;
-            testTemp.execSlice = $slice(pExec.call(testTemp.regex, '123x5'));
+            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
             if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
                 throw new CError();
             }
 
             testTemp.regex.lastIndex = '3';
-            testTemp.execSlice = $slice(pExec.call(testTemp.regex, '123x5'));
+            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
             if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
                 throw new CError();
             }
 
             testTemp.regex.lastIndex = '4';
-            if (pExec.call(testTemp.regex, '123x5') !== null) {
+            if ($call(pExec, testTemp.regex, '123x5') !== null) {
                 throw new CError();
             }
 
             testTemp.regex = /\b/g;
-            testTemp.match = pExec.call(testTemp.regex, '1,2');
+            testTemp.match = $call(pExec, testTemp.regex, '1,2');
             if (!testTemp.match[0].length && testTemp.regex.lastIndex > testTemp.match.index) {
                 throw new CError();
             }
 
             testTemp.regex = /x/;
-            pExec.call(testTemp.regex, '123x5');
+            $call(pExec, testTemp.regex, '123x5');
             if (testTemp.regex.lastIndex !== 0) {
                 throw new CError();
             }
@@ -6074,7 +6217,7 @@
                 throwIfNotRegExp(this);
                 str = $toString(stringArg);
                 origLastIndex = this.lastIndex;
-                match = pExec.apply(this, $slice(arguments));
+                match = $apply(pExec, this, $slice(arguments));
                 if ($isArray(match)) {
                     // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
                     // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
@@ -6092,7 +6235,7 @@
                             r2 = copyRegExp(this, {remove: 'g'});
                             // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                             // matching due to characters outside the match
-                            pReplace.call(pSSlice.call($toString(str), match.index), r2, function () {
+                            $call(pReplace, $call(pSSlice, $toString(str), match.index), r2, function () {
                                 var length = arguments.length - 2,
                                     index,
                                     type,
@@ -6227,11 +6370,11 @@
             /** @todo Require more tests for string split */
             /*jslint todo: false */
             if (!testShims || !$isNative(pSplit) ||
-                    pSplit.call('test', new CRegExp('(?:test)*')).length === 2 ||
-                    pSplit.call('.', new CRegExp('(.?)(.?)')).length !== 4 ||
-                    pSplit.call('tesst', new CRegExp('(s)*'))[1] === 't' ||
-                    pSplit.call('', new CRegExp('.?')).length > 0 ||
-                    pSplit.call('.', new CRegExp('()()')).length > 1) {
+                    $call(pSplit, 'test', new CRegExp('(?:test)*')).length === 2 ||
+                    $call(pSplit, '.', new CRegExp('(.?)(.?)')).length !== 4 ||
+                    $call(pSplit, 'tesst', new CRegExp('(s)*'))[1] === 't' ||
+                    $call(pSplit, '', new CRegExp('.?')).length > 0 ||
+                    $call(pSplit, '.', new CRegExp('()()')).length > 1) {
 
                 throw new CError();
             }
@@ -6259,7 +6402,7 @@
                         }
                     }
 
-                    val = pSplit.call($onlyCoercibleToString(this), separator, limit);
+                    val = $call(pSplit, $onlyCoercibleToString(this), separator, limit);
                 }
 
                 return val;
@@ -6320,7 +6463,7 @@
 
                         if (!$isRegExp(separator)) {
                             // Browsers handle nonregex split correctly, so use the faster native method
-                            output = pSplit.call(str, separator, limit);
+                            output = $call(pSplit, str, separator, limit);
                         } else {
                             output = [];
                             origLastIndex = separator.lastIndex;
@@ -6330,7 +6473,7 @@
                             while (match) {
                                 // This condition is not the same as `if (match[0].length)`
                                 if ((match.index + $toLength(match[0].length)) > lastLastIndex) {
-                                    $push(output, pSSlice.call(str, lastLastIndex, match.index));
+                                    $push(output, $call(pSSlice, str, lastLastIndex, match.index));
                                     if ($toLength(match.length) > 1 && match.index < length) {
                                         output = $concat(output, $slice(match, 1));
                                     }
@@ -6344,11 +6487,11 @@
                             }
 
                             if (lastLastIndex === str.length) {
-                                if (!pTest.call(separator, '') || lastLength) {
+                                if (!$call(pTest, separator, '') || lastLength) {
                                     $push(output, '');
                                 }
                             } else {
-                                $push(output, pSSlice.call(str, lastLastIndex));
+                                $push(output, $call(pSSlice, str, lastLastIndex));
                             }
 
                             separator.lastIndex = origLastIndex;
@@ -6412,23 +6555,23 @@
             /*jslint todo: true */
             /** @todo Require more tests for string replace */
             /*jslint todo: false */
-            if (pReplace.call('aaa', /aa/, '$&b') !== 'aaba' ||
-                    pReplace.call('aaa', /aa/, '$\'b') !== 'aba' ||
-                    pReplace.call('xaaa', /aa/, '$`b') !== 'xxba' ||
-                    pReplace.call('aaa', /aa/, '$$b') !== '$ba') {
+            if ($call(pReplace, 'aaa', /aa/, '$&b') !== 'aaba' ||
+                    $call(pReplace, 'aaa', /aa/, '$\'b') !== 'aba' ||
+                    $call(pReplace, 'xaaa', /aa/, '$`b') !== 'xxba' ||
+                    $call(pReplace, 'aaa', /aa/, '$$b') !== '$ba') {
 
                 throw new CError('Failed token handling');
             }
 
             testTemp.regex = /x/g;
             testTemp.regex.lastIndex = 1;
-            pReplace.call('nomatch', testTemp.regex, '_');
+            $call(pReplace, 'nomatch', testTemp.regex, '_');
             if (testTemp.regex.lastIndex !== 0) {
                 throw new CError('No reset of lastIndex of a global regex');
             }
 
             testTemp.regex.lastIndex = testTemp.interimLastIndex = 0;
-            pReplace.call('1x2', testTemp.regex, function () {
+            $call(pReplace, '1x2', testTemp.regex, function () {
                 testTemp.interimLastIndex = testTemp.regex.lastIndex;
             });
 
@@ -6438,7 +6581,7 @@
 
             testTemp.regex = /x/;
             testTemp.regex.lastIndex = 1;
-            pReplace.call('nomatch', testTemp.regex, '_');
+            $call(pReplace, 'nomatch', testTemp.regex, '_');
             if (testTemp.regex.lastIndex !== 0) {
                 throw new CError('No reset of lastIndex of a non-global regex');
             }
@@ -6464,7 +6607,7 @@
                 if ($isFunction(replacement)) {
                     // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
                     // functions isn't type-converted to a string
-                    result = pReplace.call(str, search, function () {
+                    result = $call(pReplace, str, search, function () {
                         var args = $slice(arguments);
 
                         // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
@@ -6475,17 +6618,17 @@
 
                         // Should pass `undefined` as context; see
                         // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                        return replacement.apply(Undefined, args);
+                        return $apply(replacement, Undefined, args);
                     });
                 } else {
                     // Ensure that the last value of `args` will be a string when given nonstring `this`,
                     // while still throwing on `null` or `undefined` context
-                    result = pReplace.call(str, search, function () {
+                    result = $call(pReplace, str, search, function () {
                         // Keep this function's `arguments` available through closure
                         var args = $slice(arguments),
                             length = args.length;
 
-                        return pReplace.call($toString(replacement), replacementToken, function ($0, $1, $2) {
+                        return $call(pReplace, $toString(replacement), replacementToken, function ($0, $1, $2) {
                             /*jslint unparam: true */
                             /*jshint unused: false */
                             // Special variable or numbered backreference without curly braces
@@ -6643,7 +6786,7 @@
             if (!$isRegExp(regExpArg)) {
                 regExpArg = new CRegExp(regExpArg);
             } else if (regExpArg.global) {
-                result = pMatch.apply(str, $slice(arguments));
+                result = $apply(pMatch, str, $slice(arguments));
                 // Fixes IE bug
                 regExpArg.lastIndex = 0;
 
@@ -6679,7 +6822,7 @@
      * @returns {string}
      */
     exports.String.proto.first = function () {
-        return pCharAt.call($onlyCoercibleToString(this), 0);
+        return $call(pCharAt, $onlyCoercibleToString(this), 0);
     };
 
     /**
@@ -6706,7 +6849,7 @@
     exports.String.proto.last = function () {
         var str = $onlyCoercibleToString(this);
 
-        return pCharAt.call(str, str.length - 1);
+        return $call(pCharAt, str, str.length - 1);
     };
 
     /**
@@ -6732,7 +6875,7 @@
      */
     exports.String.proto.countCharacter = function (character) {
         var str = $onlyCoercibleToString(this),
-            first = pCharAt.call($onlyCoercibleToString(character), 0),
+            first = $call(pCharAt, $onlyCoercibleToString(character), 0),
             val;
 
         if (first === '') {
@@ -6771,7 +6914,7 @@
      */
     exports.String.proto.padLeadingChar = function (character, size) {
         var string = $onlyCoercibleToString(this),
-            singleChar = pCharAt.call($onlyCoercibleToString(character), 0),
+            singleChar = $call(pCharAt, $onlyCoercibleToString(character), 0),
             count = $toInteger(size) - string.length;
 
         if (count < 0 || count === Infinity) {
@@ -6919,7 +7062,7 @@
                     searchStr = $toString(searchString),
                     start = $min($max($toInteger(position), 0), thisStr.length);
 
-                return pSSlice.call(thisStr, start, start + searchStr.length) === searchStr;
+                return $call(pSSlice, thisStr, start, start + searchStr.length) === searchStr;
             };
         },
 
@@ -6982,7 +7125,7 @@
                 end = $min($max(position, 0), thisLen);
                 start = end - searchStr.length;
 
-                return start >= 0 && pSSlice.call(thisStr, start, end) === searchStr;
+                return start >= 0 && $call(pSSlice, thisStr, start, end) === searchStr;
             };
         },
 
@@ -7040,7 +7183,7 @@
                     position = $toInteger(position);
                 }
 
-                return pSIndexOf.call(str, searchStr, $min($max(position, 0), length)) !== -1;
+                return $call(pSIndexOf, str, searchStr, $min($max(position, 0), length)) !== -1;
             };
         },
 
@@ -7316,7 +7459,7 @@
                         return function (property) {
                             var prop = $toString(property);
 
-                            return (prop === 'prototype' && $isFunction(this)) || pHasOwn.call(this, prop);
+                            return (prop === 'prototype' && $isFunction(this)) || $call(pHasOwn, this, prop);
                         };
                     },
 
@@ -7324,13 +7467,13 @@
                     function () {
                         return function (property) {
                             var prop = $toString(property),
-                                hop = pHasOwn.call(this, prop),
+                                hop = $call(pHasOwn, this, prop),
                                 length,
                                 index;
 
 
                             if (!hop && $hasProperty(this, prop)) {
-                                for (index = 0, length = shadowed.length; index < length; index += 1) {
+                                for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
                                     if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
                                         hop = true;
                                         break;
@@ -7388,7 +7531,8 @@
     $hasOwn = exports.Object.hasOwnProperty;
 
     /**
-     * Forchecking an objects item by index. Primary use in Array shims.
+     * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
+     * Primary use in Array shims.
      *
      * @private
      * @function module:util-x~$hasItem
@@ -7402,7 +7546,8 @@
     }
 
     /**
-     * For getting an objects item by index. Primary use in Array shims.
+     * For getting an objects item by index. Can pacth or objects that don't work with boxed index access.
+     * Primary use in Array shims.
      *
      * @private
      * @function module:util-x~$getItem
@@ -7415,7 +7560,7 @@
         var item;
 
         if (stringTag === stringTagString) {
-            item = pCharAt.call(object, index);
+            item = $call(pCharAt, object, index);
         } else {
             item = object[index];
         }
@@ -7430,7 +7575,17 @@
      * @returns {(boolean|null)}
      */
     function $specialToObject(inputArg) {
-        return $throwIfNotHasValidLength($toObject(inputArg));
+        var object = $toObject(inputArg);
+
+        if (!$hasOwnValidLength(object)) {
+            throw new CTypeError('invalid length property: ' + $toString(object));
+        }
+
+        if ($isFunction(inputArg)) {
+            throw new CTypeError('argument is a function: ' + $toString(object));
+        }
+
+        return object;
     }
 
     /**
@@ -7618,7 +7773,7 @@
                     it = $getItem(object, index, stringTag);
                     val = true;
                     for (idx = 0; idx < length; idx += 1) {
-                        if (idx < index && $hasItem(object, idx, stringTag) && equalFn.call(thisArg, it, $getItem(object, idx, stringTag))) {
+                        if (idx < index && $hasItem(object, idx, stringTag) && $call(equalFn, thisArg, it, $getItem(object, idx, stringTag))) {
                             val = false;
                             break;
                         }
@@ -7682,7 +7837,7 @@
                 $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDsentinel, 'sentinel').value, null, 'test1');
                 $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 2).value, 30, 'test2');
                 $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, '2').value, 30, 'test3');
-                $affirm.ok(pHasOwn.call(mGetOwnPropertyDescriptor(gOPDarray, 4), 'value'), 'test4');
+                $affirm.ok($call(pHasOwn, mGetOwnPropertyDescriptor(gOPDarray, 4), 'value'), 'test4');
                 $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 4).value, Undefined, 'test5');
                 $affirm.strictEqual(mGetOwnPropertyDescriptor(gOPDarray, 5), Undefined, 'test6');
             },
@@ -7693,10 +7848,9 @@
                 return $decide(
                     // test
                     function () {
-                        // should patch prototype because it is safe with defineProperty
                         $affirm.ok(!(mGetOwnPropertyDescriptor(function (a) {
                             return a;
-                        }, 'length').writable));
+                        }, 'length').writable), 'Function.prototype.length should be read only.');
                     },
 
                     // pass
@@ -7706,22 +7860,34 @@
 
                     // fail
                     function () {
+                        // should patch prototype because it is safe with defineProperty
+                        /*
                         return function (object, property) {
                             var descriptor = mGetOwnPropertyDescriptor(object, property);
 
-                            if ($isFunction(object) && property === 'length' && descriptor.writable) {
+                            if (property === 'length' && descriptor.writable && $isFunction(object)) {
                                 descriptor.writable = false;
                             }
 
                             return descriptor;
                         };
+                        */
+
+                        // This is an intrusive patch but can be done correctly, so I feel it's worth it.
+                        try {
+                            mDefineProperty(Function.prototype, 'length', propConstant);
+                        } catch (eLengthPatch) {
+                            $conlog('Failed to patch Function.prototype.length', eLengthPatch);
+                        }
+
+                        return mGetOwnPropertyDescriptor;
                     },
 
                     // argNames
                     argNames,
 
                     // message
-                    'getOwnPropertyDescriptor length patch'
+                    'Function.prototype.length patch as read only'
                 );
             },
 
@@ -7740,8 +7906,8 @@
                         if (hasGetSet) {
                             prototype = object[stringProto];
                             object[stringProto] = protoObject;
-                            getter = mLookupGetter.call(object, property);
-                            setter = mLookupSetter.call(object, property);
+                            getter = $call(mLookupGetter, object, property);
+                            setter = $call(mLookupSetter, object, property);
                             if ($isUndefined(prototype)) {
                                 delete object[stringProto];
                             } else {
@@ -7771,7 +7937,7 @@
             argNames,
 
             //message
-            'getOwnPropertyDescriptor shim'
+            'Object.getOwnPropertyDescriptor sham'
         );
     }());
 
@@ -7811,7 +7977,7 @@
         function readOnlyLength(inputArg) {
             var stringTag = $toStringTag(inputArg);
 
-            if (readOnlyLengths[stringTag] || (hasWorkingGOPD && pHasOwn.call(inputArg, 'length') && !exports.Object.getOwnPropertyDescriptor(inputArg, 'length').writable)) {
+            if (readOnlyLengths[stringTag] || (hasWorkingGOPD && $call(pHasOwn, inputArg, 'length') && !exports.Object.getOwnPropertyDescriptor(inputArg, 'length').writable)) {
                 throw new CTypeError('Cannot assign to read only property \'length\' of ' + stringTag);
             }
 
@@ -7822,7 +7988,7 @@
             // test
             function () {
                 $affirmBasic(pSplice)();
-                $affirm.strictEqual(pSplice.call([1, 2], 0).length, 2, 'correct length');
+                $affirm.strictEqual($call(pSplice, [1, 2], 0).length, 2, 'correct length');
             },
 
             // pass
@@ -7830,14 +7996,14 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.strictEqual(pSplice.call([1, 2]).length, 0, 'is zero');
+                        $affirm.strictEqual($call(pSplice, [1, 2]).length, 0, 'is zero');
 
                         $affirm.throws(function () {
-                            pSplice.call('abc');
+                            $call(pSplice, 'abc');
                         }, CTypeError, 'string should throw');
 
                         $affirm.throws(function () {
-                            pSplice.call(function () { return; });
+                            $call(pSplice, function () { return; });
                         }, CTypeError, 'function should throw');
                     },
 
@@ -7855,7 +8021,7 @@
                             if ($toLength(arguments.length) < 1) {
                                 val = [];
                             } else {
-                                val = pSplice.apply(object, $slice(arguments));
+                                val = $apply(pSplice, object, $slice(arguments));
                             }
 
                             return val;
@@ -7877,11 +8043,12 @@
                         length = $toLength(object.length),
                         removed = [],
                         relativeStart = $toInteger(start),
+                        stringTag = $toStringTag(object),
                         actualStart,
                         actualDeleteCount,
                         k = 0,
                         from,
-                        argLength = arguments.length,
+                        argLength = $toLength(arguments.length),
                         args = $slice(arguments),
                         item = 2,
                         itemCount = $max(argLength - item, 0),
@@ -7905,8 +8072,8 @@
                     actualDeleteCount = $min($max($toLength(deleteCount), 0), length - actualStart);
                     while (k < actualDeleteCount) {
                         from = actualStart + k;
-                        if ($hasOwn(object, from)) {
-                            $push(removed, object[from]);
+                        if ($hasItem(object, from, stringTag)) {
+                            $push(removed, $getItem(object, from, stringTag));
                         }
 
                         k += 1;
@@ -7918,8 +8085,8 @@
                         while (k < loopCache) {
                             from = k + actualDeleteCount;
                             to = k + itemCount;
-                            if ($hasOwn(object, from)) {
-                                object[to] = object[from];
+                            if ($hasItem(object, from, stringTag)) {
+                                object[to] = $getItem(object, from, stringTag);
                             } else {
                                 delete object[to];
                             }
@@ -7938,8 +8105,8 @@
                         while (k > actualStart) {
                             from = k + actualDeleteCount - 1;
                             to = k + itemCount - 1;
-                            if ($hasOwn(object, from)) {
-                                object[to] = object[from];
+                            if ($hasItem(object, from, stringTag)) {
+                                object[to] = $getItem(object, from, stringTag);
                             } else {
                                 delete object[to];
                             }
@@ -7955,7 +8122,7 @@
                         item += 1;
                     }
 
-                    object.length = length - actualDeleteCount + itemCount;
+                    object.length = $toLength(length - actualDeleteCount + itemCount);
 
                     return removed;
                 };
@@ -8011,8 +8178,8 @@
         var bug = false;
 
         if (isStrictMode) {
-            fn.call([1], function () {
-                bug = typeof this === 'object';
+            $call(fn, [1], function () {
+                bug = $typeOf(this) === 'object';
             }, 'foo');
         }
 
@@ -8042,10 +8209,8 @@
 
             var result;
 
-            Fn.call('foo', function () {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                result = arguments[arguments.length - 1];
+            $call(Fn, 'foo', function () {
+                result = arguments[$toLength(arguments.length) - 1];
             });
 
             $affirm.strictEqual($typeOf(result), 'object', 'is object');
@@ -8103,7 +8268,7 @@
                 stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
-                        fn.call(thisArg, $getItem(object, index, stringTag), index, object);
+                        $call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                     }
                 }
             };
@@ -8173,7 +8338,7 @@
 
         stringTag = $toStringTag(object);
         for (val = false, index = 0; index < length; index += 1) {
-            val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
+            val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
             if (val) {
                 break;
             }
@@ -8250,7 +8415,7 @@
                 stringTag = $toStringTag(object);
                 for (val = false, index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
-                        val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
+                        val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                         if (val) {
                             break;
                         }
@@ -8319,7 +8484,7 @@
                     2: 3,
                     length: -3
                 },
-                foundIndex = pFind.call(obj, function () {
+                foundIndex = $call(pFind, obj, function () {
                     throw new Error('should not reach here');
                 });
 
@@ -8350,7 +8515,7 @@
                 stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
                     it = $getItem(object, index, stringTag);
-                    if (fn.call(thisArg, it, index, object)) {
+                    if ($call(fn, thisArg, it, index, object)) {
                         val = it;
                         break;
                     }
@@ -8419,7 +8584,7 @@
                     2: 3,
                     length: -3
                 },
-                foundIndex = pFindIndex.call(obj, function () {
+                foundIndex = $call(pFindIndex, obj, function () {
                     throw new Error('should not reach here');
                 });
 
@@ -8448,7 +8613,7 @@
 
                 stringTag = $toStringTag(object);
                 for (val = -1, index = 0; index < length; index += 1) {
-                    if (fn.call(thisArg, $getItem(object, index, stringTag), index, object)) {
+                    if ($call(fn, thisArg, $getItem(object, index, stringTag), index, object)) {
                         val = index;
                         break;
                     }
@@ -8540,7 +8705,7 @@
                 for (index = 0; index < length; index += 1) {
                     it = $getItem(object, index, stringTag);
                     if (mapping) {
-                        it = mapfn.call(thisArg, it, index);
+                        it = $call(mapfn, thisArg, it, index);
                     }
 
                     array[index] = it;
@@ -8608,7 +8773,7 @@
                 stringTag = $toStringTag(object);
                 for (val = true, index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
-                        val = !!fn.call(thisArg, $getItem(object, index, stringTag), index, object);
+                        val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                         if (!val) {
                             break;
                         }
@@ -8693,7 +8858,7 @@
                 stringTag = $toStringTag(object);
                 for (index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
-                        arr[index] =  fn.call(thisArg, $getItem(object, index, stringTag), index, object);
+                        arr[index] =  $call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                     }
                 }
 
@@ -8812,7 +8977,7 @@
                 for (arr = [], index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
                         it = $getItem(object, index, stringTag);
-                        if (fn.call(thisArg, it, index, object)) {
+                        if ($call(fn, thisArg, it, index, object)) {
                             $push(arr, it);
                         }
                     }
@@ -8905,7 +9070,7 @@
 
                 while (index < length) {
                     if ($hasItem(object, index, stringTag)) {
-                        accumulator = fn.call(Undefined, accumulator, $getItem(object, index, stringTag), index, object);
+                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, stringTag), index, object);
                     }
 
                     index += 1;
@@ -8999,7 +9164,7 @@
 
                 while (index >= 0) {
                     if ($hasItem(object, index, stringTag)) {
-                        accumulator = fn.call(Undefined, accumulator, $getItem(object, index, stringTag), index, object);
+                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, stringTag), index, object);
                     }
 
                     index -= 1;
@@ -9171,8 +9336,8 @@
          * @returns {number}
          */
         function sortCompare(left, right) {
-            var hasj = $hasOwn(left, 0),
-                hask = $hasOwn(right, 0),
+            var hasj = $call(pHasOwn, left, 0),
+                hask = $call(pHasOwn, right, 0),
                 typex,
                 typey,
                 val;
@@ -9218,26 +9383,26 @@
                 sComp = sortCompare(left, right);
                 if (typeof sComp !== 'number') {
                     if (comparison(left[0], right[0]) <= 0) {
-                        if ($hasOwn(left, 0)) {
+                        if ($call(pHasOwn, left, 0)) {
                             result[next] = left[0];
                         }
 
                         $shift(left);
                     } else {
-                        if ($hasOwn(right, 0)) {
+                        if ($call(pHasOwn, right, 0)) {
                             result[next] = right[0];
                         }
 
                         $shift(right);
                     }
                 } else if (sComp <= 0) {
-                    if ($hasOwn(left, 0)) {
+                    if ($call(pHasOwn, left, 0)) {
                         result[next] = left[0];
                     }
 
                     $shift(left);
                 } else {
-                    if ($hasOwn(right, 0)) {
+                    if ($call(pHasOwn, right, 0)) {
                         result[next] = right[0];
                     }
 
@@ -9248,7 +9413,7 @@
             }
 
             while ($toLength(left.length)) {
-                if ($hasOwn(left, 0)) {
+                if ($call(pHasOwn, left, 0)) {
                     result[next] = left[0];
                 }
 
@@ -9257,7 +9422,7 @@
             }
 
             while ($toLength(right.length)) {
-                if ($hasOwn(right, 0)) {
+                if ($call(pHasOwn, right, 0)) {
                     result[next] = right[0];
                 }
 
@@ -9317,7 +9482,7 @@
 
                 object.length = $toLength(sorted.length);
                 for (index = 0; index < length; index += 1) {
-                    if ($hasOwn(sorted, index)) {
+                    if ($call(pHasOwn, sorted, index)) {
                         object[index] = sorted[index];
                     }
                 }
@@ -9375,15 +9540,15 @@
                     length: 8
                 };
 
-                pSort.call(sortObj, $descending);
+                $call(pSort, sortObj, $descending);
                 $affirm.strictEqual(sortObj[0], null, 'test1');
                 $affirm.strictEqual(sortObj[1], 5, 'test2');
                 $affirm.strictEqual(sortObj[2], 4, 'test3');
                 $affirm.strictEqual(sortObj[3], 3, 'test4');
                 $affirm.strictEqual(sortObj[4], 2, 'test5');
                 $affirm.strictEqual(sortObj[5], 1, 'test6');
-                $affirm.ok(!pHasOwn.call(sortObj, 6), 'test7');
-                $affirm.ok(!pHasOwn.call(sortObj, 7), 'test8');
+                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test7');
+                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test8');
                 $affirm.strictEqual(sortObj.length, 8, 'test9');
             },
 
@@ -9393,35 +9558,35 @@
                     // test
                     function () {
                         $affirm.doesNotThrow(function () {
-                            pSort.call([]);
+                            $call(pSort, []);
                         }, 'no compare argument');
 
                         $affirm.doesNotThrow(function () {
-                            pSort.call([], undefined);
+                            $call(pSort, [], undefined);
                         }, 'undefined compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], null);
+                            $call(pSort, [], null);
                         }, CTypeError, 'null compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], 1);
+                            $call(pSort, [], 1);
                         }, CTypeError, 'number compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], true);
+                            $call(pSort, [], true);
                         }, CTypeError, 'boolean compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], 'a');
+                            $call(pSort, [], 'a');
                         }, CTypeError, 'string compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], {});
+                            $call(pSort, [], {});
                         }, CTypeError, 'object compare argument');
 
                         $affirm.throws(function () {
-                            pSort.call([], []);
+                            $call(pSort, [], []);
                         }, CTypeError, 'array compare argument');
                     },
 
@@ -9437,7 +9602,7 @@
                                 comparefn = $ascending;
                             }
 
-                            return pSort.call($checkObjectCoercible(this), $throwIfNotFunction(comparefn));
+                            return $call(pSort, $checkObjectCoercible(this), $throwIfNotFunction(comparefn));
                         };
                     },
 
@@ -9520,8 +9685,8 @@
             trimString = '';
 
         for (index = 0; index < length; index += 1) {
-            hex = pNToString.call(whiteSpaces[index], 16);
-            wsStr += '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
+            hex = $call(pNToString, whiteSpaces[index], 16);
+            wsStr += '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
             trimString += base.String.fromCharCode(whiteSpaces[index]);
         }
 
@@ -9562,19 +9727,19 @@
             var value;
 
             $affirm.doesNotThrow(function () {
-                value = pTrim.call(wspaceStrings.trimString);
+                value = $call(pTrim, wspaceStrings.trimString);
             }, 'test1');
 
             $affirm.strictEqual(value.length, 0, 'not all whitespace trimmed');
 
             $affirm.doesNotThrow(function () {
-                value = pTrim.call(base.String.fromCharCode(0x200b));
+                value = $call(pTrim, base.String.fromCharCode(0x200b));
             }, 'test2');
 
             $affirm.strictEqual(value.length, 1, 'trimmed 0x200b bug');
 
             $affirm.doesNotThrow(function () {
-                value = pTrim.call(base.String.fromCharCode(0x0085));
+                value = $call(pTrim, base.String.fromCharCode(0x0085));
             }, 'test3');
 
             $affirm.strictEqual(value.length, 1, 'trimmed 0x0085 bug');
@@ -9745,7 +9910,7 @@
         // fail
         function () {
             return function () {
-                return $parseInt.apply(null, $slice(arguments));
+                return $apply($parseInt, null, $slice(arguments));
             };
         },
 
@@ -9887,25 +10052,25 @@
             var value;
 
             $affirm.doesNotThrow(function () {
-                value = base.Number.toFixed.call(0.00008, 3);
+                value = $call(base.Number.toFixed, 0.00008, 3);
             }, 'test1');
 
             $affirm.strictEqual(value, '0.000', 'test2');
 
             $affirm.doesNotThrow(function () {
-                value = base.Number.toFixed.call(0.9, 0);
+                value = $call(base.Number.toFixed, 0.9, 0);
             }, 'test3');
 
             $affirm.strictEqual(value, '1', 'test4');
 
             $affirm.doesNotThrow(function () {
-                value = base.Number.toFixed.call(1.255, 2);
+                value = $call(base.Number.toFixed, 1.255, 2);
             }, 'test5');
 
             $affirm.strictEqual(value, '1.25', 'test6');
 
             $affirm.doesNotThrow(function () {
-                value = base.Number.toFixed.call(1000000000000000128, 0);
+                value = $call(base.Number.toFixed, 1000000000000000128, 0);
             }, 'test7');
 
             $affirm.strictEqual(value, '1000000000000000128', 'test8');
@@ -9956,7 +10121,7 @@
                         if (!s) {
                             s = it;
                         } else {
-                            s += pSSlice.call('0000000', 0, 7 - it.length) + it;
+                            s += $call(pSSlice, '0000000', 0, 7 - it.length) + it;
                         }
                     }
                 }
@@ -10071,16 +10236,16 @@
                         /*jslint bitwise:true */
                         multiply(1 << (-e), 0);
                         /*jslint bitwise:false */
-                        m = numToString() + pSSlice.call('0.00000000000000000000', 2, 2 + f);
+                        m = numToString() + $call(pSSlice, '0.00000000000000000000', 2, 2 + f);
                     }
                 }
 
                 if (f > 0) {
                     k = m.length;
                     if (k <= f) {
-                        m = s + pSSlice.call('0.0000000000000000000', 0, f - k + 2) + m;
+                        m = s + $call(pSSlice, '0.0000000000000000000', 0, f - k + 2) + m;
                     } else {
-                        m = s + pSSlice.call(m, 0, k - f) + '.' + pSSlice.call(m, k - f);
+                        m = s + $call(pSSlice, m, 0, k - f) + '.' + $call(pSSlice, m, k - f);
                     }
                 } else {
                     m = s + m;
@@ -10129,7 +10294,7 @@
             var value;
 
             $affirm.doesNotThrow(function () {
-                value = pIndexOf.call([0, 1], 1, 2);
+                value = $call(pIndexOf, [0, 1], 1, 2);
             }, 'test1');
 
             $affirm.strictEqual(value, -1, 'item not found');
@@ -10212,7 +10377,7 @@
     exports.Array.proto.contains = function (searchElement) {
         /*jslint unparam: true */
         /*jshint unused: false */
-        return exports.Array.proto.indexOf.apply(this, arguments) !== -1;
+        return $apply(exports.Array.proto.indexOf, this, arguments) !== -1;
     };
 
     exports.Array.proto.contains.argNames = ['searchElement'];
@@ -10252,7 +10417,7 @@
             var value;
 
             $affirm.doesNotThrow(function () {
-                value = pLastIndexOf.call([0, 1], 0, -3);
+                value = $call(pLastIndexOf, [0, 1], 0, -3);
             }, 'test1');
 
             $affirm.strictEqual(value, -1, 'item not found');
@@ -10474,7 +10639,7 @@
                 }
 
                 for (index = count; index >= 1; index -= 1) {
-                    if ($hasOwn(object, from)) {
+                    if ($call(pHasOwn, object, from)) {
                         object[to] = object[from];
                     } else {
                         delete object[to];
@@ -10627,7 +10792,7 @@
                     if (!skipEnumArgs) {
                         /*jslint forin: true */
                         for (name in object) {
-                            if (!(skipProto && name === 'prototype') && pHasOwn.call(object, name)) {
+                            if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
                                 $push(theKeys, String(name));
                             }
                         }
@@ -10638,7 +10803,7 @@
                         skipConstructor = ctor && ctor.prototype === object;
                         for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && pHasOwn.call(object, dontEnum)) {
+                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
@@ -10726,12 +10891,12 @@
         for (val = false, index = 0; index < len; index += 1) {
             it = keys[index];
             if (isString && $toString($toInteger(it)) === it && it >= 0 && it <= MAX_SAFE_INTEGER) {
-                item = pCharAt.call(object, it);
+                item = $call(pCharAt, object, it);
             } else {
                 item = object[it];
             }
 
-            val = !!fn.call(thisArg, item, it, object);
+            val = !!$call(fn, thisArg, item, it, object);
             if (val) {
                 break;
             }
@@ -10820,7 +10985,7 @@
      */
     $isDigits = exports.String.isDigits;
 
-    hasAccessorSupport = pHasOwn.call(protoObject, stringDefineGetter);
+    hasAccessorSupport = $call(pHasOwn, protoObject, stringDefineGetter);
 
     /**
      * Defines a new property directly on an object, or modifies an existing property on an object,
@@ -10838,9 +11003,9 @@
         $throwIfIsPrimitive(object);
         descriptor = $assign({}, $throwIfIsPrimitive(descriptor));
 
-        var hasValue = pHasOwn.call(descriptor, 'value'),
-            hasGet = pHasOwn.call(descriptor, 'get'),
-            hasSet = pHasOwn.call(descriptor, 'set'),
+        var hasValue = $call(pHasOwn, descriptor, 'value'),
+            hasGet = $call(pHasOwn, descriptor, 'get'),
+            hasSet = $call(pHasOwn, descriptor, 'set'),
             prototype;
 
         if (hasValue) {
@@ -10848,7 +11013,7 @@
                 throw new CTypeError('Invalid property. A property cannot have accessors and a value');
             }
         } else {
-            if (pHasOwn.call(object, property)) {
+            if ($call(pHasOwn, object, property)) {
                 descriptor.value = object[property];
             } else if (!hasGet && !hasSet) {
                 descriptor.value = Undefined;
@@ -10856,7 +11021,7 @@
         }
 
         // If it's a data property.
-        if (pHasOwn.call(descriptor, 'value')) {
+        if ($call(pHasOwn, descriptor, 'value')) {
             // fail silently if 'writable', 'enumerable', or 'configurable'
             // are requested but not supported
             /*
@@ -10871,7 +11036,7 @@
                 );
             */
 
-            if (hasAccessorSupport && (mLookupGetter.call(object, property) || mLookupSetter.call(object, property))) {
+            if (hasAccessorSupport && ($call(mLookupGetter, object, property) || $call(mLookupSetter, object, property))) {
                 // As accessors are supported only on engines implementing
                 // `__proto__` we can safely override `__proto__` while defining
                 // a property to make sure that we don't hit an inherited
@@ -10894,11 +11059,11 @@
 
             // If we got that far then getters and setters can be defined !!
             if (hasGet) {
-                mDefineGetter.call(object, property, descriptor.get);
+                $call(mDefineGetter, object, property, descriptor.get);
             }
 
             if (hasSet) {
-                mDefineSetter.call(object, property, descriptor.set);
+                $call(mDefineSetter, object, property, descriptor.set);
             }
         }
         return object;
@@ -11015,7 +11180,7 @@
                             configurable: true
                         });
 
-                        $affirm.ok(pHasOwn.call(testObj, 1.1), 'have own property');
+                        $affirm.ok($call(pHasOwn, testObj, 1.1), 'have own property');
                         $affirm.strictEqual(testObj.length, 0, 'be zero length');
                         $affirm.strictEqual(testObj[1.1], Undefined, 'value should be undefined');
                     },
@@ -11505,7 +11670,7 @@
             throw new CTypeError('this is not a Date object.');
         }
 
-        var ms = pGetTime.call(this);
+        var ms = $call(pGetTime, this);
 
         return $strictEqual(ms, ms);
     };
@@ -11539,7 +11704,7 @@
         // fail
         function () {
             return function now() {
-                return pGetTime.call(new CDate());
+                return $call(pGetTime, new CDate());
             };
         },
 
@@ -11593,7 +11758,7 @@
         }
 
         if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
-            return pGetTime.call(a) === pGetTime.call(b);
+            return $call(pGetTime, a) === $call(pGetTime, b);
         }
 
         if ($isRegExp(a) && $isRegExp(b)) {
@@ -11645,8 +11810,8 @@
                 return false;
             }
         } else {
-            pSort.call(ka);
-            pSort.call(kb);
+            $call(pSort, ka);
+            $call(pSort, kb);
             for (index = 0; index < length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;
@@ -11692,7 +11857,7 @@
         }
 
         if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
-            return pGetTime.call(a) === pGetTime.call(b);
+            return $call(pGetTime, a) === $call(pGetTime, b);
         }
 
         if ($isRegExp(a) && $isRegExp(b)) {
@@ -11743,8 +11908,8 @@
                 return false;
             }
         } else {
-            pSort.call(ka);
-            pSort.call(kb);
+            $call(pSort, ka);
+            $call(pSort, kb);
             for (index = 0; index < length; index += 1) {
                 if (ka[index] !== kb[index]) {
                     return false;
@@ -11789,7 +11954,7 @@
 
         n = +n;
         if ($strictEqual(n, n) && n >= 0 && s.length > n) {
-            s = pSSlice.call(s, 0, n);
+            s = $call(pSSlice, s, 0, n);
         }
 
         return s;
@@ -12079,7 +12244,7 @@
                 if ($isFunction(ErrorConstructor.captureStackTrace)) {
                     ErrorConstructor.captureStackTrace(this, this.stackStartFunction);
                 } else {
-                    err = ErrorConstructor.call(this);
+                    err = $call(ErrorConstructor, this);
                     if (typeof err.stack === 'string') {
                         $defineProperty(this, 'stack', $assign({
                             value: err.stack
@@ -12198,8 +12363,8 @@
             temp1 = exports.Object.getOwnPropertyDescriptor(object, prop1) || {};
             temp2 = exports.Object.getOwnPropertyDescriptor(object, prop2) || {};
             num = $toLength(prop2);
-            cond1 = $hasValidLength(object) && $toString(num) === prop2;
-            if (!$isPlainObject(temp1) || !pHasOwn.call(temp1, 'value')) {
+            cond1 = $hasOwnValidLength(object) && !$isFunction(object) && $toString(num) === prop2;
+            if (!$isPlainObject(temp1) || !$call(pHasOwn, temp1, 'value')) {
                 if (cond1 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
                 }
@@ -12214,8 +12379,8 @@
             }
 
             num = $toLength(prop1);
-            cond2 = $hasValidLength(object) && $toString(num) === prop1;
-            if (!$isPlainObject(temp2) || !pHasOwn.call(temp2, 'value')) {
+            cond2 = $hasOwnValidLength(object) && !$isFunction(object) && $toString(num) === prop1;
+            if (!$isPlainObject(temp2) || !$call(pHasOwn, temp2, 'value')) {
                 if (cond2 && num === $toLength(object.length) - 1) {
                     object.length -= 1;
                 }
@@ -12257,13 +12422,12 @@
             tempVal,
             hasItem;
 
-            // hasValidLength
-        if (pHasOwn.call(object, 'length') && $isLength(object.length) && !$isFunction(object)) {
+        if ($hasOwnValidLength(object) && !$isFunction(object)) {
             inLen = $toLength(object.length);
             isString = $toStringTag(object) === stringTagString;
             if (isString) {
                 for (tempVal = {}, inIndex = 0; inIndex < inLen; inIndex += 1) {
-                    tempVal[inIndex] = pCharAt.call(object, inIndex);
+                    tempVal[inIndex] = $call(pCharAt, object, inIndex);
                 }
 
                 object = tempVal;
@@ -12275,9 +12439,9 @@
                 for (outIndex = 0; outIndex < outLen; outIndex += 1) {
                     for (inIndex = 0; inIndex < inLen; inIndex += 1) {
                         rand = $randomInt(inIndex);
-                        hasItem = $hasOwn(object, inIndex);
+                        hasItem = $call(pHasOwn, object, inIndex);
                         tempVal = object[inIndex];
-                        if ($hasOwn(object, rand)) {
+                        if ($call(pHasOwn, object, rand)) {
                             object[inIndex] = object[rand];
                         } else {
                             delete object[inIndex];
@@ -12334,17 +12498,17 @@
             $affirmBasic(pToISOString)();
 
             $affirm.throws(function () {
-                pToISOString.call(null);
+                $call(pToISOString, null);
             }, CTypeError, 'Throws if not date object');
 
             $affirm.throws(function () {
-                pToISOString.call(new Date(Number.MAX_VALUE));
+                $call(pToISOString, new Date(Number.MAX_VALUE));
             }, CRangeError, 'Throws on invalid date');
 
             var value;
 
             $affirm.doesNotThrow(function () {
-                value = pToISOString.call(new CDate(-8.64e15));
+                value = $call(pToISOString, new CDate(-8.64e15));
             }, 'test1');
 
             // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
@@ -12352,14 +12516,14 @@
             $affirm.strictEqual(value, '-271821-04-20T00:00:00.000Z', 'test2');
 
             $affirm.doesNotThrow(function () {
-                value = pToISOString.call(new CDate(8.64e15));
+                value = $call(pToISOString, new CDate(8.64e15));
             }, 'test3');
 
             // The milliseconds are optional in ES 5, but required in 5.1.
             $affirm.strictEqual(value, '+275760-09-13T00:00:00.000Z', 'test4');
 
             $affirm.doesNotThrow(function () {
-                value = pToISOString.call(new CDate(-621987552e5));
+                value = $call(pToISOString, new CDate(-621987552e5));
             }, 'test5');
 
             // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
@@ -12367,7 +12531,7 @@
             $affirm.strictEqual(value, '-000001-01-01T00:00:00.000Z', 'test6');
 
             $affirm.doesNotThrow(function () {
-                value = pToISOString.call(new CDate(-1));
+                value = $call(pToISOString, new CDate(-1));
             }, 'test7');
 
             // Safari <= 5.1.7 and Opera >= 10.53 incorrectly serialize millisecond
@@ -12409,17 +12573,17 @@
                     time,
                     sign;
 
-                year = pGetUTCFullYear.call(this);
-                month = pGetUTCMonth.call(this);
+                year = $call(pGetUTCFullYear, this);
+                month = $call(pGetUTCMonth, this);
                 year += $floor(month / 12);
                 month = (month % 12 + 12) % 12;
 
                 result = [
                     month + 1,
-                    pGetUTCDate.call(this),
-                    pGetUTCHours.call(this),
-                    pGetUTCMinutes.call(this),
-                    pGetUTCSeconds.call(this)
+                    $call(pGetUTCDate, this),
+                    $call(pGetUTCHours, this),
+                    $call(pGetUTCMinutes, this),
+                    $call(pGetUTCSeconds, this)
                 ];
 
                 if (year < 0) {
@@ -12436,7 +12600,7 @@
                     length = -6;
                 }
 
-                year = sign + pSSlice.call('00000' + $abs(year), length);
+                year = sign + $call(pSSlice, '00000' + $abs(year), length);
                 for (index = 0, length = $toLength(result.length); index < length; index += 1) {
                     value = result[index];
                     if (value < 10) {
@@ -12446,7 +12610,7 @@
 
                 // pad milliseconds to have three digits.
                 date = year + '-' + $join($slice(result, 0, 2), '-');
-                time = $join($slice(result, 2), ':') + '.' + pSSlice.call('000' + pGetUTCMilliseconds.call(this), -3);
+                time = $join($slice(result, 2), ':') + '.' + $call(pSSlice, '000' + $call(pGetUTCMilliseconds, this), -3);
 
                 return date + 'T' + time + 'Z';
             };
@@ -12504,54 +12668,54 @@
             var value;
 
             $affirm.throws(function () {
-                value = pToJSON.call($makeDate(-8.64e15));
+                value = $call(pToJSON, $makeDate(-8.64e15));
                 value.toISOString = null;
             }, CTypeError, 'Throw if toISOString is not a function');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call($makeDate(-8.64e15));
+                value = $call(pToJSON, $makeDate(-8.64e15));
             }, 'test1');
 
             $affirm.strictEqual(value, '-271821-04-20T00:00:00.000Z', 'test2');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call($makeDate(8.64e15));
+                value = $call(pToJSON, $makeDate(8.64e15));
             }, 'test3');
 
             $affirm.strictEqual(value, '+275760-09-13T00:00:00.000Z', 'test4');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call($makeDate(-621987552e5));
+                value = $call(pToJSON, $makeDate(-621987552e5));
             }, 'test5');
 
             $affirm.strictEqual(value, '-000001-01-01T00:00:00.000Z', 'test6');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call($makeDate(-1));
+                value = $call(pToJSON, $makeDate(-1));
             }, 'test7');
 
             $affirm.strictEqual(value, '1969-12-31T23:59:59.999Z', 'test8');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call(NaN);
+                value = $call(pToJSON, NaN);
             }, 'test9');
 
             $affirm.strictEqual(value, null, 'test10');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call(Infinity);
+                value = $call(pToJSON, Infinity);
             }, 'test11');
 
             $affirm.strictEqual(value, null, 'test12');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call(-Infinity);
+                value = $call(pToJSON, -Infinity);
             }, 'test13');
 
             $affirm.strictEqual(value, null, 'test14');
 
             $affirm.doesNotThrow(function () {
-                value = pToJSON.call($makeDate(Number.MAX_VALUE));
+                value = $call(pToJSON, $makeDate(Number.MAX_VALUE));
             }, 'test15');
 
             $affirm.strictEqual(value, null, 'test16');
@@ -12739,8 +12903,8 @@
                             if (typeof c === 'string') {
                                 r = c;
                             } else {
-                                hex = $toString(pCharCodeAt.call(a, 0), 16);
-                                r = '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
+                                hex = $toString($call(pCharCodeAt, a, 0), 16);
+                                r = '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
                             }
 
                             return r;
@@ -12771,7 +12935,7 @@
                     }
 
                     if ($isFunction(sfyReplacer)) {
-                        value = sfyReplacer.call(holder, key, value);
+                        value = $call(sfyReplacer, holder, key, value);
                     }
 
                     if (!$isPrimitive(value)) {
@@ -13006,7 +13170,7 @@
                         }
                     }
 
-                    return reviver.call(holder, key, value);
+                    return $call(reviver, holder, key, value);
                 }
 
                 return function (text, reviver) {
@@ -13016,9 +13180,9 @@
                     parseCharacterTest.lastIndex = 0;
                     if ($test(parseCharacterTest, text)) {
                         text = $replace(text, parseCharacterTest, function (a) {
-                            var hex = $toString(pCharCodeAt.call(a, 0), 16);
+                            var hex = $toString($call(pCharCodeAt, a, 0), 16);
 
-                            return '\\u' + pSSlice.call('0000', 0, -hex.length) + hex;
+                            return '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
                         });
                     }
 
@@ -13089,7 +13253,7 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.strictEqual(pSubstr.call('0b', -1), 'b', 'negative substr bug');
+                        $affirm.strictEqual($call(pSubstr, '0b', -1), 'b', 'negative substr bug');
                     },
 
                     // pass
@@ -13109,7 +13273,7 @@
                                 }
                             }
 
-                            return pSubstr.apply(this, args);
+                            return $apply(pSubstr, this, args);
                         };
                     },
 
@@ -13141,7 +13305,7 @@
                     }
 
 
-                    return pSSlice.call(object, intStart, intStart + $min($max(end, 0), size - intStart));
+                    return $call(pSSlice, object, intStart, intStart + $min($max(end, 0), size - intStart));
                 };
             },
 
@@ -13206,20 +13370,20 @@
                 idx,
                 it;
 
-            if (pHasOwn.call(thisObj, 'length') && $isLength(thisObj.length) && !$isFunction(thisObj)) {
+            if ($hasOwnValidLength(thisObj) && !$isFunction(thisObj)) {
                 len = $toLength(thisObj.length);
                 if (len < 1) {
                     $push(val, []);
                 } else {
                     if ($toStringTag(thisObj) === stringTagString) {
-                        lastElement = pCharAt.call(thisObj, len - 1);
-                        object = pSSlice.call(thisObj, 0, -1);
+                        lastElement = $call(pCharAt, thisObj, len - 1);
+                        object = $call(pSSlice, thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
                         lastElement = $pop(object);
                     }
 
-                    pSet = pPowerSet.call(object);
+                    pSet = $call(pPowerSet, object);
                     for (idx = 0, len = pSet.length; idx < len; idx += 1) {
                         it = pSet[idx];
                         $push(val, it);
@@ -13263,7 +13427,7 @@
             length,
             index;
 
-        if ($hasProperty(object, 'length') && !$isFunction(object)) {
+        if ($hasOwnValidLength(object) && !$isFunction(object)) {
             stringTag = $toStringTag(object);
             accumulator.length = length = $toLength(object.length);
             for (index = 0; index < length; index += 1) {
@@ -13606,7 +13770,7 @@
                 index = 0;
 
             do {
-                thisArg = fn.call(thisArg, args[index]);
+                thisArg = $call(fn, thisArg, args[index]);
                 index += 1;
             } while (index < length);
 
@@ -13634,10 +13798,10 @@
          * x = 123.45
          * Math.round(x)              // 123
          * y = new Big(x)
-         * rnd.call(y, 1, 0)              // '123.4'
-         * rnd.call(y, 1, 1)              // '123.5'
-         * rnd.call(y, 1, 2)              // '123.4'
-         * rnd.call(y, 1, 3)              // '123.5'
+         * $call(rnd, y, 1, 0)              // '123.4'
+         * $call(rnd, y, 1, 1)              // '123.5'
+         * $call(rnd, y, 1, 2)              // '123.4'
+         * $call(rnd, y, 1, 3)              // '123.5'
          * y                              // '123.45'
          */
         function rnd(dp, rm, more) {
@@ -13720,11 +13884,11 @@
          *
          * @example <caption>Example usage.</caption>
          * x = new Big('9.99e+20')
-         * bigToString.call(x)               // '999000000000000000000'
+         * $call(bigToString, x)               // '999000000000000000000'
          * y = new Big('1E21')
-         * bigToString.call(y)               // '1e+21'
+         * $call(bigToString, y)               // '1e+21'
          * z = new Big('1E21')
-         * bigToString.call(y, true)         //100000000000000000000
+         * $call(bigToString, y, true)         //100000000000000000000
          */
         function bigToString(valueof, preventExp) {
             /*jshint validthis:true */
@@ -13735,9 +13899,9 @@
 
             // Exponential notation?
             if (!preventExp && (e <= TO_EXP_NEG || e >= TO_EXP_POS)) {
-                str = pCharAt.call(strT, 0);
+                str = $call(pCharAt, strT, 0);
                 if (strL > 1) {
-                    str += '.' + pSSlice.call(strT, 1);
+                    str += '.' + $call(pSSlice, strT, 1);
                 }
 
                 if (e < 0) {
@@ -13766,11 +13930,11 @@
                         str += '0';
                     }
                 } else if (e < strL) {
-                    str = pSSlice.call(strT, 0, e) + '.' + pSSlice.call(strT, e);
+                    str = $call(pSSlice, strT, 0, e) + '.' + $call(pSSlice, strT, e);
                 }
                 // Exponent zero.
             } else if (strL > 1) {
-                str = pCharAt.call(strT, 0) + '.' + pSSlice.call(strT, 1);
+                str = $call(pCharAt, strT, 0) + '.' + $call(pSSlice, strT, 1);
             } else {
                 str = strT;
             }
@@ -13818,7 +13982,7 @@
             // Round?
             dp += 1;
             if ($toLength(c.length) > dp) {
-                rnd.call(x, i, this.constructor.RM);
+                $call(rnd, x, i, this.constructor.RM);
             }
 
             if (!c[0]) {
@@ -13853,7 +14017,7 @@
 
                 str += c[0];
                 if (c.length > 1) {
-                    str += '.' + pSSlice.call($join(c, ''), 1);
+                    str += '.' + $call(pSSlice, $join(c, ''), 1);
                 }
 
                 str += 'e';
@@ -13864,7 +14028,7 @@
                 str += i;
             } else {
                 // Normal notation.
-                str = bigToString.call(x, false, preventExp);
+                str = $call(bigToString, x, false, preventExp);
             }
 
             return str;
@@ -13893,28 +14057,28 @@
             }
 
             // Determine sign.
-            if (pCharAt.call(n, 0) === '-') {
-                n = pSSlice.call(n, 1);
+            if ($call(pCharAt, n, 0) === '-') {
+                n = $call(pSSlice, n, 1);
                 this.s = -1;
             } else {
                 this.s = 1;
             }
 
             // Decimal point?
-            e = pSIndexOf.call(n, '.');
+            e = $call(pSIndexOf, n, '.');
             if (e > -1) {
-                n = pReplace.call(n, '.', '');
+                n = $call(pReplace, n, '.', '');
             }
 
             // Exponential form?
-            i = pSearch.call(n, /e/i);
+            i = $call(pSearch, n, /e/i);
             if (i > 0) {
                 // Determine exponent.
                 if (e < 0) {
                     e = i;
                 }
 
-                e += +pSSlice.call(n, i + 1);
+                e += +$call(pSSlice, n, i + 1);
                 n = $substr(n, 0, i);
             } else if (e < 0) {
                 // Integer.
@@ -13923,7 +14087,7 @@
 
             // Determine leading zeros.
             i = 0;
-            while (pCharAt.call(n, i) === '0') {
+            while ($call(pCharAt, n, i) === '0') {
                 i += 1;
             }
 
@@ -13935,7 +14099,7 @@
             } else {
                 // Determine trailing zeros.
                 nL -= 1;
-                while (pCharAt.call(n, nL) === '0') {
+                while ($call(pCharAt, n, nL) === '0') {
                     nL -= 1;
                 }
 
@@ -13943,7 +14107,7 @@
                 this.c = [];
                 // Convert string to array of digits without leading/trailing zeros.
                 for (e = 0; i <= nL; i += 1, e += 1) {
-                    this.c[e] = +pCharAt.call(n, i);
+                    this.c[e] = +$call(pCharAt, n, i);
                 }
             }
         }
@@ -13971,10 +14135,10 @@
          * @example <caption>Example usage.</caption>
          * x = new Big(355)
          * y = new Big(113)
-         * div.call(x, y)             // '3.14159292035398230088'
+         * $call(div, x, y)             // '3.14159292035398230088'
          * Big.DP = 2
-         * div.call(x, y)             // '3.14'
-         * div.call(x, 5)             // '71'
+         * $call(div, x, y)             // '3.14'
+         * $call(div, x, 5)             // '71'
          */
         function div(y, dp, rm) {
             /*jshint validthis:true */
@@ -14150,7 +14314,7 @@
 
             // Round?
             if (qi > digits) {
-                rnd.call(q, dp, rm, !$isUndefined(rem[0]));
+                $call(rnd, q, dp, rm, !$isUndefined(rem[0]));
             }
 
             return q;
@@ -14170,8 +14334,8 @@
          * @example <caption>Example usage.</caption>
          * 0.6 * 3                         // 1.7999999999999998
          * x = new Big(0.6)
-         * y= times.call(x, 3)             // '1.8'
-         * times.call(Big('7e+500', y)     // '1.26e+501'
+         * y= $call(times, x, 3)             // '1.8'
+         * $call(times, Big('7e+500', y)     // '1.26e+501'
          */
         function times(y) {
             /*jshint validthis:true */
@@ -14280,7 +14444,7 @@
          * @example <caption>Example usage.</caption>
          * 0.3 - 0.1                  // 0.19999999999999998
          * x = new Big(0.3)
-         * minus.call(x, 0.1)         // '0.2'
+         * $call(minus, x, 0.1)         // '0.2'
          */
         minus = function (y) {
             /*jshint validthis:true */
@@ -14304,7 +14468,7 @@
             if (a !== b) {
                 y.s = -b;
 
-                return plus.call(this, y);
+                return $call(plus, this, y);
             }
 
             xc = $slice(this.c);
@@ -14340,12 +14504,12 @@
                     t = yc;
                 }
 
-                pReverse.call(t);
+                $call(pReverse, t);
                 for (b = a; b; b -= 1) {
                     $push(t, 0);
                 }
 
-                pReverse.call(t);
+                $call(pReverse, t);
             } else {
                 // Exponents equal. Check digit by digit.
                 xcL = $toLength(xc.length);
@@ -14445,8 +14609,8 @@
          * @example <caption>Example usage.</caption>
          * 0.1 + 0.2                              // 0.30000000000000004
          * x = new Big(0.1)
-         * y = plus.call(x, 0.2)                  // '0.3'
-         * plus.call(plus.call(Big(0.7), x), y)   // '1'
+         * y = $call(plus, x, 0.2)                  // '0.3'
+         * $call(plus, $call(plus, Big(0.7), x), y)   // '1'
          */
         plus = function (y) {
             /*jshint validthis:true */
@@ -14465,7 +14629,7 @@
             if (a !== b) {
                 y.s = -b;
 
-                return minus.call(this, y);
+                return $call(minus, this, y);
             }
 
             xc = this.c;
@@ -14499,13 +14663,13 @@
                     t = xc;
                 }
 
-                pReverse.call(t);
+                $call(pReverse, t);
                 while (a) {
                     $push(t, 0);
                     a -= 1;
                 }
 
-                pReverse.call(t);
+                $call(pReverse, t);
             }
 
             // Point xc to the longer array.
@@ -14593,8 +14757,8 @@
          * @example <caption>Example usage.</caption>
          * x = new Big(6)
          * y = new Big(5)
-         * cmp.call(x, y)                   // 1
-         * cmp.call(y, x.minus(1))          // 0
+         * $call(cmp, x, y)                   // 1
+         * $call(cmp, y, x.minus(1))          // 0
          */
         function cmp(y) {
             /*jshint validthis:true */
@@ -14706,7 +14870,7 @@
          * @example <caption>Example usage.</caption>
          * 1 % 0.9                    // 0.09999999999999998
          * x = new Big(1)
-         * mod.call(x, 0.9)           // '0.1'
+         * $call(mod, x, 0.9)           // '0.1'
          */
         function mod(y) {
             /*jshint validthis:true */
@@ -14723,14 +14887,14 @@
             }
 
             this.s = y.s = 1;
-            yGTx = cmp.call(y, this) === 1;
+            yGTx = $call(cmp, y, this) === 1;
             this.s = a;
             y.s = b;
             if (yGTx) {
                 rtn = new this.constructor(this);
             } else {
-                x = div.call(this, y, 0, 0);
-                rtn = minus.call(this, times.call(x, y));
+                x = $call(div, this, y, 0, 0);
+                rtn = $call(minus, this, $call(times, x, y));
             }
 
             return rtn;
@@ -14808,7 +14972,7 @@
                             this.c = n.c.slice();
                         }
                     } else {
-                        parse.call(this, n);
+                        $call(parse, this, n);
                     }
                 }
 
@@ -14893,7 +15057,7 @@
              */
             $defineProperty(Big.prototype, 'cmp', {
                 value: function (y) {
-                    return cmp.call(this, y);
+                    return $call(cmp, this, y);
                 },
                 writable: true,
                 configurable: true,
@@ -14956,7 +15120,7 @@
              */
             $defineProperty(Big.prototype, 'eq', {
                 value: function (y) {
-                    return !cmp.call(this, y);
+                    return !$call(cmp, this, y);
                 },
                 writable: true,
                 configurable: true,
@@ -14982,7 +15146,7 @@
              */
             $defineProperty(Big.prototype, 'gt', {
                 value: function (y) {
-                    return cmp.call(this, y) > 0;
+                    return $call(cmp, this, y) > 0;
                 },
                 writable: true,
                 configurable: true,
@@ -15008,7 +15172,7 @@
              */
             $defineProperty(Big.prototype, 'gte', {
                 value: function (y) {
-                    return cmp.call(this, y) > -1;
+                    return $call(cmp, this, y) > -1;
                 },
                 writable: true,
                 configurable: true,
@@ -15034,7 +15198,7 @@
              */
             $defineProperty(Big.prototype, 'lt', {
                 value: function (y) {
-                    return cmp.call(this, y) < 0;
+                    return $call(cmp, this, y) < 0;
                 },
                 writable: true,
                 configurable: true,
@@ -15060,7 +15224,7 @@
              */
             $defineProperty(Big.prototype, 'lte', {
                 value: function (y) {
-                    return cmp.call(this, y) < 1;
+                    return $call(cmp, this, y) < 1;
                 },
                 writable: true,
                 configurable: true,
@@ -15105,7 +15269,7 @@
                 value: function (y) {
                     /*jslint unparam:true */
                     /*jshint unused:false */
-                    return Big.prototype.minus.apply(this, $slice(arguments));
+                    return $apply(Big.prototype.minus, this, $slice(arguments));
                 },
                 writable: false,
                 configurable: false,
@@ -15184,7 +15348,7 @@
                 value: function (y) {
                     /*jslint unparam:true */
                     /*jshint unused:false */
-                    return Big.prototype.plus.apply(this, $slice(arguments));
+                    return $apply(Big.prototype.plus, this, $slice(arguments));
                 },
                 writable: false,
                 configurable: false,
@@ -15238,19 +15402,19 @@
                         test = exp & 1;
                         /*jslint bitwise: false */
                         if (test) {
-                            y = times.call(y, x);
+                            y = $call(times, y, x);
                         }
 
                         /*jslint bitwise: true */
                         exp >>= 1;
                         /*jslint bitwise: false */
                         if (exp) {
-                            x = times.call(x, x);
+                            x = $call(times, x, x);
                         }
                     } while (exp);
 
                     if (isNeg) {
-                        return div.call(one, y);
+                        return $call(div, one, y);
                     }
 
                     return y;
@@ -15306,7 +15470,7 @@
                         rm = this.constructor.RM;
                     }
 
-                    return rnd.call(new this.constructor(this), dp, rm);
+                    return $call(rnd, new this.constructor(this), dp, rm);
                 },
                 writable: true,
                 configurable: true,
@@ -15359,7 +15523,7 @@
                     }
 
                     // Estimate.
-                    i = $sqrt(bigToString.call(this));
+                    i = $sqrt($call(bigToString, this));
                     // Math.sqrt underflow/overflow?
                     // Pass x to Math.sqrt as integer, then adjust the result exponent.
                     if (i === 0 || i === 1 / zero) {
@@ -15386,10 +15550,10 @@
                     // Newton-Raphson iteration.
                     do {
                         approx = r;
-                        r = times.call(half, plus.call(approx, div.call(this, approx, dp)));
+                        r = $call(times, half, $call(plus, approx, $call(div, this, approx, dp)));
                     } while ($join($slice(approx.c, 0, i), '') !== $join($slice(r.c, 0, i), ''));
 
-                    return rnd.call(r, this.constructor.DP, this.constructor.RM);
+                    return $call(rnd, r, this.constructor.DP, this.constructor.RM);
                 },
                 writable: true,
                 configurable: true,
@@ -15435,7 +15599,7 @@
                 value: function (y) {
                     /*jslint unparam:true */
                     /*jshint unused:false */
-                    return Big.prototype.times.apply(this, $slice(arguments));
+                    return $apply(Big.prototype.times, this, $slice(arguments));
                 },
                 writable: false,
                 configurable: false,
@@ -15468,7 +15632,7 @@
              */
             $defineProperty(Big.prototype, 'toString', {
                 value: function () {
-                    return bigToString.call(this);
+                    return $call(bigToString, this);
                 },
                 writable: true,
                 configurable: true,
@@ -15499,7 +15663,7 @@
              */
             $defineProperty(Big.prototype, 'valueOf', {
                 value: function () {
-                    return bigToString.call(this, true);
+                    return $call(bigToString, this, true);
                 },
                 writable: true,
                 configurable: true,
@@ -15534,7 +15698,7 @@
              */
             $defineProperty(Big.prototype, 'toJSON', {
                 value: function () {
-                    return bigToString.call(this, true);
+                    return $call(bigToString, this, true);
                 },
                 writable: true,
                 configurable: true,
@@ -15594,7 +15758,7 @@
                         throw new BigError('!toExp!');
                     }
 
-                    return format.call(this, dp, 1);
+                    return $call(format, this, dp, 1);
                 },
                 writable: true,
                 configurable: true,
@@ -15648,12 +15812,12 @@
 
                     // Prevent the possibility of exponential notation.
                     if ($toLength(arguments.length) === 0) {
-                        str = bigToString.call(this, false, preventExp);
+                        str = $call(bigToString, this, false, preventExp);
                     } else if (isIntegerInRange(dp, 0, MAX_DP)) {
-                        str = format.call(this, this.e + dp, null, preventExp);
+                        str = $call(format, this, this.e + dp, null, preventExp);
                         // (-0).toFixed() is '0', but (-0.1).toFixed() is '-0'.
                         // (-0).toFixed(1) is '0.0', but (-0.01).toFixed(1) is '-0.0'.
-                        if (this.s < 0 && this.c[0] && pSIndexOf.call(str, '-') < 0) {
+                        if (this.s < 0 && this.c[0] && $call(pSIndexOf, str, '-') < 0) {
                             //E.g. -0.5 if rounded to -0 will cause toString to omit the minus sign.
                             str = '-' + str;
                         }
@@ -15708,14 +15872,14 @@
             $defineProperty(Big.prototype, 'toPrecision', {
                 value: function (sd) {
                     if ($toLength(arguments.length) === 0) {
-                        return bigToString.call(this);
+                        return $call(bigToString, this);
                     }
 
                     if (!isIntegerInRange(sd, 1, MAX_DP)) {
                         throw new BigError('!toPre!');
                     }
 
-                    return format.call(this, sd - 1, 2);
+                    return $call(format, this, sd - 1, 2);
                 },
                 writable: true,
                 configurable: true,
@@ -16013,7 +16177,7 @@
                     opts.stackStartFunction = AssertionError;
                 }
 
-                assertCustomError.call(this, opts.message, opts.stackStartFunction);
+                $call(assertCustomError, this, opts.message, opts.stackStartFunction);
                 $defineProperties(this, {
                     actual: $assign({
                         value: opts.actual
@@ -16068,7 +16232,7 @@
             }, propConstant),
 
             /**
-             * function module:util-x~AssertionError.prototype.toString
+             * @function module:util-x~AssertionError.prototype.toString
              * @returns {string}
              */
             toString: $assign({
@@ -16134,7 +16298,7 @@
                     exports.normaliseErrorIEToStringOn();
                 }
 
-                val = expected.call({}, actual);
+                val = $call(expected, {}, actual);
                 if (storeState === false) {
                     exports.normaliseErrorIEToStringOff();
                 }
@@ -16611,7 +16775,7 @@
         }
 
         /*jslint evil: true */
-        return new Function('fn', 'slice', 'return function (' + args + ') { return fn.apply(this, slice(arguments)); }')(fn, $slice);
+        return new Function('fn', 'slice', 'apply', 'return function (' + args + ') { return apply(fn, this, slice(arguments)); }')(fn, $slice, $apply);
     }
 
     /**
@@ -16650,7 +16814,7 @@
      * @param {Object} object
      */
     function addMethodsList(object) {
-        if (!pHasOwn.call(object, 'methods')) {
+        if (!$call(pHasOwn, object, 'methods')) {
             defineItem(object, 'methods', []);
         }
     }
