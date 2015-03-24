@@ -22,12 +22,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*jslint devel: true */
-
 /*global
-    Array, Boolean, Date, Error, EvalError, Function, JSON, Math, Number, Object,
-    RangeError, ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
-    define, global, isFinite, isNaN, module, parseFloat, parseInt, self, window
+    define, global, module, self, window
 */
 
 /*properties
@@ -45,22 +41,22 @@
     captureStackTrace, ceil, charAt, charCodeAt, clamp, clampToInt, classId,
     clipDuplicates, codePointAt, concat, configurable, console, constructor,
     contains, copyWithin, countCharacter, create, customError,
-    customErrorReplacer, deepEqual, deepFreeze, deepStrictEqual, defineGetter,
-    defineProperties, defineProperty, defineSetter, doesNotThrow, e, endsWith,
-    enumerable, equal, escapeRegex, every, exec, execSlice, expected, exports,
-    factory, fail, fill, filter, find, findIndex, first, firstIn, floor, foo,
-    forAll, forEach, forKeys, freeze, from, fromCharCode, fromCodePoint, get,
-    getOwnPropertyDescriptor, getOwnPropertyNames, getPrototypeOf, getTime,
-    getUTCDate, getUTCFullYear, getUTCHours, getUTCMilliseconds, getUTCMinutes,
-    getUTCMonth, getUTCSeconds, global, goNative, hasOwn, hasOwnProperty,
-    hasProperty, ifError, ignoreCase, inRange, index, indexOf, inherits,
-    instanceOf, interimLastIndex, is, isArguments, isArray, isBoolean,
-    isBytestring, isDate, isDigits, isEmpty, isError, isErrorTypeConstructor,
-    isEven, isExtensible, isFinite, isFrozen, isFunction, isInt16, isInt32,
-    isInt8, isInteger, isNaN, isNativeFunction, isNegative, isNumber, isNumeric,
-    isObject, isOdd, isPlainObject, isPositive, isPrimitive, isPrototypeOf,
-    isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16, isUint32,
-    isUint8, isUndefined, isValid, join, keys, last, lastIn, lastIndex,
+    customErrorReplacer, debug, deepEqual, deepFreeze, deepStrictEqual,
+    defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
+    e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
+    expected, exports, factory, fail, fill, filter, find, findIndex, first,
+    firstIn, floor, foo, forAll, forEach, forKeys, freeze, from, fromCharCode,
+    fromCodePoint, get, getOwnPropertyDescriptor, getOwnPropertyNames,
+    getPrototypeOf, getTime, getUTCDate, getUTCFullYear, getUTCHours,
+    getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds, global,
+    goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase, inRange,
+    index, indexOf, inherits, instanceOf, interimLastIndex, is, isArguments,
+    isArray, isBoolean, isBytestring, isDate, isDigits, isEmpty, isError,
+    isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen, isFunction,
+    isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction, isNegative,
+    isNumber, isNumeric, isObject, isOdd, isPlainObject, isPositive, isPrimitive,
+    isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16,
+    isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIn, lastIndex,
     lastIndexOf, length, link, localeCompare, log, lookupGetter, lookupSetter,
     map, match, max, message, methods, min, minus, modulo, multiline, name, noop,
     normaliseErrorIEToStringOff, normaliseErrorIEToStringOn,
@@ -78,7 +74,7 @@
     toLowerCase, toObject, toPrecision, toPrimitive, toSource, toString,
     toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase, trim,
     trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift, unwatch,
-    value, valueOf, version, watch, wrapInChars, writable, wsStr, debug
+    value, valueOf, version, watch, wrapInChars, writable, wsStr
 */
 
 /**
@@ -610,22 +606,25 @@
          * @private
          * @function
          */
-        isNaN: isNaN,
+        isNaN: global.isNaN,
+
         /**
          * @private
          * @function
          */
-        isFinite: isFinite,
+        isFinite: global.isFinite,
+
         /**
          * @private
          * @function
          */
-        parseInt: parseInt,
+        parseInt: global.parseInt,
+
         /**
          * @private
          * @function
          */
-        parseFloat: parseFloat,
+        parseFloat: global.parseFloat,
 
         /**
          * Holds references to the global Math methods and members.
@@ -638,52 +637,61 @@
              * @private
              * @function
              */
-            sign: Math.sign,
+            sign: global.Math.sign,
+
             /**
              * @private
              * @function
              */
-            min: Math.min,
+            min: global.Math.min,
+
             /**
              * @private
              * @function
              */
-            max: Math.max,
+            max: global.Math.max,
+
             /**
              * @private
              * @function
              */
-            floor: Math.floor,
+            floor: global.Math.floor,
+
             /**
              * @private
              * @function
              */
-            ceil: Math.ceil,
+            ceil: global.Math.ceil,
+
             /**
              * @private
              * @function
              */
-            abs: Math.abs,
+            abs: global.Math.abs,
+
             /**
              * @private
              * @function
              */
-            random: Math.random,
+            random: global.Math.random,
+
             /**
              * @private
              * @function
              */
-            pow: Math.pow,
+            pow: global.Math.pow,
+
             /**
              * @private
              * @function
              */
-            sqrt: Math.sqrt,
+            sqrt: global.Math.sqrt,
+
             /**
              * @private
              * @function
              */
-            round: Math.round
+            round: global.Math.round
         },
 
         /**
@@ -695,154 +703,187 @@
              * @private
              * @constructor
              */
-            Ctr: Object,
-            /**  @type {Object} */
-            proto: Object.prototype,
+            Ctr: global.Object,
+
+            /**
+             * @private
+             * @type {Object}
+             */
+            proto: global.Object.prototype,
+
             /**
              * @private
              * @function
              */
-            assign: Object.assign,
+            assign: global.Object.assign,
+
             /**
              * @private
              * @function
              */
-            create: Object.create,
+            create: global.Object.create,
+
             /**
              * @private
              * @function
              */
-            defineProperties: Object.defineProperties,
+            defineProperties: global.Object.defineProperties,
+
             /**
              * @private
              * @function
              */
-            defineProperty: Object.defineProperty,
+            defineProperty: global.Object.defineProperty,
+
             /**
              * @private
              * @function
              */
-            freeze: Object.freeze,
+            freeze: global.Object.freeze,
+
             /**
              * @private
              * @function
              */
-            getOwnPropertyDescriptor: Object.getOwnPropertyDescriptor,
+            getOwnPropertyDescriptor: global.Object.getOwnPropertyDescriptor,
+
             /**
              * @private
              * @function
              */
-            getOwnPropertyNames: Object.getOwnPropertyNames,
+            getOwnPropertyNames: global.Object.getOwnPropertyNames,
+
             /**
              * @private
              * @function
              */
-            getPrototypeOf: Object.getPrototypeOf,
+            getPrototypeOf: global.Object.getPrototypeOf,
+
             /**
              * @private
              * @function
              */
-            is: Object.is,
+            is: global.Object.is,
+
             /**
              * @private
              * @function
              */
-            isExtensible: Object.isExtensible,
+            isExtensible: global.Object.isExtensible,
+
             /**
              * @private
              * @function
              */
-            isFrozen: Object.isFrozen,
+            isFrozen: global.Object.isFrozen,
+
             /**
              * @private
              * @function
              */
-            isSealed: Object.isSealed,
+            isSealed: global.Object.isSealed,
+
             /**
              * @private
              * @function
              */
-            keys: Object.keys,
+            keys: global.Object.keys,
+
             /**
              * @private
              * @function
              */
-            preventExtensions: Object.preventExtensions,
+            preventExtensions: global.Object.preventExtensions,
+
             /**
              * @private
              * @function
              */
-            seal: Object.seal,
+            seal: global.Object.seal,
+
             /**
              * @private
              * @function
              */
-            setPrototypeOf: Object.setPrototypeOf,
+            setPrototypeOf: global.Object.setPrototypeOf,
+
             /**
              * @private
              * @function
              */
-            defineGetter: Object.prototype[stringDefineGetter],
+            defineGetter: global.Object.prototype[stringDefineGetter],
+
             /**
              * @private
              * @function
              */
-            defineSetter: Object.prototype[stringDefineSetter],
+            defineSetter: global.Object.prototype[stringDefineSetter],
+
             /**
              * @private
              * @function
              */
-            lookupGetter: Object.prototype[stringLookupGetter],
+            lookupGetter: global.Object.prototype[stringLookupGetter],
+
             /**
              * @private
              * @function
              */
-            lookupSetter: Object.prototype[stringLookupSetter],
+            lookupSetter: global.Object.prototype[stringLookupSetter],
+
             /**
              * @private
              * @function
              */
-            hasOwn: Object.prototype.hasOwnProperty,
+            hasOwn: global.Object.prototype.hasOwnProperty,
+
             /**
              * @private
              * @function
              */
-            isPrototypeOf: Object.prototype.isPrototypeOf,
+            isPrototypeOf: global.Object.prototype.isPrototypeOf,
+
             /**
              * @private
              * @function
              */
-            propertyIsEnumerable: Object.prototype.propertyIsEnumerable,
+            propertyIsEnumerable: global.Object.prototype.propertyIsEnumerable,
+
             /**
              * @private
              * @function
              */
-            toLocaleString: Object.prototype.toLocaleString,
+            toLocaleString: global.Object.prototype.toLocaleString,
+
             /**
              * @private
              * @function
              */
-            toSource: Object.prototype.toSource,
+            toSource: global.Object.prototype.toSource,
+
             /**
              * @private
              * @function
              */
-            toString: Object.prototype.toString,
+            toString: global.Object.prototype.toString,
+
             /**
              * @private
              * @function
              */
-            unwatch: Object.prototype.unwatch,
+            unwatch: global.Object.prototype.unwatch,
+
             /**
              * @private
              * @function
              */
-            valueOf: Object.prototype.valueOf,
+            valueOf: global.Object.prototype.valueOf,
+
             /**
              * @private
              * @function
              */
-            watch: Object.prototype.watch
+            watch: global.Object.prototype.watch
         },
 
         /**
@@ -856,134 +897,163 @@
              * @private
              * @constructor
              */
-            Ctr: Array,
-            /** @@type {Object} */
-            proto: Array.prototype,
+            Ctr: global.Array,
+
+            /**
+             * @private
+             * @type {Object}
+             */
+            proto: global.Array.prototype,
+
             /**
              * @private
              * @function
              */
-            isArray: Array.isArray,
+            isArray: global.Array.isArray,
+
             /**
              * @private
              * @function
              */
-            of: Array.of,
+            of: global.Array.of,
+
             /**
              * @private
              * @function
              */
-            from: Array.from,
+            from: global.Array.from,
+
             /**
              * @private
              * @function
              */
-            concat: Array.prototype.concat,
+            concat: global.Array.prototype.concat,
+
             /**
              * @private
              * @function
              */
-            every: Array.prototype.every,
+            every: global.Array.prototype.every,
+
             /**
              * @private
              * @function
              */
-            filter: Array.prototype.filter,
+            filter: global.Array.prototype.filter,
+
             /**
              * @private
              * @function
              */
-            find: Array.prototype.find,
+            find: global.Array.prototype.find,
+
             /**
              * @private
              * @function
              */
-            findIndex: Array.prototype.findIndex,
+            findIndex: global.Array.prototype.findIndex,
+
             /**
              * @private
              * @function
              */
-            forEach: Array.prototype.forEach,
+            forEach: global.Array.prototype.forEach,
+
             /**
              * @private
              * @function
              */
-            indexOf: Array.prototype.indexOf,
+            indexOf: global.Array.prototype.indexOf,
+
             /**
              * @private
              * @function
              */
-            join: Array.prototype.join,
+            join: global.Array.prototype.join,
+
             /**
              * @private
              * @function
              */
-            lastIndexOf: Array.prototype.lastIndexOf,
+            lastIndexOf: global.Array.prototype.lastIndexOf,
+
             /**
              * @private
              * @function
              */
-            map: Array.prototype.map,
+            map: global.Array.prototype.map,
+
             /**
              * @private
              * @function
              */
-            pop: Array.prototype.pop,
+            pop: global.Array.prototype.pop,
+
             /**
              * @private
              * @function
              */
-            push: Array.prototype.push,
+            push: global.Array.prototype.push,
+
             /**
              * @private
              * @function
              */
-            reduce: Array.prototype.reduce,
+            reduce: global.Array.prototype.reduce,
+
             /**
              * @private
              * @function
              */
-            reduceRight: Array.prototype.reduceRight,
+            reduceRight: global.Array.prototype.reduceRight,
+
             /**
              * @private
              * @function
              */
-            reverse: Array.prototype.reverse,
+            reverse: global.Array.prototype.reverse,
+
             /**
              * @private
              * @function
              */
-            shift: Array.prototype.shift,
+            shift: global.Array.prototype.shift,
+
             /**
              * @private
              * @function
              */
-            slice: Array.prototype.slice,
+            slice: global.Array.prototype.slice,
+
             /**
              * @private
              * @function
              */
-            some: Array.prototype.some,
+            some: global.Array.prototype.some,
+
             /**
              * @private
              * @function
              */
-            sort: Array.prototype.sort,
+            sort: global.Array.prototype.sort,
+
             /**
              * @private
              * @function
              */
-            splice: Array.prototype.splice,
+            splice: global.Array.prototype.splice,
+
             /**
              * @private
              * @function
              */
-            toString: Array.prototype.toString,
+            toString: global.Array.prototype.toString,
+
             /**
              * @private
              * @function
              */
-            unshift: Array.prototype.unshift
+            unshift: global.Array.prototype.unshift
         },
 
         /**
@@ -997,172 +1067,205 @@
              * @private
              * @constructor
              */
-            Ctr: String,
+            Ctr: global.String,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: String.prototype,
+            proto: global.String.prototype,
+
             /**
              * @private
              * @function
              */
-            fromCharCode: String.fromCharCode,
+            fromCharCode: global.String.fromCharCode,
+
             /**
              * @private
              * @function
              */
-            fromCodePoint: String.fromCodePoint,
+            fromCodePoint: global.String.fromCodePoint,
+
             /**
              * @private
              * @function
              */
-            anchor: String.prototype.anchor,
+            anchor: global.String.prototype.anchor,
+
             /**
              * @private
              * @function
              */
-            charAt: String.prototype.charAt,
+            charAt: global.String.prototype.charAt,
+
             /**
              * @private
              * @function
              */
-            charCodeAt: String.prototype.charCodeAt,
+            charCodeAt: global.String.prototype.charCodeAt,
+
             /**
              * @private
              * @function
              */
-            codePointAt: String.prototype.codePointAt,
+            codePointAt: global.String.prototype.codePointAt,
+
             /**
              * @private
              * @function
              */
-            concat: String.prototype.concat,
+            concat: global.String.prototype.concat,
+
             /**
              * @private
              * @function
              */
-            contains: String.prototype.contains,
+            contains: global.String.prototype.contains,
+
             /**
              * @private
              * @function
              */
-            endsWith: String.prototype.endsWith,
+            endsWith: global.String.prototype.endsWith,
+
             /**
              * @private
              * @function
              */
-            indexOf: String.prototype.indexOf,
+            indexOf: global.String.prototype.indexOf,
+
             /**
              * @private
              * @function
              */
-            lastIndexOf: String.prototype.lastIndexOf,
+            lastIndexOf: global.String.prototype.lastIndexOf,
+
             /**
              * @private
              * @function
              */
-            link: String.prototype.link,
+            link: global.String.prototype.link,
+
             /**
              * @private
              * @function
              */
-            localeCompare: String.prototype.localeCompare,
+            localeCompare: global.String.prototype.localeCompare,
+
             /**
              * @private
              * @function
              */
-            match: String.prototype.match,
+            match: global.String.prototype.match,
+
             /**
              * @private
              * @function
              */
-            normalize: String.prototype.normalize,
+            normalize: global.String.prototype.normalize,
+
             /**
              * @private
              * @function
              */
-            repeat: String.prototype.repeat,
+            repeat: global.String.prototype.repeat,
+
             /**
              * @private
              * @function
              */
-            replace: String.prototype.replace,
+            replace: global.String.prototype.replace,
+
             /**
              * @private
              * @function
              */
-            search: String.prototype.search,
+            search: global.String.prototype.search,
+
             /**
              * @private
              * @function
              */
-            slice: String.prototype.slice,
+            slice: global.String.prototype.slice,
+
             /**
              * @private
              * @function
              */
-            split: String.prototype.split,
+            split: global.String.prototype.split,
+
             /**
              * @private
              * @function
              */
-            startsWith: String.prototype.startsWith,
+            startsWith: global.String.prototype.startsWith,
+
             /**
              * @private
              * @function
              */
-            substr: String.prototype.substr,
+            substr: global.String.prototype.substr,
+
             /**
              * @private
              * @function
              */
-            substring: String.prototype.substring,
+            substring: global.String.prototype.substring,
+
             /**
              * @private
              * @function
              */
-            toLocaleLowerCase: String.prototype.toLocaleLowerCase,
+            toLocaleLowerCase: global.String.prototype.toLocaleLowerCase,
+
             /**
              * @private
              * @function
              */
-            toLocaleUpperCase: String.prototype.toLocaleUpperCase,
+            toLocaleUpperCase: global.String.prototype.toLocaleUpperCase,
+
             /**
              * @private
              * @function
              */
-            toLowerCase: String.prototype.toLowerCase,
+            toLowerCase: global.String.prototype.toLowerCase,
+
             /**
              * @private
              * @function
              */
-            toString: String.prototype.toString,
+            toString: global.String.prototype.toString,
+
             /**
              * @private
              * @function
              */
-            toUpperCase: String.prototype.toUpperCase,
+            toUpperCase: global.String.prototype.toUpperCase,
+
             /**
              * @private
              * @function
              */
-            trim: String.prototype.trim,
+            trim: global.String.prototype.trim,
+
             /**
              * @private
              * @function
              */
-            trimLeft: String.prototype.trimLeft,
+            trimLeft: global.String.prototype.trimLeft,
+
             /**
              * @private
              * @function
              */
-            trimRight: String.prototype.trimRight,
+            trimRight: global.String.prototype.trimRight,
+
             /**
              * @private
              * @function
              */
-            valueOf: String.prototype.valueOf
+            valueOf: global.String.prototype.valueOf
         },
 
         /**
@@ -1176,112 +1279,133 @@
              * @private
              * @constructor
              */
-            Ctr: Number,
-            /** @type {object} */
-            proto: Number.prototype,
+            Ctr: global.Number,
+
             /**
              * @private
-             * @type {number}
+             * @type {Object}
              */
-            EPSILON: Number.EPSILON,
-            /**
-             * @private
-             * @type {number}
-             */
-            MAX_VALUE: Number.MAX_VALUE,
-            /**
-             * @private
-             * @type {number}
-             */
-            MIN_VALUE: Number.MIN_VALUE,
+            proto: global.Number.prototype,
 
             /**
              * @private
              * @type {number}
              */
-            MAX_SAFE_INTEGER: Number.MAX_SAFE_INTEGER,
+            EPSILON: global.Number.EPSILON,
 
             /**
              * @private
              * @type {number}
              */
-            MIN_SAFE_INTEGER: Number.MIN_SAFE_INTEGER,
+            MAX_VALUE: global.Number.MAX_VALUE,
 
             /**
              * @private
              * @type {number}
              */
-            NaN: Number.NaN,
+            MIN_VALUE: global.Number.MIN_VALUE,
+
             /**
              * @private
              * @type {number}
              */
-            POSITIVE_INFINITY: Number.POSITIVE_INFINITY,
+            MAX_SAFE_INTEGER: global.Number.MAX_SAFE_INTEGER,
+
             /**
              * @private
              * @type {number}
              */
-            NEGATIVE_INFINITY: Number.NEGATIVE_INFINITY,
+            MIN_SAFE_INTEGER: global.Number.MIN_SAFE_INTEGER,
+
+            /**
+             * @private
+             * @type {number}
+             */
+            NaN: global.Number.NaN,
+
+            /**
+             * @private
+             * @type {number}
+             */
+            POSITIVE_INFINITY: global.Number.POSITIVE_INFINITY,
+
+            /**
+             * @private
+             * @type {number}
+             */
+            NEGATIVE_INFINITY: global.Number.NEGATIVE_INFINITY,
+
             /**
              * @private
              * @function
              */
-            isFinite: Number.isFinite,
+            isFinite: global.Number.isFinite,
+
             /**
              * @private
              * @function
              */
-            isInteger: Number.isInteger,
+            isInteger: global.Number.isInteger,
+
             /**
              * @private
              * @function
              */
-            isSafeInteger: Number.isSafeInteger,
+            isSafeInteger: global.Number.isSafeInteger,
+
             /**
              * @private
              * @function
              */
-            isNaN: Number.isNaN,
+            isNaN: global.Number.isNaN,
+
             /**
              * @private
              * @function
              */
-            parseFloat: Number.parseFloat,
+            parseFloat: global.Number.parseFloat,
+
             /**
              * @private
              * @function
              */
-            parseInt: Number.parseInt,
+            parseInt: global.Number.parseInt,
+
             /**
              * @private
              * @function
              */
-            toExponential: Number.prototype.toExponential,
+            toExponential: global.Number.prototype.toExponential,
+
             /**
              * @private
              * @function
              */
-            toFixed: Number.prototype.toFixed,
+            toFixed: global.Number.prototype.toFixed,
+
             /**
              * @private
              * @function
              */
-            toLocaleString: Number.prototype.toLocaleString,
+            toLocaleString: global.Number.prototype.toLocaleString,
+
             /**
              * @private
              * @function
              */
-            toPrecision: Number.prototype.toPrecision,
+            toPrecision: global.Number.prototype.toPrecision,
+
             /**
              * @private
              * @function
              */
-            toString: Number.prototype.toString,
+            toString: global.Number.prototype.toString,
+
             /**
              * @private
              * @function
              */
-            valueOf: Number.prototype.valueOf
+            valueOf: global.Number.prototype.valueOf
         },
 
         /**
@@ -1295,22 +1419,25 @@
              * @private
              * @constructor
              */
-            Ctr: Boolean,
+            Ctr: global.Boolean,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: Boolean.prototype,
+            proto: global.Boolean.prototype,
+
             /**
              * @private
              * @function
              */
-            toString: Boolean.prototype.toString,
+            toString: global.Boolean.prototype.toString,
+
             /**
              * @private
              * @function
              */
-            valueOf: Boolean.prototype.valueOf
+            valueOf: global.Boolean.prototype.valueOf
         },
 
         /**
@@ -1324,32 +1451,37 @@
              * @private
              * @constructor
              */
-            Ctr: Function,
+            Ctr: global.Function,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: Function.prototype,
+            proto: global.Function.prototype,
+
             /**
              * @private
              * @function
              */
-            apply: Function.prototype.apply,
+            apply: global.Function.prototype.apply,
+
             /**
              * @private
              * @function
              */
-            bind: Function.prototype.bind,
+            bind: global.Function.prototype.bind,
+
             /**
              * @private
              * @function
              */
-            call: Function.prototype.call,
+            call: global.Function.prototype.call,
+
             /**
              * @private
              * @function
              */
-            toString: Function.prototype.toString
+            toString: global.Function.prototype.toString
         },
 
         /**
@@ -1363,27 +1495,31 @@
              * @private
              * @constructor
              */
-            Ctr: RegExp,
+            Ctr: global.RegExp,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: RegExp.prototype,
+            proto: global.RegExp.prototype,
+
             /**
              * @private
              * @function
              */
-            exec: RegExp.prototype.exec,
+            exec: global.RegExp.prototype.exec,
+
             /**
              * @private
              * @function
              */
-            test: RegExp.prototype.test,
+            test: global.RegExp.prototype.test,
+
             /**
              * @private
              * @function
              */
-            toString: RegExp.prototype.toString
+            toString: global.RegExp.prototype.toString
         },
 
         /**
@@ -1397,32 +1533,37 @@
              * @private
              * @constructor
              */
-            Ctr: Date,
+            Ctr: global.Date,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: Date.prototype,
+            proto: global.Date.prototype,
+
             /**
              * @private
              * @function
              */
-            now: Date.now,
+            now: global.Date.now,
+
             /**
              * @private
              * @function
              */
-            toJSON: Date.prototype.toJSON,
+            toJSON: global.Date.prototype.toJSON,
+
             /**
              * @private
              * @function
              */
-            toISOString: Date.prototype.toISOString,
+            toISOString: global.Date.prototype.toISOString,
+
             /**
              * @private
              * @function
              */
-            getTime: Date.prototype.getTime
+            getTime: global.Date.prototype.getTime
         },
 
         /**
@@ -1436,12 +1577,13 @@
              * @private
              * @constructor
              */
-            Ctr: Error,
+            Ctr: global.Error,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: Error.prototype
+            proto: global.Error.prototype
         },
 
         /**
@@ -1455,12 +1597,13 @@
              * @private
              * @constructor
              */
-            Ctr: TypeError,
+            Ctr: global.TypeError,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: TypeError.prototype
+            proto: global.TypeError.prototype
         },
 
         /**
@@ -1474,12 +1617,13 @@
              * @private
              * @constructor
              */
-            Ctr: SyntaxError,
+            Ctr: global.SyntaxError,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: SyntaxError.prototype
+            proto: global.SyntaxError.prototype
         },
 
         /**
@@ -1493,12 +1637,13 @@
              * @private
              * @constructor
              */
-            Ctr: RangeError,
+            Ctr: global.RangeError,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: RangeError.prototype
+            proto: global.RangeError.prototype
         },
 
         /**
@@ -1512,12 +1657,13 @@
               * @private
               * @constructor
               */
-            Ctr: EvalError,
+            Ctr: global.EvalError,
+
              /**
               * @private
               * @type {Object}
               */
-            proto: EvalError.prototype
+            proto: global.EvalError.prototype
         },
 
         /**
@@ -1531,12 +1677,13 @@
              * @private
              * @constructor
              */
-            Ctr: ReferenceError,
+            Ctr: global.ReferenceError,
+
              /**
               * @private
               * @type {Object}
               */
-            proto: ReferenceError.prototype
+            proto: global.ReferenceError.prototype
         },
 
         /**
@@ -1550,12 +1697,13 @@
              * @private
              * @constructor
              */
-            Ctr: URIError,
+            Ctr: global.URIError,
+
             /**
              * @private
              * @type {Object}
              */
-            proto: URIError.prototype
+            proto: global.URIError.prototype
         }
     };
 
@@ -1566,18 +1714,18 @@
      * @namespace
      */
     base.JSON = {};
-    if (typeof JSON === 'object' && JSON) {
+    if (typeof global.JSON === 'object' && global.JSON) {
         /**
          * @private
          * @function
          */
-        base.JSON.parse = JSON.parse;
+        base.JSON.parse = global.JSON.parse;
 
         /**
          * @private
          * @function
          */
-        base.JSON.stringify = JSON.stringify;
+        base.JSON.stringify = global.JSON.stringify;
     }
 
     /**
@@ -3288,7 +3436,7 @@
         }
 
         /*jslint evil: true */
-        return new Function('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice, $apply);
+        return new CFunction('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice, $apply);
     }
 
     /**
@@ -4673,7 +4821,7 @@
 
             function makeBound(binder, args) {
                 /*jslint evil: true */
-                return new Function('binder', 'slice', 'apply', 'return function (' + args + '){ return apply(binder, this, slice(arguments)); }')(binder, $slice, $apply);
+                return new CFunction('binder', 'slice', 'apply', 'return function (' + args + '){ return apply(binder, this, slice(arguments)); }')(binder, $slice, $apply);
             }
 
             return function (thisArg) {
@@ -7875,7 +8023,7 @@
 
                         // This is an intrusive patch but can be done correctly, so I feel it's worth it.
                         try {
-                            mDefineProperty(Function.prototype, 'length', propConstant);
+                            mDefineProperty(protoFunction, 'length', propConstant);
                         } catch (eLengthPatch) {
                             $conlog('Failed to patch Function.prototype.length', eLengthPatch);
                         }
@@ -8178,9 +8326,11 @@
         var bug = false;
 
         if (isStrictMode) {
-            $call(fn, [1], function () {
-                bug = $typeOf(this) === 'object';
-            }, 'foo');
+            $affirm.doesNotThrow(function () {
+                $call(fn, [1], function () {
+                    bug = $typeOf(this) === 'object';
+                }, 'foo');
+            }, 'should not throw when calling function');
         }
 
         return bug;
@@ -8209,9 +8359,11 @@
 
             var result;
 
-            $call(Fn, 'foo', function () {
-                result = arguments[$toLength(arguments.length) - 1];
-            });
+            $affirm.doesNotThrow(function () {
+                $call(Fn, 'foo', function () {
+                    result = arguments[$toLength(arguments.length) - 1];
+                });
+            }, 'should not throw when calling function');
 
             $affirm.strictEqual($typeOf(result), 'object', 'is object');
             $affirm.strictEqual($toStringTag(result), stringTagString, 'is string');
@@ -8484,9 +8636,13 @@
                     2: 3,
                     length: -3
                 },
+                foundIndex;
+
+            $affirm.doesNotThrow(function () {
                 foundIndex = $call(pFind, obj, function () {
-                    throw new Error('should not reach here');
+                    throw new CError('should not reach here');
                 });
+            }, 'should not iterate object with negative length');
 
             $affirm.strictEqual(foundIndex, -1, 'object with negative length');
         },
@@ -8584,9 +8740,13 @@
                     2: 3,
                     length: -3
                 },
+                foundIndex;
+
+            $affirm.doesNotThrow(function () {
                 foundIndex = $call(pFindIndex, obj, function () {
-                    throw new Error('should not reach here');
+                    throw new CError('should not reach here');
                 });
+            }, 'should not iterate object with negative length');
 
             $affirm.strictEqual(foundIndex, -1, 'object with negative length');
         },
@@ -10374,11 +10534,11 @@
      * @param {*} searchElement
      * @returns {boolean}
      */
-    exports.Array.proto.contains = function (searchElement) {
-        /*jslint unparam: true */
-        /*jshint unused: false */
-        return $apply(exports.Array.proto.indexOf, this, arguments) !== -1;
-    };
+    exports.Array.proto.contains = (function (pEAIndexOf) {
+        return function () {
+            return $apply(pEAIndexOf, this, arguments) !== -1;
+        };
+    }(exports.Array.proto.indexOf));
 
     exports.Array.proto.contains.argNames = ['searchElement'];
 
@@ -10793,7 +10953,7 @@
                         /*jslint forin: true */
                         for (name in object) {
                             if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
-                                $push(theKeys, String(name));
+                                $push(theKeys, name);
                             }
                         }
                     }
@@ -11031,7 +11191,7 @@
                 ('enumerable' in descriptor && !descriptor.enumerable) ||
                 ('configurable' in descriptor && !descriptor.configurable)
             ))
-                throw new RangeError(
+                throw new CRangeError(
                     'This implementation of Object.defineProperty does not support configurable, enumerable, or writable.'
                 );
             */
@@ -11096,35 +11256,55 @@
                     // test
                     function () {
                         // should not throw an error definining elements on arrays using trailing point numbers strings
-                        var testObj = mDefineProperty([], '1.', { value: null }),
+                        var testObj,
                             testArr = [];
+
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([], '1.', { value: null });
+                        }, 'should not throw an error definining elements on arrays using trailing point numbers strings');
 
                         $affirm.strictEqual(testObj.length, 0, 'test1');
                         $affirm.strictEqual(testObj[1], Undefined, 'test2');
                         $affirm.strictEqual(testObj['1.'], null, 'test3');
 
                         // should not throw an error definining elements on arrays using integer strings
-                        testObj = mDefineProperty([], '1', { value: Undefined });
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([], '1', { value: Undefined });
+                        }, 'should not throw an error definining elements on arrays using integer strings');
+
                         $affirm.strictEqual(testObj.length, 2, 'test4');
                         $affirm.strictEqual(testObj[1], Undefined, 'test5');
 
-                        testObj = mDefineProperty([], '1', { value: null });
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([], '1', { value: null });
+                        }, 'should not throw an error definining elements on arrays using integer strings');
+
                         $affirm.strictEqual(testObj.length, 2, 'test6');
                         $affirm.strictEqual(testObj[1], null, 'test7');
 
-                        testObj = mDefineProperty([], '1', {});
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([], '1', {});
+                        }, 'should not throw an error definining elements on arrays using integer strings');
+
                         $affirm.strictEqual(testObj.length, 2, 'test8');
                         $affirm.strictEqual(testObj[1], Undefined, 'test9');
 
-                        testObj = mDefineProperty([], '1', { value: null });
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([], '1', { value: null });
+                        }, 'should not throw an error definining elements on arrays using integer strings');
+
                         $affirm.strictEqual(testObj.length, 2, 'test10');
                         $affirm.strictEqual(testObj[1], null, 'test11');
 
                         // Test overwrite array properties when no value defined, no value change
-                        testObj = mDefineProperty([10, 20], '1', {});
+                        $affirm.doesNotThrow(function () {
+                            testObj = mDefineProperty([10, 20], '1', {});
+                        }, 'Test overwrite array properties when no value defined, no value change');
+
                         $affirm.strictEqual(testObj.length, 2, 'test12');
                         $affirm.strictEqual(testObj[1], 20, 'test13');
 
+                        // should not throw an error redefinining elements on arrays
                         $affirm.doesNotThrow(function () {
                             testObj = mDefineProperty([10], '0', {
                                 enumerable: true,
@@ -11133,45 +11313,52 @@
                             });
                         }, 'should not throw an error redefinining elements on arrays');
 
-
                         $affirm.strictEqual(testObj.length, 1, 'length after re-define');
                         $affirm.strictEqual(testObj[0], 10, 'value after re-define');
 
                         // should not throw an error definining elements/properties on arrays
-                        mDefineProperty(testArr, '0', {
-                            value: 10,
-                            enumerable: true,
-                            writable: true,
-                            configurable: true
-                        });
+                        testArr = [];
+                        $affirm.doesNotThrow(function () {
+                            mDefineProperty(testArr, '0', {
+                                value: 10,
+                                enumerable: true,
+                                writable: true,
+                                configurable: true
+                            });
+                        }, 'should not throw an error definining elements on arrays');
 
-                        mDefineProperty(testArr, '1', {
-                            value: true,
-                            enumerable: true,
-                            writable: true,
-                            configurable: true
-                        });
+                        $affirm.doesNotThrow(function () {
+                            mDefineProperty(testArr, '1', {
+                                value: true,
+                                enumerable: true,
+                                writable: true,
+                                configurable: true
+                            });
+                        }, 'should not throw an error definining elements on arrays');
 
-                        mDefineProperty(testArr, '2', {
-                            value: 'x',
-                            enumerable: true,
-                            writable: true,
-                            configurable: true
-                        });
+                        $affirm.doesNotThrow(function () {
+                            mDefineProperty(testArr, '2', {
+                                value: 'x',
+                                enumerable: true,
+                                writable: true,
+                                configurable: true
+                            });
+                        }, 'should not throw an error definining elements on arrays');
 
-                        mDefineProperty(testArr, 'foo', {
-                            value: noop,
-                            enumerable: true,
-                            writable: true,
-                            configurable: true
-                        });
+                        $affirm.doesNotThrow(function () {
+                            mDefineProperty(testArr, 'foo', {
+                                value: noop,
+                                enumerable: true,
+                                writable: true,
+                                configurable: true
+                            });
+                        }, 'should not throw an error definining properties on arrays');
 
                         $affirm.strictEqual(testArr.length, 3, 'length after define');
                         $affirm.strictEqual(testArr[0], 10, 'first value');
                         $affirm.strictEqual(testArr[1], true, 'second value');
                         $affirm.strictEqual(testArr[2], 'x', 'third value');
                         $affirm.strictEqual(testArr.foo, noop, 'fourth value');
-
 
                         //should not throw an error definining elements on arrays using float numbers
                         testObj = mDefineProperty([], 1.1, {
@@ -11403,14 +11590,25 @@
     );
 
     // detect a Rhino bug and patch it
-    try {
-        exports.Object.freeze({
-            noop: noop
-        });
-    } catch (eFreeze) {
-        exports.Object.freeze = (function (
-            freezeObject
-        ) {
+    exports.Object.freeze = $decide(
+        // test
+        function () {
+            $affirm.doesNotThrow(function () {
+                exports.Object.freeze({
+                    noop: noop
+                });
+            }, 'does not throw an error in Rhino');
+        },
+
+        // pass
+        function () {
+            return exports.Object.freeze;
+        },
+
+        // fail
+        function () {
+            var freezeObject = exports.Object.freeze;
+
             return function (object) {
                 var val;
 
@@ -11422,12 +11620,14 @@
 
                 return val;
             };
-        }(
-            exports.Object.freeze
-        ));
+        },
 
-        exports.Object.freeze.argNames = ['object'];
-    }
+        // argNames
+        ['object'],
+
+        // message
+        'Object.freeze Rhino bug patch'
+    );
 
     /**
      * Determine if an object is frozen.
@@ -12502,7 +12702,7 @@
             }, CTypeError, 'Throws if not date object');
 
             $affirm.throws(function () {
-                $call(pToISOString, new Date(Number.MAX_VALUE));
+                $call(pToISOString, new CDate(MAX_VALUE));
             }, CRangeError, 'Throws on invalid date');
 
             var value;
@@ -12560,7 +12760,7 @@
                 }
 
                 if (!exports.Date.isValid(this)) {
-                    throw new RangeError('Invalid time value');
+                    throw new CRangeError('Invalid time value');
                 }
 
                 var result,
@@ -12715,7 +12915,7 @@
             $affirm.strictEqual(value, null, 'test14');
 
             $affirm.doesNotThrow(function () {
-                value = $call(pToJSON, $makeDate(Number.MAX_VALUE));
+                value = $call(pToJSON, $makeDate(MAX_VALUE));
             }, 'test15');
 
             $affirm.strictEqual(value, null, 'test16');
@@ -13610,7 +13810,7 @@
              * @param {*} [message] Human-readable description of the error.
              * @returns {Function}
              */
-            BigError = exports.customError('BigError', Error),
+            BigError = exports.customError('BigError', CError),
 
             /**
              * The string to be used for identifying Big instances.
@@ -16274,7 +16474,7 @@
                 return false;
             }
 
-            if ($isRegExp(expected) && $instanceOf(actual, Error)) {
+            if ($isRegExp(expected) && $instanceOf(actual, CError)) {
                 storeState = exports.normaliseErrorIEToStringState();
                 if (storeState === false) {
                     exports.normaliseErrorIEToStringOn();
@@ -16761,7 +16961,7 @@
         if ($isArray(fn.argNames)) {
             anLen = $toLength(fn.argNames.length);
             if (anLen < fnLen) {
-                throw new Error('argNames are fewer than function arguments: ' + $toString(fn.argNames));
+                throw new CError('argNames are fewer than function arguments: ' + $toString(fn.argNames));
             }
 
             args = $slice(fn.argNames, 0, $min(anLen, fnLen));
@@ -16775,7 +16975,7 @@
         }
 
         /*jslint evil: true */
-        return new Function('fn', 'slice', 'apply', 'return function (' + args + ') { return apply(fn, this, slice(arguments)); }')(fn, $slice, $apply);
+        return new CFunction('fn', 'slice', 'apply', 'return function (' + args + ') { return apply(fn, this, slice(arguments)); }')(fn, $slice, $apply);
     }
 
     /**
