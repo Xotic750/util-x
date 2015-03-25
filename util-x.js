@@ -377,6 +377,7 @@
         $exec,
         $test,
         $slice,
+        $argSlice,
         $split,
         $replace,
         $splice,
@@ -1941,16 +1942,47 @@
     //$round = base.Math.round;
 
     /**
+     * Returns the arguments at index.
+     * Primarily to keep jslint happy
+     *
+     * @private
+     * @function module:util-x~$getArgItem
+     * @param {arguments} args
+     * @param {number} index
+     * @returns {*}
+     */
+    function $getArgItem(args, index) {
+        return args[index];
+    }
+
+    /**
+     * Set the value of the arguments at index.
+     * Primarily to keep jslint happy
+     *
+     * @private
+     * @function module:util-x~$getArgItem
+     * @param {arguments} args
+     * @param {number} index
+     * @param {*} value
+     * @returns {*}
+     */
+    function $setArgItem(args, index, value) {
+        args[index] = value;
+
+        return value;
+    }
+
+    /**
      * Returns the first argument unchanged.
      * Primary use with ToMethod.
      *
      * @private
-     * @function module:util-x~$justArg
-     * @argument {*} [arg]
+     * @function module:util-x~$firstArg
+     * @param {*} [arg]
      * @returns {*}
      */
-    function $justArg(arg) {
-        return arg;
+    function $firstArg() {
+        return $getArgItem(arguments, 0);
     }
 
     /**
@@ -1958,12 +1990,10 @@
      *
      * @private
      * @name module:util-x~$returnArgs
-     * @argument {...*} [varArgs]
+     * @param {...*} [varArgs]
      * @returns {Arguments}
      */
-    function $returnArgs(varArgs) {
-        /*jslint unparam:true */
-        /*jshint unused:false */
+    function $returnArgs() {
         return arguments;
     }
 
@@ -2335,7 +2365,8 @@
 
         thisArg[name] = func;
         /*jslint evil: true */
-        rtn = eval('(thisArg[name](' + argsStrings + '))');
+        rtn = new CFunction('fn', 'name', 'args', 'return function () { return fn[name](' + argsStrings + '); }();')(thisArg, name, args);
+        //rtn = eval('(thisArg[name](' + argsStrings + '))');
         /*jslint evil: false */
         delete thisArg[name];
 
@@ -2434,6 +2465,25 @@
 
     /**
      * Shortcut
+     * Creates a new array from arguments, starting at start and ending at end.
+     * You should not slice on arguments because it prevents optimizations in
+     * JavaScript engines (V8 for example). Instead, try constructing a new array
+     * by iterating through the arguments object.
+     *
+     * @private
+     * @function module:util-x~$argSlice
+     * @param {module:util-x~ArrayLike} array
+     * @param {module:util-x~NumberLike} [start]
+     * @param {module:util-x~NumberLike} [end]
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $argSlice = function (array, start, end) {
+        return $call($pSlice, array, start, end);
+    };
+
+    /**
+     * Shortcut
      * Replaced later
      * Creates a new array from arguments, starting at start and ending at end.
      *
@@ -2445,9 +2495,7 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
-    $slice = function (array, start, end) {
-        return $call($pSlice, array, start, end);
-    };
+    $slice = $argSlice;
 
     /**
      * Returns true if the operand inputArg is a Function. (Duck typed)
@@ -3065,7 +3113,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
      */
     $concat = function (array) {
-        return $apply($pConcat, array, $slice(arguments, 1));
+        return $apply($pConcat, array, $argSlice(arguments, 1));
     };
 
     /**
@@ -3088,7 +3136,7 @@
                 arr.length = 1;
                 fn = function () {
                     if (enableLog) {
-                        $apply(log, console, $slice(arguments));
+                        $apply(log, console, arguments);
                     }
                 };
 
@@ -3102,14 +3150,12 @@
                     log(arr[0]);
                     log(arr[1]);
                     fn = function () {
-                        var args,
-                            length,
+                        var length,
                             index;
 
                         if (enableLog) {
-                            args = $slice(arguments);
-                            for (length = args.length, index = 0; index < length; index += 1) {
-                                log(args[index]);
+                            for (length = arguments.length, index = 0; index < length; index += 1) {
+                                log(arguments[index]);
                             }
                         }
                     };
@@ -3130,11 +3176,11 @@
         return function () {
             if (global.log && global.log.debug) {
                 try {
-                    $apply(global.log.debug, global.log, $slice(arguments));
+                    $apply(global.log.debug, global.log, arguments);
                 } catch (ignore) {}
             }
 
-            $apply(fn, null, $slice(arguments));
+            $apply(fn, null, arguments);
         };
     }(global.console));
 
@@ -3436,7 +3482,7 @@
         }
 
         /*jslint evil: true */
-        return new CFunction('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(slice(arguments, 0, 1)[0]), slice(arguments, 1)); }')(protoFn, checkThisArgFn, $slice, $apply);
+        return new CFunction('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(arguments[0]), slice(arguments, 1)); };')(protoFn, checkThisArgFn, $argSlice, $apply);
     }
 
     /**
@@ -3721,7 +3767,6 @@
      * @returns {Arguments}
      */
     exports.Function.returnArgs = $returnArgs;
-    exports.Function.returnArgs.argNames = ['varArgs'];
 
     /**
      * Returns a number clamped to the range set by min and max.
@@ -4821,14 +4866,14 @@
 
             function makeBound(binder, args) {
                 /*jslint evil: true */
-                return new CFunction('binder', 'slice', 'apply', 'return function (' + args + '){ return apply(binder, this, slice(arguments)); }')(binder, $slice, $apply);
+                return new CFunction('binder', 'apply', 'return function (' + args + ') { return apply(binder, this, arguments); };')(binder, $apply);
             }
 
             return function (thisArg) {
                 var fn = $throwIfNotFunction(this),
-                    args = $slice(arguments, 1),
+                    args = $argSlice(arguments, 1),
                     bound = makeBound(function () {
-                        var binderArgs = $concat(args, $slice(arguments)),
+                        var binderArgs = $concat(args, $argSlice(arguments)),
                             result;
 
                         if ($instanceOf(this, bound)) {
@@ -5393,7 +5438,7 @@
      * @param {number} divisor
      * @returns {number}
      */
-    exports.Number.modulo = $toMethod(exports.Number.proto.modulo, $justArg);
+    exports.Number.modulo = $toMethod(exports.Number.proto.modulo, $firstArg);
     exports.Number.modulo.argNames = ['dividend', 'divisor'];
 
     /**
@@ -6365,7 +6410,7 @@
                 throwIfNotRegExp(this);
                 str = $toString(stringArg);
                 origLastIndex = this.lastIndex;
-                match = $apply(pExec, this, $slice(arguments));
+                match = $apply(pExec, this, arguments);
                 if ($isArray(match)) {
                     // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
                     // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
@@ -6756,29 +6801,28 @@
                     // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
                     // functions isn't type-converted to a string
                     result = $call(pReplace, str, search, function () {
-                        var args = $slice(arguments);
-
                         // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                         // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
                         if (isRegex && search.global) {
-                            search.lastIndex = args[args.length - 2] + args[0].length;
+                            search.lastIndex = arguments[$toLength(arguments.length) - 2] + $getArgItem(arguments, 0).length;
                         }
 
                         // Should pass `undefined` as context; see
                         // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                        return $apply(replacement, Undefined, args);
+                        return $apply(replacement, Undefined, arguments);
                     });
                 } else {
                     // Ensure that the last value of `args` will be a string when given nonstring `this`,
                     // while still throwing on `null` or `undefined` context
                     result = $call(pReplace, str, search, function () {
                         // Keep this function's `arguments` available through closure
-                        var args = $slice(arguments),
-                            length = args.length;
+                        var args = arguments,
+                            length = $toLength(arguments.length);
 
-                        return $call(pReplace, $toString(replacement), replacementToken, function ($0, $1, $2) {
-                            /*jslint unparam: true */
-                            /*jshint unused: false */
+                        return $call(pReplace, $toString(replacement), replacementToken, function () {
+                            var $0 = $getArgItem(arguments, 0),
+                                $2 = $getArgItem(arguments, 2);
+
                             // Special variable or numbered backreference without curly braces
                             // $$
                             if ($2 === '$') {
@@ -6934,7 +6978,7 @@
             if (!$isRegExp(regExpArg)) {
                 regExpArg = new CRegExp(regExpArg);
             } else if (regExpArg.global) {
-                result = $apply(pMatch, str, $slice(arguments));
+                result = $apply(pMatch, str, arguments);
                 // Fixes IE bug
                 regExpArg.lastIndex = 0;
 
@@ -8169,7 +8213,7 @@
                             if ($toLength(arguments.length) < 1) {
                                 val = [];
                             } else {
-                                val = $apply(pSplice, object, $slice(arguments));
+                                val = $apply(pSplice, object, arguments);
                             }
 
                             return val;
@@ -8197,7 +8241,6 @@
                         k = 0,
                         from,
                         argLength = $toLength(arguments.length),
-                        args = $slice(arguments),
                         item = 2,
                         itemCount = $max(argLength - item, 0),
                         to,
@@ -8265,7 +8308,7 @@
 
                     k = actualStart;
                     while (item < argLength) {
-                        object[k] = args[item];
+                        object[k] = $getArgItem(arguments, item);
                         k += 1;
                         item += 1;
                     }
@@ -9085,7 +9128,7 @@
         // fail
         function () {
             return function () {
-                return $slice(arguments);
+                return $argSlice(arguments);
             };
         },
 
@@ -10070,7 +10113,7 @@
         // fail
         function () {
             return function () {
-                return $apply($parseInt, null, $slice(arguments));
+                return $apply($parseInt, null, arguments);
             };
         },
 
@@ -10431,7 +10474,7 @@
      * @returns {string}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
-    exports.Number.toFixed = $toMethod(exports.Number.proto.toFixed, $justArg);
+    exports.Number.toFixed = $toMethod(exports.Number.proto.toFixed, $firstArg);
     exports.Number.toFixed.argNames = ['number', 'fractionDigits'];
 
     /**
@@ -11196,6 +11239,13 @@
                 );
             */
 
+            if ($isArray(object) || $isArguments(object)) {
+                property = $toString(property);
+                if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && isUint32(+property)) {
+                    property = +property;
+                }
+            }
+
             if (hasAccessorSupport && ($call(mLookupGetter, object, property) || $call(mLookupSetter, object, property))) {
                 // As accessors are supported only on engines implementing
                 // `__proto__` we can safely override `__proto__` while defining
@@ -11382,7 +11432,7 @@
                         return function (object, property, descriptor) {
                             if ($isArray(object) || $isArguments(object)) {
                                 property = $toString(property);
-                                if ($isDigits(property) && isUint32(+property)) {
+                                if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && isUint32(+property)) {
                                     property = +property;
                                 }
 
@@ -11726,7 +11776,7 @@
                     for (index = 1; index < length; index += 1) {
                         arg = arguments[index];
                         if (arg !== null && !$isUndefined(arg)) {
-                            from = $toObject(arguments[index]);
+                            from = $toObject(arg);
                             keysArray = $objectKeys(from);
                             for (nextIndex = 0, len = $toLength(keysArray.length); nextIndex < len; nextIndex += 1) {
                                 nextKey = keysArray[nextIndex];
@@ -12285,10 +12335,9 @@
      * @param {*} value
      * @returns {string}
      */
-    exports.customErrorReplacer = function (key, value) {
-        /*jslint unparam: true */
-        /*jshint unused: false */
-        var type = typeof value,
+    exports.customErrorReplacer = function () {
+        var value = $getArgItem(arguments, 1),
+            type = typeof value,
             result;
 
         if (type === 'string') {
@@ -12928,9 +12977,7 @@
 
         // fail
         function () {
-            return function (key) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
+            return function () {
                 var object = $toObject(this),
                     tv = $toPrimitive(object),
                     rtn;
@@ -12944,6 +12991,9 @@
                 return rtn;
             };
         },
+
+        // argNames
+        ['key'],
 
         // message
         'Date.toJSON shim'
@@ -13464,16 +13514,13 @@
                     // fail
                     function () {
                         return function () {
-                            var args = $slice(arguments);
+                            var first = $firstArg(arguments);
 
-                            if (args[0] < 0) {
-                                args[0] = this.length + args[0];
-                                if (args[0] < 0) {
-                                    args[0] = 0;
-                                }
+                            if (first < 0) {
+                                $setArgItem(arguments, 0, $toLength(this.length + first));
                             }
 
-                            return $apply(pSubstr, this, args);
+                            return $apply(pSubstr, this, arguments);
                         };
                     },
 
@@ -15194,8 +15241,6 @@
              */
             $defineProperty(Big.prototype, 'abs', {
                 value: function () {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
                     var x = new this.constructor(this);
 
                     x.s = 1;
@@ -15291,9 +15336,7 @@
              * x.div(5)                   // '71'
              */
             $defineProperty(Big.prototype, 'div', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     return forArgs(arguments, div, this);
                 },
                 writable: true,
@@ -15448,9 +15491,7 @@
              * x.minus(0.1)               // '0.2'
              */
             $defineProperty(Big.prototype, 'minus', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     return forArgs(arguments, minus, this);
                 },
                 writable: true,
@@ -15466,10 +15507,8 @@
              * @borrows Big#minus as sub
              */
             $defineProperty(Big.prototype, 'sub', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
-                    return $apply(Big.prototype.minus, this, $slice(arguments));
+                value: function () {
+                    return $apply(Big.prototype.minus, this, arguments);
                 },
                 writable: false,
                 configurable: false,
@@ -15499,9 +15538,7 @@
              * x.mod(0.9)                 // '0.1'
              */
             $defineProperty(Big.prototype, 'mod', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     return forArgs(arguments, mod, this);
                 },
                 writable: true,
@@ -15527,9 +15564,7 @@
              * Big(0.7).plus(x).plus(y)   // '1'
              */
             $defineProperty(Big.prototype, 'plus', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     return forArgs(arguments, plus, this);
                 },
                 writable: true,
@@ -15545,10 +15580,8 @@
              * @borrows Big#plus as add
              */
             $defineProperty(Big.prototype, 'add', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
-                    return $apply(Big.prototype.plus, this, $slice(arguments));
+                value: function () {
+                    return $apply(Big.prototype.plus, this, arguments);
                 },
                 writable: false,
                 configurable: false,
@@ -15698,9 +15731,7 @@
              * y.sqrt()                   // '1.73205080756887729353'
              */
             $defineProperty(Big.prototype, 'sqrt', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     var estimate,
                         r,
                         approx,
@@ -15778,9 +15809,7 @@
              * Big('7e+500').times(y)     // '1.26e+501'
              */
             $defineProperty(Big.prototype, 'times', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
+                value: function () {
                     return forArgs(arguments, times, this);
                 },
                 writable: true,
@@ -15796,10 +15825,8 @@
              * @borrows Big#times as mul
              */
             $defineProperty(Big.prototype, 'mul', {
-                value: function (y) {
-                    /*jslint unparam:true */
-                    /*jshint unused:false */
-                    return $apply(Big.prototype.times, this, $slice(arguments));
+                value: function () {
+                    return $apply(Big.prototype.times, this, arguments);
                 },
                 writable: false,
                 configurable: false,
@@ -16975,7 +17002,7 @@
         }
 
         /*jslint evil: true */
-        return new CFunction('fn', 'slice', 'apply', 'return function (' + args + ') { return apply(fn, this, slice(arguments)); }')(fn, $slice, $apply);
+        return new CFunction('fn', 'apply', 'return function (' + args + ') { return apply(fn, this, arguments); };')(fn, $apply);
     }
 
     /**
