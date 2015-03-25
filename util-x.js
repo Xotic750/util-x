@@ -1727,6 +1727,9 @@
          * @function
          */
         base.JSON.stringify = global.JSON.stringify;
+    } else {
+        base.JSON.parse = Undefined;
+        base.JSON.stringify = Undefined;
     }
 
     /**
@@ -1850,11 +1853,23 @@
     mParseFloat = base.parseFloat;
     mIsFinite = base.isFinite;
 
+    /**
+     * Shortcut
+     * Replaced later
+     * This method parses a string argument and returns a floating point number.
+     *
+     * @private
+     * @function module:util-x~$parseFloat
+     * @param {StringLike} inputArg
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
+     */
     $parseFloat = mParseFloat;
 
     /**
      * Shortcut
      * The Object constructor creates an object wrapper.
+     * Keeps jslint happy
      *
      * @private
      * @function module:util-x~$Object
@@ -2085,10 +2100,9 @@
      * The function tests whether an object is strictly equal to Infinity or -Infinity.
      *
      * @private
-     * @function module:util-x~$isInfinity
+     * @function module:util-x~$isInfinities
      * @param {*} inputArg The object to be tested.
      * @returns {boolean} If the target value is Infinity or -Infinity then returns true, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
      */
     function $isInfinities(inputArg) {
         return inputArg === Infinity || inputArg === -Infinity || false;
@@ -2120,7 +2134,17 @@
 
     /**
      * Shortcut
-     * Needed now, replaced later
+     * Replaced later
+     * The isInteger method determines whether the passed value is an integer.
+     * If the target value is an integer, return true, otherwise return false.
+     * If the value is NaN or infinite, return false.
+     *
+     * @private
+     * @function module:util-x~$isInteger
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
      */
     $isInteger = function (inputArg) {
         return typeof inputArg === 'number' && !$isInfinities(inputArg) && $toInteger(inputArg) === inputArg;
@@ -2128,7 +2152,16 @@
 
     /**
      * Shortcut
-     * Needed now, replaced later
+     * Replaced later
+     * The isInteger method determines whether the passed value is an integer.
+     * If the target value is an integer, return true, otherwise return false.
+     * If the value is NaN or infinite, return false.
+     *
+     * @private
+     * @function module:util-x~$isSafeInteger
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.issafeinteger
      */
     $isSafeInteger = function (inputArg) {
         return $isInteger(inputArg) && inputArg >= MIN_SAFE_INTEGER && inputArg <= MAX_SAFE_INTEGER;
@@ -2220,6 +2253,14 @@
         return rtn;
     }());
 
+    /**
+     * Indicates if apply works with ArrayLike objects.
+     * True if it does not, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasApplyArrayBug
+     * @type {boolean}
+     */
     hasApplyArrayBug = (function () {
         var returnThis = function (arg1) {
                 return [this, arg1];
@@ -2345,6 +2386,16 @@
         return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || false;
     }
 
+    /**
+     * @private
+     * @function module:util-x~$evalCallApply
+     * @param {*} thisArg
+     * @param {string} name
+     * @param {Function} func
+     * @param {ArrayLike} args
+     * @param {number} start
+     * @returns {*}
+     */
     function $evalCallApply(thisArg, name, func, args, start) {
         var length = $toLength(args.length),
             last = length - 1,
@@ -2373,6 +2424,12 @@
         return rtn;
     }
 
+    /**
+     * @private
+     * @function module:util-x~$toObjectThisArg
+     * @param {*} thisArg
+     * @returns {Object}
+     */
     function $toObjectThisArg(thisArg) {
         if (thisArg === null || $isUndefined(thisArg)) {
             thisArg = global;
@@ -2599,7 +2656,16 @@
     }
 
     /**
-     * Needed now, replaced later
+     * Shortcut
+     * Replaced later
+     * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
+     * whose class internal property is "Array"; otherwise it returns false.
+     *
+     * @private
+     * @function module:util-x~$isArray
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
      */
     $isArray = function (inputArg) {
         return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray) || false;
@@ -2653,7 +2719,8 @@
                 separator = ',';
             }
 
-            for (index = 0, last = len - 1; index < len; index += 1) {
+            last = len - 1;
+            for (index = 0; index < len; index += 1) {
                 args += '$' + index;
                 if (index < last) {
                     args += separator;
@@ -2666,7 +2733,14 @@
 
     /**
      * Shortcut
-     * Needed now, replaced later
+     * Replaced later
+     * Check to see if an object is a plain object (created using "{}" or "new Object").
+     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
+     *
+     * @private
+     * @function module:util-x~$isPlainObject
+     * @param {Object} object
+     * @returns {boolean}
      */
     $isPlainObject = function (object) {
         return !$isPrimitive(object) && !$isFunction(object) && !$isPrimitive(object.constructor) && object.constructor.prototype === protoObject;
@@ -3056,7 +3130,8 @@
      * it returns an array containing the array elements of the object followed by the array elements
      * of each argument in order.
      *
-     * @function module:util-x~$concat
+     * @private
+     * @function module:util-x~$pConcat
      * @this {Array} array
      * @param {...*} [varArgs]
      * @returns {Array}
@@ -3154,7 +3229,8 @@
                             index;
 
                         if (enableLog) {
-                            for (length = arguments.length, index = 0; index < length; index += 1) {
+                            length = arguments.length;
+                            for (index = 0; index < length; index += 1) {
                                 log(arguments[index]);
                             }
                         }
@@ -3425,7 +3501,9 @@
             /*jslint forin: true */
             for (prop in obj) {
                 if ($call(pHasOwn, obj, prop)) {
-                    for (found = false, index2 = 0, length2 = $toLength(unwantedError.length); index2 < length2; index2 += 1) {
+                    found = false;
+                    length2 = $toLength(unwantedError.length);
+                    for (index2 = 0; index2 < length2; index2 += 1) {
                         if (prop === unwantedError[index2]) {
                             found = true;
                             break;
@@ -3485,18 +3563,6 @@
         return new CFunction('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(arguments[0]), slice(arguments, 1)); };')(protoFn, checkThisArgFn, $argSlice, $apply);
     }
 
-    /**
-     * Shortcut
-     * Creates a new array from arguments, starting at start and ending at end.
-     *
-     * @private
-     * @function module:util-x~$slice
-     * @param {module:util-x~ArrayLike} array
-     * @param {module:util-x~NumberLike} [start]
-     * @param {module:util-x~NumberLike} [end]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
     $slice = $toMethod($pSlice);
 
     $conlog('+++++++++ hasDontEnumBug: ' + hasDontEnumBug);
@@ -4463,6 +4529,7 @@
     $isNative = exports.Function.isNativeFunction;
 
     /**
+     * @private
      * @function module:util-x~$affirmBasic
      * @param {Function} Fn Native prototype method
      * @returns {Function}
@@ -4500,7 +4567,7 @@
     /**
      * This method returns a string indicating the type of the unevaluated operand.
      *
-     * @function module:util-x~$typeOf
+     * @function module:util-x~exports.Object.typeOf
      * @param {*} inputArg
      * @returns {string}
      */
@@ -4728,19 +4795,6 @@
      */
     exports.Array.slice = $toMethod(exports.Array.proto.slice);
     exports.Array.slice.argNames = ['array', 'start', 'end'];
-
-    /**
-     * Shortcut
-     * Creates a new array from arguments, starting at start and ending at end.
-     *
-     * @private
-     * @function module:util-x~$slice
-     * @param {module:util-x~ArrayLike} array
-     * @param {module:util-x~NumberLike} [start]
-     * @param {module:util-x~NumberLike} [end]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
     $slice = exports.Array.slice;
 
     /**
@@ -4955,17 +5009,6 @@
         'Array.isArray shim'
     );
 
-    /**
-     * Shortcut
-     * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
-     * whose class internal property is "Array"; otherwise it returns false.
-     *
-     * @private
-     * @function module:util-x~$isArray
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
-     */
     $isArray = exports.Array.isArray;
 
     /**
@@ -5244,20 +5287,6 @@
      */
     exports.Number.toInteger = $toInteger;
     exports.Number.toInteger.argNames = ['inputArg'];
-
-    /**
-     * Shortcut
-     * The isInteger method determines whether the passed value is an integer.
-     * If the target value is an integer, return true, otherwise return false.
-     * If the value is NaN or infinite, return false.
-     *
-     * @private
-     * @function module:util-x~$isInteger
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
-     */
     $isInteger = $decide(
         // test
         $affirmBasic(base.Number.isInteger),
@@ -5292,18 +5321,6 @@
      */
     exports.Number.isInteger = $isInteger;
 
-    /**
-     * Shortcut
-     * The isInteger method determines whether the passed value is an integer.
-     * If the target value is an integer, return true, otherwise return false.
-     * If the value is NaN or infinite, return false.
-     *
-     * @private
-     * @function module:util-x~$isSafeInteger
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.issafeinteger
-     */
     $isSafeInteger = $decide(
         // test
         function () {
@@ -5744,7 +5761,7 @@
      * it returns an array containing the array elements of the object followed by the array elements
      * of each argument in order.
      *
-     * @function module:util-x~$concat
+     * @function module:util-x~exports.Array.proto.concat
      * @this {Array} array
      * @param {...*} [varArgs]
      * @returns {Array}
@@ -5793,7 +5810,7 @@
      * it returns an array containing the array elements of the object followed by the array elements
      * of each argument in order.
      *
-     * @function module:util-x~$concat
+     * @function module:util-x~exports.Array.concat
      * @param {Array} array
      * @param {...*} [varArgs]
      * @returns {Array}
@@ -5801,20 +5818,6 @@
      */
     exports.Array.concat = $toMethod(exports.Array.proto.concat);
     exports.Array.concat.argNames = ['array', 'varArgs'];
-
-    /**
-     * Shortcut
-     * When the concat method is called with zero or more arguments item1, item2, etc.,
-     * it returns an array containing the array elements of the object followed by the array elements
-     * of each argument in order.
-     *
-     * @private
-     * @function module:util-x~$concat
-     * @param {Array} array
-     * @param {...*} [varArgs]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
-     */
     $concat = exports.Array.concat;
 
     /**
@@ -5987,7 +5990,7 @@
     /**
      * This method removes the last element from an array and returns that element.
      *
-     * @function module:util-x~$pop
+     * @function module:util-x~exports.Array.pop
      * @param {module:util-x~ArrayLike} array
      * @returns {*}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop
@@ -6091,7 +6094,7 @@
     /**
      * The first element of the array is removed from the array and returned.
      *
-     * @function module:util-x~$shift
+     * @function module:util-x~exports.Array.shift
      * @param {module:util-x~ArrayLike} array
      * @returns {*}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift
@@ -7599,16 +7602,6 @@
     };
 
     exports.Object.isPlainObject.argNames = ['object'];
-
-    /**
-     * Check to see if an object is a plain object (created using "{}" or "new Object").
-     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
-     *
-     * @private
-     * @function module:util-x~$isPlainObject
-     * @param {Object} object
-     * @returns {boolean}
-     */
     $isPlainObject = exports.Object.isPlainObject;
 
     /**
@@ -7665,7 +7658,8 @@
 
 
                             if (!hop && $hasProperty(this, prop)) {
-                                for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
+                                length = $toLength(shadowed.length);
+                                for (index = 0; index < length; index += 1) {
                                     if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
                                         hop = true;
                                         break;
@@ -8380,6 +8374,7 @@
     }
 
     /**
+     * @private
      * @function module:util-x~$affirmArrayMethodTestsBasic
      * @param {Function} [thisArg]
      * @returns {Function}
@@ -8392,6 +8387,7 @@
     }
 
     /**
+     * @private
      * @function module:util-x~$affirmArrayMethodTestsObject
      * @param {Function} [thisArg]
      * @returns {Function}
@@ -8532,7 +8528,8 @@
         }
 
         stringTag = $toStringTag(object);
-        for (val = false, index = 0; index < length; index += 1) {
+        val = false;
+        for (index = 0; index < length; index += 1) {
             val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
             if (val) {
                 break;
@@ -8608,7 +8605,8 @@
                 }
 
                 stringTag = $toStringTag(object);
-                for (val = false, index = 0; index < length; index += 1) {
+                val = false;
+                for (index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
                         val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                         if (val) {
@@ -8815,7 +8813,8 @@
                 }
 
                 stringTag = $toStringTag(object);
-                for (val = -1, index = 0; index < length; index += 1) {
+                val = -1;
+                for (index = 0; index < length; index += 1) {
                     if ($call(fn, thisArg, $getItem(object, index, stringTag), index, object)) {
                         val = index;
                         break;
@@ -8974,7 +8973,8 @@
                 }
 
                 stringTag = $toStringTag(object);
-                for (val = true, index = 0; index < length; index += 1) {
+                val = true;
+                for (index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
                         val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
                         if (!val) {
@@ -9177,7 +9177,8 @@
                 }
 
                 stringTag = $toStringTag(object);
-                for (arr = [], index = 0; index < length; index += 1) {
+                arr = [];
+                for (index = 0; index < length; index += 1) {
                     if ($hasItem(object, index, stringTag)) {
                         it = $getItem(object, index, stringTag);
                         if ($call(fn, thisArg, it, index, object)) {
@@ -10062,6 +10063,7 @@
      * Shortcut
      * This function parses a string argument and returns an integer of the specified radix or base.
      *
+     * @private
      * @function module:util-x~$parseInt
      * @param {StringLike} inputArg
      * @param {number} radix
@@ -10176,14 +10178,6 @@
         'parseFloat patch'
     );
 
-    /**
-     * This method parses a string argument and returns a floating point number.
-     *
-     * @function module:util-x~$parseFloat
-     * @param {StringLike} inputArg
-     * @returns {number}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/parseFloat
-     */
     $parseFloat = exports.parseFloat;
 
     /**
@@ -10987,7 +10981,8 @@
                         index;
 
                     if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
-                        for (index = 0, length = $toLength(object.length); index < length; index += 1) {
+                        length = $toLength(object.length);
+                        for (index = 0; index < length; index += 1) {
                             $push(theKeys, $toString(index));
                         }
                     }
@@ -11004,7 +10999,8 @@
                     if (hasDontEnumBug) {
                         ctor = object.constructor;
                         skipConstructor = ctor && ctor.prototype === object;
-                        for (index = 0, length = $toLength(shadowed.length); index < length; index += 1) {
+                        length = $toLength(shadowed.length);
+                        for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
                             if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
                                 $push(theKeys, dontEnum);
@@ -11091,7 +11087,8 @@
         }
 
         isString = $toStringTag(object) === stringTagString;
-        for (val = false, index = 0; index < len; index += 1) {
+        val = false;
+        for (index = 0; index < len; index += 1) {
             it = keys[index];
             if (isString && $toString($toInteger(it)) === it && it >= 0 && it <= MAX_SAFE_INTEGER) {
                 item = $call(pCharAt, object, it);
@@ -11778,7 +11775,8 @@
                         if (arg !== null && !$isUndefined(arg)) {
                             from = $toObject(arg);
                             keysArray = $objectKeys(from);
-                            for (nextIndex = 0, len = $toLength(keysArray.length); nextIndex < len; nextIndex += 1) {
+                            len = $toLength(keysArray.length);
+                            for (nextIndex = 0; nextIndex < len; nextIndex += 1) {
                                 nextKey = keysArray[nextIndex];
                                 stringTag = $toStringTag(from);
                                 if ($hasItem(from, nextKey, stringTag)) {
@@ -12532,7 +12530,8 @@
                             index;
 
                         if (length > 1) {
-                            for (tempArr = [], index = 0; index < length; index += 1) {
+                            tempArr = [];
+                            for (index = 0; index < length; index += 1) {
                                 element = arr[index];
                                 if (!$stringContains(element, 'opera:config#UserPrefs|Exceptions Have Stacktrace')) {
                                     $push(tempArr, element);
@@ -12675,7 +12674,8 @@
             inLen = $toLength(object.length);
             isString = $toStringTag(object) === stringTagString;
             if (isString) {
-                for (tempVal = {}, inIndex = 0; inIndex < inLen; inIndex += 1) {
+                tempVal = {};
+                for (inIndex = 0; inIndex < inLen; inIndex += 1) {
                     tempVal[inIndex] = $call(pCharAt, object, inIndex);
                 }
 
@@ -12706,7 +12706,8 @@
             }
 
             if (isString) {
-                for (tempVal = '', inIndex = 0; inIndex < inLen; inIndex += 1) {
+                tempVal = '';
+                for (inIndex = 0; inIndex < inLen; inIndex += 1) {
                     tempVal += object[inIndex];
                 }
 
@@ -12850,7 +12851,8 @@
                 }
 
                 year = sign + $call(pSSlice, '00000' + $abs(year), length);
-                for (index = 0, length = $toLength(result.length); index < length; index += 1) {
+                length = $toLength(result.length);
+                for (index = 0; index < length; index += 1) {
                     value = result[index];
                     if (value < 10) {
                         result[index] = '0' + value;
@@ -13139,7 +13141,10 @@
                     sfyGap,
                     sfyReplacer;
 
-                /** function */
+                /**
+                 * @private
+                 * @function
+                 */
                 function stringifyQuote(string) {
                     var result = '"',
                         hex;
@@ -13166,8 +13171,15 @@
                     return result + '"';
                 }
 
-                /** function */
-                function stringifyToString(key, holder) {
+                /**
+                 * @private
+                 * @function
+                 */
+                function stringifyToString(key, holder, circular) {
+                    if (!$isArray(circular)) {
+                        circular = [];
+                    }
+
                     var member,
                         mind = sfyGap,
                         partial,
@@ -13212,10 +13224,21 @@
                             return $toString(value);
                         }
 
+                        length = $toLength(circular.length);
+                        for (index = 0; index < length; index += 1) {
+                            if (value === circular[index]) {
+                                throw new CTypeError('Converting circular structure to JSON');
+                            }
+                        }
+
+                        circular.length = length + 1;
+                        circular[length] = value;
                         sfyGap += sfyIndent;
+                        partial = [];
                         if ($isArray(value)) {
-                            for (partial = [], index = 0, length = $toLength(value.length); index < length; index += 1) {
-                                $push(partial, stringifyToString(index, value) || 'null');
+                            length = $toLength(value.length);
+                            for (index = 0; index < length; index += 1) {
+                                $push(partial, stringifyToString(index, value, circular) || 'null');
                             }
 
                             if (!$toLength(partial.length)) {
@@ -13237,21 +13260,23 @@
                             theGap = ':';
                         }
 
-                        partial = [];
                         if ($isArray(sfyReplacer)) {
-                            for (partial = [], index = 0, length = $toLength(sfyReplacer.length); index < length; index += 1) {
+                            length = $toLength(sfyReplacer.length);
+                            for (index = 0; index < length; index += 1) {
                                 element = sfyReplacer[index];
                                 if (typeof element === 'string') {
-                                    v = stringifyToString(element, value);
+                                    v = stringifyToString(element, value, circular);
                                     if (!$isUndefined(v)) {
                                         $push(partial, stringifyQuote(element) + theGap + v);
                                     }
                                 }
                             }
                         } else {
-                            for (index = 0, keys = $objectKeys(value), length = $toLength(keys.length); index < length; index += 1) {
+                            keys = $objectKeys(value);
+                            length = $toLength(keys.length);
+                            for (index = 0; index < length; index += 1) {
                                 element = keys[index];
-                                v = stringifyToString(element, value);
+                                v = stringifyToString(element, value, circular);
                                 if (!$isUndefined(v)) {
                                     $push(partial, stringifyQuote(element) + theGap + v);
                                 }
@@ -13631,7 +13656,8 @@
                     }
 
                     pSet = $call(pPowerSet, object);
-                    for (idx = 0, len = pSet.length; idx < len; idx += 1) {
+                    len = pSet.length;
+                    for (idx = 0; idx < len; idx += 1) {
                         it = pSet[idx];
                         $push(val, it);
                         pSet[idx] = it = $slice(it);
@@ -14488,7 +14514,8 @@
                             cmp = -1;
                         }
                     } else {
-                        for (remI = 0, cmp = 0; remI < dvsL; remI += 1) {
+                        cmp = 0;
+                        for (remI = 0; remI < dvsL; remI += 1) {
                             if (dvs[remI] !== rem[remI]) {
                                 if (dvs[remI] > rem[remI]) {
                                     cmp = 1;
@@ -14631,7 +14658,8 @@
             }
 
             // Initialise coefficient array of result with zeros.
-            for (c = [], c.length = j = a + b; j; c[j] = 0) {
+            c = [];
+            for (c.length = j = a + b; j; c[j] = 0) {
                 j -= 1;
             }
 
