@@ -4417,7 +4417,7 @@
 
     //
     (function () {
-        var runIENativeFunction = false,
+        var runIENativeFunction,
             isIENativeFunction,
             isNativeFunction,
             isFunctionInternal;
@@ -4431,6 +4431,8 @@
             if (!$isPrimitive(global) && global.alert) {
                 $call(base.Function.toString, global.alert);
             }
+
+            runIENativeFunction = false;
         } catch (eRunIENativeFunction) {
             /**
              * Run a spcific detection on IE?
@@ -4478,7 +4480,7 @@
                      * there could be a space
                      * (never happened, it does not hurt anyway)
                      */
-                    return inputArg !== null && !$isUndefined(inputArg) && $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
+                    return !$isPrimitive(inputArg) && $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
                 };
             } else {
                 fn = function () {
@@ -4597,11 +4599,11 @@
          */
         if (runIENativeFunction) {
             exports.Function.isNativeFunction = function (inputArg) {
-                return $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+                return !$isPrimitive(inputArg) && $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
             };
         } else {
             exports.Function.isNativeFunction = function (inputArg) {
-                return $isFunction(inputArg) && isNativeFunction(inputArg);
+                return !$isPrimitive(inputArg) && $isFunction(inputArg) && isNativeFunction(inputArg);
             };
         }
 
