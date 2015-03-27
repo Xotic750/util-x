@@ -2278,6 +2278,44 @@
     }
 
     /**
+     * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
+     * Primary use in Array shims.
+     *
+     * @private
+     * @function module:util-x~$hasItem
+     * @param {Object} object
+     * @param {number} index
+     * @param {string} stringTag
+     * @returns {boolean}
+     */
+    function $hasItem(object, index, stringTag) {
+        return stringTag === stringTagString || $hasProperty(object, index);
+    }
+
+    /**
+     * For getting an objects item by index. Can pacth or objects that don't work with boxed index access.
+     * Primary use in Array shims.
+     *
+     * @private
+     * @function module:util-x~$getItem
+     * @param {Object} object
+     * @param {number} index
+     * @param {string} stringTag
+     * @returns {*}
+     */
+    function $getItem(object, index, stringTag) {
+        var item;
+
+        if (stringTag === stringTagString) {
+            item = $call(pCharAt, object, index);
+        } else {
+            item = object[index];
+        }
+
+        return item;
+    }
+
+    /**
      * Creates a new array from the arraylike argument, starting at start and ending at end.
      * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
      * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
@@ -2295,6 +2333,7 @@
     $pSlice = function (start, end) {
         var object = $toObject(this),
             length = $toLength(object.length),
+            stringTag = $toStringTag ? $toStringTag(object) : $call(base.Object.toString, object),
             relativeStart = $toInteger(start),
             val = [],
             next = 0,
@@ -2323,8 +2362,8 @@
         finalEnd = $toLength(finalEnd);
         val.length = $toLength($max(finalEnd - k, 0));
         while (k < finalEnd) {
-            if ($hasProperty(object, k)) {
-                val[next] = object[k];
+            if ($hasItem(object, k, stringTag)) {
+                val[next] = $getItem(object, k, stringTag);
             }
 
             next += 1;
@@ -8000,44 +8039,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     $hasOwn = exports.Object.hasOwnProperty;
-
-    /**
-     * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
-     * Primary use in Array shims.
-     *
-     * @private
-     * @function module:util-x~$hasItem
-     * @param {Object} object
-     * @param {number} index
-     * @param {string} stringTag
-     * @returns {boolean}
-     */
-    function $hasItem(object, index, stringTag) {
-        return stringTag === stringTagString || $hasProperty(object, index);
-    }
-
-    /**
-     * For getting an objects item by index. Can pacth or objects that don't work with boxed index access.
-     * Primary use in Array shims.
-     *
-     * @private
-     * @function module:util-x~$getItem
-     * @param {Object} object
-     * @param {number} index
-     * @param {string} stringTag
-     * @returns {*}
-     */
-    function $getItem(object, index, stringTag) {
-        var item;
-
-        if (stringTag === stringTagString) {
-            item = $call(pCharAt, object, index);
-        } else {
-            item = object[index];
-        }
-
-        return item;
-    }
 
     /**
      * @private
