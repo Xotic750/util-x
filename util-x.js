@@ -4418,7 +4418,7 @@
             /*
              * Are we in IE? How to define isIENativeFunction.
              */
-            var typeofIE = runIENativeFunction && !$isPrimitive(global.alert) && typeof global.alert.toString,
+            var typeofIE = runIENativeFunction && global.alert && typeof global.alert.toString,
                 beginsFunction = new CRegExp('^\\s*\\bfunction\\b'),
                 fn;
 
@@ -4443,7 +4443,9 @@
                      * there could be a space
                      * (never happened, it does not hurt anyway)
                      */
-                    return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
+                    var type = typeof inputArg.toString;
+
+                    return type === 'undefined' && $call(pTest, beginsFunction, inputArg);
                 };
             } else {
                 fn = function () {
