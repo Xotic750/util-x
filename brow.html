@@ -1,14 +1,22 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
-
 <head>
-    <script type="text/javascript" src="./run.js"></script>
     <link rel="stylesheet" href="./mocha.css" />
-    <title>util-x</title>
 </head>
-
 <body>
-    <div id="mocha"></div>
+  <div id="mocha"></div>
+  <script type="text/javascript" src="./mocha.js"></script>
+  <script>
+    mocha.setup({
+      ui: 'bdd',
+      timeout: 1400000
+    });
+  </script>
+  <script type="text/javascript" src="./brow.js"></script>
+  <script>
+    mocha.checkLeaks();
+    mocha.run();
+  </script>
 </body>
-
 </html>
