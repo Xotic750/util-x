@@ -239,8 +239,6 @@
         $random,
         $sqrt,
         //mRound,
-
-        $isFunctionBasic,
         $isFunction,
         $throwIfNotFunction,
         $toStringTag,
@@ -2657,6 +2655,8 @@
     $slice = $argSlice;
 
     /**
+     * Shortcut
+     * Redefined later
      * Returns true if the operand inputArg is a Function. (Duck typed)
      * Replaced later on with a more reliable method, but we need to define
      * more functions first.
@@ -2668,8 +2668,25 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
      */
     $isFunction = function (inputArg) {
+        // Avoid a Chakra JIT bug in compatibility modes of IE 11
         return typeof inputArg === 'function' || false;
     };
+
+    // redefinition
+    $isFunction = (function (pOToString) {
+        if (!($isFunction(/x/) || (global.Uint8Array && !$isFunction(global.Uint8Array)))) {
+            return $isFunction;
+        }
+
+        return function (inputArg) {
+            /*
+             * The use of 'Object#toString' avoids issues with the 'typeof' operator
+             * in older versions of Chrome and Safari which return 'function' for regexes
+             * and Safari 8 equivalents which return 'object' for typed array constructors.
+             */
+            return $call(pOToString, inputArg) === stringTagFunction;
+        };
+    }(base.Object.toString));
 
     /**
      * Throws a TypeError for argument not a fuction.
@@ -2699,47 +2716,6 @@
 
         return inputArg;
     };
-
-    /**
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFunctionBasic
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunctionBasic = (function () {
-        /**
-        * Avoid a Chakra JIT bug in compatibility modes of IE 11.
-        *
-        * @private
-        * @function
-        * @param {*} [inputArg] The object to be tested.
-        * @returns {boolean} True if the typeof object is 'function', otherwise false.
-        * @see https://github.com/jashkenas/underscore/issues/1621 for more details.
-        */
-        function typeofFunction(inputArg) {
-            return typeof inputArg === 'function' || false;
-        }
-
-        if (!(typeofFunction(/x/) || (global.Uint8Array && !typeofFunction(global.Uint8Array)))) {
-            return typeofFunction;
-        }
-
-        var pOToString = base.Object.toString;
-
-        return function (inputArg) {
-            /*
-             * The use of 'Object#toString' avoids issues with the 'typeof' operator
-             * in older versions of Chrome and Safari which return 'function' for regexes
-             * and Safari 8 equivalents which return 'object' for typed array constructors.
-             */
-            return $call(pOToString, inputArg) === stringTagFunction || false;
-        };
-    }());
 
     /**
      * Throws a TypeError if the operand inputArg is not an object or not a function,
@@ -2776,19 +2752,6 @@
             return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray) || false;
         };
     }(base.Object.toString));
-
-    /**
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFunction
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunction = $isFunctionBasic;
 
     /**
      * The function tests whether an object has in its prototype chain the prototype property of a constructor.
@@ -4416,7 +4379,7 @@
     exports.Object.hasProperty.argNames = ['object', 'property'];
 
     //
-    (function () {
+    (function (toStringTag) {
         var runIENativeFunction,
             isIENativeFunction,
             isNativeFunction,
@@ -4455,7 +4418,7 @@
             /*
              * Are we in IE? How to define isIENativeFunction.
              */
-            var typeofIE = runIENativeFunction && !$isPrimitive(global) && !$isPrimitive(global.alert) && typeof global.alert.toString,
+            var typeofIE = runIENativeFunction && !$isPrimitive(global.alert) && typeof global.alert.toString,
                 beginsFunction = new CRegExp('^\\s*\\bfunction\\b'),
                 fn;
 
@@ -4480,7 +4443,7 @@
                      * there could be a space
                      * (never happened, it does not hurt anyway)
                      */
-                    return !$isPrimitive(inputArg) && $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
+                    return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
                 };
             } else {
                 fn = function () {
@@ -4570,7 +4533,7 @@
                 if (n) {
                     val = isIENativeFunction(inputArg) || isFunctionExtended(inputArg);
                 } else {
-                    val = $isFunctionBasic(inputArg);
+                    val = $call(toStringTag, inputArg) === stringTagFunction;
                 }
 
                 return val;
@@ -4583,31 +4546,12 @@
                 if (n) {
                     val = isFunctionExtended(inputArg);
                 } else {
-                    val = $isFunctionBasic(inputArg);
+                    val = $call(toStringTag, inputArg) === stringTagFunction;
                 }
 
                 return val;
             };
         }
-
-        /**
-         * Returns true if the operand inputArg is a native Function.
-         *
-         * @function module:util-x~exports.Function.isNativeFunction
-         * @param {*} inputArg
-         * @returns {boolean}
-         */
-        if (runIENativeFunction) {
-            exports.Function.isNativeFunction = function (inputArg) {
-                return !$isPrimitive(inputArg) && $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
-            };
-        } else {
-            exports.Function.isNativeFunction = function (inputArg) {
-                return !$isPrimitive(inputArg) && $isFunction(inputArg) && isNativeFunction(inputArg);
-            };
-        }
-
-        exports.Function.isNativeFunction.argNames = ['inputArg'];
 
         /**
          * Returns true if the operand inputArg is a Function.
@@ -4622,19 +4566,29 @@
         };
 
         exports.Function.isFunction.argNames = ['inputArg'];
-    }());
 
-    /**
-     * Shortcut
-     * Returns true if the operand inputArg is a native Function.
-     *
-     * @private
-     * @function module:util-x~$isFunction
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunction = exports.Function.isFunction;
+        // redefinition
+        $isFunction = exports.Function.isFunction;
+
+        /**
+         * Returns true if the operand inputArg is a native Function.
+         *
+         * @function module:util-x~exports.Function.isNativeFunction
+         * @param {*} inputArg
+         * @returns {boolean}
+         */
+        if (runIENativeFunction) {
+            exports.Function.isNativeFunction = function (inputArg) {
+                return $isFunction(inputArg) && (isNativeFunction(inputArg) || isIENativeFunction(inputArg));
+            };
+        } else {
+            exports.Function.isNativeFunction = function (inputArg) {
+                return $isFunction(inputArg) && isNativeFunction(inputArg);
+            };
+        }
+
+        exports.Function.isNativeFunction.argNames = ['inputArg'];
+    }(base.Object.toString));
 
     /**
      * Shortcut
