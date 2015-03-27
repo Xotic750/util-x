@@ -2272,6 +2272,9 @@
      * @param {string} property The property name.
      * @returns {boolean} True if the property is on the object or in the object's prototype, otherwise false.
      */
+    /*jslint todo: true */
+    /** @todo: fix args and string enum bug */
+    /*jslint todo: false */
     function $hasProperty(inputArg, property) {
         /*jstwit in: true */
         return $toString(property) in $toObject(inputArg);
@@ -3618,8 +3621,14 @@
                     }
 
                     if (!found) {
-                        unwantedError.length += 1;
-                        unwantedError[length2] = prop;
+                        try {
+                            base.Object.defineProperties(obj, prop, {
+                                enumerable: false
+                            });
+                        } catch (eUnwantedError) {
+                            unwantedError.length += 1;
+                            unwantedError[length2] = prop;
+                        }
                     }
                 }
             }
@@ -4432,11 +4441,6 @@
             runIENativeFunction = true;
         }
 
-        /*
-         * Are we in IE? How to define isIENativeFunction.
-         */
-        runIENativeFunction = (runIENativeFunction && !$isPrimitive(global) && !$isPrimitive(global.alert) && typeof global.alert.toString) || false;
-
         /**
          * Returns true if the operand inputArg is a native Function in IE.
          *
@@ -4446,39 +4450,43 @@
          * @returns {boolean}
          */
         isIENativeFunction = (function () {
-            var beginsFunction;
+            /*
+             * Are we in IE? How to define isIENativeFunction.
+             */
+            var typeofIE = runIENativeFunction && !$isPrimitive(global) && !$isPrimitive(global.alert) && typeof global.alert.toString,
+                beginsFunction = new CRegExp('^\\s*\\bfunction\\b'),
+                fn;
 
-            if (runIENativeFunction === false) {
-                beginsFunction = new CRegExp('^\\s*\\bfunction\\b');
-                if ($call(pTest, beginsFunction, global.alert)) {
-                    return function (inputArg) {
-                        /*
-                         * inputArg
-                         * we want return true or false
-                         *
-                         * inputArg.toString === undefined
-                         * native functions do not
-                         * contain a toString callback
-                         * as is for every user defined
-                         * function or object, even if deleted
-                         * so next step is a "safe" destructuration
-                         * assumption
+            if (typeofIE === 'undefined' && $call(pTest, beginsFunction, global.alert)) {
+                fn = function (inputArg) {
+                    /*
+                     * inputArg
+                     * we want return true or false
+                     *
+                     * inputArg.toString === undefined
+                     * native functions do not
+                     * contain a toString callback
+                     * as is for every user defined
+                     * function or object, even if deleted
+                     * so next step is a "safe" destructuration
+                     * assumption
 
-                         * test(beginsFunction, inputArg)
-                         * we are looking for a function
-                         * and IE shows them with function
-                         * as first word. Eventually
-                         * there could be a space
-                         * (never happened, it does not hurt anyway)
-                         */
-                        return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
-                    };
-                }
+                     * test(beginsFunction, inputArg)
+                     * we are looking for a function
+                     * and IE shows them with function
+                     * as first word. Eventually
+                     * there could be a space
+                     * (never happened, it does not hurt anyway)
+                     */
+                    return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
+                };
+            } else {
+                fn = function () {
+                    return false;
+                };
             }
 
-            return function () {
-                return false;
-            };
+            return fn;
         }());
 
         /**
@@ -7939,6 +7947,9 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
+    /*jslint todo: true */
+    /** @todo: fix args and string enum bug */
+    /*jslint todo: false */
     /* jshint -W001 */
     exports.Object.proto.hasOwnProperty = (function () {
         var argNames = ['property'];
@@ -10043,7 +10054,34 @@
             function () {
                 $affirmBasic(base.Array.sort)();
 
-                var sortObj = {
+                var sortArr = [],
+                    sortObj;
+
+                sortArr.length = 9;
+                sortArr[0] = 'f';
+                sortArr[1] = 'e';
+                sortArr[2] = 'd';
+                sortArr[4] = null;
+                sortArr[5] = Undefined;
+                sortArr[6] = 'a';
+                sortArr[7] = 'c';
+                sortArr[8] = 'b';
+
+                $call(base.Array.sort, sortArr, $descending);
+                $affirm.strictEqual(sortArr.length, 9, 'test1');
+                $affirm.strictEqual(sortArr[0], 'a', 'test2');
+                $affirm.strictEqual(sortArr[1], 'b', 'test3');
+                $affirm.strictEqual(sortArr[2], 'c', 'test4');
+                $affirm.strictEqual(sortArr[3], 'd', 'test5');
+                $affirm.strictEqual(sortArr[4], 'e', 'test6');
+                $affirm.strictEqual(sortArr[5], 'f', 'test7');
+                $affirm.strictEqual(sortArr[6], null, 'test8');
+                $affirm.strictEqual(sortArr[7], Undefined, 'test9');
+                $affirm.strictEqual(sortArr[8], Undefined, 'test110');
+                $affirm.ok($call(pHasOwn, sortArr, 7), 'test11');
+                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test12');
+
+                sortObj = {
                     0: 5,
                     1: 2,
                     2: 4,
@@ -10054,15 +10092,17 @@
                 };
 
                 $call(base.Array.sort, sortObj, $descending);
-                $affirm.strictEqual(sortObj[0], null, 'test1');
-                $affirm.strictEqual(sortObj[1], 5, 'test2');
-                $affirm.strictEqual(sortObj[2], 4, 'test3');
-                $affirm.strictEqual(sortObj[3], 3, 'test4');
-                $affirm.strictEqual(sortObj[4], 2, 'test5');
-                $affirm.strictEqual(sortObj[5], 1, 'test6');
-                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test7');
-                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test8');
-                $affirm.strictEqual(sortObj.length, 8, 'test9');
+                $affirm.strictEqual(sortObj.length, 8, 'test1');
+                $affirm.strictEqual(sortObj[0], null, 'test2');
+                $affirm.strictEqual(sortObj[1], 5, 'test3');
+                $affirm.strictEqual(sortObj[2], 4, 'test4');
+                $affirm.strictEqual(sortObj[3], 3, 'test5');
+                $affirm.strictEqual(sortObj[4], 2, 'test6');
+                $affirm.strictEqual(sortObj[5], 1, 'test7');
+                $affirm.strictEqual(sortObj[6], Undefined, 'test8');
+                $affirm.strictEqual(sortObj[7], Undefined, 'test9');
+                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test10');
+                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test11');
             },
 
             // pass
@@ -11798,7 +11838,7 @@
             argNames,
 
             //message
-            'Onject.defineProperty sham'
+            'Object.defineProperty sham'
         );
     }());
 
@@ -13889,7 +13929,7 @@
                         var pSubstr = base.String.substr;
 
                         return function () {
-                            var first = $firstArg(arguments);
+                            var first = $getArgItem(arguments, 0);
 
                             if (first < 0) {
                                 $setArgItem(arguments, 0, $toLength(this.length + first));
