@@ -4478,7 +4478,7 @@
                      * there could be a space
                      * (never happened, it does not hurt anyway)
                      */
-                    return $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
+                    return inputArg !== null && !$isUndefined(inputArg) && $isUndefined(inputArg.toString) && $call(pTest, beginsFunction, inputArg);
                 };
             } else {
                 fn = function () {
@@ -11265,6 +11265,9 @@
      * @returns {Array}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
      */
+    /*jslint todo: true */
+    /** @todo: fix unwanted error, constructor and prototype properties */
+    /*jslint todo: false */
     exports.Object.keys = (function () {
         var argNames = ['object'];
 
