@@ -264,6 +264,7 @@
         isStrictMode,
         hasCallBug,
         hasApplyBug,
+        hasApplyRequiresArrayLikeBug,
         supportsApplyArrayLike,
         $pSlice,
         $pConcat,
@@ -2213,6 +2214,28 @@
     }());
 
     /**
+     * Indicates if the arrayLike argument used must be an specified and arrayLike.
+     * True if it does not, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasApplyRequiresArrayLikeBug
+     * @type {boolean}
+     */
+    hasApplyRequiresArrayLikeBug = (function () {
+        var rtn;
+
+        // try in case apply is missing
+        try {
+            $returnThis.apply('foo');
+            rtn = false;
+        } catch (eHasApplyRequiresArrayLikeBug) {
+            rtn = true;
+        }
+
+        return rtn;
+    }());
+
+    /**
      * Indicates if apply works with ArrayLike objects.
      * True if it does not, otherwise false.
      *
@@ -2221,16 +2244,17 @@
      * @type {boolean}
      */
     supportsApplyArrayLike = (function () {
-        var returnThis,
+        var returnArg0,
             rtn;
 
-        returnThis = function (arg) {
+        returnArg0 = function (arg) {
             return arg;
         };
 
         // try in case apply is missing
         try {
-            rtn = returnThis.apply('foo', $returnArgs(1)) === 1;
+            rtn = returnArg0.apply('foo', $returnArgs(1)) === 1;
+            rtn = returnArg0.apply('foo', { 0: 1, length: 1 }) === 1;
         } catch (eHasApplyArrayBug) {
             rtn = false;
         }
@@ -2425,6 +2449,16 @@
         return thisArg;
     }
 
+    function $throwArgsWrongType(args) {
+        if (args !== null && !$isUndefined(args)) {
+            if ($isPrimitive(args) || (!$isPrimitive(args.constructor) && args.constructor.prototype === protoString)) {
+                throw new CTypeError('Arguments list has wrong type');
+            }
+        }
+
+        return args;
+    }
+
     /**
      * ES3 spec shim
      *
@@ -2480,30 +2514,23 @@
         if (!apply) {
             // ES3 spec
             fn = function (thisArg, arrayLike) {
-                return $evalCallApply(thisArg, '__$pApply__', this, arrayLike, 0);
+                return $evalCallApply(thisArg, '__$pApply__', this, $Object($throwArgsWrongType(arrayLike)), 0);
             };
-        } else if (testShims || hasApplyBug || !supportsApplyArrayLike) {
+        } else if (testShims || hasApplyBug || hasApplyRequiresArrayLikeBug || !supportsApplyArrayLike) {
             // ES5 patch
             fn = (function () {
                 return function (thisArg, arrayLike) {
-                    var object = $Object(arrayLike),
-                        name = '__$pApply_',
-                        args,
-                        length,
+                    var object = $Object($throwArgsWrongType(arrayLike)),
+                        length = $toLength(object.length),
+                        name = $getName(this, '__$pApply_'),
+                        args = [],
                         index,
                         rtn;
 
-                    name = $getName(this, name);
                     this[name] = apply;
-                    if (supportsApplyArrayLike) {
-                        args = object;
-                    } else {
-                        args = [];
-                        length = $toLength(object.length);
-                        args.length = length;
-                        for (index = 0; index < length; index += 1) {
-                            args[index] = object[index];
-                        }
+                    args.length = length;
+                    for (index = 0; index < length; index += 1) {
+                        args[index] = object[index];
                     }
 
                     rtn = this[name]($toObjectThisArg(thisArg, isStrictMode), args);
@@ -2541,13 +2568,12 @@
             // ES5 patch
             fn = (function () {
                 return function (thisArg) {
-                    var name = '__$pCall__',
+                    var length = $toLength(arguments.length),
+                        name = $getName(this, '__$pCall__'),
                         args = [],
-                        length = $toLength(arguments.length),
                         index,
                         rtn;
 
-                    name = $getName(this, name);
                     this[name] = $pApply;
                     args.length = length - 1;
                     for (index = 1; index < length; index += 1) {
@@ -2579,7 +2605,7 @@
      */
     $call = function (func, thisArg) {
         var length = $toLength(arguments.length),
-            name = '__$call__',
+            name = $getName(func, '__$call__'),
             args = [],
             index,
             rtn;
@@ -2589,7 +2615,6 @@
             args[index - 2] = arguments[index];
         }
 
-        name = $getName(func, name);
         func[name] = $pApply;
         rtn = func[name](thisArg, args);
         delete func[name];
@@ -2609,10 +2634,9 @@
      * @returns {*}
      */
     $apply = function (func, thisArg, arrayLike) {
-        var name = '__$apply__',
+        var name = $getName(func, '__$apply__'),
             rtn;
 
-        name = $getName(func, name);
         func[name] = $pApply;
         rtn = func[name](thisArg, arrayLike);
         delete func[name];
@@ -3654,6 +3678,7 @@
     $conlog('+++++++++ hasArrayLengthBug: ' + hasArrayLengthBug);
     $conlog('+++++++++ hasCallBug: ' + hasCallBug);
     $conlog('+++++++++ hasApplyBug: ' + hasApplyBug);
+    $conlog('+++++++++ hasApplyRequiresArrayLikeBug: ' + hasApplyRequiresArrayLikeBug);
     $conlog('+++++++++ supportsApplyArrayLike: ' + supportsApplyArrayLike);
     $conlog('+++++++++ hasProto: ' + hasProto);
     $conlog('+++++++++ hasGetSet: ' + hasGetSet);
@@ -4712,6 +4737,7 @@
                     function () {
                         $affirm.ok(!testShims, 'testing patch');
                         $affirm.ok(!hasApplyBug, 'strict mode bug');
+                        $affirm.ok(!hasApplyRequiresArrayLikeBug, 'correct arguments and error throwing');
                         $affirm.ok(supportsApplyArrayLike, 'supports array like objects');
                     },
 
