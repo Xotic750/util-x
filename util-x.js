@@ -27,8 +27,8 @@
 */
 
 /*properties
-    '', '\b', '\t', '\n', '\f', '\r', '"', '0', '1', '1.', '2', '3', '4', '5',
-    '6', '7', A, AffirmError, Array, AssertionError, Boolean,
+    '', '\b', '\t', '\n', '\f', '\r', '"', '0', '1', '1.', '10', '11', '2', '3',
+    '4', '5', '6', '7', '8', '9', A, AffirmError, Array, AssertionError, Boolean,
     CheckObjectCoercible, Ctr, DP, Date, EPSILON, Error, EvalError, Function,
     JSON, MAX_INT16, MAX_INT32, MAX_INT8, MAX_SAFE_INTEGER, MAX_UINT16,
     MAX_UINT32, MAX_UINT8, MAX_VALUE, MIN_INT16, MIN_INT32, MIN_INT8,
@@ -5347,7 +5347,8 @@
                 return $decide(
                     // test
                     function name() {
-                        $affirm.strictEqual($call(base.Array.join, [1, 2]), '1,2', 'defaults to comma');
+                        $affirm.strictEqual($call(base.Array.join, [1, 2]), '1,2', 'defaults to comma 1');
+                        $affirm.strictEqual($call(base.Array.join, [1, 2], Undefined), '1,2', 'defaults to comma 2');
                     },
 
                     // pass
@@ -6364,6 +6365,37 @@
             $affirm.strictEqual($call(base.Array.shift, shiftObj), 2, 'object wrong return value');
             $affirm.strictEqual(shiftObj.length, 1, 'object length incorrect');
             $affirm.ok(!$call(pHasOwn, shiftObj, 1), 'object value 1 not deleted');
+
+            // IE7
+            shiftObj = {
+                0: Undefined,
+                1: null,
+                2: -1,
+                3: 0,
+                4: 1,
+                5: false,
+                6: true,
+                7: Undefined,
+                8: '',
+                9: 'abc',
+                10: null,
+                11: Undefined
+            };
+
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test1');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test2');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test3');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test4');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test5');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test6');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test7');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test8');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test9');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test10');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test11');
+            $affirm.strictEqual($call(base.Array.shift, shiftObj), Undefined, 'test112');
+            $affirm.strictEqual(shiftObj[9], 'abc', 'test13');
+            $affirm.strictEqual(shiftObj.length, 0, 'test14');
         },
 
         // pass
