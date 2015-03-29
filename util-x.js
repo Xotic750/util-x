@@ -8446,40 +8446,83 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.ok(!(base.Object.getOwnPropertyDescriptor(protoFunction, 'length').writable), 'Function.prototype.length should be read only.');
-                    },
-
-                    // pass
-                    function () {
-                        return base.Object.getOwnPropertyDescriptor;
-                    },
-
-                    // fail
-                    function () {
-                        // should patch prototype because it is safe with defineProperty
-                        /*
-                        return function (object, property) {
-                            var descriptor = base.Object.getOwnPropertyDescriptor(object, property);
-
-                            if (property === 'length' && descriptor.writable && $isFunction(object)) {
-                                descriptor.writable = false;
-                            }
-
-                            return descriptor;
-                        };
-                        */
-
                         // This is an intrusive patch but if it can be done correctly then it's worth it.
                         try {
-                            base.Object.defineProperty(protoFunction, 'length', propConstant);
                             if (base.Object.getOwnPropertyDescriptor(protoFunction, 'length').writable) {
-                                throw new CError('Still writable');
+                                base.Object.defineProperty(protoFunction, 'length', propConstant);
+                                if (base.Object.getOwnPropertyDescriptor(protoFunction, 'length').writable) {
+                                    throw new CError('Still writable');
+                                }
                             }
                         } catch (eLengthPatch) {
                             $conlog('Failed to patch Function.prototype.length', eLengthPatch);
                         }
 
-                        return base.Object.getOwnPropertyDescriptor;
+                        $affirm.ok(!(base.Object.getOwnPropertyDescriptor(function () { return; }, 'length').writable), 'Function.length should be read only.');
+                    },
+
+                    // pass
+                    function () {
+                        return $decide(
+                            // test
+                            function () {
+                                $affirm.throws(function () {
+                                    base.Object.getOwnPropertyDescriptor(Undefined, 'name');
+                                }, CTypeError, 'undefined');
+
+                                $affirm.throws(function () {
+                                    base.Object.getOwnPropertyDescriptor(null, 'name');
+                                }, CTypeError, 'null');
+
+                                $affirm.doesNotThrow(function () {
+                                    base.Object.getOwnPropertyDescriptor(42, 'name');
+                                }, 'number');
+
+                                $affirm.doesNotThrow(function () {
+                                    base.Object.getOwnPropertyDescriptor(true, 'name');
+                                }, 'boolean');
+
+                                $affirm.doesNotThrow(function () {
+                                    base.Object.getOwnPropertyDescriptor('a', 'name');
+                                }, 'string');
+                            },
+
+                            // pass
+                            function () {
+                                return base.Object.getOwnPropertyDescriptor;
+                            },
+
+                            // fail
+                            function () {
+                                var mGetOwnPropertyDescriptor = base.Object.getOwnPropertyDescriptor;
+
+                                return function (object, property) {
+                                    return mGetOwnPropertyDescriptor($toObject(object), property);
+                                };
+                            },
+
+                            // argNames
+                            argNames,
+
+                            // message
+                            'Function.prototype.length patch as read only'
+                        );
+                    },
+
+                    // fail
+                    function () {
+                        var mGetOwnPropertyDescriptor = base.Object.getOwnPropertyDescriptor;
+
+                        return function (object, property) {
+                            var obj = $toObject(object),
+                                descriptor = mGetOwnPropertyDescriptor(obj, property);
+
+                            if (property === 'length' && descriptor.writable && $isFunction(obj)) {
+                                descriptor.writable = false;
+                            }
+
+                            return descriptor;
+                        };
                     },
 
                     // argNames
@@ -8496,24 +8539,25 @@
                     mLookupSetter = base.Object.lookupSetter;
 
                 return function (object, property) {
-                    var descriptor,
+                    var obj = $toObject(object),
+                        descriptor,
                         prototype,
                         getter,
                         setter;
 
-                    if ($hasOwn($throwIfIsPrimitive(object), property)) {
+                    if ($hasOwn(obj, property)) {
                         descriptor = {};
                         descriptor.configurable = true;
                         descriptor.enumerable = true;
                         if (hasGetSet) {
-                            prototype = object[stringProto];
-                            object[stringProto] = protoObject;
-                            getter = $call(mLookupGetter, object, property);
-                            setter = $call(mLookupSetter, object, property);
+                            prototype = obj[stringProto];
+                            obj[stringProto] = protoObject;
+                            getter = $call(mLookupGetter, obj, property);
+                            setter = $call(mLookupSetter, obj, property);
                             if ($isUndefined(prototype)) {
-                                delete object[stringProto];
+                                delete obj[stringProto];
                             } else {
-                                object[stringProto] = prototype;
+                                obj[stringProto] = prototype;
                             }
 
                             if ($isNative(getter) || $isNative(setter)) {
@@ -8527,7 +8571,7 @@
                             }
                         }
 
-                        descriptor.value = object[property];
+                        descriptor.value = obj[property];
                         descriptor.writable = true;
                     }
 
