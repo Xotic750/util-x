@@ -6586,43 +6586,22 @@
         // test
         function () {
             $affirmBasic(base.Array.reverse)();
+            $affirm.doesNotThrow(function () {
+                base.Array.reverse.call(1);
+            }, 'number');
+
+            $affirm.doesNotThrow(function () {
+                base.Array.reverse.call(true);
+            }, 'boolean');
+
+            $affirm.doesNotThrow(function () {
+                base.Array.reverse.call('a');
+            }, 'string');
         },
 
         //pass
         function () {
-            return $decide(
-                // test
-                function () {
-                    $affirm.doesNotThrow(function () {
-                        base.Array.reverse.call(1);
-                    }, 'number');
-
-                    $affirm.doesNotThrow(function () {
-                        base.Array.reverse.call(true);
-                    }, 'boolean');
-
-                    $affirm.doesNotThrow(function () {
-                        base.Array.reverse.call('a');
-                    }, 'string');
-                },
-
-                // pass
-                function () {
-                    return base.Array.reverse;
-                },
-
-                // fail
-                function () {
-                    var pReverse = base.Array.reverse;
-
-                    return function () {
-                        return $call(pReverse, $toObject(this));
-                    };
-                },
-
-                // message
-                'Array.reverse patch'
-            );
+            return base.Array.reverse;
         },
 
         // fail
