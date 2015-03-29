@@ -12035,11 +12035,7 @@
                         return function (object, property, descriptor) {
                             if ($isArray(object) || $isArguments(object)) {
                                 property = $toString(property);
-                                if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) {
-                                    property = +property;
-                                }
-
-                                if ($toStringTag(property) === stringTagString && $isNumeric(property)) {
+                                if (($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) || $isNumeric(property)) {
                                     return $defProp(object, property, descriptor);
                                 }
                             }
