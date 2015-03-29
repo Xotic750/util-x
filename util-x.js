@@ -347,6 +347,7 @@
         $isFinite,
         $sort,
         $defProp,
+        $deleteProperty,
 
         BigNum,
 
@@ -2135,7 +2136,6 @@
      * @param {number} [length] The upper bounds of a valid index otherwise MAX_SAFE_INTEGER - 1.
      * @returns {boolean} Returns true if inputArg is a valid index, otherwise false.
      */
-    /*
     function $isIndex(inputArg, length) {
         if ($toLength(arguments.length) > 1) {
             length = $toLength(length);
@@ -2147,7 +2147,6 @@
 
         return $isLength(inputArg) && inputArg < length;
     }
-    */
 
     /**
      * Indicates if delete throws an error on a property that does not exist.
@@ -2171,6 +2170,33 @@
         }
 
         return rtn;
+    }());
+
+    /**
+     * Delete an item from an Array or Arguments object with delete bug. Internal use only.
+     * Safari 5
+     *
+     * @private
+     * @function module:util-x~$deleteProperty
+     * @param {Object} object
+     * @param {string} property
+     */
+    $deleteProperty = (function () {
+        var fn;
+
+        if (hasDeleteBug) {
+            fn = function (object, property) {
+                try {
+                    delete object[property];
+                } catch (ignore) {}
+            };
+        } else {
+            fn = function (object, property) {
+                delete object[property];
+            };
+        }
+
+        return fn;
     }());
 
     /**
@@ -2518,7 +2544,7 @@
         rtn = new CFunction('fn', 'name', 'args', 'return function () { return fn[name](' + argsStrings + '); }();')(thisArg, name, args);
         //rtn = eval('(thisArg[name](' + argsStrings + '))');
         /*jslint evil: false */
-        delete thisArg[name];
+        $deleteProperty(thisArg, name);
 
         return rtn;
     }
@@ -2560,7 +2586,7 @@
                     }
 
                     rtn = this[name]($toObjectThisArg(thisArg, isStrictMode), args);
-                    delete this[name];
+                    $deleteProperty(this, name);
 
                     return rtn;
                 };
@@ -2607,7 +2633,7 @@
                     }
 
                     rtn = this[name]($toObjectThisArg(thisArg, isStrictMode), args);
-                    delete this[name];
+                    $deleteProperty(this, name);
 
                     return rtn;
                 };
@@ -2643,7 +2669,7 @@
 
         func[name] = $pApply;
         rtn = func[name](thisArg, args);
-        delete func[name];
+        $deleteProperty(func, name);
 
         return rtn;
     };
@@ -2665,7 +2691,7 @@
 
         func[name] = $pApply;
         rtn = func[name](thisArg, arrayLike);
-        delete func[name];
+        $deleteProperty(func, name);
 
         return rtn;
     };
@@ -4171,24 +4197,6 @@
      * @returns {boolean}
      */
     $isArguments = exports.Object.isArguments;
-
-    /**
-     * Delete an item from an Array or Arguments object with delete bug. Internal use only.
-     *
-     * @private
-     * @function module:util-x~$deleteProperty
-     * @param {Object} object
-     * @param {string} property
-     */
-    function $deleteProperty(object, property) {
-        if ((testShims || hasDeleteBug)) {
-            if ($call(pHasOwn, object, property)) {
-                delete object[property];
-            }
-        } else {
-            delete object[property];
-        }
-    }
 
     /**
      * Shortcut
@@ -5944,11 +5952,11 @@
      * If the value is NaN or infinite, return false.
      *
      * @private
-     * @function module:util-x~isUint32
+     * @function module:util-x~$isUint32
      * @param {*} inputArg
      * @returns {boolean}
      */
-    function isUint32(inputArg) {
+    function $isUint32(inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_UINT32;
     }
 
@@ -5962,7 +5970,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Number.isUint32 = isUint32;
+    exports.Number.isUint32 = $isUint32;
     exports.Number.isUint32.argNames = ['inputArg'];
 
     /**
@@ -6343,7 +6351,6 @@
                     index = len - 1;
                     value = object[index];
                     $deleteProperty(object, index);
-                    //delete object[index];
                     object.length = index;
                 }
 
@@ -6475,12 +6482,10 @@
                             object[to] =  object[index];
                         } else {
                             $deleteProperty(object, to);
-                            //delete object[to];
                         }
                     }
 
                     $deleteProperty(object, len - 1);
-                    //delete object[len - 1];
                     object.length = len - 1;
                 }
 
@@ -6582,7 +6587,6 @@
                         object[to] = object[from];
                     } else {
                         $deleteProperty(object, to);
-                        //delete object[to];
                     }
                 }
 
@@ -6680,11 +6684,9 @@
                     } else if (!lowerExists && upperExists) {
                         object[lower] = upperValue;
                         $deleteProperty(object, upper);
-                        //delete object[upper];
                     } else if (lowerExists && !upperExists) {
                         object[upper] = lowerValue;
                         $deleteProperty(object, lower);
-                        //delete object[lower];
                     }
 
                     lower += 1;
@@ -8608,7 +8610,7 @@
                             getter = $call(mLookupGetter, obj, property);
                             setter = $call(mLookupSetter, obj, property);
                             if ($isUndefined(prototype)) {
-                                delete obj[stringProto];
+                                $deleteProperty(obj, stringProto);
                             } else {
                                 obj[stringProto] = prototype;
                             }
@@ -8789,7 +8791,6 @@
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
                                 $deleteProperty(object, to);
-                                //delete object[to];
                             }
 
                             k += 1;
@@ -8799,7 +8800,6 @@
                         loopCache = length - actualDeleteCount + itemCount;
                         while (k > loopCache) {
                             $deleteProperty(object, k - 1);
-                            //delete object[k - 1];
                             k -= 1;
                         }
                     } else if (itemCount > actualDeleteCount) {
@@ -8811,7 +8811,6 @@
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
                                 $deleteProperty(object, to);
-                                //delete object[to];
                             }
 
                             k -= 1;
@@ -11427,7 +11426,6 @@
                         object[to] = object[from];
                     } else {
                         $deleteProperty(object, to);
-                        //delete object[to];
                     }
 
                     from += direction;
@@ -11802,7 +11800,8 @@
             var hasValue = $call(pHasOwn, descriptor, 'value'),
                 hasGet = $call(pHasOwn, descriptor, 'get'),
                 hasSet = $call(pHasOwn, descriptor, 'set'),
-                prototype;
+                prototype,
+                isIdx;
 
             if (hasValue) {
                 if (hasGet || hasSet) {
@@ -11834,12 +11833,13 @@
 
                 if ($isArray(object) || $isArguments(object)) {
                     property = $toString(property);
-                    if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && isUint32(+property)) {
+                    if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) {
                         property = +property;
+                        isIdx = true;
                     }
                 }
 
-                if (hasAccessorSupport && ($call(mLookupGetter, object, property) || $call(mLookupSetter, object, property))) {
+                if (!isIdx && (hasAccessorSupport && ($call(mLookupGetter, object, property) || $call(mLookupSetter, object, property)))) {
                     // As accessors are supported only on engines implementing
                     // `__proto__` we can safely override `__proto__` while defining
                     // a property to make sure that we don't hit an inherited
@@ -11849,11 +11849,16 @@
                     // Deleting a property anyway since getter / setter may be
                     // defined on object itself.
                     $deleteProperty(object, property);
-                    //delete object[property];
                     object[property] = descriptor.value;
                     // Setting original `__proto__` back now.
                     object[stringProto] = prototype;
                 } else {
+                    if (isIdx) {
+                        if (property >= $toLength(object.length)) {
+                            object.length = property + 1;
+                        }
+                    }
+
                     object[property] = descriptor.value;
                 }
             } else {
@@ -11870,6 +11875,7 @@
                     $call(mDefineSetter, object, property, descriptor.set);
                 }
             }
+
             return object;
         };
     }(base.Object.lookupGetter, base.Object.lookupSetter, base.Object.defineGetter, base.Object.defineSetter));
@@ -12029,7 +12035,7 @@
                         return function (object, property, descriptor) {
                             if ($isArray(object) || $isArguments(object)) {
                                 property = $toString(property);
-                                if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && isUint32(+property)) {
+                                if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) {
                                     property = +property;
                                 }
 
@@ -13227,7 +13233,6 @@
                 }
 
                 $deleteProperty(object, prop2);
-                //delete object[prop2];
             } else {
                 if (cond1 && num === $toLength(object.length)) {
                     object.length += 1;
@@ -13244,7 +13249,6 @@
                 }
 
                 $deleteProperty(object, prop1);
-                //delete object[prop1];
             } else {
                 $defineProperty(object, prop1, temp2);
                 if (cond2 && num === $toLength(object.length)) {
@@ -13305,14 +13309,12 @@
                             object[inIndex] = object[rand];
                         } else {
                             $deleteProperty(object, inIndex);
-                            //delete object[inIndex];
                         }
 
                         if (hasItem) {
                             object[rand] = tempVal;
                         } else {
                             $deleteProperty(object, rand);
-                            //delete object[rand];
                         }
                     }
                 }
@@ -14053,7 +14055,7 @@
                             if (!$isUndefined(v)) {
                                 value[k] = v;
                             } else {
-                                delete value[k];
+                                $deleteProperty(value, k);
                             }
                         }
                     }
