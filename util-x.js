@@ -262,6 +262,7 @@
         hasProto,
         hasGetSet,
         isStrictMode,
+        hasDeleteArrayBug,
         hasCallBug,
         hasApplyBug,
         hasApplyRequiresArrayLikeBug,
@@ -2126,24 +2127,49 @@
     }
 
     /**
-     * Checks if `value` is a valid array-like index.
+     * Checks if 'value' is a valid array-like index.
      *
      * @private
      * @function module:util-x~$isLength
      * @param {*} inputArg The value to check.
-     * @param {number} [length] The upper bounds of a valid index otherwise MAX_SAFE_INTEGER.
+     * @param {number} [length] The upper bounds of a valid index otherwise MAX_SAFE_INTEGER - 1.
      * @returns {boolean} Returns true if inputArg is a valid index, otherwise false.
      */
-    /*
     function $isIndex(inputArg, length) {
         if ($toLength(arguments.length) > 1) {
             length = $toLength(length);
+        } else {
+            length = MAX_SAFE_INTEGER - 1;
         }
 
         inputArg = +inputArg;
+
         return $isLength(inputArg) && inputArg < length;
     }
-    */
+
+    /**
+     * Indicates if it fails to delete elements in array.
+     * True if it has, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasDeleteArrayBug
+     * @type {boolean}
+     */
+    hasDeleteArrayBug = (function () {
+        var arr = [0, 1, 2, 3],
+            rtn;
+
+        try {
+            delete arr[1];
+            delete arr[2];
+
+            rtn = false;
+        } catch (e) {
+            rtn = true;
+        }
+
+        return rtn;
+    }());
 
     /**
      * Returns the this context of the function.
@@ -2774,6 +2800,22 @@
             return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray) || false;
         };
     }(base.Object.toString));
+
+    /**
+     * Returns true if argument has own property of length
+     * which is a safe integer and is greather or equal to 0.
+     *
+     * @private
+     * @function module:util-x~$hasOwnValidLength
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
+     */
+    function $hasOwnValidLength(inputArg) {
+        var object = $toObject(inputArg);
+
+        return ($call(pHasOwn, object, 'length') && $isLength(object.length)) || (hasArrayLengthBug && $isArray(object));
+    }
 
     /**
      * The function tests whether an object has in its prototype chain the prototype property of a constructor.
@@ -3680,6 +3722,7 @@
     $conlog('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
     $conlog('+++++++++ hasEnumStringBug: ' + hasEnumStringBug);
     $conlog('+++++++++ hasArrayLengthBug: ' + hasArrayLengthBug);
+    $conlog('+++++++++ hasDeleteArrayBug: ' + hasDeleteArrayBug);
     $conlog('+++++++++ hasCallBug: ' + hasCallBug);
     $conlog('+++++++++ hasApplyBug: ' + hasApplyBug);
     $conlog('+++++++++ hasApplyRequiresArrayLikeBug: ' + hasApplyRequiresArrayLikeBug);
@@ -4126,6 +4169,38 @@
      * @returns {boolean}
      */
     $isArguments = exports.Object.isArguments;
+
+    /**
+     * Delete an item from an Array or Arguments object with delete bug. Internal use only.
+     *
+     * @private
+     * @function module:util-x~$deleteArrayIndex
+     * @param {(Array|Arguments)} array
+     * @param {number} index
+     */
+    function $deleteArrayIndex(array, index) {
+        var originalLength,
+            remaining,
+            length,
+            idx;
+
+        if ((testShims || hasDeleteArrayBug) && ($isArray(array) || $isArguments(array)) && $isIndex(index, MAX_UINT32 - 1)) {
+            index = $toLength(index);
+            remaining = $argSlice(array, index + 1);
+            originalLength = $toLength(array.length);
+            array.length = index;
+            array.length = originalLength;
+            index += 1;
+            length = $toLength(remaining.length);
+            for (idx = 0; idx < length; idx += 1) {
+                if ($call(pHasOwn, remaining, idx)) {
+                    array[index + idx] = remaining[idx];
+                }
+            }
+        } else {
+            delete array[index];
+        }
+    }
 
     /**
      * Shortcut
@@ -5679,22 +5754,6 @@
     exports.Number.isSafeInteger = $isSafeInteger;
 
     /**
-     * Returns true if argument has own property of length
-     * which is a safe integer and is greather or equal to 0.
-     *
-     * @private
-     * @function module:util-x~$hasOwnValidLength
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length
-     */
-    function $hasOwnValidLength(inputArg) {
-        var object = $toObject(inputArg);
-
-        return ($call(pHasOwn, object, 'length') && $isLength(object.length)) || (hasArrayLengthBug && $isArray(object));
-    }
-
-    /**
      * Shortcut
      * The abstract operation converts its argument to one of 2^32 integer values in
      * the range -2^31 through 2^31-1, inclusive.
@@ -6295,7 +6354,8 @@
                 } else {
                     index = len - 1;
                     value = object[index];
-                    delete object[index];
+                    $deleteArrayIndex(object, index);
+                    //delete object[index];
                     object.length = index;
                 }
 
@@ -6426,11 +6486,13 @@
                         if ($hasProperty(object, index)) {
                             object[to] =  object[index];
                         } else {
-                            delete object[to];
+                            $deleteArrayIndex(object, to);
+                            //delete object[to];
                         }
                     }
 
-                    delete object[len - 1];
+                    $deleteArrayIndex(object, len - 1);
+                    //delete object[len - 1];
                     object.length = len - 1;
                 }
 
@@ -6531,7 +6593,8 @@
                     if ($hasProperty(object, from)) {
                         object[to] = object[from];
                     } else {
-                        delete object[to];
+                        $deleteArrayIndex(object, to);
+                        //delete object[to];
                     }
                 }
 
@@ -6628,10 +6691,12 @@
                         object[upper] = lowerValue;
                     } else if (!lowerExists && upperExists) {
                         object[lower] = upperValue;
-                        delete object[upper];
+                        $deleteArrayIndex(object, upper);
+                        //delete object[upper];
                     } else if (lowerExists && !upperExists) {
                         object[upper] = lowerValue;
-                        delete object[lower];
+                        $deleteArrayIndex(object, lower);
+                        //delete object[lower];
                     }
 
                     lower += 1;
@@ -8735,7 +8800,8 @@
                             if ($hasItem(object, from, stringTag)) {
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
-                                delete object[to];
+                                $deleteArrayIndex(object, to);
+                                //delete object[to];
                             }
 
                             k += 1;
@@ -8744,7 +8810,8 @@
                         k = length;
                         loopCache = length - actualDeleteCount + itemCount;
                         while (k > loopCache) {
-                            delete object[k - 1];
+                            $deleteArrayIndex(object, k - 1);
+                            //delete object[k - 1];
                             k -= 1;
                         }
                     } else if (itemCount > actualDeleteCount) {
@@ -8755,7 +8822,8 @@
                             if ($hasItem(object, from, stringTag)) {
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
-                                delete object[to];
+                                $deleteArrayIndex(object, to);
+                                //delete object[to];
                             }
 
                             k -= 1;
@@ -10227,7 +10295,7 @@
                 sortArr[7] = 'c';
                 sortArr[8] = 'b';
 
-                $call(base.Array.sort, sortArr, $descending);
+                $call(base.Array.sort, sortArr);
                 $affirm.strictEqual(sortArr.length, 9, 'test1');
                 $affirm.strictEqual(sortArr[0], 'a', 'test2');
                 $affirm.strictEqual(sortArr[1], 'b', 'test3');
@@ -10252,17 +10320,17 @@
                 };
 
                 $call(base.Array.sort, sortObj, $descending);
-                $affirm.strictEqual(sortObj.length, 8, 'test1');
-                $affirm.strictEqual(sortObj[0], null, 'test2');
-                $affirm.strictEqual(sortObj[1], 5, 'test3');
-                $affirm.strictEqual(sortObj[2], 4, 'test4');
-                $affirm.strictEqual(sortObj[3], 3, 'test5');
-                $affirm.strictEqual(sortObj[4], 2, 'test6');
-                $affirm.strictEqual(sortObj[5], 1, 'test7');
-                $affirm.strictEqual(sortObj[6], Undefined, 'test8');
-                $affirm.strictEqual(sortObj[7], Undefined, 'test9');
-                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test10');
-                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test11');
+                $affirm.strictEqual(sortObj.length, 8, 'test13');
+                $affirm.strictEqual(sortObj[0], null, 'test14');
+                $affirm.strictEqual(sortObj[1], 5, 'test15');
+                $affirm.strictEqual(sortObj[2], 4, 'test16');
+                $affirm.strictEqual(sortObj[3], 3, 'test17');
+                $affirm.strictEqual(sortObj[4], 2, 'test18');
+                $affirm.strictEqual(sortObj[5], 1, 'test19');
+                $affirm.strictEqual(sortObj[6], Undefined, 'test20');
+                $affirm.strictEqual(sortObj[7], Undefined, 'test21');
+                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test22');
+                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test23');
             },
 
             // pass
@@ -11370,7 +11438,8 @@
                     if ($call(pHasOwn, object, from)) {
                         object[to] = object[from];
                     } else {
-                        delete object[to];
+                        $deleteArrayIndex(object, to);
+                        //delete object[to];
                     }
 
                     from += direction;
@@ -11791,7 +11860,8 @@
                     object[stringProto] = protoObject;
                     // Deleting a property anyway since getter / setter may be
                     // defined on object itself.
-                    delete object[property];
+                    $deleteArrayIndex(object, property);
+                    //delete object[property];
                     object[property] = descriptor.value;
                     // Setting original `__proto__` back now.
                     object[stringProto] = prototype;
@@ -13168,7 +13238,8 @@
                     object.length -= 1;
                 }
 
-                delete object[prop2];
+                $deleteArrayIndex(object, prop2);
+                //delete object[prop2];
             } else {
                 if (cond1 && num === $toLength(object.length)) {
                     object.length += 1;
@@ -13184,7 +13255,8 @@
                     object.length -= 1;
                 }
 
-                delete object[prop1];
+                $deleteArrayIndex(object, prop1);
+                //delete object[prop1];
             } else {
                 $defineProperty(object, prop1, temp2);
                 if (cond2 && num === $toLength(object.length)) {
@@ -13244,13 +13316,15 @@
                         if ($call(pHasOwn, object, rand)) {
                             object[inIndex] = object[rand];
                         } else {
-                            delete object[inIndex];
+                            $deleteArrayIndex(object, inIndex);
+                            //delete object[inIndex];
                         }
 
                         if (hasItem) {
                             object[rand] = tempVal;
                         } else {
-                            delete object[rand];
+                            $deleteArrayIndex(object, rand);
+                            //delete object[rand];
                         }
                     }
                 }
