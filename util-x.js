@@ -262,7 +262,7 @@
         hasProto,
         hasGetSet,
         isStrictMode,
-        hasDeleteArrayBug,
+        hasDeleteBug,
         hasCallBug,
         hasApplyBug,
         hasApplyRequiresArrayLikeBug,
@@ -2135,6 +2135,7 @@
      * @param {number} [length] The upper bounds of a valid index otherwise MAX_SAFE_INTEGER - 1.
      * @returns {boolean} Returns true if inputArg is a valid index, otherwise false.
      */
+    /*
     function $isIndex(inputArg, length) {
         if ($toLength(arguments.length) > 1) {
             length = $toLength(length);
@@ -2146,21 +2147,22 @@
 
         return $isLength(inputArg) && inputArg < length;
     }
+    */
 
     /**
-     * Indicates if it fails to delete elements in array.
+     * Indicates if delete throws an error on a property that does not exist.
      * True if it has, otherwise false.
      *
      * @private
-     * @name module:util-x~hasDeleteArrayBug
+     * @name module:util-x~hasDeleteBug
      * @type {boolean}
      */
-    hasDeleteArrayBug = (function () {
+    hasDeleteBug = (function () {
         var arr = [0, 1, 2, 3],
             rtn;
 
         try {
-            delete arr[1];
+            delete arr[2];
             delete arr[2];
 
             rtn = false;
@@ -3722,7 +3724,7 @@
     $conlog('+++++++++ hasBoxedStringBug: ' + hasBoxedStringBug);
     $conlog('+++++++++ hasEnumStringBug: ' + hasEnumStringBug);
     $conlog('+++++++++ hasArrayLengthBug: ' + hasArrayLengthBug);
-    $conlog('+++++++++ hasDeleteArrayBug: ' + hasDeleteArrayBug);
+    $conlog('+++++++++ hasDeleteBug: ' + hasDeleteBug);
     $conlog('+++++++++ hasCallBug: ' + hasCallBug);
     $conlog('+++++++++ hasApplyBug: ' + hasApplyBug);
     $conlog('+++++++++ hasApplyRequiresArrayLikeBug: ' + hasApplyRequiresArrayLikeBug);
@@ -4174,31 +4176,17 @@
      * Delete an item from an Array or Arguments object with delete bug. Internal use only.
      *
      * @private
-     * @function module:util-x~$deleteArrayIndex
-     * @param {(Array|Arguments)} array
-     * @param {number} index
+     * @function module:util-x~$deleteProperty
+     * @param {Object} object
+     * @param {string} property
      */
-    function $deleteArrayIndex(array, index) {
-        var originalLength,
-            remaining,
-            length,
-            idx;
-
-        if ((testShims || hasDeleteArrayBug) && ($isArray(array) || $isArguments(array)) && $isIndex(index, MAX_UINT32 - 1)) {
-            index = $toLength(index);
-            remaining = $argSlice(array, index + 1);
-            originalLength = $toLength(array.length);
-            array.length = index;
-            array.length = originalLength;
-            index += 1;
-            length = $toLength(remaining.length);
-            for (idx = 0; idx < length; idx += 1) {
-                if ($call(pHasOwn, remaining, idx)) {
-                    array[index + idx] = remaining[idx];
-                }
+    function $deleteProperty(object, property) {
+        if ((testShims || hasDeleteBug)) {
+            if ($call(pHasOwn, object, property)) {
+                delete object[property];
             }
         } else {
-            delete array[index];
+            delete object[property];
         }
     }
 
@@ -6354,7 +6342,7 @@
                 } else {
                     index = len - 1;
                     value = object[index];
-                    $deleteArrayIndex(object, index);
+                    $deleteProperty(object, index);
                     //delete object[index];
                     object.length = index;
                 }
@@ -6486,12 +6474,12 @@
                         if ($hasProperty(object, index)) {
                             object[to] =  object[index];
                         } else {
-                            $deleteArrayIndex(object, to);
+                            $deleteProperty(object, to);
                             //delete object[to];
                         }
                     }
 
-                    $deleteArrayIndex(object, len - 1);
+                    $deleteProperty(object, len - 1);
                     //delete object[len - 1];
                     object.length = len - 1;
                 }
@@ -6593,7 +6581,7 @@
                     if ($hasProperty(object, from)) {
                         object[to] = object[from];
                     } else {
-                        $deleteArrayIndex(object, to);
+                        $deleteProperty(object, to);
                         //delete object[to];
                     }
                 }
@@ -6691,11 +6679,11 @@
                         object[upper] = lowerValue;
                     } else if (!lowerExists && upperExists) {
                         object[lower] = upperValue;
-                        $deleteArrayIndex(object, upper);
+                        $deleteProperty(object, upper);
                         //delete object[upper];
                     } else if (lowerExists && !upperExists) {
                         object[upper] = lowerValue;
-                        $deleteArrayIndex(object, lower);
+                        $deleteProperty(object, lower);
                         //delete object[lower];
                     }
 
@@ -8800,7 +8788,7 @@
                             if ($hasItem(object, from, stringTag)) {
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
-                                $deleteArrayIndex(object, to);
+                                $deleteProperty(object, to);
                                 //delete object[to];
                             }
 
@@ -8810,7 +8798,7 @@
                         k = length;
                         loopCache = length - actualDeleteCount + itemCount;
                         while (k > loopCache) {
-                            $deleteArrayIndex(object, k - 1);
+                            $deleteProperty(object, k - 1);
                             //delete object[k - 1];
                             k -= 1;
                         }
@@ -8822,7 +8810,7 @@
                             if ($hasItem(object, from, stringTag)) {
                                 object[to] = $getItem(object, from, stringTag);
                             } else {
-                                $deleteArrayIndex(object, to);
+                                $deleteProperty(object, to);
                                 //delete object[to];
                             }
 
@@ -11438,7 +11426,7 @@
                     if ($call(pHasOwn, object, from)) {
                         object[to] = object[from];
                     } else {
-                        $deleteArrayIndex(object, to);
+                        $deleteProperty(object, to);
                         //delete object[to];
                     }
 
@@ -11860,7 +11848,7 @@
                     object[stringProto] = protoObject;
                     // Deleting a property anyway since getter / setter may be
                     // defined on object itself.
-                    $deleteArrayIndex(object, property);
+                    $deleteProperty(object, property);
                     //delete object[property];
                     object[property] = descriptor.value;
                     // Setting original `__proto__` back now.
@@ -13238,7 +13226,7 @@
                     object.length -= 1;
                 }
 
-                $deleteArrayIndex(object, prop2);
+                $deleteProperty(object, prop2);
                 //delete object[prop2];
             } else {
                 if (cond1 && num === $toLength(object.length)) {
@@ -13255,7 +13243,7 @@
                     object.length -= 1;
                 }
 
-                $deleteArrayIndex(object, prop1);
+                $deleteProperty(object, prop1);
                 //delete object[prop1];
             } else {
                 $defineProperty(object, prop1, temp2);
@@ -13316,14 +13304,14 @@
                         if ($call(pHasOwn, object, rand)) {
                             object[inIndex] = object[rand];
                         } else {
-                            $deleteArrayIndex(object, inIndex);
+                            $deleteProperty(object, inIndex);
                             //delete object[inIndex];
                         }
 
                         if (hasItem) {
                             object[rand] = tempVal;
                         } else {
-                            $deleteArrayIndex(object, rand);
+                            $deleteProperty(object, rand);
                             //delete object[rand];
                         }
                     }
