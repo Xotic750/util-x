@@ -272,8 +272,6 @@
         //hasWorkingCreate,
 
         // Shortcuts
-        pReverse,
-
         $String,
         pMatch,
         pSplit,
@@ -296,6 +294,7 @@
         $returnThis,
         $unshift,
         $shift,
+        $reverse,
         $hasOwn,
         $repeat,
         $isNative,
@@ -1735,7 +1734,6 @@
     protoReferenceError = base.ReferenceError.proto;
     protoURIError = base.URIError.proto;
 
-    pReverse = base.Array.reverse;
     $String = base.String.Ctr;
     pMatch = base.String.match;
     pSplit = base.String.split;
@@ -5301,6 +5299,7 @@
         function () {
             $affirmBasic(base.Array.isArray)();
             $affirm.ok(base.Array.isArray([]), 'is an array');
+            $affirm.ok(!base.Array.isArray({}), 'is an array');
         },
 
         // pass
@@ -6539,7 +6538,7 @@
         },
 
         // message
-        'Array.unshift patch'
+        'Array.unshift shim'
     );
 
     /**
@@ -6568,6 +6567,89 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
     $unshift = exports.Array.unshift;
+
+    /**
+     * The elements of the array are rearranged so as to reverse their order.
+     *
+     * @function module:util-x~exports.Array.proto.reverse
+     * @this {module:util-x~ArrayLike}
+     * @returns {module:util-x~ArrayLike}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.8
+     */
+    exports.Array.proto.reverse = $decide(
+        // test
+        function () {
+            $affirmBasic(base.Array.reverse)();
+        },
+
+        //pass
+        function () {
+            return base.Array.reverse;
+        },
+
+        // fail
+        function () {
+            return function () {
+                var object = $toObject(this),
+                    length = $toLength(object.length),
+                    middle = $floor(length / 2),
+                    lower = 0,
+                    lowerValue,
+                    upperValue,
+                    lowerExists,
+                    upperExists,
+                    upper;
+
+                while (lower !== middle) {
+                    upper = length - lower - 1;
+                    lowerValue = object[lower];
+                    upperValue = object[upper];
+                    lowerExists = $hasProperty(object, lower);
+                    upperExists = $hasProperty(object, upper);
+                    if (lowerExists && upperExists) {
+                        object[lower] = upperValue;
+                        object[upper] = lowerValue;
+                    } else if (!lowerExists && upperExists) {
+                        object[lower] = upperValue;
+                        delete object[upper];
+                    } else if (lowerExists && !upperExists) {
+                        object[upper] = lowerValue;
+                        delete object[lower];
+                    }
+
+                    lower += 1;
+                }
+
+                return object;
+            };
+        },
+
+        // message
+        'Array.reverse shim'
+    );
+
+    /**
+     * The elements of the array are rearranged so as to reverse their order.
+     *
+     * @function module:util-x~exports.Array.reverse
+     * @param {module:util-x~ArrayLike} array
+     * @returns {module:util-x~ArrayLike}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.8
+     */
+    exports.Array.reverse = $toMethod(exports.Array.proto.reverse);
+    exports.Array.reverse.argNames = ['array'];
+
+    /**
+     * Shortcut
+     * The elements of the array are rearranged so as to reverse their order.
+     *
+     * @private
+     * @function module:util-x~$reverse
+     * @param {module:util-x~ArrayLike} array
+     * @returns {module:util-x~ArrayLike}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.8
+     */
+    $reverse = exports.Array.reverse;
 
     /**
      * Returns an integer clamped to the range set by min and max.
@@ -15188,12 +15270,12 @@
                     t = yc;
                 }
 
-                $call(pReverse, t);
+                $reverse(t);
                 for (b = a; b; b -= 1) {
                     $push(t, 0);
                 }
 
-                $call(pReverse, t);
+                $reverse(t);
             } else {
                 // Exponents equal. Check digit by digit.
                 xcL = $toLength(xc.length);
@@ -15347,13 +15429,13 @@
                     t = xc;
                 }
 
-                $call(pReverse, t);
+                $reverse(t);
                 while (a) {
                     $push(t, 0);
                     a -= 1;
                 }
 
-                $call(pReverse, t);
+                $reverse(t);
             }
 
             // Point xc to the longer array.
