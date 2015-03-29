@@ -8505,7 +8505,7 @@
                             argNames,
 
                             // message
-                            'Function.prototype.length patch as read only'
+                            'Object.getOwnPropertyDescriptor throws patch'
                         );
                     },
 
@@ -8529,7 +8529,7 @@
                     argNames,
 
                     // message
-                    'Function.prototype.length patch as read only'
+                    'Object.getOwnPropertyDescriptor read only patch'
                 );
             },
 
