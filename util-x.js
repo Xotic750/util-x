@@ -6594,15 +6594,15 @@
                 // test
                 function () {
                     $affirm.doesNotThrow(function () {
-                        base.Array.reverse(1);
+                        base.Array.reverse.call(1);
                     }, 'number');
 
                     $affirm.doesNotThrow(function () {
-                        base.Array.reverse(true);
+                        base.Array.reverse.call(true);
                     }, 'boolean');
 
                     $affirm.doesNotThrow(function () {
-                        base.Array.reverse('a');
+                        base.Array.reverse.call('a');
                     }, 'string');
                 },
 
