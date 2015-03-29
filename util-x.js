@@ -3607,12 +3607,18 @@
 
                     if (!found) {
                         try {
-                            base.Object.defineProperties(obj, prop, {
-                                enumerable: false
-                            });
+                            if (base.Object.defineProperty) {
+                                base.Object.defineProperty(obj, prop, propNotEnumerable);
+                                if (base.Object.propertyIsEnumerable(protoFunction, 'length')) {
+                                    throw new CError('Still enumerable');
+                                }
+
+                                $conlog('Unwanted error ' + prop + ' patched');
+                            }
                         } catch (eUnwantedError) {
                             unwantedError.length += 1;
                             unwantedError[length2] = prop;
+                            $conlog('Unwanted error ' + prop + ' patch failed');
                         }
                     }
                 }
@@ -8429,9 +8435,7 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.ok(!(base.Object.getOwnPropertyDescriptor(function (a) {
-                            return a;
-                        }, 'length').writable), 'Function.prototype.length should be read only.');
+                        $affirm.ok(!(base.Object.getOwnPropertyDescriptor(protoFunction, 'length').writable), 'Function.prototype.length should be read only.');
                     },
 
                     // pass
@@ -8454,9 +8458,12 @@
                         };
                         */
 
-                        // This is an intrusive patch but can be done correctly, so I feel it's worth it.
+                        // This is an intrusive patch but if it can be done correctly then it's worth it.
                         try {
                             base.Object.defineProperty(protoFunction, 'length', propConstant);
+                            if (base.Object.getOwnPropertyDescriptor(protoFunction, 'length').writable) {
+                                throw new CError('Still writable');
+                            }
                         } catch (eLengthPatch) {
                             $conlog('Failed to patch Function.prototype.length', eLengthPatch);
                         }
