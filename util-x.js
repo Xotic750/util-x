@@ -4181,9 +4181,22 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Object.isArguments = function (inputArg) {
-        return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $toStringTag(inputArg) === stringTagArguments) || false;
-    };
+    exports.Object.isArguments = (function (pOToString) {
+        var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
+            fn;
+
+        if (isArgs) {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArguments;
+            };
+        } else {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length');
+            };
+        }
+
+        return fn;
+    }(base.Object.toString));
 
     exports.Object.isArguments.argNames = ['inputArg'];
 
