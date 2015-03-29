@@ -6590,7 +6590,39 @@
 
         //pass
         function () {
-            return base.Array.reverse;
+            return $decide(
+                // test
+                function () {
+                    $affirm.doesNotThrow(function () {
+                        base.Array.reverse(1);
+                    }, 'number');
+
+                    $affirm.doesNotThrow(function () {
+                        base.Array.reverse(true);
+                    }, 'boolean');
+
+                    $affirm.doesNotThrow(function () {
+                        base.Array.reverse('a');
+                    }, 'string');
+                },
+
+                // pass
+                function () {
+                    return base.Array.reverse;
+                },
+
+                // fail
+                function () {
+                    var pReverse = base.Array.reverse;
+
+                    return function () {
+                        return $call(pReverse, $toObject(this));
+                    };
+                },
+
+                // message
+                'Array.reverse patch'
+            );
         },
 
         // fail
