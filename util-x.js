@@ -75,7 +75,8 @@
     toLocaleUpperCase, toLowerCase, toObject, toPrecision, toPrimitive, toSource,
     toString, toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase,
     trim, trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift,
-    unwatch, value, valueOf, version, watch, wrapInChars, writable, wsStr
+    unwatch, value, valueOf, version, watch, wrapInChars, writable, wsStr,
+    documentElement, src, contentWindow
 */
 
 /**
@@ -2821,12 +2822,13 @@
         var oldLoad,
             getBody,
             createIframe,
-            body;
+            body,
+            js;
 
         if (typeof window === 'function' || typeof window === 'object') {
             try {
                 getBody = function () {
-                    return window.document.body || window.document.getElementsByTagName('body')[0];
+                    return window.document.body || window.document.documentElement;
                 };
 
                 createIframe = function () {
@@ -2835,7 +2837,9 @@
 
                     iframe.style.display = 'none';
                     body.appendChild(iframe);
-                    arr = new window.frames[$toLength(window.frames.length) - 1].Array(1, 2, 3);
+                    js = 'javascript';
+                    iframe.src = js + ':';
+                    arr = new iframe.contentWindow.Array(1, 2, 3);
                     body.removeChild(iframe);
                     supportsXFrameClass = $call(pOToString, arr) === stringTagArray;
                 };
