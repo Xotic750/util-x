@@ -2236,7 +2236,7 @@
 
         // try in case call is missing
         try {
-            rtn = (!isStrictMode && typeof $call(returnThis, 'foo') === 'string') || false;
+            rtn = !isStrictMode && typeof $call(returnThis, 'foo') === 'string';
         } catch (eHasCallBug) {
             rtn = false;
         }
@@ -2462,7 +2462,7 @@
     function $isPrimitive(inputArg) {
         var type = typeof inputArg;
 
-        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || false;
+        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number';
     }
 
     /**
@@ -2825,9 +2825,99 @@
      */
     $isArray = (function (pOToString) {
         return function (inputArg) {
-            return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray) || false;
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray;
         };
     }(base.Object.toString));
+
+    /**
+     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
+     *
+     * @function module:util-x~exports.Object.isArguments
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Object.isArguments = (function (pOToString) {
+        var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
+            fn;
+
+        if (isArgs) {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArguments;
+            };
+        } else {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length');
+            };
+        }
+
+        return fn;
+    }(base.Object.toString));
+
+    exports.Object.isArguments.argNames = ['inputArg'];
+
+    /**
+     * Shortcut
+     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
+     *
+     * @private
+     * @function module:util-x~.$isArguments
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isArguments = exports.Object.isArguments;
+
+    /**
+     * Shortcut
+     * Returns true if the operand inputArg is a RegExp.
+     *
+     * @private
+     * @function module:util-x~$isRegExp
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    function $isRegExp(inputArg) {
+        return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp;
+    }
+
+    /**
+     * Returns true if the operand inputArg is a RegExp.
+     *
+     * @function module:util-x~.exports.RegExp.$isRegExp
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.RegExp.isRegExp = $isRegExp;
+    exports.RegExp.isRegExp.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is an error.
+     *
+     * @function module:util-x~exports.Error.isError
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Error.isError = (function (pOToString) {
+        return function (inputArg) {
+            return !$isPrimitive(inputArg) && $call(pOToString, inputArg) === stringTagError;
+        };
+    }(base.Object.toString));
+
+    exports.Error.isError.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a Date object.
+     *
+     * @function module:util-x~exports.Date.isDate
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Date.isDate = (function (pOToString) {
+        return function (inputArg) {
+            return !$isPrimitive(inputArg) && $call(pOToString, inputArg) === stringTagDate;
+        };
+    }(base.Object.toString));
+
+    exports.Date.isDate.argNames = ['inputArg'];
 
     /**
      * Returns true if argument has own property of length
@@ -2860,7 +2950,7 @@
         return function $instanceOf(object, ctr) {
             $throwIfNotFunction(ctr);
 
-            return (!$isPrimitive(object) && (object instanceof ctr || (!$isPrimitive(ctr.prototype) && $call(pIsPrototypeOf, ctr.prototype, object)))) || false;
+            return (!$isPrimitive(object) && (object instanceof ctr || (!$isPrimitive(ctr.prototype) && $call(pIsPrototypeOf, ctr.prototype, object))));
         };
     }(base.Object.isPrototypeOf));
 
@@ -3565,7 +3655,7 @@
      * @type {boolean}
      * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
      */
-    hasDontEnumBug = !$call(base.Object.propertyIsEnumerable, {'toString': null}, 'toString') || false;
+    hasDontEnumBug = !$call(base.Object.propertyIsEnumerable, {'toString': null}, 'toString');
 
     /**
      * Indicates if the environment's function objects suffer the "prototype is enumerable bug".
@@ -3576,7 +3666,7 @@
      * @type {boolean}
      * @see http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
      */
-    hasProtoEnumBug = $call(base.Object.propertyIsEnumerable, function () { return; }, 'prototype') || false;
+    hasProtoEnumBug = $call(base.Object.propertyIsEnumerable, function () { return; }, 'prototype');
 
     /**
      * Indicates if the arguments object suffers the "index enumeration bug".
@@ -3599,7 +3689,7 @@
         }
 
         return expected[0] !== 'h' || expected[1] !== 'e' || expected[2] !== 'j';
-    }()) || false;
+    }());
 
     /**
      * Indicates if a string suffers enumerable bug.
@@ -3608,7 +3698,7 @@
      * @name module:util-x~hasEnumStringBug
      * @type {boolean}
      */
-    hasEnumStringBug = !$call(pHasOwn, 'x', '0') || false;
+    hasEnumStringBug = !$call(pHasOwn, 'x', '0');
 
     /**
      * Indicates if a string suffers the "indexed accessability bug".
@@ -3621,7 +3711,7 @@
     hasBoxedStringBug = (function () {
         var boxedString = $Object('a');
 
-        return boxedString[0] !== 'a' || !$hasProperty(boxedString, 0) || false;
+        return boxedString[0] !== 'a' || !$hasProperty(boxedString, 0);
     }());
 
     /**
@@ -3632,7 +3722,7 @@
      * @name module:util-x~hasArrayLengthBug
      * @type {boolean}
      */
-    hasArrayLengthBug = typeof [].length !== 'number' || false;
+    hasArrayLengthBug = typeof [].length !== 'number';
 
     /**
      * Indicates if the Error object has additional enumerable properties.
@@ -3696,7 +3786,7 @@
         }
 
         return !!unwantedError.length;
-    }()) || false;
+    }());
 
     /**
      * Indicates if __proto__ is supported.
@@ -3706,7 +3796,7 @@
      * @name module:util-x~hasProto
      * @type {boolean}
      */
-    hasProto = protoObject[stringProto] === null || false;
+    hasProto = protoObject[stringProto] === null;
 
     /**
      * Indicates if __defineGetter__ and __lookupSetter__ are supported.
@@ -3716,7 +3806,7 @@
      * @name module:util-x~hasGetSet
      * @type {boolean}
      */
-    hasGetSet = ($isFunction(base.Object.lookupGetter) && $isFunction(base.Object.lookupSetter)) || false;
+    hasGetSet = $isFunction(base.Object.lookupGetter) && $isFunction(base.Object.lookupSetter);
 
     /**
      * The function takes an argument protoFn, and returns a bound function as a stand alone method.
@@ -4173,67 +4263,6 @@
 
     exports.Number.isNegative.argNames = ['inputArg'];
 
-
-    /**
-     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
-     *
-     * @function module:util-x~exports.Object.isArguments
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Object.isArguments = (function (pOToString) {
-        var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
-            fn;
-
-        if (isArgs) {
-            fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArguments;
-            };
-        } else {
-            fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length');
-            };
-        }
-
-        return fn;
-    }(base.Object.toString));
-
-    exports.Object.isArguments.argNames = ['inputArg'];
-
-    /**
-     * Shortcut
-     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
-     *
-     * @private
-     * @function module:util-x~.$isArguments
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    $isArguments = exports.Object.isArguments;
-
-    /**
-     * Shortcut
-     * Returns true if the operand inputArg is a RegExp.
-     *
-     * @private
-     * @function module:util-x~$isRegExp
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    function $isRegExp(inputArg) {
-        return (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp) || false;
-    }
-
-    /**
-     * Returns true if the operand inputArg is a RegExp.
-     *
-     * @function module:util-x~.exports.RegExp.$isRegExp
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.RegExp.isRegExp = $isRegExp;
-    exports.RegExp.isRegExp.argNames = ['inputArg'];
-
     /**
      * Shortcut
      * The abstract operation converts its argument to a value of type string
@@ -4297,32 +4326,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
      */
     exports.String.ToString = $toString;
-
-    /**
-     * Returns true if the operand inputArg is an error.
-     *
-     * @function module:util-x~exports.Error.isError
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Error.isError = function (inputArg) {
-        return inputArg && typeof inputArg === 'object' && $toStringTag(inputArg) === stringTagError;
-    };
-
-    exports.Error.isError.argNames = ['inputArg'];
-
-    /**
-     * Returns true if the operand inputArg is a Date object.
-     *
-     * @function module:util-x~exports.Date.isDate
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Date.isDate = function (inputArg) {
-        return inputArg && typeof inputArg === 'object' && $toStringTag(inputArg) === stringTagDate;
-    };
-
-    exports.Date.isDate.argNames = ['inputArg'];
 
     /**
      * Shortcut
