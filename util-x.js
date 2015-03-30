@@ -36,17 +36,18 @@
     Number, Object, POSITIVE_INFINITY, POSITIVE_ZERO, RM, RangeError,
     ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject, ToString,
     TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32, UWORD8, Uint8Array,
-    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor, apply,
-    areSameClass, areSameTypeOf, argNames, assert, assign, bind, c, call,
-    captureStackTrace, ceil, charAt, charCodeAt, clamp, clampToInt, classId,
-    clipDuplicates, codePointAt, concat, configurable, console, constructor,
-    contains, copyWithin, countCharacter, create, customError,
-    customErrorReplacer, debug, deepEqual, deepFreeze, deepStrictEqual,
-    defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
-    e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
-    expected, exports, factory, fail, fill, filter, find, findIndex, first,
-    firstIn, floor, foo, forAll, forEach, forKeys, freeze, from, fromCharCode,
-    fromCodePoint, get, getOwnPropertyDescriptor, getOwnPropertyNames,
+    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor,
+    appendChild, apply, areSameClass, areSameTypeOf, argNames, assert, assign,
+    bind, body, c, call, captureStackTrace, ceil, charAt, charCodeAt, clamp,
+    clampToInt, classId, clipDuplicates, codePointAt, concat, configurable,
+    console, constructor, contains, copyWithin, countCharacter, create,
+    createElement, customError, customErrorReplacer, debug, deepEqual,
+    deepFreeze, deepStrictEqual, defineGetter, defineProperties, defineProperty,
+    defineSetter, display, document, doesNotThrow, e, endsWith, enumerable,
+    equal, escapeRegex, every, exec, execSlice, expected, exports, factory, fail,
+    fill, filter, find, findIndex, first, firstIn, floor, foo, forAll, forEach,
+    forKeys, frames, freeze, from, fromCharCode, fromCodePoint, get,
+    getElementsByTagName, getOwnPropertyDescriptor, getOwnPropertyNames,
     getPrototypeOf, getTime, getUTCDate, getUTCFullYear, getUTCHours,
     getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds, global,
     goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase, inRange,
@@ -54,27 +55,27 @@
     isArray, isBoolean, isBytestring, isDate, isDigits, isEmpty, isError,
     isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen, isFunction,
     isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction, isNegative,
-    isNumber, isNumeric, isObject, isOdd, isPlainObject, isPositive, isPrimitive,
+    isNumber, isNumeric, isOdd, isPlainObject, isPositive, isPrimitive,
     isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16,
     isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIn, lastIndex,
     lastIndexOf, length, link, localeCompare, log, lookupGetter, lookupSetter,
     map, match, max, message, methods, min, minus, modulo, multiline, name, noop,
     normaliseErrorIEToStringOff, normaliseErrorIEToStringOn,
     normaliseErrorIEToStringState, normalize, notDeepEqual, notDeepStrictEqual,
-    notEqual, notOk, notStrictEqual, now, of, ok, operator, outRange,
+    notEqual, notOk, notStrictEqual, now, of, ok, onload, operator, outRange,
     padLeadingChar, parse, parseFloat, parseInt, plus, pop, pow, powerSet,
     preventExtensions, propertyIsEnumerable, proto, prototype, push, random,
-    randomInt, reduce, reduceRight, regex, remove, repeat, replace, replaceAll,
-    returnArgs, reverse, round, s, seal, search, sentinel, set, setPrototypeOf,
-    shift, shuffle, sign, slice, some, sort, source, splice, split, sqrt,
-    stableSort, stack, stackStartFunction, stacktrace, startsWith, sticky,
-    strictEqual, stringify, substr, substring, swapItems, test, throws, times,
-    toExponential, toFixed, toISOString, toInt16, toInt32, toInt8, toInteger,
-    toJSON, toLength, toLocaleLowerCase, toLocaleString, toLocaleUpperCase,
-    toLowerCase, toObject, toPrecision, toPrimitive, toSource, toString,
-    toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase, trim,
-    trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift, unwatch,
-    value, valueOf, version, watch, wrapInChars, writable, wsStr
+    randomInt, reduce, reduceRight, regex, remove, removeChild, repeat, replace,
+    replaceAll, returnArgs, reverse, round, s, seal, search, sentinel, set,
+    setPrototypeOf, shift, shuffle, sign, slice, some, sort, source, splice,
+    split, sqrt, stableSort, stack, stackStartFunction, stacktrace, startsWith,
+    sticky, strictEqual, stringify, style, substr, substring, swapItems, test,
+    throws, times, toExponential, toFixed, toISOString, toInt16, toInt32, toInt8,
+    toInteger, toJSON, toLength, toLocaleLowerCase, toLocaleString,
+    toLocaleUpperCase, toLowerCase, toObject, toPrecision, toPrimitive, toSource,
+    toString, toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase,
+    trim, trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift,
+    unwatch, value, valueOf, version, watch, wrapInChars, writable, wsStr
 */
 
 /**
@@ -267,6 +268,7 @@
         hasApplyBug,
         hasApplyRequiresArrayLikeBug,
         supportsApplyArrayLike,
+        supportsXFrameClass,
         $pSlice,
         $pConcat,
 
@@ -301,6 +303,7 @@
         $isNative,
         $isArguments,
         $isArray,
+        $isRegExp,
         $isInteger,
         $isSafeInteger,
         $isNumeric,
@@ -1983,6 +1986,16 @@
     }
 
     /**
+     * Returns true if the operand inputArg is undefined.
+     *
+     * @function module:util-x~exports.Object.isUndefined
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Object.isUndefined = $isUndefined;
+    exports.Object.isUndefined.argNames = ['inputArg'];
+
+    /**
      * The abstract operation converts its argument to a value of type string
      *
      * @private
@@ -2466,6 +2479,17 @@
     }
 
     /**
+     * Returns true if the operand inputArg is a primitive object.
+     *
+     * @function module:util-x~exports.Object.isPrimitive
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     */
+    exports.Object.isPrimitive = $isPrimitive;
+    exports.Object.isPrimitive.argNames = ['inputArg'];
+
+    /**
      * @private
      * @function module:util-x~$getName
      * @param {Object} object
@@ -2793,6 +2817,66 @@
         return inputArg;
     };
 
+    (function (pOToString) {
+        var oldLoad,
+            getBody,
+            createIframe,
+            body;
+
+        if (typeof window === 'function' || typeof window === 'object') {
+            try {
+                getBody = function () {
+                    return window.document.body || window.document.getElementsByTagName('body')[0];
+                };
+
+                createIframe = function () {
+                    var iframe = window.document.createElement('iframe'),
+                        arr;
+
+                    iframe.style.display = 'none';
+                    body.appendChild(iframe);
+                    arr = new window.frames[$toLength(window.frames.length) - 1].Array(1, 2, 3);
+                    body.removeChild(iframe);
+                    supportsXFrameClass = $call(pOToString, arr) === stringTagArray;
+                };
+
+                body = getBody();
+                if (!body) {
+                    oldLoad = window.onload;
+                    window.onload = function (evt) {
+                        try {
+                            oldLoad(evt);
+                        } catch (ignore) {}
+
+                        body = getBody();
+                        createIframe();
+                    };
+                } else {
+                    createIframe();
+                }
+            } catch (ignore) {}
+        }
+    }(Object.prototype.toString));
+
+    /**
+     * @private
+     * @function module:util-x~$checkCrossFrame
+     * @param {Object} inputArg
+     * @param {string} strCtr
+     * @returns {boolean}
+     */
+    function $checkXFrame(inputArg, strCtr) {
+        var rtn;
+
+        if (supportsXFrameClass === false) {
+            rtn = inputArg.constructor && $toString(inputArg.constructor) === strCtr;
+        } else {
+            rtn = false;
+        }
+
+        return rtn;
+    }
+
     /**
      * Throws a TypeError if the operand inputArg is not an object or not a function,
      * otherise returns the object.
@@ -2812,6 +2896,51 @@
     }
 
     /**
+     * Returns true if the operand inputArg is a boolean.
+     *
+     * @function module:util-x~exports.Boolean.isBoolean
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Boolean.isBoolean = (function (pOToString, strBool) {
+        return function (inputArg) {
+            return typeof inputArg === 'boolean' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagBoolean || $checkXFrame(inputArg, strBool)));
+        };
+    }(base.Object.toString, $toString(CBoolean)));
+
+    exports.Boolean.isBoolean.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a Number.
+     *
+     * @function module:util-x~exports.Number.isNumber
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Number.isNumber = (function (pOToString, strNum) {
+        return function (inputArg) {
+            return typeof inputArg === 'number' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagNumber || $checkXFrame(inputArg, strNum)));
+        };
+    }(base.Object.toString, $toString(CNumber)));
+
+    exports.Number.isNumber.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a string.
+     *
+     * @function module:util-x~exports.String.isString
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.String.isString = (function (pOToString, strStr) {
+        return function (inputArg) {
+            return typeof inputArg === 'string' || (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && ($call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
+        };
+    }(base.Object.toString, $toString(CString)));
+
+    exports.String.isString.argNames = ['inputArg'];
+
+    /**
      * Shortcut
      * Replaced later
      * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
@@ -2823,11 +2952,11 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
      */
-    $isArray = (function (pOToString) {
+    $isArray = (function (pOToString, strArr) {
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArray;
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && ($call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr));
         };
-    }(base.Object.toString));
+    }(base.Object.toString, $toString(CArray)));
 
     /**
      * Returns true if the operand inputArg is an {@link Arguments arguments} object.
@@ -2840,14 +2969,16 @@
         var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
             fn;
 
+        function duckType(inputArg) {
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pHasOwn, inputArg, 'callee') && !$call(pHasOwn, inputArg, 'arguments');
+        }
+
         if (isArgs) {
             fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && $call(pOToString, inputArg) === stringTagArguments;
+                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && ($call(pOToString, inputArg) === stringTagArguments || (supportsXFrameClass === false && duckType(inputArg)));
             };
         } else {
-            fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length');
-            };
+            fn = duckType;
         }
 
         return fn;
@@ -2875,9 +3006,30 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    function $isRegExp(inputArg) {
-        return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && $toStringTag(inputArg) === stringTagRegExp;
-    }
+    $isRegExp = (function (pOToString, strRx) {
+        var isRegExp = $call(pOToString, new CRegExp('x')) === stringTagRegExp,
+            fn;
+
+        if (isRegExp) {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && ($call(pOToString, inputArg) === stringTagRegExp || $checkXFrame(inputArg, strRx));
+            };
+        } else {
+            fn = function (inputArg) {
+                return !$isPrimitive(inputArg) &&
+                    $call(pHasOwn, inputArg, 'ignoreCase') &&
+                    typeof inputArg.ignoreCase === 'boolean' &&
+                    $call(pHasOwn, inputArg, 'global') &&
+                    typeof inputArg.global === 'boolean' &&
+                    $call(pHasOwn, inputArg, 'multiline') &&
+                    typeof inputArg.multiline === 'boolean' &&
+                    $call(pHasOwn, inputArg, 'source') &&
+                    typeof inputArg.source === 'string';
+            };
+        }
+
+        return fn;
+    }(base.Object.toString, $toString(CRegExp)));
 
     /**
      * Returns true if the operand inputArg is a RegExp.
@@ -2896,11 +3048,11 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Error.isError = (function (pOToString) {
+    exports.Error.isError = (function (pOToString, strErr) {
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pOToString, inputArg) === stringTagError;
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'message') && ($call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr));
         };
-    }(base.Object.toString));
+    }(base.Object.toString, $toString(CError)));
 
     exports.Error.isError.argNames = ['inputArg'];
 
@@ -2911,11 +3063,11 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Date.isDate = (function (pOToString) {
+    exports.Date.isDate = (function (pOToString, strDate) {
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pOToString, inputArg) === stringTagDate;
+            return !$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagDate || $checkXFrame(inputArg, strDate));
         };
-    }(base.Object.toString));
+    }(base.Object.toString, $toString(CDate)));
 
     exports.Date.isDate.argNames = ['inputArg'];
 
@@ -4121,66 +4273,6 @@
     exports.Number.clamp.argNames = ['number', 'min', 'max'];
 
     /**
-     * Returns true if the operand inputArg is undefined.
-     *
-     * @function module:util-x~exports.Object.isUndefined
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Object.isUndefined = $isUndefined;
-    exports.Object.isUndefined.argNames = ['inputArg'];
-
-    /**
-     * Returns true if the operand inputArg is a boolean.
-     *
-     * @function module:util-x~exports.Boolean.isBoolean
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Boolean.isBoolean = function (inputArg) {
-        return typeof inputArg === 'boolean';
-    };
-
-    exports.Boolean.isBoolean.argNames = ['inputArg'];
-
-    /**
-     * Returns true if the operand inputArg is a Number.
-     *
-     * @function module:util-x~exports.Number.isNumber
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Number.isNumber = function (inputArg) {
-        return typeof inputArg === 'number';
-    };
-
-    exports.Number.isNumber.argNames = ['inputArg'];
-
-    /**
-     * Returns true if the operand inputArg is a string.
-     *
-     * @function module:util-x~exports.String.isString
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.String.isString = function (inputArg) {
-        return typeof inputArg === 'string';
-    };
-
-    exports.String.isString.argNames = ['inputArg'];
-
-    /**
-     * Returns true if the operand inputArg is a primitive object.
-     *
-     * @function module:util-x~exports.Object.isPrimitive
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
-     */
-    exports.Object.isPrimitive = $isPrimitive;
-    exports.Object.isPrimitive.argNames = ['inputArg'];
-
-    /**
      * Shortcut
      * Abstract operation that coerces its argument to a primitive value.
      *
@@ -5222,19 +5314,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
      */
     exports.Object.toStringTag = $toStringTag;
-
-    /**
-     * Returns true if the operand inputArg is an Object.
-     *
-     * @function module:util-x~exports.Object.isObject
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
-    exports.Object.isObject = function (inputArg) {
-        return $toStringTag(inputArg) === stringTagObject && !$isFunction(inputArg);
-    };
-
-    exports.Object.isObject.argNames = ['inputArg'];
 
     /**
      * Throws a TypeError if arguments is a function otherwise returns the function.
@@ -14261,7 +14340,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     exports.Array.proto.powerSet = (function () {
-        return function pPowerSet() {
+        var pPowerSet = function () {
             var thisObj = $toObject(this),
                 val = [],
                 object,
@@ -14302,6 +14381,8 @@
 
             return val;
         };
+
+        return pPowerSet;
     }());
 
     /**
