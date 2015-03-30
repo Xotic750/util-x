@@ -2837,14 +2837,9 @@
                 iframe.application = 'yes';
                 body.appendChild(iframe);
                 content = window.frames[$toLength(window.frames.length) - 1];
-                content.document.write('<script>parent.uxTest = { Array: Array };<\/script>');
-                supportsXFrameClass = $call(pOToString, new window.uxTest.Array(1, 2, 3)) === stringTagArray;
+                content.document.write('<script>this.uxTest = { Array: Array };<\/script>');
+                supportsXFrameClass = $call(pOToString, new iframe.uxTest.Array(1, 2, 3)) === stringTagArray;
                 body.removeChild(iframe);
-                try {
-                    delete window.uxTest;
-                } catch (e) {
-                    window.uxTest = Undefined;
-                }
             };
 
             body = getBody();
