@@ -76,7 +76,7 @@
     toString, toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase,
     trim, trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift,
     unwatch, value, valueOf, version, watch, wrapInChars, writable, wsStr,
-    documentElement, src, contentWindow
+    write, documentElement, Array2
 */
 
 /**
@@ -2823,42 +2823,41 @@
             getBody,
             createIframe,
             body,
-            js;
+            content;
 
         if (typeof window === 'function' || typeof window === 'object') {
-            try {
-                getBody = function () {
-                    return window.document.body || window.document.documentElement;
-                };
+            getBody = function () {
+                return window.document.body || window.document.getElementsByTagName('body')[0];
+            };
 
-                createIframe = function () {
-                    var iframe = window.document.createElement('iframe'),
-                        arr;
+            createIframe = function () {
+                var iframe = window.document.createElement('iframe'),
+                    arr;
 
-                    iframe.style.display = 'none';
-                    body.appendChild(iframe);
-                    js = 'javascript';
-                    iframe.src = js + ':';
-                    arr = new iframe.contentWindow.Array(1, 2, 3);
-                    body.removeChild(iframe);
-                    supportsXFrameClass = $call(pOToString, arr) === stringTagArray;
-                };
+                iframe.style.display = 'none';
+                body.appendChild(iframe);
+                content = window.frames[$toLength(window.frames.length) - 1];
+                content.document.write('<script>parent.Array2 = Array;<\/script>');
+                arr = new window.Array2(1, 2, 3);
+                supportsXFrameClass = $call(pOToString, arr) === stringTagArray;
+                delete window.Array2;
+                body.removeChild(iframe);
+            };
 
-                body = getBody();
-                if (!body) {
-                    oldLoad = window.onload;
-                    window.onload = function (evt) {
-                        try {
-                            oldLoad(evt);
-                        } catch (ignore) {}
+            body = getBody();
+            if (!body) {
+                oldLoad = window.onload;
+                window.onload = function (evt) {
+                    try {
+                        oldLoad(evt);
+                    } catch (ignore) {}
 
-                        body = getBody();
-                        createIframe();
-                    };
-                } else {
+                    body = getBody();
                     createIframe();
-                }
-            } catch (ignore) {}
+                };
+            } else {
+                createIframe();
+            }
         }
     }(Object.prototype.toString));
 
