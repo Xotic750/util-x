@@ -36,18 +36,17 @@
     Number, Object, POSITIVE_INFINITY, POSITIVE_ZERO, RM, RangeError,
     ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject, ToString,
     TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32, UWORD8, Uint8Array,
-    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor,
-    appendChild, application, apply, areSameClass, areSameTypeOf, argNames,
-    assert, assign, bind, body, c, call, captureStackTrace, ceil, charAt,
-    charCodeAt, clamp, clampToInt, classId, clipDuplicates, codePointAt, concat,
-    configurable, console, constructor, contains, copyWithin, countCharacter,
-    create, createElement, customError, customErrorReplacer, debug, deepEqual,
-    deepFreeze, deepStrictEqual, defineGetter, defineProperties, defineProperty,
-    defineSetter, display, document, doesNotThrow, e, endsWith, enumerable,
-    equal, escapeRegex, every, exec, execSlice, expected, exports, factory, fail,
-    fill, filter, find, findIndex, first, firstIn, floor, foo, forAll, forEach,
-    forKeys, frames, freeze, from, fromCharCode, fromCodePoint, get,
-    getElementsByTagName, getOwnPropertyDescriptor, getOwnPropertyNames,
+    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor, apply,
+    areSameClass, areSameTypeOf, argNames, assert, assign, bind, c, call,
+    captureStackTrace, ceil, charAt, charCodeAt, clamp, clampToInt, classId,
+    clipDuplicates, codePointAt, concat, configurable, console, constructor,
+    contains, copyWithin, countCharacter, create, customError,
+    customErrorReplacer, debug, deepEqual, deepFreeze, deepStrictEqual,
+    defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
+    e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
+    expected, exports, factory, fail, fill, filter, find, findIndex, first,
+    firstIn, floor, foo, forAll, forEach, forKeys, freeze, from, fromCharCode,
+    fromCodePoint, get, getOwnPropertyDescriptor, getOwnPropertyNames,
     getPrototypeOf, getTime, getUTCDate, getUTCFullYear, getUTCHours,
     getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds, global,
     goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase, inRange,
@@ -63,20 +62,20 @@
     multiline, name, noop, normaliseErrorIEToStringOff,
     normaliseErrorIEToStringOn, normaliseErrorIEToStringState, normalize,
     notDeepEqual, notDeepStrictEqual, notEqual, notOk, notStrictEqual, now, of,
-    ok, onload, operator, outRange, padLeadingChar, parse, parseFloat, parseInt,
-    plus, pop, pow, powerSet, preventExtensions, propertyIsEnumerable, proto,
+    ok, operator, outRange, padLeadingChar, parse, parseFloat, parseInt, plus,
+    pop, pow, powerSet, preventExtensions, propertyIsEnumerable, proto,
     prototype, push, random, randomInt, reduce, reduceRight, regex, remove,
-    removeChild, repeat, replace, replaceAll, returnArgs, reverse, round, s,
-    seal, search, sentinel, set, setPrototypeOf, shift, shuffle, sign, slice,
-    some, sort, source, splice, split, sqrt, stableSort, stack,
-    stackStartFunction, stacktrace, startsWith, sticky, strictEqual, stringify,
-    style, substr, substring, swapItems, test, throws, times, toExponential,
-    toFixed, toISOString, toInt16, toInt32, toInt8, toInteger, toJSON, toLength,
-    toLocaleLowerCase, toLocaleString, toLocaleUpperCase, toLowerCase, toObject,
-    toPrecision, toPrimitive, toSource, toString, toStringTag, toUint, toUint16,
-    toUint32, toUint8, toUpperCase, trim, trimLeft, trimRight, trimString,
-    truncate, typeOf, unique, unshift, unwatch, uxTest, value, valueOf, version,
-    watch, wrapInChars, writable, write, wsStr
+    repeat, replace, replaceAll, returnArgs, reverse, round, s, seal, search,
+    sentinel, set, setPrototypeOf, shift, shuffle, sign, slice, some, sort,
+    source, splice, split, sqrt, stableSort, stack, stackStartFunction,
+    stacktrace, startsWith, sticky, strictEqual, stringify, substr, substring,
+    swapItems, test, throws, times, toExponential, toFixed, toISOString, toInt16,
+    toInt32, toInt8, toInteger, toJSON, toLength, toLocaleLowerCase,
+    toLocaleString, toLocaleUpperCase, toLowerCase, toObject, toPrecision,
+    toPrimitive, toSource, toString, toStringTag, toUint, toUint16, toUint32,
+    toUint8, toUpperCase, trim, trimLeft, trimRight, trimString, truncate,
+    typeOf, unique, unshift, unwatch, value, valueOf, version, watch,
+    wrapInChars, writable, wsStr
 */
 
 /**
@@ -2829,49 +2828,9 @@
         return inputArg;
     };
 
-    (function (pOToString) {
-        var oldLoad,
-            getBody,
-            createIframe,
-            body;
-
-        if (typeof window === 'function' || typeof window === 'object') {
-            getBody = function () {
-                return window.document.body || window.document.getElementsByTagName('body')[0];
-            };
-
-            createIframe = function () {
-                var iframe = window.document.createElement('iframe');
-
-                iframe.style.display = 'none';
-                iframe.application = 'yes';
-                body.appendChild(iframe);
-                window.frames[$toLength(window.frames.length) - 1].document.write('<script>parent.uxTest = { Array: Array };<\/script>');
-                supportsXFrameClass = $call(pOToString, new window.uxTest.Array(1, 2, 3)) === stringTagArray;
-                body.removeChild(iframe);
-                try {
-                    delete window.uxTest;
-                } catch (e) {
-                    window.uxTest = Undefined;
-                }
-            };
-
-            body = getBody();
-            if (!body) {
-                oldLoad = window.onload;
-                window.onload = function (evt) {
-                    try {
-                        oldLoad(evt);
-                    } catch (ignore) {}
-
-                    body = getBody();
-                    createIframe();
-                };
-            } else {
-                createIframe();
-            }
-        }
-    }(base.Object.toString));
+    if (typeof window === 'function' || typeof window === 'object') {
+        supportsXFrameClass = isStrictMode;
+    }
 
     /**
      * @private
