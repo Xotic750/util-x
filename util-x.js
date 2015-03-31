@@ -37,11 +37,11 @@
     ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject, ToString,
     TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32, UWORD8, Uint8Array,
     WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor,
-    appendChild, apply, areSameClass, areSameTypeOf, argNames, assert, assign,
-    bind, body, c, call, captureStackTrace, ceil, charAt, charCodeAt, clamp,
-    clampToInt, classId, clipDuplicates, codePointAt, concat, configurable,
-    console, constructor, contains, copyWithin, countCharacter, create,
-    createElement, customError, customErrorReplacer, debug, deepEqual,
+    appendChild, application, apply, areSameClass, areSameTypeOf, argNames,
+    assert, assign, bind, body, c, call, captureStackTrace, ceil, charAt,
+    charCodeAt, clamp, clampToInt, classId, clipDuplicates, codePointAt, concat,
+    configurable, console, constructor, contains, copyWithin, countCharacter,
+    create, createElement, customError, customErrorReplacer, debug, deepEqual,
     deepFreeze, deepStrictEqual, defineGetter, defineProperties, defineProperty,
     defineSetter, display, document, doesNotThrow, e, endsWith, enumerable,
     equal, escapeRegex, every, exec, execSlice, expected, exports, factory, fail,
@@ -56,27 +56,27 @@
     isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen, isFunction,
     isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction, isNegative,
     isNumber, isNumeric, isOdd, isPlainObject, isPositive, isPrimitive,
-    isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isUint, isUint16,
-    isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIn, lastIndex,
-    lastIndexOf, length, link, localeCompare, log, lookupGetter, lookupSetter,
-    map, match, max, message, methods, min, minus, modulo, multiline, name, noop,
-    normaliseErrorIEToStringOff, normaliseErrorIEToStringOn,
-    normaliseErrorIEToStringState, normalize, notDeepEqual, notDeepStrictEqual,
-    notEqual, notOk, notStrictEqual, now, of, ok, onload, operator, outRange,
-    padLeadingChar, parse, parseFloat, parseInt, plus, pop, pow, powerSet,
-    preventExtensions, propertyIsEnumerable, proto, prototype, push, random,
-    randomInt, reduce, reduceRight, regex, remove, removeChild, repeat, replace,
-    replaceAll, returnArgs, reverse, round, s, seal, search, sentinel, set,
-    setPrototypeOf, shift, shuffle, sign, slice, some, sort, source, splice,
-    split, sqrt, stableSort, stack, stackStartFunction, stacktrace, startsWith,
-    sticky, strictEqual, stringify, style, substr, substring, swapItems, test,
-    throws, times, toExponential, toFixed, toISOString, toInt16, toInt32, toInt8,
-    toInteger, toJSON, toLength, toLocaleLowerCase, toLocaleString,
-    toLocaleUpperCase, toLowerCase, toObject, toPrecision, toPrimitive, toSource,
-    toString, toStringTag, toUint, toUint16, toUint32, toUint8, toUpperCase,
-    trim, trimLeft, trimRight, trimString, truncate, typeOf, unique, unshift,
-    unwatch, value, valueOf, version, watch, wrapInChars, writable, wsStr, write,
-    application, uxTest
+    isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isSymbol, isUint,
+    isUint16, isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIn,
+    lastIndex, lastIndexOf, length, link, localeCompare, log, lookupGetter,
+    lookupSetter, map, match, max, message, methods, min, minus, modulo,
+    multiline, name, noop, normaliseErrorIEToStringOff,
+    normaliseErrorIEToStringOn, normaliseErrorIEToStringState, normalize,
+    notDeepEqual, notDeepStrictEqual, notEqual, notOk, notStrictEqual, now, of,
+    ok, onload, operator, outRange, padLeadingChar, parse, parseFloat, parseInt,
+    plus, pop, pow, powerSet, preventExtensions, propertyIsEnumerable, proto,
+    prototype, push, random, randomInt, reduce, reduceRight, regex, remove,
+    removeChild, repeat, replace, replaceAll, returnArgs, reverse, round, s,
+    seal, search, sentinel, set, setPrototypeOf, shift, shuffle, sign, slice,
+    some, sort, source, splice, split, sqrt, stableSort, stack,
+    stackStartFunction, stacktrace, startsWith, sticky, strictEqual, stringify,
+    style, substr, substring, swapItems, test, throws, times, toExponential,
+    toFixed, toISOString, toInt16, toInt32, toInt8, toInteger, toJSON, toLength,
+    toLocaleLowerCase, toLocaleString, toLocaleUpperCase, toLowerCase, toObject,
+    toPrecision, toPrimitive, toSource, toString, toStringTag, toUint, toUint16,
+    toUint32, toUint8, toUpperCase, trim, trimLeft, trimRight, trimString,
+    truncate, typeOf, unique, unshift, unwatch, uxTest, value, valueOf, version,
+    watch, wrapInChars, writable, write, wsStr
 */
 
 /**
@@ -165,6 +165,7 @@
         stringTagString = '[object String]',
         stringTagBoolean = '[object Boolean]',
         stringTagNumber = '[object Number]',
+        stringTagSymbol = '[object Symbol]',
 
 
         //stringTagMap = '[object Map]',
@@ -219,9 +220,9 @@
         protoNumber,
         protoBoolean,
         protoString,
-        protoDate,
-        protoRegExp,
-        protoArray,
+        //protoDate,
+        //protoRegExp,
+        //protoArray,
 
         protoError,
         protoTypeError,
@@ -301,10 +302,16 @@
         $reverse,
         $hasOwn,
         $repeat,
+        $isNumber,
+        $isBoolean,
+        $isString,
+        $isError,
+        $isDate,
         $isNative,
         $isArguments,
         $isArray,
         $isRegExp,
+        $isSymbol,
         $isInteger,
         $isSafeInteger,
         $isNumeric,
@@ -1728,9 +1735,9 @@
     protoNumber = base.Number.proto;
     protoBoolean = base.Boolean.proto;
     protoString = base.String.proto;
-    protoDate = base.Date.proto;
-    protoRegExp = base.RegExp.proto;
-    protoArray = base.Array.proto;
+    //protoDate = base.Date.proto;
+    //protoRegExp = base.RegExp.proto;
+    //protoArray = base.Array.proto;
 
     protoError = base.Error.proto;
     protoTypeError = base.TypeError.proto;
@@ -2003,7 +2010,7 @@
      * @function module:util-x~$toString
      * @param {*} inputArg
      * @returns {string}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.8
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tostring
      */
     function $toString(inputArg) {
         var val;
@@ -2013,6 +2020,10 @@
         } else if ($isUndefined(inputArg)) {
             val = 'undefined';
         } else {
+            if (typeof inputArg === 'symbol') {
+                throw new CTypeError('Cannot convert symbol to string');
+            }
+
             val = $String(inputArg);
         }
 
@@ -2476,7 +2487,7 @@
     function $isPrimitive(inputArg) {
         var type = typeof inputArg;
 
-        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number';
+        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || type === 'symbol';
     }
 
     /**
@@ -2822,8 +2833,7 @@
         var oldLoad,
             getBody,
             createIframe,
-            body,
-            content;
+            body;
 
         if (typeof window === 'function' || typeof window === 'object') {
             getBody = function () {
@@ -2836,8 +2846,8 @@
                 iframe.style.display = 'none';
                 iframe.application = 'yes';
                 body.appendChild(iframe);
-                content = window.frames[$toLength(window.frames.length) - 1];
-                content.document.write('<script>parent.Math.uxTest = { Array: Array };<\/script>');
+                // attach to Math object as it can be deleted from this object in old IE
+                window.frames[$toLength(window.frames.length) - 1].document.write('<script>parent.Math.uxTest = { Array: Array };<\/script>');
                 supportsXFrameClass = $call(pOToString, new window.Math.uxTest.Array(1, 2, 3)) === stringTagArray;
                 delete window.Math.uxTest;
                 body.removeChild(iframe);
@@ -2858,7 +2868,7 @@
                 createIframe();
             }
         }
-    }(Object.prototype.toString));
+    }(base.Object.toString));
 
     /**
      * @private
@@ -2900,17 +2910,40 @@
     /**
      * Returns true if the operand inputArg is a boolean.
      *
-     * @function module:util-x~exports.Boolean.isBoolean
+     * @private
+     * @function module:util-x~$isBoolean
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Boolean.isBoolean = (function (pOToString, strBool) {
+    $isBoolean = (function (pOToString, strBool) {
         return function (inputArg) {
             return typeof inputArg === 'boolean' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagBoolean || $checkXFrame(inputArg, strBool)));
         };
     }(base.Object.toString, $toString(CBoolean)));
 
+    /**
+     * Returns true if the operand inputArg is a boolean.
+     *
+     * @function module:util-x~exports.Boolean.isBoolean
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Boolean.isBoolean = $isBoolean;
     exports.Boolean.isBoolean.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a Number.
+     *
+     * @private
+     * @function module:util-x~$isNumber
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isNumber = (function (pOToString, strNum) {
+        return function (inputArg) {
+            return typeof inputArg === 'number' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagNumber || $checkXFrame(inputArg, strNum)));
+        };
+    }(base.Object.toString, $toString(CNumber)));
 
     /**
      * Returns true if the operand inputArg is a Number.
@@ -2919,13 +2952,31 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Number.isNumber = (function (pOToString, strNum) {
-        return function (inputArg) {
-            return typeof inputArg === 'number' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagNumber || $checkXFrame(inputArg, strNum)));
-        };
-    }(base.Object.toString, $toString(CNumber)));
-
+    exports.Number.isNumber = $isNumber;
     exports.Number.isNumber.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a string.
+     *
+     * @private
+     * @function module:util-x~$isString
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isString = (function (pOToString, strStr) {
+        var hasBug;
+
+        if ($call(pOToString, protoString) !== stringTagString) {
+            hasBug = true;
+        }
+
+        return function (inputArg) {
+            return typeof inputArg === 'string' ||
+                (hasBug && inputArg === protoString) ||
+                (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') &&
+                    ($call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
+        };
+    }(base.Object.toString, $toString(CString)));
 
     /**
      * Returns true if the operand inputArg is a string.
@@ -2934,13 +2985,30 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.String.isString = (function (pOToString, strStr) {
-        return function (inputArg) {
-            return typeof inputArg === 'string' || (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && ($call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
-        };
-    }(base.Object.toString, $toString(CString)));
-
+    exports.String.isString = $isString;
     exports.String.isString.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a symbol.
+     *
+     * @private
+     * @function module:util-x~$isSymbol
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isSymbol = function (inputArg) {
+        return typeof inputArg === 'symbol';
+    };
+
+    /**
+     * Returns true if the operand inputArg is a symbol.
+     *
+     * @function module:util-x~exports.Object.isSymbol
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Object.isSymbol = $isSymbol;
+    exports.Object.isSymbol.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -2961,13 +3029,15 @@
     }(base.Object.toString, $toString(CArray)));
 
     /**
+     * Shortcut
      * Returns true if the operand inputArg is an {@link Arguments arguments} object.
      *
-     * @function module:util-x~exports.Object.isArguments
+     * @private
+     * @function module:util-x~$isArguments
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Object.isArguments = (function (pOToString) {
+    $isArguments = (function (pOToString) {
         var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
             fn;
 
@@ -2986,18 +3056,15 @@
         return fn;
     }(base.Object.toString));
 
-    exports.Object.isArguments.argNames = ['inputArg'];
-
     /**
-     * Shortcut
      * Returns true if the operand inputArg is an {@link Arguments arguments} object.
      *
-     * @private
-     * @function module:util-x~.$isArguments
+     * @function module:util-x~exports.Object.isArguments
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $isArguments = exports.Object.isArguments;
+    exports.Object.isArguments = $isArguments;
+    exports.Object.isArguments.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -3046,17 +3113,40 @@
     /**
      * Returns true if the operand inputArg is an error.
      *
-     * @function module:util-x~exports.Error.isError
+     * @private
+     * @function module:util-x~$isError
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Error.isError = (function (pOToString, strErr) {
+    $isError = (function (pOToString, strErr) {
         return function (inputArg) {
             return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'message') && ($call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr));
         };
     }(base.Object.toString, $toString(CError)));
 
+    /**
+     * Returns true if the operand inputArg is an error.
+     *
+     * @function module:util-x~exports.Error.isError
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Error.isError = $isError;
     exports.Error.isError.argNames = ['inputArg'];
+
+    /**
+     * Returns true if the operand inputArg is a Date object.
+     *
+     * @private
+     * @function module:util-x~$isDate
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isDate = (function (pOToString, strDate) {
+        return function (inputArg) {
+            return !$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagDate || $checkXFrame(inputArg, strDate));
+        };
+    }(base.Object.toString, $toString(CDate)));
 
     /**
      * Returns true if the operand inputArg is a Date object.
@@ -3065,12 +3155,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    exports.Date.isDate = (function (pOToString, strDate) {
-        return function (inputArg) {
-            return !$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagDate || $checkXFrame(inputArg, strDate));
-        };
-    }(base.Object.toString, $toString(CDate)));
-
+    exports.Date.isDate = $isDate;
     exports.Date.isDate.argNames = ['inputArg'];
 
     /**
@@ -3678,128 +3763,41 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.4.2
      */
     $toStringTag = (function (pOToString) {
-        return $decide(
-            // test
-            function () {
-                $affirm.ok(!testShims, 'testing shim');
-                $affirm.strictEqual($call(pOToString, protoRegExp), stringTagRegExp, 'test1');
-                $affirm.strictEqual($call(pOToString, protoString), stringTagString, 'test2');
-                $affirm.strictEqual($call(pOToString, protoNumber), stringTagNumber, 'test3');
-                $affirm.strictEqual($call(pOToString, protoBoolean), stringTagBoolean, 'test3');
-                $affirm.strictEqual($call(pOToString, protoError), stringTagError, 'test4');
-                $affirm.strictEqual($call(pOToString, protoFunction), stringTagFunction, 'test5');
-                $affirm.strictEqual($call(pOToString, protoArray), stringTagArray, 'test6');
-                $affirm.strictEqual($call(pOToString, $returnArgs()), stringTagArguments, 'test7');
-            },
+        return function (inputArg) {
+            var val;
 
-            // pass
-            function () {
-                function toC(inputArg) {
-                    return $call(pOToString, inputArg);
-                }
+            if ($isUndefined(inputArg)) {
+                val = stringTagUndefined;
+            } else if (inputArg === null) {
+                val = stringTagNull;
+            } else if ($isArguments(inputArg)) {
+                val = stringTagArguments;
+            } else if ($isArray(inputArg)) {
+                val = stringTagArray;
+            } else if ($isString(inputArg)) {
+                val = stringTagString;
+            } else if ($isNumber(inputArg)) {
+                val = stringTagNumber;
+            } else if ($isBoolean(inputArg)) {
+                val = stringTagBoolean;
+            } else if ($isRegExp(inputArg)) {
+                val = stringTagRegExp;
+            } else if ($isDate(inputArg)) {
+                val = stringTagDate;
+            } else if ($isError(inputArg)) {
+                val = stringTagError;
+            } else if ($isFunction(inputArg)) {
+                val = stringTagFunction;
+            } else if ($isSymbol(inputArg)) {
+                val = stringTagSymbol;
+            } else {
+                val = $call(pOToString, inputArg);
+            }
 
-                return $decide(
-                    //test
-                    function () {
-                        $affirm.doesNotThrow(function () {
-                            toC();
-                        }, 'test1');
-
-                        $affirm.strictEqual(toC(), stringTagUndefined, 'test2');
-
-                        $affirm.doesNotThrow(function () {
-                            toC(Undefined);
-                        }, 'test3');
-
-                        $affirm.strictEqual(toC(Undefined), stringTagUndefined, 'test3');
-
-                        $affirm.doesNotThrow(function () {
-                            toC(null);
-                        }, 'test4');
-
-                        $affirm.strictEqual(toC(null), stringTagNull, 'test5');
-                    },
-
-                    // pass
-                    function () {
-                        return toC;
-                    },
-
-                    // fail
-                    function () {
-                        return function (inputArg) {
-                            var val;
-
-                            if (inputArg === null) {
-                                val = stringTagNull;
-                            } else if ($isUndefined(inputArg)) {
-                                val = stringTagUndefined;
-                            } else {
-                                val = toC(inputArg);
-                            }
-
-                            return val;
-                        };
-                    },
-
-                    // argNames
-                    ['inputArg'],
-
-                    // message
-                    '$toStringTag basic patch'
-                );
-            },
-
-            // fail
-            function () {
-                return function (inputArg) {
-                    var object,
-                        val;
-
-                    if ($isUndefined(inputArg)) {
-                        val = stringTagUndefined;
-                    } else if (inputArg === null) {
-                        val = stringTagNull;
-                    } else if (!$isPrimitive(inputArg) && !$call(pHasOwn, inputArg, 'arguments') && $call(pHasOwn, inputArg, 'callee') && $call(pHasOwn, inputArg, 'length')) {
-                        val = stringTagArguments;
-                    } else {
-                        object = $Object(inputArg);
-                        if ($instanceOf(object, CNumber)) {
-                            val = stringTagNumber;
-                        } else if ($instanceOf(object, CBoolean) || object === protoBoolean) {
-                            val = stringTagBoolean;
-                        } else if ($instanceOf(object, CString) || object === protoString) {
-                            val = stringTagString;
-                        } else if ($instanceOf(object, CDate) || object === protoDate) {
-                            val = stringTagDate;
-                        } else if ($instanceOf(object, CRegExp) || object === protoRegExp) {
-                            val = stringTagRegExp;
-                        } else if ($instanceOf(object, CError) || object === protoError) {
-                            val = stringTagError;
-                        } else if ($instanceOf(object, CArray) || object === protoArray) {
-                            val = stringTagArray;
-                        } else if ($instanceOf(object, CFunction) || object === protoFunction) {
-                            val = stringTagFunction;
-                        } else if (object === protoObject) {
-                            val = stringTagObject;
-                        }
-                    }
-
-                    if (!val) {
-                        val = $call(pOToString, object);
-                    }
-
-                    return val;
-                };
-            },
-
-            // argNames
-            ['inputArg'],
-
-            // message
-            '$toStringTag extended patch'
-        );
+            return val;
+        };
     }(base.Object.toString));
+
     /**
      * Indicates if the environment suffers the "don't enum bug".
      * True if it does, otherwise false.
@@ -4282,6 +4280,7 @@
      * @function module:util-x~$toPrimitive
      * @param {*} [inputArg] The object to convert into a string.
      * @returns {string} A string representing the object's valueOf.
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
      */
     function $toPrimitive(inputArg) {
         var val;
