@@ -219,9 +219,9 @@
         protoNumber,
         protoBoolean,
         protoString,
-        //protoDate,
-        //protoRegExp,
-        //protoArray,
+        protoDate,
+        protoRegExp,
+        protoArray,
 
         protoError,
         protoTypeError,
@@ -1734,9 +1734,9 @@
     protoNumber = base.Number.proto;
     protoBoolean = base.Boolean.proto;
     protoString = base.String.proto;
-    //protoDate = base.Date.proto;
-    //protoRegExp = base.RegExp.proto;
-    //protoArray = base.Array.proto;
+    protoDate = base.Date.proto;
+    protoRegExp = base.RegExp.proto;
+    protoArray = base.Array.proto;
 
     protoError = base.Error.proto;
     protoTypeError = base.TypeError.proto;
@@ -2878,8 +2878,15 @@
      * @returns {boolean}
      */
     $isBoolean = (function (pOToString, strBool) {
+        var hasBug;
+
+        if ($call(pOToString, protoBoolean) !== stringTagBoolean) {
+            hasBug = true;
+        }
+
         return function (inputArg) {
-            return typeof inputArg === 'boolean' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagBoolean || $checkXFrame(inputArg, strBool)));
+            return typeof inputArg === 'boolean' ||
+                (!$isPrimitive(inputArg) && ((hasBug && inputArg === protoBoolean) || $call(pOToString, inputArg) === stringTagBoolean || $checkXFrame(inputArg, strBool)));
         };
     }(base.Object.toString, $toString(CBoolean)));
 
@@ -2902,8 +2909,15 @@
      * @returns {boolean}
      */
     $isNumber = (function (pOToString, strNum) {
+        var hasBug;
+
+        if ($call(pOToString, protoNumber) !== stringTagNumber) {
+            hasBug = true;
+        }
+
         return function (inputArg) {
-            return typeof inputArg === 'number' || (!$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagNumber || $checkXFrame(inputArg, strNum)));
+            return typeof inputArg === 'number' ||
+                (!$isPrimitive(inputArg) && ((hasBug && inputArg === protoNumber) || $call(pOToString, inputArg) === stringTagNumber || $checkXFrame(inputArg, strNum)));
         };
     }(base.Object.toString, $toString(CNumber)));
 
@@ -2984,8 +2998,15 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
      */
     $isArray = (function (pOToString, strArr) {
+        var hasBug;
+
+        if ($call(pOToString, protoArray) !== stringTagArray) {
+            hasBug = true;
+        }
+
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') && ($call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr));
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') &&
+                ((hasBug && inputArg === protoArray) || $call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr));
         };
     }(base.Object.toString, $toString(CArray)));
 
@@ -3038,11 +3059,17 @@
      */
     $isRegExp = (function (pOToString, strRx) {
         var isRegExp = $call(pOToString, new CRegExp('x')) === stringTagRegExp,
+            hasBug,
             fn;
 
         if (isRegExp) {
+            if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
+                hasBug = true;
+            }
+
             fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') && ($call(pOToString, inputArg) === stringTagRegExp || $checkXFrame(inputArg, strRx));
+                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') &&
+                    ((hasBug && inputArg === protoRegExp) || $call(pOToString, inputArg) === stringTagRegExp || $checkXFrame(inputArg, strRx));
             };
         } else {
             fn = function (inputArg) {
@@ -3111,8 +3138,14 @@
      * @returns {boolean}
      */
     $isDate = (function (pOToString, strDate) {
+        var hasBug;
+
+        if ($call(pOToString, protoDate) !== stringTagArray) {
+            hasBug = true;
+        }
+
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && ($call(pOToString, inputArg) === stringTagDate || $checkXFrame(inputArg, strDate));
+            return !$isPrimitive(inputArg) && ((hasBug && inputArg === protoDate) || $call(pOToString, inputArg) === stringTagDate || $checkXFrame(inputArg, strDate));
         };
     }(base.Object.toString, $toString(CDate)));
 
