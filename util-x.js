@@ -165,7 +165,7 @@
         stringTagString = '[object String]',
         stringTagBoolean = '[object Boolean]',
         stringTagNumber = '[object Number]',
-        stringTagSymbol = '[object Symbol]',
+        //stringTagSymbol = '[object Symbol]',
 
 
         //stringTagMap = '[object Map]',
@@ -2846,11 +2846,14 @@
                 iframe.style.display = 'none';
                 iframe.application = 'yes';
                 body.appendChild(iframe);
-                // attach to Math object as it can be deleted from this object in old IE
-                window.frames[$toLength(window.frames.length) - 1].document.write('<script>parent.Math.uxTest = { Array: Array };<\/script>');
-                supportsXFrameClass = $call(pOToString, new window.Math.uxTest.Array(1, 2, 3)) === stringTagArray;
-                delete window.Math.uxTest;
+                window.frames[$toLength(window.frames.length) - 1].document.write('<script>parent.uxTest = { Array: Array };<\/script>');
+                supportsXFrameClass = $call(pOToString, new window.uxTest.Array(1, 2, 3)) === stringTagArray;
                 body.removeChild(iframe);
+                try {
+                    delete window.uxTest;
+                } catch (e) {
+                    window.uxTest = Undefined;
+                }
             };
 
             body = getBody();
@@ -2972,9 +2975,8 @@
 
         return function (inputArg) {
             return typeof inputArg === 'string' ||
-                (hasBug && inputArg === protoString) ||
                 (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') &&
-                    ($call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
+                    ((hasBug && inputArg === protoString) || $call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
         };
     }(base.Object.toString, $toString(CString)));
 
@@ -3119,8 +3121,15 @@
      * @returns {boolean}
      */
     $isError = (function (pOToString, strErr) {
+        var hasBug;
+
+        if ($call(pOToString, protoError) !== stringTagError) {
+            hasBug = true;
+        }
+
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'message') && ($call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr));
+            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'message') &&
+                ((hasBug && inputArg === protoError) || $call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr));
         };
     }(base.Object.toString, $toString(CError)));
 
@@ -3766,31 +3775,37 @@
         return function (inputArg) {
             var val;
 
-            if ($isUndefined(inputArg)) {
-                val = stringTagUndefined;
-            } else if (inputArg === null) {
-                val = stringTagNull;
-            } else if ($isArguments(inputArg)) {
-                val = stringTagArguments;
-            } else if ($isArray(inputArg)) {
-                val = stringTagArray;
-            } else if ($isString(inputArg)) {
-                val = stringTagString;
-            } else if ($isNumber(inputArg)) {
-                val = stringTagNumber;
-            } else if ($isBoolean(inputArg)) {
-                val = stringTagBoolean;
-            } else if ($isRegExp(inputArg)) {
-                val = stringTagRegExp;
-            } else if ($isDate(inputArg)) {
-                val = stringTagDate;
-            } else if ($isError(inputArg)) {
-                val = stringTagError;
-            } else if ($isFunction(inputArg)) {
-                val = stringTagFunction;
-            } else if ($isSymbol(inputArg)) {
-                val = stringTagSymbol;
+            if ($isPrimitive(inputArg)) {
+                if ($isUndefined(inputArg)) {
+                    val = stringTagUndefined;
+                } else if (inputArg === null) {
+                    val = stringTagNull;
+                }
+            } else if ($call(pHasOwn, inputArg, 'length')) {
+                if ($isArguments(inputArg)) {
+                    val = stringTagArguments;
+                } else if ($isArray(inputArg)) {
+                    val = stringTagArray;
+                } else if ($isString(inputArg)) {
+                    val = stringTagString;
+                } else if ($isFunction(inputArg)) {
+                    val = stringTagFunction;
+                }
             } else {
+                if ($isNumber(inputArg)) {
+                    val = stringTagNumber;
+                } else if ($isBoolean(inputArg)) {
+                    val = stringTagBoolean;
+                } else if ($isRegExp(inputArg)) {
+                    val = stringTagRegExp;
+                } else if ($isDate(inputArg)) {
+                    val = stringTagDate;
+                } else if ($isError(inputArg)) {
+                    val = stringTagError;
+                }
+            }
+
+            if (!val) {
                 val = $call(pOToString, inputArg);
             }
 
@@ -4981,12 +4996,12 @@
     function $typeOf(inputArg) {
         var rtn;
 
-        if ($isRegExp(inputArg)) {
-            rtn = 'object';
-        } else if ($isFunction(inputArg)) {
+        if ($isPrimitive(inputArg)) {
+            rtn = typeof inputArg;
+        } else if (!$isRegExp(inputArg) && $isFunction(inputArg)) {
             rtn = 'function';
         } else {
-            rtn = typeof inputArg;
+            rtn = 'object';
         }
 
         return rtn;
