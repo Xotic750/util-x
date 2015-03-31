@@ -14343,6 +14343,7 @@
                     // test
                     function () {
                         $affirm.strictEqual($call(base.String.substr, '0b', -1), 'b', 'negative substr bug');
+                        $affirm.strictEqual($call(base.String.substr, 'abcdef', 1, Undefined), 'bcdef', 'stop is undefined bug');
                     },
 
                     // pass
