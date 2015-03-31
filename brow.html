@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="./mocha.css" />
 </head>
 <body>
+  <iframe id="testFrame" application="yes" style="display:none" src="javascript:parent.testObject = { Number: Number, String: String, Boolean: Boolean,Array: Array, Date: Date, RegExp: RegExp, Error: Error, Arg: (function() {return arguments;}()) };"></iframe>
   <div id="mocha"></div>
   <script type="text/javascript" src="./mocha.js"></script>
   <script>
