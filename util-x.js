@@ -232,6 +232,7 @@
         protoURIError,
 
         $Object,
+        $Number,
 
         $min,
         $max,
@@ -294,6 +295,7 @@
 
         //iBind,
 
+        $toNumber,
         $instanceOf,
         $returnThis,
         $unshift,
@@ -1780,9 +1782,22 @@
      * @function module:util-x~$Object
      * @param {*} inputArg
      * @throws TypeError if inputArg is null or undefined
-     * @returns {*}
+     * @returns {Object}
      */
     $Object = base.Object.Ctr;
+
+    /**
+     * Shortcut
+     * The Number constructor will typecast the argument to a number.
+     * Keeps jslint happy
+     *
+     * @private
+     * @function module:util-x~$Number
+     * @param {*} inputArg
+     * @throws TypeError if inputArg is null or undefined
+     * @returns {number}
+     */
+    $Number = base.Number.Ctr;
 
     /**
      * Shortcut
@@ -1949,40 +1964,6 @@
 
     /**
      * Shortcut
-     * Replaced later
-     * Returns true if the argument coerces to NaN, and otherwise returns false.
-     *
-     * @private
-     * @function module:util-x~$isNaN
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.4
-     */
-    $isNaN = function (inputArg) {
-        var num = +inputArg;
-
-        return !$strictEqual(num, num);
-    };
-
-    /**
-     * Shortcut
-     * Replaced later
-     * Returns false if the argument coerces to NaN, +Infinity, or -Infinity, and otherwise returns true.
-     *
-     * @private
-     * @function module:util-x~$isFinite
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.5
-     */
-    $isFinite = function (inputArg) {
-        var num = +inputArg;
-
-        return $strictEqual(num, num) && num !== Infinity && num !== -Infinity;
-    };
-
-    /**
-     * Shortcut
      * Returns true if the operand inputArg is undefined.
      *
      * @private
@@ -2065,6 +2046,179 @@
     }
 
     /**
+     * Returns true if the operand inputArg is a primitive object.
+     *
+     * @private
+     * @function module:util-x~isPrimitive
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     */
+    function $isPrimitive(inputArg) {
+        var type = typeof inputArg;
+
+        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || type === 'symbol';
+    }
+
+    /**
+     * Returns true if the operand inputArg is a primitive object.
+     *
+     * @function module:util-x~exports.Object.isPrimitive
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     */
+    exports.Object.isPrimitive = $isPrimitive;
+    exports.Object.isPrimitive.argNames = ['inputArg'];
+
+    /**
+     * Shortcut
+     * Abstract operation that coerces its argument to a primitive value.
+     *
+     * @private
+     * @function module:util-x~$toPrimitive
+     * @param {*} [inputArg] The object to convert into a string.
+     * @returns {string} A string representing the object's valueOf.
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
+     */
+    function $toPrimitive(inputArg) {
+        var val;
+
+        if ($isPrimitive(inputArg)) {
+            val = inputArg;
+        } else {
+            val = inputArg.valueOf();
+        }
+
+        if (val === 0 && 1 / val === -Infinity) {
+            val = '-0';
+        } else if (!$isPrimitive(val)) {
+            val = $toString(val);
+        }
+
+        return val;
+    }
+
+    /**
+     * Abstract operation that coerces its argument to a primitive value.
+     *
+     * @function module:util-x~exports.Object.toPrimitive
+     * @param {*} [inputArg] The object to convert into a string.
+     * @returns {string} A string representing the object's valueOf.
+     */
+    exports.Object.toPrimitive = $toPrimitive;
+    exports.Object.toPrimitive.argNames = ['inputArg'];
+
+    /**
+     * The abstract operation converts its argument to a value of type number but fixes some environment bugs.
+     *
+     * @private
+     * @function module:util-x~$toNumber
+     * @param {*} inputArg The argument to be converted to an object.
+     * @throws {TypeError} If inputArg is a symbol.
+     * @throws {TypeError} If inputArg is a was not converted to a primitive.
+     * @returns {Object} Value of inputArg as type number.
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tonumber
+     */
+    $toNumber = (function () {
+        var tmp,
+            fn;
+
+        // Opera 9 fails this
+        try {
+            tmp = {};
+            tmp = +tmp;
+            tmp = {valueOf: ''};
+            tmp = +tmp;
+            tmp = {valueOf: '1'};
+            tmp = +tmp;
+            tmp = {valueOf: 1};
+            tmp = +tmp;
+            tmp = {valueOf: 1.1};
+            tmp = +tmp;
+            /*jshint -W047 */
+            tmp = {valueOf: 1.};
+            /*jshint +W047 */
+            tmp = +tmp;
+
+            fn = function (inputArg) {
+                return +inputArg;
+            };
+        } catch (eToNumber) {
+            fn = function (inputArg) {
+                var type = typeof inputArg,
+                    prim,
+                    val;
+
+                if (type === 'undefined') {
+                    val = NaN;
+                } else if (inputArg === null) {
+                    val = +0;
+                } else if (type === 'boolean') {
+                    if (inputArg) {
+                        val = 1;
+                    } else {
+                        val = +0;
+                    }
+                } else if (type === 'number') {
+                    val = inputArg;
+                } else if (type === 'string') {
+                    val = $Number(inputArg);
+                } else {
+                    if (type === 'symbol') {
+                        throw new TypeError('Can not convert symbol to a number');
+                    }
+
+                    prim = $toPrimitive(inputArg);
+                    if (!$isPrimitive(prim)) {
+                        throw new TypeError('Object did not convert to a primitive');
+                    }
+
+                    val = fn(prim);
+                }
+
+                return val;
+            };
+        }
+
+        return fn;
+    }());
+
+    /**
+     * Shortcut
+     * Replaced later
+     * Returns true if the argument coerces to NaN, and otherwise returns false.
+     *
+     * @private
+     * @function module:util-x~$isNaN
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.4
+     */
+    $isNaN = function (inputArg) {
+        var num = $toNumber(inputArg);
+
+        return !$strictEqual(num, num);
+    };
+
+    /**
+     * Shortcut
+     * Replaced later
+     * Returns false if the argument coerces to NaN, +Infinity, or -Infinity, and otherwise returns true.
+     *
+     * @private
+     * @function module:util-x~$isFinite
+     * @param {*} inputArg
+     * @returns {boolean}
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.5
+     */
+    $isFinite = function (inputArg) {
+        var num = $toNumber(inputArg);
+
+        return $strictEqual(num, num) && num !== Infinity && num !== -Infinity;
+    };
+
+    /**
      * The function evaluates the passed value and converts it to an integer.
      *
      * @private
@@ -2074,7 +2228,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
      */
     function $toInteger(inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if ($strictEqual(number, number)) {
@@ -2169,7 +2323,7 @@
             length = MAX_SAFE_INTEGER - 1;
         }
 
-        inputArg = +inputArg;
+        inputArg = $toNumber(inputArg);
 
         return $isLength(inputArg) && inputArg < length;
     }
@@ -2475,32 +2629,6 @@
 
         return val;
     };
-
-    /**
-     * Returns true if the operand inputArg is a primitive object.
-     *
-     * @private
-     * @function module:util-x~isPrimitive
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
-     */
-    function $isPrimitive(inputArg) {
-        var type = typeof inputArg;
-
-        return type === 'undefined' || inputArg === null || type === 'boolean' || type === 'string' || type === 'number' || type === 'symbol';
-    }
-
-    /**
-     * Returns true if the operand inputArg is a primitive object.
-     *
-     * @function module:util-x~exports.Object.isPrimitive
-     * @param {*} inputArg
-     * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
-     */
-    exports.Object.isPrimitive = $isPrimitive;
-    exports.Object.isPrimitive.argNames = ['inputArg'];
 
     /**
      * @private
@@ -4282,44 +4410,6 @@
     exports.Number.clamp.argNames = ['number', 'min', 'max'];
 
     /**
-     * Shortcut
-     * Abstract operation that coerces its argument to a primitive value.
-     *
-     * @private
-     * @function module:util-x~$toPrimitive
-     * @param {*} [inputArg] The object to convert into a string.
-     * @returns {string} A string representing the object's valueOf.
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
-     */
-    function $toPrimitive(inputArg) {
-        var val;
-
-        if ($isPrimitive(inputArg)) {
-            val = inputArg;
-        } else {
-            val = inputArg.valueOf();
-        }
-
-        if (val === 0 && 1 / val === -Infinity) {
-            val = '-0';
-        } else if (!$isPrimitive(val)) {
-            val = $toString(val);
-        }
-
-        return val;
-    }
-
-    /**
-     * Abstract operation that coerces its argument to a primitive value.
-     *
-     * @function module:util-x~exports.Object.toPrimitive
-     * @param {*} [inputArg] The object to convert into a string.
-     * @returns {string} A string representing the object's valueOf.
-     */
-    exports.Object.toPrimitive = $toPrimitive;
-    exports.Object.toPrimitive.argNames = ['inputArg'];
-
-    /**
      * Returns true if the operand inputArg is a number which is positive.
      *
      * @function module:util-x~exports.Number.isPositive
@@ -4491,7 +4581,7 @@
             max = NaN;
         }
 
-        return +$toPrimitive(value) >= +min && value <= +max;
+        return +$toPrimitive(value) >= $toNumber(min) && value <= $toNumber(max);
     };
 
     exports.Number.inRange.argNames = ['value', 'min', 'max'];
@@ -4534,9 +4624,9 @@
             return true;
         }
 
-        value = +value;
+        value = $toNumber(value);
 
-        return value <= +min || value >= +max;
+        return value <= $toNumber(min) || value >= $toNumber(max);
     };
 
     exports.Number.outRange.argNames = ['value', 'min', 'max'];
@@ -5762,7 +5852,7 @@
         // fail
         function () {
             return function (value) {
-                return +value && (+(value >= 0) || -1);
+                return $toNumber(value) && ($toNumber(value >= 0) || -1);
             };
         },
 
@@ -5865,7 +5955,7 @@
      * @returns {number}
      */
     function toInt32(inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -5988,7 +6078,7 @@
      * @returns {number}
      */
     exports.Number.toUint = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -6037,7 +6127,7 @@
      * @returns {number}
      */
     exports.Number.toUint32 = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -6087,7 +6177,7 @@
      * @returns {number}
      */
     exports.Number.toInt16 = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -6129,7 +6219,7 @@
      * @returns {number}
      */
     exports.Number.toUint16 = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -6166,7 +6256,7 @@
      * @returns {number}
      */
     exports.Number.toInt8 = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -6208,7 +6298,7 @@
      * @returns {number}
      */
     exports.Number.toUint8 = function (inputArg) {
-        var number = +inputArg,
+        var number = $toNumber(inputArg),
             val = 0;
 
         if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
@@ -11155,7 +11245,7 @@
                     j,
                     k;
 
-                f = +fractionDigits;
+                f = $toNumber(fractionDigits);
                 // Test for NaN and round fractionDigits down
                 if (!$strictEqual(f, f)) {
                     f = 0;
@@ -11167,7 +11257,7 @@
                     throw new CRangeError('Number.toFixed called with invalid number of decimals');
                 }
 
-                x = +this;
+                x = $toNumber(this);
                 // Test for NaN or if it is too big or small, return the string value of the number.
                 if (!$strictEqual(x, x) || x <= -1e21 || x >= 1e21) {
                     return $toString(x);
@@ -12038,8 +12128,8 @@
 
                 if ($isArray(object) || $isArguments(object)) {
                     property = $toString(property);
-                    if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) {
-                        property = +property;
+                    if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) {
+                        property = $toNumber(property);
                         isIdx = true;
                     }
                 }
@@ -12240,7 +12330,7 @@
                         return function (object, property, descriptor) {
                             if ($isArray(object) || $isArguments(object)) {
                                 property = $toString(property);
-                                if (($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex(+property, MAX_UINT32 - 1)) || $isNumeric(property)) {
+                                if (($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) || $isNumeric(property)) {
                                     return $defProp(object, property, descriptor);
                                 }
                             }
@@ -13015,7 +13105,7 @@
     exports.String.proto.truncate = function (n) {
         var s = $onlyCoercibleToString(this);
 
-        n = +n;
+        n = $toNumber(n);
         if ($strictEqual(n, n) && n >= 0 && s.length > n) {
             s = $call(pSSlice, s, 0, n);
         }
