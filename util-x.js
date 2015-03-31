@@ -6785,16 +6785,52 @@
         function () {
             $affirmBasic(base.Array.reverse)();
             $affirm.doesNotThrow(function () {
-                base.Array.reverse.call(1);
+                $call(base.Array.reverse, 1);
             }, 'number');
 
             $affirm.doesNotThrow(function () {
-                base.Array.reverse.call(true);
+                $call(base.Array.reverse, true);
             }, 'boolean');
 
             $affirm.doesNotThrow(function () {
-                base.Array.reverse.call('a');
+                $call(base.Array.reverse, 'a');
             }, 'string');
+
+            var arrCmp = [];
+
+            arrCmp.length = 12;
+            arrCmp[0] = Undefined;
+            arrCmp[1] = null;
+            arrCmp[2] = -1;
+            arrCmp[3] = 0;
+            arrCmp[4] = 1;
+            arrCmp[5] = false;
+            arrCmp[6] = true;
+            arrCmp[8] = '';
+            arrCmp[9] = 'abc';
+            arrCmp[10] = null;
+            arrCmp[11] = Undefined;
+
+            $affirm.doesNotThrow(function () {
+                $call(base.Array.reverse, arrCmp);
+            }, 'test1');
+
+            $affirm.strictEqual(arrCmp.length, 12, 'test2');
+            $affirm.strictEqual(arrCmp[11], Undefined, 'test3');
+            $affirm.ok($call(pHasOwn, arrCmp, 11), 'test4');
+            $affirm.strictEqual(arrCmp[10], null, 'test5');
+            $affirm.strictEqual(arrCmp[9], -1, 'test6');
+            $affirm.strictEqual(arrCmp[8], 0, 'test7');
+            $affirm.strictEqual(arrCmp[7], 1, 'test8');
+            $affirm.strictEqual(arrCmp[6], false, 'test9');
+            $affirm.strictEqual(arrCmp[5], true, 'test10');
+            $affirm.strictEqual(arrCmp[4], Undefined, 'test11');
+            $affirm.ok(!$call(pHasOwn, arrCmp, 4), 'test12');
+            $affirm.strictEqual(arrCmp[3], '', 'test13');
+            $affirm.strictEqual(arrCmp[2], 'abc', 'test14');
+            $affirm.strictEqual(arrCmp[1], null, 'test15');
+            $affirm.strictEqual(arrCmp[0], Undefined, 'test16');
+            $affirm.ok($call(pHasOwn, arrCmp, 0), 'test17');
         },
 
         //pass
