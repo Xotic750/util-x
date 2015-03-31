@@ -1899,11 +1899,13 @@
      * @param {*} value
      * @returns {*}
      */
+    /*
     function $setArgItem(args, index, value) {
         args[index] = value;
 
         return value;
     }
+    */
 
     /**
      * Returns the first argument unchanged.
@@ -14355,14 +14357,16 @@
                     function () {
                         var pSubstr = base.String.substr;
 
-                        return function () {
-                            var first = $getArgItem(arguments, 0);
-
-                            if (first < 0) {
-                                $setArgItem(arguments, 0, $toLength(this.length + first));
+                        return function (start, length) {
+                            if (start < 0) {
+                                start = $toLength(this.length) + start;
                             }
 
-                            return $apply(pSubstr, this, arguments);
+                            if ($isUndefined(length)) {
+                                length = $toLength(this.length);
+                            }
+
+                            return $call(pSubstr, this, start, length);
                         };
                     },
 
