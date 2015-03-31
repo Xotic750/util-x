@@ -6643,7 +6643,9 @@
             });
 
             var unshiftArr = [],
-                unshiftObj = {};
+                unshiftObj = {},
+                arrCmp,
+                i;
 
             $affirm.strictEqual($call(base.Array.unshift, unshiftArr, Undefined), 1, 'array wrong return count');
             $affirm.strictEqual(unshiftArr.length, 1, 'array length incorrect');
@@ -6664,6 +6666,44 @@
             $affirm.strictEqual(unshiftObj.length, 2, 'object length incorrect');
             $affirm.ok($call(pHasOwn, unshiftObj, 0), 'object value not set');
             $affirm.strictEqual(unshiftObj[0], 0, 'object value incorrect');
+
+            arrCmp = [];
+            arrCmp.length = 12;
+            arrCmp[0] = Undefined;
+            arrCmp[1] = null;
+            arrCmp[2] = -1;
+            arrCmp[3] = 0;
+            arrCmp[4] = 1;
+            arrCmp[5] = false;
+            arrCmp[6] = true;
+            arrCmp[7] = Undefined;
+            arrCmp[8] = '';
+            arrCmp[9] = 'abc';
+            arrCmp[10] = null;
+            arrCmp[11] = Undefined;
+
+            unshiftArr = [];
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, Undefined), 1, 'test1');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, null), 2, 'test2');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, 'abc'), 3, 'test3');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, ''), 4, 'test4');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, Undefined), 5, 'test5');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr), 5, 'test6');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr), 5, 'test7');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr), 5, 'test8');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr), 5, 'test9');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, true), 6, 'test10');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, false), 7, 'test11');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, 1), 8, 'test12');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, 0), 9, 'test13');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, -1), 10, 'test14');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, null), 11, 'test15');
+            $affirm.strictEqual($call(base.Array.unshift, unshiftArr, Undefined), 12, 'test16');
+            $affirm.strictEqual(unshiftArr.length, arrCmp.length, 'test17');
+            for (i = 0; i < unshiftArr.length; i += 1) {
+                $affirm.ok($call(pHasOwn, unshiftArr, i), 'hasOwn test' + i);
+                $affirm.strictEqual(unshiftArr[i], arrCmp[i], 'strictEqual test' + i);
+            }
         },
 
         //pass
@@ -10399,6 +10439,30 @@
                 $affirm.ok($call(pHasOwn, sortArr, 7), 'test11');
                 $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test12');
 
+                sortArr.length = 9;
+                sortArr[0] = 'f';
+                sortArr[1] = 'e';
+                sortArr[2] = 'd';
+                sortArr[3] = Undefined;
+                sortArr[4] = null;
+                sortArr[5] = 'a';
+                sortArr[6] = 'c';
+                sortArr[7] = 'b';
+
+                $call(base.Array.sort, sortArr, $descending);
+                $affirm.strictEqual(sortArr.length, 9, 'test13');
+                $affirm.strictEqual(sortArr[0], null, 'test14');
+                $affirm.strictEqual(sortArr[1], 'f', 'test15');
+                $affirm.strictEqual(sortArr[2], 'e', 'test16');
+                $affirm.strictEqual(sortArr[3], 'd', 'test17');
+                $affirm.strictEqual(sortArr[4], 'c', 'test18');
+                $affirm.strictEqual(sortArr[5], 'b', 'test19');
+                $affirm.strictEqual(sortArr[6], 'a', 'test20');
+                $affirm.strictEqual(sortArr[7], Undefined, 'test21');
+                $affirm.strictEqual(sortArr[8], Undefined, 'test22');
+                $affirm.ok($call(pHasOwn, sortArr, 7), 'test23');
+                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test24');
+
                 sortObj = {
                     0: 5,
                     1: 2,
@@ -10410,17 +10474,17 @@
                 };
 
                 $call(base.Array.sort, sortObj, $descending);
-                $affirm.strictEqual(sortObj.length, 8, 'test13');
-                $affirm.strictEqual(sortObj[0], null, 'test14');
-                $affirm.strictEqual(sortObj[1], 5, 'test15');
-                $affirm.strictEqual(sortObj[2], 4, 'test16');
-                $affirm.strictEqual(sortObj[3], 3, 'test17');
-                $affirm.strictEqual(sortObj[4], 2, 'test18');
-                $affirm.strictEqual(sortObj[5], 1, 'test19');
-                $affirm.strictEqual(sortObj[6], Undefined, 'test20');
-                $affirm.strictEqual(sortObj[7], Undefined, 'test21');
-                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test22');
-                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test23');
+                $affirm.strictEqual(sortObj.length, 8, 'test25');
+                $affirm.strictEqual(sortObj[0], null, 'test26');
+                $affirm.strictEqual(sortObj[1], 5, 'test27');
+                $affirm.strictEqual(sortObj[2], 4, 'test28');
+                $affirm.strictEqual(sortObj[3], 3, 'test29');
+                $affirm.strictEqual(sortObj[4], 2, 'test30');
+                $affirm.strictEqual(sortObj[5], 1, 'test31');
+                $affirm.strictEqual(sortObj[6], Undefined, 'test32');
+                $affirm.strictEqual(sortObj[7], Undefined, 'test33');
+                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test34');
+                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test35');
             },
 
             // pass
