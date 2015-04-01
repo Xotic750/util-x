@@ -2596,6 +2596,21 @@
     */
 
     /**
+     * Indicates if a string suffers the "indexed accessability bug".
+     * True if it does, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasBoxedStringBug
+     * @type {boolean}
+     */
+    hasBoxedStringBug = (function () {
+        var boxedString = $Object('a');
+
+        /*jstwit in: true */
+        return boxedString[0] !== 'a' || !(0 in boxedString);
+    }());
+
+    /**
      * Shortcut
      * Redefined later
      * Returns true if the operand inputArg is a string.
@@ -2633,7 +2648,7 @@
     $hasProperty = (function () {
         var fn;
 
-        if (hasEnumStringBug || hasEnumArgsBug) {
+        if (false || hasBoxedStringBug || hasEnumStringBug || hasEnumArgsBug) {
             fn = function $hasProperty(inputArg, property) {
                 var length = $toLength(inputArg.length);
 
@@ -2654,21 +2669,6 @@
         }
 
         return fn;
-    }());
-
-    /**
-     * Indicates if a string suffers the "indexed accessability bug".
-     * True if it does, otherwise false.
-     *
-     * @private
-     * @name module:util-x~hasBoxedStringBug
-     * @type {boolean}
-     */
-    hasBoxedStringBug = (function () {
-        var boxedString = $Object('a');
-
-        /*jstwit in: true */
-        return boxedString[0] !== 'a' || !(0 in boxedString);
     }());
 
     /**
