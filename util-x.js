@@ -72,16 +72,16 @@
     swapItems, test, throws, times, toExponential, toFixed, toISOString, toInt16,
     toInt32, toInt8, toInteger, toJSON, toLength, toLocaleLowerCase,
     toLocaleString, toLocaleUpperCase, toLowerCase, toObject, toPrecision,
-    toPrimitive, toSource, toString, toStringTag, toUint, toUint16, toUint32,
+    ToPrimitive, toSource, toString, toStringTag, toUint, toUint16, toUint32,
     toUint8, toUpperCase, trim, trimLeft, trimRight, trimString, truncate,
     typeOf, unique, unshift, unwatch, value, valueOf, version, watch,
-    wrapInChars, writable, wsStr
+    wrapInChars, writable, wsStr, ToNumber
 */
 
 /**
  * Type consisting of the primitive values.
  * @typedef {(null|undefined|boolean|string|number)} module:util-x~primitive
- * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+ * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-primitive-value
  */
 
 /**
@@ -191,6 +191,9 @@
         stringDefineSetter = '__defineSetter__',
         stringLookupGetter = '__lookupGetter__',
         stringLookupSetter = '__lookupGetter__',
+
+        hintString = '',
+        hintNumber = 0,
 
         propConstant,
         propNotEnumerable,
@@ -2046,13 +2049,14 @@
     }
 
     /**
-     * Returns true if the operand inputArg is a primitive object.
+     * Returns true if the operand inputArg is a member of one of the types Undefined, Null, Boolean, Number, Symbol, or String.
      *
      * @private
      * @function module:util-x~isPrimitive
      * @param {*} inputArg
      * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-primitive-value
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ecmascript-data-types-and-values
      */
     function $isPrimitive(inputArg) {
         var type = typeof inputArg;
@@ -2061,15 +2065,48 @@
     }
 
     /**
-     * Returns true if the operand inputArg is a primitive object.
+     * Returns true if the operand inputArg is a member of one of the types Undefined, Null, Boolean, Number, Symbol, or String.
      *
      * @function module:util-x~exports.Object.isPrimitive
      * @param {*} inputArg
      * @returns {boolean}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.2
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-primitive-value
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ecmascript-data-types-and-values
      */
     exports.Object.isPrimitive = $isPrimitive;
     exports.Object.isPrimitive.argNames = ['inputArg'];
+
+    /**
+     * Shortcut
+     * Redefined later
+     * Returns true if the operand inputArg is a Date object.
+     *
+     * @private
+     * @function module:util-x~$isDate
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isDate = function (inputArg) {
+        return !$isPrimitive(inputArg) && inputArg.constructor && inputArg.constructor === CDate;
+    };
+
+    /**
+     * Shortcut
+     * Redefined later
+     * Returns true if the operand inputArg is a Function
+     * Replaced later on with a more reliable method, but we need to define
+     * more functions first.
+     *
+     * @private
+     * @function module:util-x~$isFunction
+     * @param {*} [inputArg] The object to be tested.
+     * @returns {boolean} True if the object matches the duck typing, otherwise false.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
+     */
+    $isFunction = function (inputArg) {
+        // Avoid a Chakra JIT bug in compatibility modes of IE 11
+        return typeof inputArg === 'function' || false;
+    };
 
     /**
      * Shortcut
@@ -2077,37 +2114,69 @@
      *
      * @private
      * @function module:util-x~$toPrimitive
-     * @param {*} [inputArg] The object to convert into a string.
-     * @returns {string} A string representing the object's valueOf.
+     * @param {*} [inputArg] The object to convert into a primitive.
+     * @param {(string|number)} [preferredType] Anything other than a string or a number will be considered number by default.
+     * @returns {(string|number)}
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
      */
     function $toPrimitive(inputArg) {
-        var val;
+        var methodNames,
+            method,
+            index,
+            result,
+            hint;
+
+        /*
+        exoticToPrim = inputarg['@@toPrimitive'];
+        if (!$isUndefined(exoticToPrim)) {
+            result = inputarg['@@toPrimitive']();
+
+            if ($isPrimitive(result)) {
+                return result;
+            }
+
+            throw new CTypeError('exoticToPrim returned an object');
+        }
+        */
 
         if ($isPrimitive(inputArg)) {
-            val = inputArg;
+            result = inputArg;
         } else {
-            val = inputArg.valueOf();
+            hint = typeof $getArgItem(arguments, 1);
+            if (hint === 'string' || (hint !== 'number' && $isDate(inputArg))) {
+                methodNames = ['toString', 'valueOf'];
+            } else {
+                methodNames = ['valueOf', 'toString'];
+            }
+
+            for (index = 0; index < 2; index += 1) {
+                method = methodNames[index];
+                if ($isFunction(inputArg[method])) {
+                    result = inputArg[method]();
+                    if ($isPrimitive(result)) {
+                        return result;
+                    }
+                }
+            }
+
+            throw new CTypeError('ordinaryToPrimitive returned an object');
         }
 
-        if (val === 0 && 1 / val === -Infinity) {
-            val = '-0';
-        } else if (!$isPrimitive(val)) {
-            val = $toString(val);
-        }
-
-        return val;
+        return result;
     }
 
     /**
      * Abstract operation that coerces its argument to a primitive value.
      *
-     * @function module:util-x~exports.Object.toPrimitive
-     * @param {*} [inputArg] The object to convert into a string.
-     * @returns {string} A string representing the object's valueOf.
+     * @private
+     * @function module:util-x~exports.Object.ToPrimitive
+     * @param {*} [inputArg] The object to convert into a primitive.
+     * @param {(string|number)} [preferredType] Anything other than a string or a number will be considered number by default.
+     * @returns {(string|number)}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
      */
-    exports.Object.toPrimitive = $toPrimitive;
-    exports.Object.toPrimitive.argNames = ['inputArg'];
+    exports.Object.ToPrimitive = $toPrimitive;
+    exports.Object.ToPrimitive.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to a value of type number but fixes some environment bugs.
@@ -2124,65 +2193,70 @@
         var tmp,
             fn;
 
-        // Opera 9 fails this
-        try {
-            tmp = {};
-            tmp = +tmp;
-            tmp = {valueOf: ''};
-            tmp = +tmp;
-            tmp = {valueOf: '1'};
-            tmp = +tmp;
-            tmp = {valueOf: 1};
-            tmp = +tmp;
-            tmp = {valueOf: 1.1};
-            tmp = +tmp;
-            /*jshint -W047 */
-            tmp = {valueOf: 1.};
-            /*jshint +W047 */
-            tmp = +tmp;
+        fn = function (inputArg) {
+            var type = typeof inputArg,
+                val;
 
-            fn = function (inputArg) {
-                return +inputArg;
-            };
-        } catch (eToNumber) {
-            fn = function (inputArg) {
-                var type = typeof inputArg,
-                    prim,
-                    val;
-
-                if (type === 'undefined') {
-                    val = NaN;
-                } else if (inputArg === null) {
-                    val = +0;
-                } else if (type === 'boolean') {
-                    if (inputArg) {
-                        val = 1;
-                    } else {
-                        val = +0;
-                    }
-                } else if (type === 'number') {
-                    val = inputArg;
-                } else if (type === 'string') {
-                    val = $Number(inputArg);
+            if (type === 'undefined') {
+                val = NaN;
+            } else if (inputArg === null) {
+                val = +0;
+            } else if (type === 'boolean') {
+                if (inputArg) {
+                    val = 1;
                 } else {
-                    if (type === 'symbol') {
-                        throw new TypeError('Can not convert symbol to a number');
-                    }
-
-                    prim = $toPrimitive(inputArg);
-                    if (!$isPrimitive(prim)) {
-                        throw new TypeError('Object did not convert to a primitive');
-                    }
-
-                    val = fn(prim);
+                    val = +0;
+                }
+            } else if (type === 'number') {
+                val = inputArg;
+            } else if (type === 'string') {
+                val = $Number(inputArg);
+            } else {
+                if (type === 'symbol') {
+                    throw new TypeError('Can not convert symbol to a number');
                 }
 
-                return val;
-            };
+                val = fn($toPrimitive(inputArg, hintNumber));
+            }
+
+            return val;
+        };
+
+        if (!testShims) {
+            // Opera 9 fails this
+            try {
+                tmp = {};
+                tmp = +tmp;
+                tmp = {valueOf: ''};
+                tmp = +tmp;
+                tmp = {valueOf: '1'};
+                tmp = +tmp;
+                tmp = {valueOf: 1};
+                tmp = +tmp;
+                tmp = {valueOf: 1.1};
+                tmp = +tmp;
+
+                fn = function (inputArg) {
+                    return +inputArg;
+                };
+            } catch (ignore) {}
         }
 
         return fn;
     }());
+
+    /**
+     * The abstract operation converts its argument to a value of type number but fixes some environment bugs.
+     *
+     * @function module:util-x~exports.Object.ToNumber
+     * @param {*} inputArg The argument to be converted to an object.
+     * @throws {TypeError} If inputArg is a symbol.
+     * @throws {TypeError} If inputArg is a was not converted to a primitive.
+     * @returns {Object} Value of inputArg as type number.
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tonumber
+     */
+    exports.Object.ToNumber = $toNumber;
+    exports.Object.ToNumber.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -2895,24 +2969,6 @@
      */
     $slice = $argSlice;
 
-    /**
-     * Shortcut
-     * Redefined later
-     * Returns true if the operand inputArg is a Function. (Duck typed)
-     * Replaced later on with a more reliable method, but we need to define
-     * more functions first.
-     *
-     * @private
-     * @function module:util-x~$isFunction
-     * @param {*} [inputArg] The object to be tested.
-     * @returns {boolean} True if the object matches the duck typing, otherwise false.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.11
-     */
-    $isFunction = function (inputArg) {
-        // Avoid a Chakra JIT bug in compatibility modes of IE 11
-        return typeof inputArg === 'function' || false;
-    };
-
     // redefinition
     $isFunction = (function (pOToString) {
         if (!($isFunction(/x/) || (global.Uint8Array && !$isFunction(global.Uint8Array)))) {
@@ -3259,14 +3315,7 @@
     exports.Error.isError = $isError;
     exports.Error.isError.argNames = ['inputArg'];
 
-    /**
-     * Returns true if the operand inputArg is a Date object.
-     *
-     * @private
-     * @function module:util-x~$isDate
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
+    // redefinition
     $isDate = (function (pOToString, strDate) {
         var hasBug;
 
@@ -4571,17 +4620,17 @@
      * @returns {boolean}
      */
     exports.Number.inRange = function (value, min, max) {
-        min = $toPrimitive(min);
+        min = $toPrimitive(min, hintNumber);
         if ($toStringTag(min) !== stringTagNumber && !$isNumeric(min)) {
             min = NaN;
         }
 
-        max = $toPrimitive(max);
+        max = $toPrimitive(max, hintNumber);
         if ($toStringTag(max) !== stringTagNumber && !$isNumeric(max)) {
             max = NaN;
         }
 
-        return +$toPrimitive(value) >= $toNumber(min) && value <= $toNumber(max);
+        return $toNumber(value) >= $toNumber(min) && value <= $toNumber(max);
     };
 
     exports.Number.inRange.argNames = ['value', 'min', 'max'];
@@ -4609,17 +4658,17 @@
      * @returns {boolean}
      */
     exports.Number.outRange = function (value, min, max) {
-        value = $toPrimitive(value);
+        value = $toPrimitive(value, hintNumber);
         if (($toStringTag(value) !== stringTagNumber || !$strictEqual(value, value)) && !$isNumeric(value)) {
             return true;
         }
 
-        min = $toPrimitive(min);
+        min = $toPrimitive(min, hintNumber);
         if (($toStringTag(min) !== stringTagNumber || !$strictEqual(min, min)) && !$isNumeric(min)) {
             return true;
         }
 
-        max = $toPrimitive(max);
+        max = $toPrimitive(max, hintNumber);
         if (($toStringTag(max) !== stringTagNumber || !$strictEqual(max, max)) && !$isNumeric(max)) {
             return true;
         }
@@ -13887,7 +13936,7 @@
         function () {
             return function () {
                 var object = $toObject(this),
-                    tv = $toPrimitive(object),
+                    tv = $toPrimitive(object, hintNumber),
                     rtn;
 
                 if (typeof tv === 'number' && !$isFinite(tv)) {
@@ -14109,7 +14158,7 @@
                     if (!$isPrimitive(value)) {
                         cl = $toStringTag(value);
                         if (cl === stringTagString || cl === stringTagNumber || cl === stringTagBoolean) {
-                            value = $toPrimitive(value);
+                            value = $toPrimitive(value, hintNumber);
                         }
                     }
 
@@ -14930,11 +14979,11 @@
          */
         function isIntegerInRange(val, min, max) {
             if (!$isInteger(min)) {
-                throw new CTypeError('min is not an integer: ' + $toString($toPrimitive(min)));
+                throw new CTypeError('min is not an integer: ' + $toString($toPrimitive(min, hintString)));
             }
 
             if (!$isInteger(max)) {
-                throw new CTypeError('max is not an integer: ' + $toString($toPrimitive(max)));
+                throw new CTypeError('max is not an integer: ' + $toString($toPrimitive(max, hintString)));
             }
 
             return $isInteger(val) && $inRange(val, min, max);
@@ -15236,8 +15285,13 @@
                 nL;
 
             // Minus zero?
-            // Ensure n is string and check validity.
-            n = $toString($toPrimitive(n));
+            if (typeof n === 'number' && n === 0 && 1 / n === -Infinity) {
+                n = '-0';
+            } else {
+                // Ensure n is string and check validity.
+                n = $toString(n);
+            }
+
             if (!$test(isValid, n)) {
                 throw new BigError(NaN);
             }
