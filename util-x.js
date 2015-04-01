@@ -29,37 +29,37 @@
 /*properties
     '', '\b', '\t', '\n', '\f', '\r', '"', '0', '1', '1.', '10', '11', '2', '3',
     '4', '5', '6', '7', '8', '9', A, AffirmError, Array, AssertionError, Boolean,
-    CheckObjectCoercible, Ctr, DP, Date, EPSILON, Error, EvalError, Function,
-    JSON, MAX_INT16, MAX_INT32, MAX_INT8, MAX_SAFE_INTEGER, MAX_UINT16,
-    MAX_UINT32, MAX_UINT8, MAX_VALUE, MIN_INT16, MIN_INT32, MIN_INT8,
-    MIN_SAFE_INTEGER, MIN_VALUE, Math, NEGATIVE_INFINITY, NEGATIVE_ZERO, NaN,
-    Number, Object, POSITIVE_INFINITY, POSITIVE_ZERO, RM, RangeError,
-    ReferenceError, RegExp, String, SyntaxError, ToMethod, ToObject, ToString,
-    TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32, UWORD8, Uint8Array,
-    WORD16, WORD32, WORD8, '\\', abs, actual, add, alert, amd, anchor, apply,
-    areSameClass, areSameTypeOf, argNames, assert, assign, bind, c, call,
-    captureStackTrace, ceil, charAt, charCodeAt, clamp, clampToInt, classId,
-    clipDuplicates, codePointAt, concat, configurable, console, constructor,
-    contains, copyWithin, countCharacter, create, customError,
-    customErrorReplacer, debug, deepEqual, deepFreeze, deepStrictEqual,
-    defineGetter, defineProperties, defineProperty, defineSetter, doesNotThrow,
-    e, endsWith, enumerable, equal, escapeRegex, every, exec, execSlice,
-    expected, exports, factory, fail, fill, filter, find, findIndex, first,
-    firstIn, floor, foo, forAll, forEach, forKeys, freeze, from, fromCharCode,
-    fromCodePoint, get, getOwnPropertyDescriptor, getOwnPropertyNames,
-    getPrototypeOf, getTime, getUTCDate, getUTCFullYear, getUTCHours,
-    getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds, global,
-    goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase, inRange,
-    index, indexOf, inherits, instanceOf, interimLastIndex, is, isArguments,
-    isArray, isBoolean, isBytestring, isDate, isDigits, isEmpty, isError,
-    isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen, isFunction,
-    isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction, isNegative,
-    isNumber, isNumeric, isOdd, isPlainObject, isPositive, isPrimitive,
-    isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString, isSymbol, isUint,
-    isUint16, isUint32, isUint8, isUndefined, isValid, join, keys, last, lastIn,
-    lastIndex, lastIndexOf, length, link, localeCompare, log, lookupGetter,
-    lookupSetter, map, match, max, message, methods, min, minus, modulo,
-    multiline, name, noop, normaliseErrorIEToStringOff,
+    Ctr, DP, Date, EPSILON, Error, EvalError, Function, JSON, MAX_INT16,
+    MAX_INT32, MAX_INT8, MAX_SAFE_INTEGER, MAX_UINT16, MAX_UINT32, MAX_UINT8,
+    MAX_VALUE, MIN_INT16, MIN_INT32, MIN_INT8, MIN_SAFE_INTEGER, MIN_VALUE, Math,
+    NEGATIVE_INFINITY, NEGATIVE_ZERO, NaN, Number, Object, POSITIVE_INFINITY,
+    POSITIVE_ZERO, RM, RangeError, ReferenceError, RegExp,
+    RequireObjectCoercible, String, SyntaxError, ToMethod, ToNumber, ToObject,
+    ToPrimitive, ToString, TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32,
+    UWORD8, Uint8Array, WORD16, WORD32, WORD8, '\\', abs, actual, add, alert,
+    amd, anchor, apply, areSameClass, areSameTypeOf, argNames, assert, assign,
+    bind, c, call, captureStackTrace, ceil, charAt, charCodeAt, clamp,
+    clampToInt, classId, clipDuplicates, codePointAt, concat, configurable,
+    console, constructor, contains, copyWithin, countCharacter, create,
+    customError, customErrorReplacer, debug, deepEqual, deepFreeze,
+    deepStrictEqual, defineGetter, defineProperties, defineProperty,
+    defineSetter, doesNotThrow, e, endsWith, enumerable, equal, escapeRegex,
+    every, exec, execSlice, expected, exports, factory, fail, fill, filter, find,
+    findIndex, first, firstIn, floor, foo, forAll, forEach, forKeys, freeze,
+    from, fromCharCode, fromCodePoint, get, getOwnPropertyDescriptor,
+    getOwnPropertyNames, getPrototypeOf, getTime, getUTCDate, getUTCFullYear,
+    getUTCHours, getUTCMilliseconds, getUTCMinutes, getUTCMonth, getUTCSeconds,
+    global, goNative, hasOwn, hasOwnProperty, hasProperty, ifError, ignoreCase,
+    inRange, index, indexOf, inherits, instanceOf, interimLastIndex, is,
+    isArguments, isArray, isBoolean, isBytestring, isDate, isDigits, isEmpty,
+    isError, isErrorTypeConstructor, isEven, isExtensible, isFinite, isFrozen,
+    isFunction, isInt16, isInt32, isInt8, isInteger, isNaN, isNativeFunction,
+    isNegative, isNumber, isNumeric, isOdd, isPlainObject, isPositive,
+    isPrimitive, isPrototypeOf, isRegExp, isSafeInteger, isSealed, isString,
+    isSymbol, isUint, isUint16, isUint32, isUint8, isUndefined, isValid, join,
+    keys, last, lastIn, lastIndex, lastIndexOf, length, link, localeCompare, log,
+    lookupGetter, lookupSetter, map, match, max, message, methods, min, minus,
+    modulo, multiline, name, noop, normaliseErrorIEToStringOff,
     normaliseErrorIEToStringOn, normaliseErrorIEToStringState, normalize,
     notDeepEqual, notDeepStrictEqual, notEqual, notOk, notStrictEqual, now, of,
     ok, operator, outRange, padLeadingChar, parse, parseFloat, parseInt, plus,
@@ -72,10 +72,10 @@
     swapItems, test, throws, times, toExponential, toFixed, toISOString, toInt16,
     toInt32, toInt8, toInteger, toJSON, toLength, toLocaleLowerCase,
     toLocaleString, toLocaleUpperCase, toLowerCase, toObject, toPrecision,
-    ToPrimitive, toSource, toString, toStringTag, toUint, toUint16, toUint32,
-    toUint8, toUpperCase, trim, trimLeft, trimRight, trimString, truncate,
-    typeOf, unique, unshift, unwatch, value, valueOf, version, watch,
-    wrapInChars, writable, wsStr, ToNumber
+    toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
+    toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
+    unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
+    wsStr
 */
 
 /**
@@ -286,7 +286,6 @@
         pSearch,
 
         pCharCodeAt,
-        pSSlice,
         pSIndexOf,
 
         pReplace,
@@ -363,6 +362,7 @@
         $sort,
         $defProp,
         $deleteProperty,
+        $sSlice,
 
         BigNum,
 
@@ -1755,7 +1755,6 @@
     pMatch = base.String.match;
     pSplit = base.String.split;
     pCharCodeAt = base.String.charCodeAt;
-    pSSlice = base.String.slice;
     pSIndexOf = base.String.indexOf;
     pReplace = base.String.replace;
     pSearch = base.String.search;
@@ -2020,13 +2019,13 @@
      * converted to an Object, otherwise returns the argument.
      *
      * @private
-     * @function module:util-x~$checkObjectCoercible
+     * @function module:util-x~$requireObjectCoercible
      * @param {*} inputArg The object to be tested.
      * @throws {TypeError} If inputArg is null or undefined.
      * @returns {*} The inputArg if coercible.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-requireobjectcoercible
      */
-    function $checkObjectCoercible(inputArg) {
+    function $requireObjectCoercible(inputArg) {
         if (inputArg === null || $isUndefined(inputArg)) {
             throw new CTypeError('Cannot convert argument to object: ' + inputArg);
         }
@@ -2045,7 +2044,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
     function $toObject(inputArg) {
-        return $Object($checkObjectCoercible(inputArg));
+        return $Object($requireObjectCoercible(inputArg));
     }
 
     /**
@@ -4154,14 +4153,14 @@
      * @param {prototypalFunction} protoFn A prototypal function to be converted to be bound as a stand alone method.
      * @throws {TypeError} If protoFn is not a function.
      * @param {Function} [checkThisArgFn] A function to perform any checks on thisArg.
-     *                                    Default checkThisArgFn is to {@link @function module:util-x~$checkObjectCoercible}
+     *                                    Default checkThisArgFn is to {@link @function module:util-x~$requireObjectCoercible}
      *                                    if none supplied or is not a function.
      * @returns {module:util-x~boundPrototypalFunction} Stand alone method.
      */
     function $toMethod(protoFn, checkThisArgFn) {
         $throwIfNotFunction(protoFn);
         if (!$isFunction(checkThisArgFn)) {
-            checkThisArgFn = $checkObjectCoercible;
+            checkThisArgFn = $requireObjectCoercible;
         }
 
         /*jslint evil: true */
@@ -4690,14 +4689,14 @@
      * The abstract operation throws an error if its argument is a value that cannot be
      * converted to an Object, otherwise returns the argument.
      *
-     * @function module:util-x~exports.Object.CheckObjectCoercible
+     * @function module:util-x~exports.Object.RequireObjectCoercible
      * @param {*} inputArg
      * @throws {TypeError} If inputArg is null or undefined.
      * @returns {*}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.10
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-requireobjectcoercible
      */
-    exports.Object.CheckObjectCoercible = $checkObjectCoercible;
-    exports.Object.CheckObjectCoercible.argNames = ['inputArg'];
+    exports.Object.RequireObjectCoercible = $requireObjectCoercible;
+    exports.Object.RequireObjectCoercible.argNames = ['inputArg'];
 
     /**
      * Returns a string only if the arguments is coercible otherwise throws an error.
@@ -4709,7 +4708,7 @@
      * @returns {string}
      */
     function $onlyCoercibleToString(inputArg) {
-        return $toString($checkObjectCoercible(inputArg));
+        return $toString($requireObjectCoercible(inputArg));
     }
 
     /**
@@ -5442,7 +5441,7 @@
 
     /**
      * The function takes one argument protoFn, and returns the bound function as a stand alone method.
-     * Default this check is to {@link $checkObjectCoercible}.
+     * Default this check is to {@link $requireObjectCoercible}.
      *
      * @function module:util-x~exports.Function.ToMethod
      * @param {prototypalFunction} protoFn
@@ -5681,7 +5680,7 @@
                         var pJoin = base.Array.join;
 
                         return function (separator) {
-                            $checkObjectCoercible(this);
+                            $requireObjectCoercible(this);
                             if ($isUndefined(separator)) {
                                 separator = ',';
                             }
@@ -7060,21 +7059,111 @@
     exports.Number.clampToInt.argNames = ['num', 'min', 'max'];
 
     /**
-     * Throws a TypeError if the argument is not a RegExp.
+     * The slice method takes two arguments, start and end, and returns a substring of the result
+     * of converting this object to a String, starting from index start and running to, but not
+     * including, index end (or through the end of the String if end is undefined). If start is
+     * negative, it is treated as sourceLength+start where sourceLength is the length of the
+     * String. If end is negative, it is treated as sourceLength+end where sourceLength is the
+     * length of the String. The result is a String value, not a String object.
+     *
+     * @function module:util-x~exports.String.proto.slice
+     * @this {string}
+     * @param {number} start
+     * @param {number} end
+     * @returns {string}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.slice
+     */
+    exports.String.proto.slice = $decide(
+        // test
+        function () {
+            $affirmBasic(base.String.slice)();
+        },
+
+        // pass
+        function () {
+            return base.String.slice;
+        },
+
+        // fail
+        function () {
+            return function (start, end) {
+                var object = $onlyCoercibleToString(this),
+                    length = $toLength(object.length),
+                    intStart = $toInteger(start),
+                    result = '',
+                    index,
+                    intEnd,
+                    from,
+                    to;
+
+                if ($isUndefined(end)) {
+                    intEnd = length;
+                } else {
+                    intEnd = $toInteger(end);
+                }
+
+                if (intStart < 0) {
+                    from = $max(length + intStart, 0);
+                } else {
+                    from = $min(intStart, length);
+                }
+
+                if (intEnd < 0) {
+                    to = $max(length + intEnd, 0);
+                } else {
+                    to = $min(intEnd, length);
+                }
+
+                for (index = from; index < to; index += 1) {
+                    result += $call(pCharAt, object, index);
+                }
+
+                return result;
+            };
+        },
+
+        //argsNames
+        ['start', 'end'],
+
+        // message
+        'String.slice shim'
+    );
+
+    /**
+     * The slice method takes two arguments, start and end, and returns a substring of the result
+     * of converting this object to a String, starting from index start and running to, but not
+     * including, index end (or through the end of the String if end is undefined). If start is
+     * negative, it is treated as sourceLength+start where sourceLength is the length of the
+     * String. If end is negative, it is treated as sourceLength+end where sourceLength is the
+     * length of the String. The result is a String value, not a String object.
+     *
+     * @function module:util-x~exports.String.slice
+     * @param {string} string
+     * @param {number} start
+     * @param {number} end
+     * @returns {string}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.slice
+     */
+    exports.String.slice = $toMethod(exports.String.proto.slice);
+    exports.String.slice.argNames = ['string', 'start', 'end'];
+
+    /**
+     * The slice method takes two arguments, start and end, and returns a substring of the result
+     * of converting this object to a String, starting from index start and running to, but not
+     * including, index end (or through the end of the String if end is undefined). If start is
+     * negative, it is treated as sourceLength+start where sourceLength is the length of the
+     * String. If end is negative, it is treated as sourceLength+end where sourceLength is the
+     * length of the String. The result is a String value, not a String object.
      *
      * @private
-     * @function module:util-x~throwIfNotRegExp
-     * @param {*} inputArg
-     * @throws {TypeError} If inputArg is not a RegExp.
-     * @returns {RegExp}
+     * @function module:util-x~$sSlice
+     * @param {string} string
+     * @param {number} start
+     * @param {number} end
+     * @returns {string}
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.slice
      */
-    function throwIfNotRegExp(inputArg) {
-        if (!$isRegExp(inputArg)) {
-            throw new CTypeError('Type RegExp expected: ' + $toString(inputArg));
-        }
-
-        return inputArg;
-    }
+    $sSlice = exports.String.slice;
 
     // RegExp closure
     (function () {
@@ -7131,6 +7220,23 @@
         };
 
         exports.String.clipDuplicates.argNames = ['str'];
+
+        /**
+         * Throws a TypeError if the argument is not a RegExp.
+         *
+         * @private
+         * @function module:util-x~throwIfNotRegExp
+         * @param {*} inputArg
+         * @throws {TypeError} If inputArg is not a RegExp.
+         * @returns {RegExp}
+         */
+        function throwIfNotRegExp(inputArg) {
+            if (!$isRegExp(inputArg)) {
+                throw new CTypeError('Type RegExp expected: ' + $toString(inputArg));
+            }
+
+            return inputArg;
+        }
 
         /**
          * Copies a regex object. Allows adding and removing native flags while copying the regex.
@@ -7251,7 +7357,7 @@
                             r2 = copyRegExp(this, {remove: 'g'});
                             // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
                             // matching due to characters outside the match
-                            $call(pReplace, $call(pSSlice, $toString(str), match.index), r2, function () {
+                            $call(pReplace, $sSlice($toString(str), match.index), r2, function () {
                                 var length = arguments.length - 2,
                                     index,
                                     type,
@@ -7489,7 +7595,7 @@
                             while (match) {
                                 // This condition is not the same as `if (match[0].length)`
                                 if ((match.index + $toLength(match[0].length)) > lastLastIndex) {
-                                    $push(output, $call(pSSlice, str, lastLastIndex, match.index));
+                                    $push(output, $sSlice(str, lastLastIndex, match.index));
                                     if ($toLength(match.length) > 1 && match.index < length) {
                                         output = $concat(output, $slice(match, 1));
                                     }
@@ -7507,7 +7613,7 @@
                                     $push(output, '');
                                 }
                             } else {
-                                $push(output, $call(pSSlice, str, lastLastIndex));
+                                $push(output, $sSlice(str, lastLastIndex));
                             }
 
                             separator.lastIndex = origLastIndex;
@@ -8077,7 +8183,7 @@
                     searchStr = $toString(searchString),
                     start = $min($max($toInteger(position), 0), thisStr.length);
 
-                return $call(pSSlice, thisStr, start, start + searchStr.length) === searchStr;
+                return $sSlice(thisStr, start, start + searchStr.length) === searchStr;
             };
         },
 
@@ -8140,7 +8246,7 @@
                 end = $min($max(position, 0), thisLen);
                 start = end - searchStr.length;
 
-                return start >= 0 && $call(pSSlice, thisStr, start, end) === searchStr;
+                return start >= 0 && $sSlice(thisStr, start, end) === searchStr;
             };
         },
 
@@ -10716,7 +10822,7 @@
                                 comparefn = $ascending;
                             }
 
-                            return $call(pSort, $checkObjectCoercible(this), $throwIfNotFunction(comparefn));
+                            return $call(pSort, $requireObjectCoercible(this), $throwIfNotFunction(comparefn));
                         };
                     },
 
@@ -10808,7 +10914,7 @@
                 0x3000, // Ideographic space
                 0xfeff // Byte Order Mark
             ],
-            length = whiteSpaces.length,
+            length = $toLength(whiteSpaces.length),
             index,
             hex,
             wsStr = '',
@@ -10816,7 +10922,7 @@
 
         for (index = 0; index < length; index += 1) {
             hex = $call(base.Number.toString, whiteSpaces[index], 16);
-            wsStr += '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
+            wsStr += '\\u' + $sSlice('0000', 0, -$toLength(hex.length)) + hex;
             trimString += base.String.fromCharCode(whiteSpaces[index]);
         }
 
@@ -11248,7 +11354,7 @@
                         if (!s) {
                             s = it;
                         } else {
-                            s += $call(pSSlice, '0000000', 0, 7 - it.length) + it;
+                            s += $sSlice('0000000', 0, 7 - it.length) + it;
                         }
                     }
                 }
@@ -11363,16 +11469,16 @@
                         /*jslint bitwise:true */
                         multiply(1 << (-e), 0);
                         /*jslint bitwise:false */
-                        m = numToString() + $call(pSSlice, '0.00000000000000000000', 2, 2 + f);
+                        m = numToString() + $sSlice('0.00000000000000000000', 2, 2 + f);
                     }
                 }
 
                 if (f > 0) {
                     k = m.length;
                     if (k <= f) {
-                        m = s + $call(pSSlice, '0.0000000000000000000', 0, f - k + 2) + m;
+                        m = s + $sSlice('0.0000000000000000000', 0, f - k + 2) + m;
                     } else {
-                        m = s + $call(pSSlice, m, 0, k - f) + '.' + $call(pSSlice, m, k - f);
+                        m = s + $sSlice(m, 0, k - f) + '.' + $sSlice(m, k - f);
                     }
                 } else {
                     m = s + m;
@@ -13156,7 +13262,7 @@
 
         n = $toNumber(n);
         if ($strictEqual(n, n) && n >= 0 && s.length > n) {
-            s = $call(pSSlice, s, 0, n);
+            s = $sSlice(s, 0, n);
         }
 
         return s;
@@ -13805,7 +13911,7 @@
                     length = -6;
                 }
 
-                year = sign + $call(pSSlice, '00000' + $abs(year), length);
+                year = sign + $sSlice('00000' + $abs(year), length);
                 length = $toLength(result.length);
                 for (index = 0; index < length; index += 1) {
                     value = result[index];
@@ -13816,7 +13922,7 @@
 
                 // pad milliseconds to have three digits.
                 date = year + '-' + $join($slice(result, 0, 2), '-');
-                time = $join($slice(result, 2), ':') + '.' + $call(pSSlice, '000' + $call(pGetUTCMilliseconds, this), -3);
+                time = $join($slice(result, 2), ':') + '.' + $sSlice('000' + $call(pGetUTCMilliseconds, this), -3);
 
                 return date + 'T' + time + 'Z';
             };
@@ -14114,7 +14220,7 @@
                                 r = c;
                             } else {
                                 hex = $toString($call(pCharCodeAt, a, 0), 16);
-                                r = '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
+                                r = '\\u' + $sSlice('0000', 0, -hex.length) + hex;
                             }
 
                             return r;
@@ -14412,7 +14518,7 @@
                         text = $replace(text, parseCharacterTest, function (a) {
                             var hex = $toString($call(pCharCodeAt, a, 0), 16);
 
-                            return '\\u' + $call(pSSlice, '0000', 0, -hex.length) + hex;
+                            return '\\u' + $sSlice('0000', 0, -hex.length) + hex;
                         });
                     }
 
@@ -14467,7 +14573,7 @@
      * @param {number} start
      * @param {number} length
      * @returns {string}
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-B.2.3
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.substr
      */
     exports.String.proto.substr = (function () {
         var argNames = ['start', 'length'];
@@ -14476,66 +14582,34 @@
             // test
             function () {
                 $affirmBasic(base.String.substr)();
+                $affirm.strictEqual($call(base.String.substr, '0b', -1), 'b', 'negative substr bug');
+                $affirm.strictEqual($call(base.String.substr, 'abcdef', 1, Undefined), 'bcdef', 'stop is undefined bug');
             },
 
             // pass
             function () {
-                return $decide(
-                    // test
-                    function () {
-                        $affirm.strictEqual($call(base.String.substr, '0b', -1), 'b', 'negative substr bug');
-                        $affirm.strictEqual($call(base.String.substr, 'abcdef', 1, Undefined), 'bcdef', 'stop is undefined bug');
-                    },
-
-                    // pass
-                    function () {
-                        return base.String.substr;
-                    },
-
-                    // fail
-                    function () {
-                        var pSubstr = base.String.substr;
-
-                        return function (start, length) {
-                            if (start < 0) {
-                                start = $toLength(this.length) + start;
-                            }
-
-                            if ($isUndefined(length)) {
-                                length = $toLength(this.length);
-                            }
-
-                            return $call(pSubstr, this, start, length);
-                        };
-                    },
-
-                    // argnames
-                    argNames,
-
-                    // message
-                    'String.substr patch'
-                );
-
+                return base.String.substr;
             },
 
             // fail
             function () {
+                var pSSlice = exports.String.proto.slice;
+
                 return function (start, length) {
-                    var object = $toString(this),
-                        size = object.length,
+                    var object = $onlyCoercibleToString(this),
+                        size = $toLength(object.length),
                         intStart = $toInteger(start),
                         end;
+
+                    if (intStart < 0) {
+                        intStart = $max(size + intStart, 0);
+                    }
 
                     if ($isUndefined(length)) {
                         end = Infinity;
                     } else {
                         end = $toInteger(length);
                     }
-
-                    if (intStart < 0) {
-                        intStart = $max(size + intStart, 0);
-                    }
-
 
                     return $call(pSSlice, object, intStart, intStart + $min($max(end, 0), size - intStart));
                 };
@@ -14609,7 +14683,7 @@
                 } else {
                     if ($toStringTag(thisObj) === stringTagString) {
                         lastElement = $call(pCharAt, thisObj, len - 1);
-                        object = $call(pSSlice, thisObj, 0, -1);
+                        object = $sSlice(thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
                         lastElement = $pop(object);
@@ -15136,7 +15210,7 @@
             if (!preventExp && (e <= TO_EXP_NEG || e >= TO_EXP_POS)) {
                 str = $call(pCharAt, strT, 0);
                 if (strL > 1) {
-                    str += '.' + $call(pSSlice, strT, 1);
+                    str += '.' + $sSlice(strT, 1);
                 }
 
                 if (e < 0) {
@@ -15165,11 +15239,11 @@
                         str += '0';
                     }
                 } else if (e < strL) {
-                    str = $call(pSSlice, strT, 0, e) + '.' + $call(pSSlice, strT, e);
+                    str = $sSlice(strT, 0, e) + '.' + $sSlice(strT, e);
                 }
                 // Exponent zero.
             } else if (strL > 1) {
-                str = $call(pCharAt, strT, 0) + '.' + $call(pSSlice, strT, 1);
+                str = $call(pCharAt, strT, 0) + '.' + $sSlice(strT, 1);
             } else {
                 str = strT;
             }
@@ -15252,7 +15326,7 @@
 
                 str += c[0];
                 if (c.length > 1) {
-                    str += '.' + $call(pSSlice, $join(c, ''), 1);
+                    str += '.' + $sSlice($join(c, ''), 1);
                 }
 
                 str += 'e';
@@ -15298,7 +15372,7 @@
 
             // Determine sign.
             if ($call(pCharAt, n, 0) === '-') {
-                n = $call(pSSlice, n, 1);
+                n = $sSlice(n, 1);
                 this.s = -1;
             } else {
                 this.s = 1;
@@ -15318,7 +15392,7 @@
                     e = i;
                 }
 
-                e += +$call(pSSlice, n, i + 1);
+                e += $toNumber($sSlice(n, i + 1));
                 n = $substr(n, 0, i);
             } else if (e < 0) {
                 // Integer.
