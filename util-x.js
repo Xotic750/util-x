@@ -75,7 +75,7 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr
+    wsStr, hasDeleteBug
 */
 
 /**
@@ -199,8 +199,7 @@
         propNotEnumerable,
         shadowed,
 
-        // Shortcuts
-        pCharAt,
+        // Shortcuts,
         CError,
         CTypeError,
         CSyntaxError,
@@ -297,6 +296,8 @@
 
         //iBind,
 
+        $hasProperty,
+        $getItem,
         $toNumber,
         $instanceOf,
         $returnThis,
@@ -1717,7 +1718,6 @@
      */
 
     // Shortcuts
-    pCharAt = base.String.charAt;
     CError = base.Error.Ctr;
     CTypeError = base.TypeError.Ctr;
     CSyntaxError = base.SyntaxError.Ctr;
@@ -2427,7 +2427,8 @@
 
     /**
      * Delete an item from an Array or Arguments object with delete bug. Internal use only.
-     * Safari 5
+     * Safari 5. IE has another delete bug w.r.t. globally defined variables but I'm not
+     * going to mask that problem.
      *
      * @private
      * @function module:util-x~$deleteProperty
@@ -2440,12 +2441,14 @@
         if (hasDeleteBug) {
             fn = function (object, property) {
                 try {
-                    delete object[property];
-                } catch (ignore) {}
+                    return delete object[property];
+                } catch (ehasDeleteBug) {
+                    return ehasDeleteBug;
+                }
             };
         } else {
             fn = function (object, property) {
-                delete object[property];
+                return delete object[property];
             };
         }
 
@@ -2593,19 +2596,80 @@
     */
 
     /**
+     * Shortcut
+     * Redefined later
+     * Returns true if the operand inputArg is a string.
+     *
+     * @private
+     * @function module:util-x~$isString
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isString = function (inputArg) {
+        return typeof inputArg === 'string' || 'charAt' in inputArg;
+    };
+
+    /**
+     * Shortcut
+     * Redefined later
+     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
+     *
+     * @private
+     * @function module:util-x~$isArguments
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isArguments = function duckType(inputArg) {
+        return !$isPrimitive(inputArg) && typeof inputArg.length === 'number' && 'callee' in inputArg && !('arguments' in inputArg);
+    };
+
+    /**
      * @private
      * @function module:util-x~$hasProperty
      * @param {*} inputArg The object to be tested.
      * @param {string} property The property name.
      * @returns {boolean} True if the property is on the object or in the object's prototype, otherwise false.
      */
-    /*jslint todo: true */
-    /** @todo: fix args and string enum bug */
-    /*jslint todo: false */
-    function $hasProperty(inputArg, property) {
+    $hasProperty = (function () {
+        var fn;
+
+        if (hasEnumStringBug || hasEnumArgsBug) {
+            fn = function $hasProperty(inputArg, property) {
+                var length = $toLength(inputArg.length);
+
+                if (length && $isIndex(property, length)) {
+                    if ((hasEnumStringBug && $isString(inputArg)) || (hasEnumArgsBug && $isArguments(inputArg))) {
+                        return true;
+                    }
+                }
+
+                /*jstwit in: true */
+                return $toString(property) in $toObject(inputArg);
+            };
+        } else {
+            fn = function $hasProperty(inputArg, property) {
+                /*jstwit in: true */
+                return $toString(property) in $toObject(inputArg);
+            };
+        }
+
+        return fn;
+    }());
+
+    /**
+     * Indicates if a string suffers the "indexed accessability bug".
+     * True if it does, otherwise false.
+     *
+     * @private
+     * @name module:util-x~hasBoxedStringBug
+     * @type {boolean}
+     */
+    hasBoxedStringBug = (function () {
+        var boxedString = $Object('a');
+
         /*jstwit in: true */
-        return $toString(property) in $toObject(inputArg);
-    }
+        return boxedString[0] !== 'a' || !(0 in boxedString);
+    }());
 
     /**
      * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
@@ -2633,17 +2697,22 @@
      * @param {string} stringTag
      * @returns {*}
      */
-    function $getItem(object, index, stringTag) {
-        var item;
+    $getItem = (function (pCharAt) {
+        return function (object, index, stringTag) {
+            var item;
 
-        if (stringTag === stringTagString) {
-            item = $call(pCharAt, object, index);
-        } else {
-            item = object[index];
-        }
+            if (hasBoxedStringBug && stringTag === stringTagString) {
+                item = $call(pCharAt, object, index);
+            } else {
+                item = object[index];
+                if (stringTag === stringTagString && $isUndefined(item)) {
+                    item = '';
+                }
+            }
 
-        return item;
-    }
+            return item;
+        };
+    }(base.String.charAt));
 
     /**
      * Creates a new array from the arraylike argument, starting at start and ending at end.
@@ -3116,14 +3185,7 @@
     exports.Number.isNumber = $isNumber;
     exports.Number.isNumber.argNames = ['inputArg'];
 
-    /**
-     * Returns true if the operand inputArg is a string.
-     *
-     * @private
-     * @function module:util-x~$isString
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
+    // redefinition
     $isString = (function (pOToString, strStr) {
         var hasBug;
 
@@ -3195,15 +3257,7 @@
         };
     }(base.Object.toString, $toString(CArray)));
 
-    /**
-     * Shortcut
-     * Returns true if the operand inputArg is an {@link Arguments arguments} object.
-     *
-     * @private
-     * @function module:util-x~$isArguments
-     * @param {*} inputArg
-     * @returns {boolean}
-     */
+    // redefinition
     $isArguments = (function (pOToString) {
         var isArgs = $call(pOToString, $returnArgs()) === stringTagArguments,
             fn;
@@ -4036,20 +4090,6 @@
      * @type {boolean}
      */
     hasEnumStringBug = !$call(pHasOwn, 'x', '0');
-
-    /**
-     * Indicates if a string suffers the "indexed accessability bug".
-     * True if it does, otherwise false.
-     *
-     * @private
-     * @name module:util-x~hasBoxedStringBug
-     * @type {boolean}
-     */
-    hasBoxedStringBug = (function () {
-        var boxedString = $Object('a');
-
-        return boxedString[0] !== 'a' || !$hasProperty(boxedString, 0);
-    }());
 
     /**
      * Indicates if a arra suffers the "zero length array's length is not a number bug".
@@ -7115,7 +7155,7 @@
                 }
 
                 for (index = from; index < to; index += 1) {
-                    result += $call(pCharAt, object, index);
+                    result += $getItem(object, index, stringTagString);
                 }
 
                 return result;
@@ -7943,7 +7983,7 @@
      * @returns {string}
      */
     exports.String.proto.first = function () {
-        return $call(pCharAt, $onlyCoercibleToString(this), 0);
+        return $getItem($onlyCoercibleToString(this), 0, stringTagString);
     };
 
     /**
@@ -7970,7 +8010,7 @@
     exports.String.proto.last = function () {
         var str = $onlyCoercibleToString(this);
 
-        return $call(pCharAt, str, str.length - 1);
+        return $getItem(str, str.length - 1, stringTagString);
     };
 
     /**
@@ -7996,9 +8036,10 @@
      */
     exports.String.proto.countCharacter = function (character) {
         var str = $onlyCoercibleToString(this),
-            first = $call(pCharAt, $onlyCoercibleToString(character), 0),
+            first = $getItem($onlyCoercibleToString(character), 0, stringTagString),
             val;
 
+        $conlog('first', first);
         if (first === '') {
             val = Infinity;
         } else {
@@ -8035,7 +8076,7 @@
      */
     exports.String.proto.padLeadingChar = function (character, size) {
         var string = $onlyCoercibleToString(this),
-            singleChar = $call(pCharAt, $onlyCoercibleToString(character), 0),
+            singleChar = $getItem($onlyCoercibleToString(character), 0, stringTagString),
             count = $toInteger(size) - string.length;
 
         if (count < 0 || count === Infinity) {
@@ -12134,7 +12175,7 @@
         for (index = 0; index < length; index += 1) {
             it = keys[index];
             if (isString && $toString($toInteger(it)) === it && it >= 0 && it <= MAX_SAFE_INTEGER) {
-                item = $call(pCharAt, object, it);
+                item = $getItem(object, it, stringTagString);
             } else {
                 item = object[it];
             }
@@ -12283,7 +12324,7 @@
 
                 if ($isArray(object) || $isArguments(object)) {
                     property = $toString(property);
-                    if ($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) {
+                    if ($isDigits(property) && $getItem(property, 0, stringTagString) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) {
                         property = $toNumber(property);
                         isIdx = true;
                     }
@@ -12485,7 +12526,7 @@
                         return function (object, property, descriptor) {
                             if ($isArray(object) || $isArguments(object)) {
                                 property = $toString(property);
-                                if (($isDigits(property) && $call(pCharAt, property, 0) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) || $isNumeric(property)) {
+                                if (($isDigits(property) && $getItem(property, 0, stringTagString) !== '0' && $isIndex($toNumber(property), MAX_UINT32 - 1)) || $isNumeric(property)) {
                                     return $defProp(object, property, descriptor);
                                 }
                             }
@@ -13737,7 +13778,7 @@
             if (isString) {
                 tempVal = {};
                 for (inIndex = 0; inIndex < inLen; inIndex += 1) {
-                    tempVal[inIndex] = $call(pCharAt, object, inIndex);
+                    tempVal[inIndex] = $getItem(object, inIndex, stringTagString);
                 }
 
                 object = tempVal;
@@ -14682,7 +14723,7 @@
                     $push(val, []);
                 } else {
                     if ($toStringTag(thisObj) === stringTagString) {
-                        lastElement = $call(pCharAt, thisObj, len - 1);
+                        lastElement = $getItem(thisObj, len - 1, stringTagString);
                         object = $sSlice(thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
@@ -15208,7 +15249,7 @@
 
             // Exponential notation?
             if (!preventExp && (e <= TO_EXP_NEG || e >= TO_EXP_POS)) {
-                str = $call(pCharAt, strT, 0);
+                str = $getItem(strT, 0, stringTagString);
                 if (strL > 1) {
                     str += '.' + $sSlice(strT, 1);
                 }
@@ -15243,7 +15284,7 @@
                 }
                 // Exponent zero.
             } else if (strL > 1) {
-                str = $call(pCharAt, strT, 0) + '.' + $sSlice(strT, 1);
+                str = $getItem(strT, 0, stringTagString) + '.' + $sSlice(strT, 1);
             } else {
                 str = strT;
             }
@@ -15371,7 +15412,7 @@
             }
 
             // Determine sign.
-            if ($call(pCharAt, n, 0) === '-') {
+            if ($getItem(n, 0, stringTagString) === '-') {
                 n = $sSlice(n, 1);
                 this.s = -1;
             } else {
@@ -15401,7 +15442,7 @@
 
             // Determine leading zeros.
             i = 0;
-            while ($call(pCharAt, n, i) === '0') {
+            while ($getItem(n, i, stringTagString) === '0') {
                 i += 1;
             }
 
@@ -15413,7 +15454,7 @@
             } else {
                 // Determine trailing zeros.
                 nL -= 1;
-                while ($call(pCharAt, n, nL) === '0') {
+                while ($getItem(n, nL, stringTagString) === '0') {
                     nL -= 1;
                 }
 
@@ -15421,7 +15462,7 @@
                 this.c = [];
                 // Convert string to array of digits without leading/trailing zeros.
                 for (e = 0; i <= nL; i += 1, e += 1) {
-                    this.c[e] = +$call(pCharAt, n, i);
+                    this.c[e] = $toNumber($getItem(n, i, stringTagString));
                 }
             }
         }
