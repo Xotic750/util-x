@@ -13161,14 +13161,22 @@
      * @returns {boolean}
      * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
      */
-    exports.Object.deepEqual = (function (pGetTime) {
+    exports.Object.deepEqual = (function () {
         return function (a, b) {
             if (a === b) {
                 return true;
             }
 
-            if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
-                return $call(pGetTime, a) === $call(pGetTime, b);
+            var stringTagA = $toStringTag(a),
+                stringTagB = $toStringTag(b),
+                ka,
+                kb,
+                length,
+                index,
+                it;
+
+            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
             }
 
             if ($isRegExp(a) && $isRegExp(b)) {
@@ -13197,12 +13205,6 @@
                 return $deepEqual($slice(a), $slice(b));
             }
 
-            var ka,
-                kb,
-                length,
-                index,
-                it;
-
             try {
                 ka = $objectKeys(a);
                 kb = $objectKeys(b);
@@ -13213,7 +13215,7 @@
             length = $toLength(ka.length);
             if (length !== $toLength(kb.length)) {
                 if ($isArray(a) && $isArray(b)) {
-                    if ($toLength(a.length) !== $toLength(b.length)) {
+                    if (a.length !== b.length) {
                         return false;
                     }
                 } else {
@@ -13231,14 +13233,17 @@
 
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!$deepEqual(a[it], b[it])) {
+                if (!$deepEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
                     return false;
                 }
             }
 
-            return $typeOf(a) === $typeOf(b);
+            stringTagA = typeof a;
+            stringTagB = typeof b;
+
+            return stringTagA === stringTagB;
         };
-    }(base.Date.getTime));
+    }());
 
     exports.Object.deepEqual.argNames = ['a', 'b'];
 
@@ -13262,14 +13267,22 @@
      * @param {*} b
      * @returns {boolean}
      */
-    exports.Object.deepStrictEqual = (function (pGetTime) {
+    exports.Object.deepStrictEqual = (function () {
         return function (a, b) {
             if (a === b) {
                 return true;
             }
 
-            if ($toStringTag(a) === stringTagDate && $toStringTag(b) === stringTagDate) {
-                return $call(pGetTime, a) === $call(pGetTime, b);
+            var stringTagA = $toStringTag(a),
+                stringTagB = $toStringTag(b),
+                ka,
+                kb,
+                length,
+                index,
+                it;
+
+            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
             }
 
             if ($isRegExp(a) && $isRegExp(b)) {
@@ -13297,12 +13310,6 @@
                 return $deepStrictEqual($slice(a), $slice(b));
             }
 
-            var ka,
-                kb,
-                length,
-                index,
-                it;
-
             try {
                 ka = $objectKeys(a);
                 kb = $objectKeys(b);
@@ -13313,7 +13320,7 @@
             length = $toLength(ka.length);
             if (length !== $toLength(kb.length)) {
                 if ($isArray(a) && $isArray(b)) {
-                    if ($toLength(a.length) !== $toLength(b.length)) {
+                    if (a.length !== b.length) {
                         return false;
                     }
                 } else {
@@ -13331,14 +13338,17 @@
 
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!$deepStrictEqual(a[it], b[it])) {
+                if (!$deepStrictEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
                     return false;
                 }
             }
 
-            return $typeOf(a) === $typeOf(b);
+            stringTagA = typeof a;
+            stringTagB = typeof b;
+
+            return stringTagA === stringTagB;
         };
-    }(base.Date.getTime));
+    }());
 
     exports.Object.deepStrictEqual.argNames = ['a', 'b'];
 
@@ -13771,7 +13781,9 @@
             temp2,
             num,
             cond1,
-            cond2;
+            cond2,
+            len1,
+            len2;
 
         if (prop1 !== prop2) {
             temp1 = exports.Object.getOwnPropertyDescriptor(object, prop1) || {};
@@ -13779,14 +13791,20 @@
             num = $toLength(prop2);
             cond1 = $hasOwnValidLength(object) && !$isFunction(object) && $toString(num) === prop2;
             if (!$isPlainObject(temp1) || !$call(pHasOwn, temp1, 'value')) {
-                if (cond1 && num === $toLength(object.length) - 1) {
-                    object.length -= 1;
+                if (cond1) {
+                    len1 = $toLength(object.length) - 1;
+                    if (num === len1) {
+                        object.length = len1;
+                    }
                 }
 
                 $deleteProperty(object, prop2);
             } else {
-                if (cond1 && num === $toLength(object.length)) {
-                    object.length += 1;
+                if (cond1) {
+                    len1 = $toLength(object.length);
+                    if (num === len1) {
+                        object.length = len1 + 1;
+                    }
                 }
 
                 $defineProperty(object, prop2, temp1);
@@ -13795,15 +13813,21 @@
             num = $toLength(prop1);
             cond2 = $hasOwnValidLength(object) && !$isFunction(object) && $toString(num) === prop1;
             if (!$isPlainObject(temp2) || !$call(pHasOwn, temp2, 'value')) {
-                if (cond2 && num === $toLength(object.length) - 1) {
-                    object.length -= 1;
+                if (cond2) {
+                    len2 = $toLength(object.length) - 1;
+                    if (num === len2) {
+                        object.length = len2;
+                    }
                 }
 
                 $deleteProperty(object, prop1);
             } else {
                 $defineProperty(object, prop1, temp2);
-                if (cond2 && num === $toLength(object.length)) {
-                    object.length += 1;
+                if (cond2) {
+                    len2 = $toLength(object.length);
+                    if (num === len2) {
+                        object.length = len2 + 1;
+                    }
                 }
 
                 $defineProperty(object, prop1, temp2);
