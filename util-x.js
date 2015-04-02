@@ -2687,92 +2687,6 @@
     }
 
     /**
-     * For getting an objects item by index. Can pacth or objects that don't work with boxed index access.
-     * Primary use in Array shims.
-     *
-     * @private
-     * @function module:util-x~$getItem
-     * @param {Object} object
-     * @param {number} index
-     * @param {string} stringTag
-     * @returns {*}
-     */
-    $getItem = (function (pCharAt) {
-        return function (object, index, stringTag) {
-            var item;
-
-            if (hasBoxedStringBug && stringTag === stringTagString) {
-                item = $call(pCharAt, object, index);
-            } else {
-                item = object[index];
-                if (stringTag === stringTagString && $isUndefined(item)) {
-                    item = '';
-                }
-            }
-
-            return item;
-        };
-    }(base.String.charAt));
-
-    /**
-     * Creates a new array from the arraylike argument, starting at start and ending at end.
-     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
-     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
-     * in the mission critical function {@link module:util-x~$toMethod}.
-     *
-     * @private
-     * @function module:util-x~$pSlice
-     * @this {module:util-x~ArrayLike} The object to be sliced.
-     * @throws {TypeError} If args is not coercible to an object.
-     * @param {module:util-x~NumberLike} [start] The starting index.
-     * @param {module:util-x~NumberLike} [end] The ending index.
-     * @returns {Array} A new array containg the selection.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-     */
-    $pSlice = function (start, end) {
-        var object = $toObject(this),
-            length = $toLength(object.length),
-            stringTag = $toStringTag ? $toStringTag(object) : $call(base.Object.toString, object),
-            relativeStart = $toInteger(start),
-            val = [],
-            next = 0,
-            relativeEnd,
-            finalEnd,
-            k;
-
-        if (relativeStart < 0) {
-            k = $max(length + relativeStart, 0);
-        } else {
-            k = $min(relativeStart, length);
-        }
-
-        if ($isUndefined(end)) {
-            relativeEnd = length;
-        } else {
-            relativeEnd = $toInteger(end);
-        }
-
-        if (relativeEnd < 0) {
-            finalEnd = $max(length + relativeEnd, 0);
-        } else {
-            finalEnd = $min(relativeEnd, length);
-        }
-
-        finalEnd = $toLength(finalEnd);
-        val.length = $toLength($max(finalEnd - k, 0));
-        while (k < finalEnd) {
-            if ($hasItem(object, k, stringTag)) {
-                val[next] = $getItem(object, k, stringTag);
-            }
-
-            next += 1;
-            k += 1;
-        }
-
-        return val;
-    };
-
-    /**
      * @private
      * @function module:util-x~$getName
      * @param {Object} object
@@ -2810,7 +2724,7 @@
 
     function $throwArgsWrongType(args) {
         if (args !== null && !$isUndefined(args)) {
-            if ($isPrimitive(args) || (!$isPrimitive(args.constructor) && args.constructor.prototype === protoString)) {
+            if ($isPrimitive(args) || $isString(args)) {
                 throw new CTypeError('Arguments list has wrong type');
             }
         }
@@ -3001,6 +2915,92 @@
         $deleteProperty(func, name);
 
         return rtn;
+    };
+
+    /**
+     * For getting an objects item by index. Can pacth or objects that don't work with boxed index access.
+     * Primary use in Array shims.
+     *
+     * @private
+     * @function module:util-x~$getItem
+     * @param {Object} object
+     * @param {number} index
+     * @param {string} stringTag
+     * @returns {*}
+     */
+    $getItem = (function (pCharAt) {
+        return function (object, index, stringTag) {
+            var item;
+
+            if (hasBoxedStringBug && stringTag === stringTagString) {
+                item = $call(pCharAt, object, index);
+            } else {
+                item = object[index];
+                if (stringTag === stringTagString && $isUndefined(item)) {
+                    item = '';
+                }
+            }
+
+            return item;
+        };
+    }(base.String.charAt));
+
+    /**
+     * Creates a new array from the arraylike argument, starting at start and ending at end.
+     * Combats issues where {@link module:util-x~exports.Array.proto.slice} does not work on the arguments object.
+     * Used in the {@link module:util-x~exports.Array.proto.slice} shim when it fails tests, and
+     * in the mission critical function {@link module:util-x~$toMethod}.
+     *
+     * @private
+     * @function module:util-x~$pSlice
+     * @this {module:util-x~ArrayLike} The object to be sliced.
+     * @throws {TypeError} If args is not coercible to an object.
+     * @param {module:util-x~NumberLike} [start] The starting index.
+     * @param {module:util-x~NumberLike} [end] The ending index.
+     * @returns {Array} A new array containg the selection.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+     */
+    $pSlice = function (start, end) {
+        var object = $toObject(this),
+            length = $toLength(object.length),
+            stringTag = $toStringTag ? $toStringTag(object) : $call(base.Object.toString, object),
+            relativeStart = $toInteger(start),
+            val = [],
+            next = 0,
+            relativeEnd,
+            finalEnd,
+            k;
+
+        if (relativeStart < 0) {
+            k = $max(length + relativeStart, 0);
+        } else {
+            k = $min(relativeStart, length);
+        }
+
+        if ($isUndefined(end)) {
+            relativeEnd = length;
+        } else {
+            relativeEnd = $toInteger(end);
+        }
+
+        if (relativeEnd < 0) {
+            finalEnd = $max(length + relativeEnd, 0);
+        } else {
+            finalEnd = $min(relativeEnd, length);
+        }
+
+        finalEnd = $toLength(finalEnd);
+        val.length = $toLength($max(finalEnd - k, 0));
+        while (k < finalEnd) {
+            if ($hasItem(object, k, stringTag)) {
+                val[next] = $getItem(object, k, stringTag);
+            }
+
+            next += 1;
+            k += 1;
+        }
+
+        return val;
     };
 
     /**
@@ -7836,15 +7836,19 @@
                     // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
                     // functions isn't type-converted to a string
                     result = $call(pReplace, str, search, function () {
+                        var args = $argSlice(arguments);
+
+                        args[2] = $toString(args[2]);
+
                         // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
                         // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
                         if (isRegex && search.global) {
-                            search.lastIndex = arguments[$toLength(arguments.length) - 2] + $getArgItem(arguments, 0).length;
+                            search.lastIndex = args[$toLength(args.length) - 2] + $getArgItem(args, 0).length;
                         }
 
                         // Should pass `undefined` as context; see
                         // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                        return $apply(replacement, Undefined, arguments);
+                        return $apply(replacement, Undefined, args);
                     });
                 } else {
                     // Ensure that the last value of `args` will be a string when given nonstring `this`,
@@ -7856,7 +7860,7 @@
 
                         return $call(pReplace, $toString(replacement), replacementToken, function () {
                             var $0 = $getArgItem(arguments, 0),
-                                $2 = $getArgItem(arguments, 2);
+                                $2 = $toString($getArgItem(arguments, 2));
 
                             // Special variable or numbered backreference without curly braces
                             // $$
@@ -7865,7 +7869,7 @@
                             }
 
                             // $&, $0 (not followed by 1-9), $00
-                            if ($2 === '&' || +$2 === 0) {
+                            if ($2 === '&' || $toNumber($2) === 0) {
                                 return args[0];
                             }
 
@@ -7881,7 +7885,7 @@
 
                             // Numbered backreference without curly braces
                             // Type-convert; drop leading zero
-                            $2 = +$2;
+                            $2 = $toNumber($2);
                             /*
                              * Native behavior
                              * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
@@ -10608,8 +10612,8 @@
         function sortCompare(left, right) {
             var hasj = $call(pHasOwn, left, 0),
                 hask = $call(pHasOwn, right, 0),
-                typex,
-                typey,
+                isUndefX,
+                isUndefY,
                 val;
 
             if (!hasj && !hask) {
@@ -10619,13 +10623,13 @@
             } else if (!hask) {
                 val = -1;
             } else {
-                typex = typeof left[0];
-                typey = typeof right[0];
-                if (typex === 'undefined' && typey === 'undefined') {
+                isUndefX = $isUndefined(left[0]);
+                isUndefY = $isUndefined(right[0]);
+                if (isUndefX && isUndefY) {
                     val = +0;
-                } else if (typex === 'undefined') {
+                } else if (isUndefX) {
                     val = 1;
-                } else if (typey === 'undefined') {
+                } else if (isUndefY) {
                     val = -1;
                 }
             }
