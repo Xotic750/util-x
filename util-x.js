@@ -3194,9 +3194,23 @@
         }
 
         return function (inputArg) {
-            return typeof inputArg === 'string' ||
-                (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') &&
-                    ((hasBug && inputArg === protoString) || $call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)));
+            if (typeof inputArg === 'string') {
+                return true;
+            }
+
+            if (!$isPrimitive(inputArg)) {
+                if (hasBug && inputArg === protoString) {
+                    return true;
+                }
+
+                if ($call(pHasOwn, inputArg, 'length')) {
+                    if ($call(pOToString, inputArg) === stringTagString || $checkXFrame(inputArg, strStr)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         };
     }(base.Object.toString, $toString(CString)));
 
@@ -3252,8 +3266,19 @@
         }
 
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'length') &&
-                ((hasBug && inputArg === protoArray) || $call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr));
+            if (!$isPrimitive(inputArg)) {
+                if (hasBug && inputArg === protoArray) {
+                    return true;
+                }
+
+                if ($call(pHasOwn, inputArg, 'length')) {
+                    if ($call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         };
     }(base.Object.toString, $toString(CArray)));
 
@@ -3304,34 +3329,35 @@
             hasBug2,
             fn;
 
-        if (!isRegExp) {
-            stringTagSafariPrototype = '[object RegExpPrototype]';
-            hasBug1 = isRegExp = strTag === stringTagSafariPrototype;
-        }
-
         if (isRegExp) {
-            if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
+            stringTagSafariPrototype = '[object RegExpPrototype]';
+            strTag = $call(pOToString, protoRegExp);
+            if (strTag === stringTagSafariPrototype) {
+                hasBug1 = true;
+            } else if (strTag !== stringTagRegExp) {
                 hasBug2 = true;
             }
 
             fn = function (inputArg) {
                 var stringTag;
 
-                if (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase')) {
+                if (!$isPrimitive(inputArg)) {
                     stringTag = $call(pOToString, inputArg);
-                    if (!hasBug1) {
+                    if ($call(pHasOwn, inputArg, 'ignoreCase')) {
                         if (stringTag === stringTagRegExp) {
                             return true;
                         }
-                    } else if (stringTag === stringTagSafariPrototype) {
-                        return true;
+
+                        if (hasBug2 && inputArg === protoRegExp) {
+                            return true;
+                        }
+
+                        if ($checkXFrame(inputArg, strRx)) {
+                            return true;
+                        }
                     }
 
-                    if (hasBug2 && inputArg === protoRegExp) {
-                        return true;
-                    }
-
-                    if ($checkXFrame(inputArg, strRx)) {
+                    if (hasBug1 && stringTag === stringTagSafariPrototype) {
                         return true;
                     }
                 }
@@ -3381,9 +3407,21 @@
         }
 
         return function (inputArg) {
-            return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'message') &&
-                ((hasBug && inputArg === protoError) || $call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr));
+            if (!$isPrimitive(inputArg)) {
+                if (hasBug && inputArg === protoError) {
+                    return true;
+                }
+
+                if ($call(pHasOwn, inputArg, 'message')) {
+                    if ($call(pOToString, inputArg) === stringTagError || $checkXFrame(inputArg, strErr)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         };
+
     }(base.Object.toString, $toString(CError)));
 
     /**
