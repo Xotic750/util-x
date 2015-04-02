@@ -2621,7 +2621,7 @@
      * @returns {boolean}
      */
     $isString = function (inputArg) {
-        return typeof inputArg === 'string' || 'charAt' in inputArg;
+        return typeof inputArg === 'string' || (!$isPrimitive(inputArg) && typeof inputArg.length === 'number' && 'charAt' in inputArg);
     };
 
     /**
@@ -2722,14 +2722,20 @@
         return thisArg;
     }
 
-    function $throwArgsWrongType(args) {
-        if (args !== null && !$isUndefined(args)) {
-            if ($isPrimitive(args) || $isString(args)) {
+    /**
+     * @private
+     * @function module:util-x~ $throwArgsWrongType
+     * @param {*} inputArg
+     * @returns {*}
+     */
+    function $throwArgsWrongType(inputArg) {
+        if (inputArg !== null && !$isUndefined(inputArg)) {
+            if ($isPrimitive(inputArg) || (typeof inputArg.length === 'number' && 'charAt' in inputArg)) {
                 throw new CTypeError('Arguments list has wrong type');
             }
         }
 
-        return args;
+        return inputArg;
     }
 
     /**
