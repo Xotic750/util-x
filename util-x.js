@@ -3271,7 +3271,7 @@
                     return true;
                 }
 
-                if ($call(pHasOwn, inputArg, 'length')) {
+                if ($call(pHasOwn, inputArg, 'length') && !$call(pHasOwn, inputArg, 'callee')) {
                     if ($call(pOToString, inputArg) === stringTagArray || $checkXFrame(inputArg, strArr)) {
                         return true;
                     }
