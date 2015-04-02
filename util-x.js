@@ -3297,16 +3297,20 @@
      * @returns {boolean}
      */
     $isRegExp = (function (pOToString, strRx) {
-        var isRegExp = $call(pOToString, new CRegExp('x')) === stringTagRegExp,
-            strinTagSafariPrototype = '[object RegExpPrototype]',
+        var strTag = $call(pOToString, new CRegExp('x')),
+            isRegExp = strTag === stringTagRegExp,
+            stringTagSafariPrototype,
             hasBug1,
             hasBug2,
             fn;
 
+        if (!isRegExp) {
+            stringTagSafariPrototype = '[object RegExpPrototype]';
+            hasBug1 = isRegExp = strTag === stringTagSafariPrototype;
+        }
+
         if (isRegExp) {
-            if ($call(pOToString, protoRegExp) === strinTagSafariPrototype) {
-                hasBug1 = true;
-            } else if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
+            if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
                 hasBug2 = true;
             }
 
@@ -3315,7 +3319,19 @@
 
                 if (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase')) {
                     stringTag = $call(pOToString, inputArg);
-                    if (stringTag === stringTagRegExp || (hasBug1 && stringTag === strinTagSafariPrototype) || (hasBug2 && inputArg === protoRegExp) || $checkXFrame(inputArg, strRx)) {
+                    if (!hasBug1) {
+                        if (stringTag === stringTagRegExp) {
+                            return true;
+                        }
+                    } else if (stringTag === stringTagSafariPrototype) {
+                        return true;
+                    }
+
+                    if (hasBug2 && inputArg === protoRegExp) {
+                        return true;
+                    }
+
+                    if ($checkXFrame(inputArg, strRx)) {
                         return true;
                     }
                 }
