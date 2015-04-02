@@ -8822,16 +8822,15 @@
      */
     exports.Array.proto.firstIn = function () {
         var object = $specialToObject(this),
-            length = object.length,
-            stringTag = $toStringTag(object),
+            length = $toLength(object.length),
             rtn = -1,
             index;
 
-        if (stringTag === stringTagString) {
+        if ($toStringTag(object) === stringTagString) {
             rtn = length - 1;
         } else {
             for (index = 0; index < length; index += 1) {
-                if ($hasItem(object, index, stringTag)) {
+                if ($hasProperty(object, index)) {
                     rtn = index;
                     break;
                 }
@@ -8883,16 +8882,15 @@
      */
     exports.Array.proto.lastIn = function () {
         var object = $specialToObject(this),
-            last = object.length - 1,
-            stringTag = $toStringTag(object),
+            last = $toLength(object.length) - 1,
             rtn = -1,
             index;
 
-        if (stringTag === stringTagString) {
+        if ($toStringTag(object) === stringTagString) {
             rtn = last;
         } else {
             for (index = last; index >= 0; index -= 1) {
-                if ($hasItem(object, index, stringTag)) {
+                if ($hasProperty(object, index)) {
                     rtn = index;
                     break;
                 }
