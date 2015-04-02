@@ -3298,17 +3298,29 @@
      */
     $isRegExp = (function (pOToString, strRx) {
         var isRegExp = $call(pOToString, new CRegExp('x')) === stringTagRegExp,
-            hasBug,
+            strinTagSafariPrototype = '[object RegExpPrototype]',
+            hasBug1,
+            hasBug2,
             fn;
 
         if (isRegExp) {
-            if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
-                hasBug = true;
+            if ($call(pOToString, protoRegExp) === strinTagSafariPrototype) {
+                hasBug1 = true;
+            } else if ($call(pOToString, protoRegExp) !== stringTagRegExp) {
+                hasBug2 = true;
             }
 
             fn = function (inputArg) {
-                return !$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase') &&
-                    ((hasBug && inputArg === protoRegExp) || $call(pOToString, inputArg) === stringTagRegExp || $checkXFrame(inputArg, strRx));
+                var stringTag;
+
+                if (!$isPrimitive(inputArg) && $call(pHasOwn, inputArg, 'ignoreCase')) {
+                    stringTag = $call(pOToString, inputArg);
+                    if (stringTag === stringTagRegExp || (hasBug1 && stringTag === strinTagSafariPrototype) || (hasBug2 && inputArg === protoRegExp) || $checkXFrame(inputArg, strRx)) {
+                        return true;
+                    }
+                }
+
+                return false;
             };
         } else {
             fn = function (inputArg) {
