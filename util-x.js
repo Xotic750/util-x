@@ -8808,7 +8808,7 @@
                         }),
                         match;
 
-                    r2.lastIndex = pos || 0;
+                    r2.lastIndex = pos;
                     match = $exec(r2, str);
                     if (regex.global) {
                         if (match) {
@@ -8828,9 +8828,10 @@
                         origLastIndex,
                         lastLastIndex,
                         lastLength,
-                        pos,
                         match,
-                        length;
+                        length,
+                        mIndex,
+                        m0Len;
 
                     // "0".split(undefined, 0) -> []
                     if ($isUndefined(separator) && limit === 0) {
@@ -8859,25 +8860,26 @@
                             origLastIndex = $toNumber(separator.lastIndex);
                             lastLastIndex = 0;
                             length = $toLength(str.length);
-                            match = search(str, separator, pos);
+                            match = search(str, separator, 0);
                             while (match) {
+                                mIndex = $toNumber(match.index);
+                                m0Len = $toLength(match[0].length);
                                 // This condition is not the same as `if (match[0].length)`
-                                if (($toNumber(match.index) + $toLength(match[0].length)) > lastLastIndex) {
-                                    $push(output, $sSlice(str, lastLastIndex, $toNumber(match.index)));
-                                    if ($toLength(match.length) > 1 && $toNumber(match.index) < length) {
+                                if ((mIndex + m0Len) > lastLastIndex) {
+                                    $push(output, $sSlice(str, lastLastIndex, mIndex));
+                                    if ($toLength(match.length) > 1 && mIndex < length) {
                                         output = $concat(output, $slice(match, 1));
                                     }
 
-                                    lastLength = $toLength(match[0].length);
-                                    lastLastIndex = $toNumber(match.index) + lastLength;
+                                    lastLength = m0Len;
+                                    lastLastIndex = mIndex + lastLength;
                                 }
 
-                                pos = $toNumber(match.index) + ($toLength(match[0].length) || 1);
-                                match = search(str, separator, pos);
+                                match = search(str, separator, mIndex + (m0Len || 1));
                             }
 
-                            if (lastLastIndex === $toLength(str.length)) {
-                                if (!$test(separator, '') || lastLength) {
+                            if (lastLastIndex === length) {
+                                if (!$call(pTest, separator, '') || lastLength) {
                                     $push(output, '');
                                 }
                             } else {
