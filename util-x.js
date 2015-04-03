@@ -8018,6 +8018,10 @@
 
             var stringTagA = $toStringTag(a),
                 stringTagB = $toStringTag(b),
+                aIsArgs,
+                bIsArgs,
+                aIsPrim,
+                bIsPrim,
                 ka,
                 kb,
                 length,
@@ -8037,30 +8041,33 @@
                     a.sticky === b.sticky;
             }
 
-            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
+            aIsPrim = $isPrimitive(a);
+            bIsPrim = $isPrimitive(b);
+            if ((aIsPrim || $isFunction(a)) && (bIsPrim || $isFunction(b))) {
                 /*jslint eqeq: true */
                 return a == b;
+            }
+
+            if (aIsPrim || bIsPrim) {
+                return a === b;
             }
 
             if (a.prototype !== b.prototype) {
                 return false;
             }
 
-            if ($isArguments(a)) {
-                if (!$isArguments(b)) {
-                    return false;
-                }
-
-                return $deepEqual($slice(a), $slice(b));
-            }
-
-            try {
-                ka = $objectKeys(a);
-                kb = $objectKeys(b);
-            } catch (eDE) {
+            aIsArgs = $isArguments(a);
+            bIsArgs = $isArguments(b);
+            if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs)) {
                 return false;
             }
 
+            if (aIsArgs) {
+                return $deepEqual($slice(a), $slice(b));
+            }
+
+            ka = $objectKeys(a);
+            kb = $objectKeys(b);
             length = $toLength(ka.length);
             if (length !== $toLength(kb.length)) {
                 if ($isArray(a) && $isArray(b)) {
@@ -8146,6 +8153,10 @@
 
             var stringTagA = $toStringTag(a),
                 stringTagB = $toStringTag(b),
+                aIsArgs,
+                bIsArgs,
+                aIsPrim,
+                bIsPrim,
                 ka,
                 kb,
                 length,
@@ -8165,7 +8176,13 @@
                     a.sticky === b.sticky;
             }
 
-            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
+            aIsPrim = $isPrimitive(a);
+            bIsPrim = $isPrimitive(b);
+            if ((aIsPrim || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
+                return a === b;
+            }
+
+            if (aIsPrim || bIsPrim) {
                 return a === b;
             }
 
@@ -8173,21 +8190,18 @@
                 return false;
             }
 
-            if ($isArguments(a)) {
-                if (!$isArguments(b)) {
-                    return false;
-                }
-
-                return $deepStrictEqual($slice(a), $slice(b));
-            }
-
-            try {
-                ka = $objectKeys(a);
-                kb = $objectKeys(b);
-            } catch (eDE) {
+            aIsArgs = $isArguments(a);
+            bIsArgs = $isArguments(b);
+            if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs)) {
                 return false;
             }
 
+            if (aIsArgs) {
+                return $deepEqual($slice(a), $slice(b));
+            }
+
+            ka = $objectKeys(a);
+            kb = $objectKeys(b);
             length = $toLength(ka.length);
             if (length !== $toLength(kb.length)) {
                 if ($isArray(a) && $isArray(b)) {
