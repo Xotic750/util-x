@@ -7881,12 +7881,12 @@
 
                             // $` (left context)
                             if ($2 === '`') {
-                                return $slice(args[length - 1], 0, args[length - 2]);
+                                return $sSlice(args[length - 1], 0, args[length - 2]);
                             }
 
                             // $' (right context)
                             if ($2 === '\'') {
-                                return $slice(args[length - 1], args[length - 2] + args[0].length);
+                                return $sSlice(args[length - 1], args[length - 2] + args[0].length);
                             }
 
                             // Numbered backreference without curly braces
