@@ -8351,6 +8351,30 @@
             function () {
                 $affirmBasic(pExec)();
 
+                $affirm.throws(function () {
+                    $call(pExec);
+                }, CTypeError, 'should throw if no arguments');
+
+                $affirm.throws(function () {
+                    $call(pExec, Undefined);
+                }, CTypeError, 'should throw if argument is undefined');
+
+                $affirm.throws(function () {
+                    $call(pExec, null);
+                }, CTypeError, 'should throw if argument is null');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pExec, /x/);
+                }, 'should not throw if no string argument');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pExec, /x/, Undefined);
+                }, 'should not throw if string argument is undefined');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pExec, /x/, null);
+                }, 'should not throw if string argument is null');
+
                 var regex = /x/,
                     match;
 
@@ -8492,6 +8516,30 @@
             function () {
                 $affirmBasic(pTest)();
                 $affirm.strictEqual(exports.RegExp.proto.exec, pExec, 'RegExp.exec was patched');
+
+                $affirm.throws(function () {
+                    $call(pTest);
+                }, CTypeError, 'should throw if no arguments');
+
+                $affirm.throws(function () {
+                    $call(pTest, Undefined);
+                }, CTypeError, 'should throw if argument is undefined');
+
+                $affirm.throws(function () {
+                    $call(pTest, null);
+                }, CTypeError, 'should throw if argument is null');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pTest, /x/);
+                }, 'should not throw if no string argument');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pTest, /x/, Undefined);
+                }, 'should not throw if string argument is undefined');
+
+                $affirm.doesNotThrow(function () {
+                    $call(pTest, /x/, null);
+                }, 'should not throw if string argument is null');
             },
 
             // pass
