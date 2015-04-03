@@ -75,7 +75,7 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr, hasDeleteBug
+    wsStr, hasDeleteBug, str
 */
 
 /**
@@ -7797,7 +7797,28 @@
                 throw new CError('Failed token handling');
             }
 
+            testTemp.str = $call(pReplace, 'aaa', /a(a)/, '$01b');
+            if (testTemp.str !== 'aba') {
+                throw new CError('should handle double-digit backreferences $01, $10, and $99 in the replacement string');
+            }
+
+            testTemp.str = $call(pReplace, '100', /0/, function ($0, pos, str) {
+                /*jslint unparam: true */
+                /*jshint unused: false */
+                return typeof str;
+            });
+
+            if (testTemp.str !== '1string0') {
+                throw new CError('should return string as the typeof the last argument in replacement functions');
+            }
+
             testTemp.regex = /x/g;
+            testTemp.regex.lastIndex = 1;
+            $call(pReplace, '123x567', testTemp.regex, '_');
+            if (testTemp.regex.lastIndex !== 0) {
+                throw new CError('No reset of lastIndex of a global regex');
+            }
+
             testTemp.regex.lastIndex = 1;
             $call(pReplace, 'nomatch', testTemp.regex, '_');
             if (testTemp.regex.lastIndex !== 0) {
@@ -7814,9 +7835,19 @@
             }
 
             testTemp.regex = /x/;
-            testTemp.regex.lastIndex = 1;
-            $call(pReplace, 'nomatch', testTemp.regex, '_');
+            $call(pReplace, '123x567', testTemp.regex, '_');
             if (testTemp.regex.lastIndex !== 0) {
+                throw new CError('No reset of lastIndex of a non-global regex');
+            }
+
+            testTemp.regex.lastIndex = 1;
+            $call(pReplace, '123x567', testTemp.regex, '_');
+            if (testTemp.regex.lastIndex !== 1) {
+                throw new CError('No reset of lastIndex of a non-global regex');
+            }
+
+            $call(pReplace, 'nomatch', testTemp.regex, '_');
+            if (testTemp.regex.lastIndex !== 1) {
                 throw new CError('No reset of lastIndex of a non-global regex');
             }
 
@@ -7831,7 +7862,7 @@
 
                 if (isRegex) {
                     // Only needed if `search` is nonglobal
-                    origLastIndex = search.lastIndex;
+                    origLastIndex = $toNumber(search.lastIndex);
                 } else {
                     // Type-convert
                     search = $toString(search);
