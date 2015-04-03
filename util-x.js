@@ -7865,8 +7865,7 @@
                             length = $toLength(arguments.length);
 
                         return $call(pReplace, $toString(replacement), replacementToken, function () {
-                            var $0 = $getArgItem(arguments, 0),
-                                $2 = $toString($getArgItem(arguments, 2));
+                            var $2 = $toString($getArgItem(arguments, 2));
 
                             // Special variable or numbered backreference without curly braces
                             // $$
@@ -7881,12 +7880,12 @@
 
                             // $` (left context)
                             if ($2 === '`') {
-                                return $sSlice(args[length - 1], 0, args[length - 2]);
+                                return $sSlice(args[2], 0, $toNumber(args[1]));
                             }
 
                             // $' (right context)
                             if ($2 === '\'') {
-                                return $sSlice(args[length - 1], args[length - 2] + args[0].length);
+                                return $sSlice(args[2], $toNumber(args[1]) + $toLength(args[0].length));
                             }
 
                             // Numbered backreference without curly braces
@@ -7902,13 +7901,13 @@
                              */
                             if ($strictEqual($2, $2)) {
                                 if ($2 > (length - 3)) {
-                                    throw new CSyntaxError('Backreference to undefined group ' + $0);
+                                    throw new CSyntaxError('Backreference to undefined group ' + $toString($getArgItem(arguments, 0)));
                                 }
 
                                 return args[$2] || '';
                             }
 
-                            throw new CSyntaxError('Invalid token ' + $0);
+                            throw new CSyntaxError('Invalid token ' + $toString($getArgItem(arguments, 0)));
                         });
                     });
                 }
