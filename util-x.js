@@ -75,7 +75,7 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr, hasDeleteBug, str, target, replacement
+    wsStr, hasDeleteBug, str, target, replacement, result
 */
 
 /**
@@ -259,8 +259,6 @@
 
         hasErrorProps,
         //nonEnumProps,
-
-        testTemp,
 
         wspaceStrings,
 
@@ -556,15 +554,6 @@
         'propertyIsEnumerable',
         'constructor'
     ];
-
-    /**
-     * Object used for temporary testing values.
-     *
-     * @private
-     * @name module:util-x~testTemp
-     * @namespace
-     */
-    testTemp = {};
 
     /**
      * Holds references to language built ins.
@@ -8357,120 +8346,113 @@
          * @returns {Array} Match array with named backreference properties, or `null`.
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
          */
+        exports.RegExp.proto.exec = $decide(
+            // test
+            function () {
+                $affirmBasic(pExec)();
 
-        try {
-            if (testShims || !correctExecNpcg) {
-                throw new CError();
-            }
+                var regex = /x/,
+                    match;
 
-            testTemp.regex = /x/;
-            testTemp.regex.lastIndex = 4;
-            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
-            if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
-                throw new CError();
-            }
+                regex.lastIndex = 4;
+                $affirm.deepEqual($slice($call(pExec, regex, '123x5')), ['x'], 'should ignore lastIndex and set the search start position at 0 for a nonglobal regex');
 
-            testTemp.regex = /x/g;
-            testTemp.regex.lastIndex = 4;
-            if ($call(pExec, testTemp.regex, '123x5') !== null) {
-                throw new CError();
-            }
+                regex = /x/g;
 
-            testTemp.regex.lastIndex = 2;
-            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
-            if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
-                throw new CError();
-            }
+                regex.lastIndex = 4;
+                $affirm.strictEqual($call(pExec, regex, '123x5'), null, 'should use lastIndex to set the search start position for a global regex');
 
-            testTemp.regex.lastIndex = '3';
-            testTemp.execSlice = $slice($call(pExec, testTemp.regex, '123x5'));
-            if (testTemp.execSlice.length !== 1 || testTemp.execSlice[0] !== 'x') {
-                throw new CError();
-            }
+                regex.lastIndex = 2;
+                $affirm.deepEqual($slice($call(pExec, regex, '123x5')), ['x'], 'should use lastIndex to set the search start position for a global regex');
 
-            testTemp.regex.lastIndex = '4';
-            if ($call(pExec, testTemp.regex, '123x5') !== null) {
-                throw new CError();
-            }
+                regex = /x/g;
 
-            testTemp.regex = /\b/g;
-            testTemp.match = $call(pExec, testTemp.regex, '1,2');
-            if (!testTemp.match[0].length && testTemp.regex.lastIndex > testTemp.match.index) {
-                throw new CError();
-            }
+                regex.lastIndex = '3';
+                $affirm.deepEqual($slice($call(pExec, regex, '123x5')), ['x'], 'should type convert lastIndex when setting the search start position');
 
-            testTemp.regex = /x/;
-            $call(pExec, testTemp.regex, '123x5');
-            if (testTemp.regex.lastIndex !== 0) {
-                throw new CError();
-            }
+                regex.lastIndex = '4';
+                $affirm.strictEqual($call(pExec, regex, '123x5'), null, 'should type convert lastIndex when setting the search start position');
 
-            exports.RegExp.proto.exec = pExec;
-        } catch (eExec) {
-            exports.RegExp.proto.exec = function (stringArg) {
-                var str,
-                    origLastIndex,
-                    match,
-                    found,
-                    len,
-                    idx,
-                    r2;
+                regex = /\b/g;
+                match = $call(pExec, regex, '1,2');
 
-                throwIfNotRegExp(this);
-                str = $toString(stringArg);
-                origLastIndex = this.lastIndex;
-                match = $apply(pExec, this, arguments);
-                if ($isArray(match)) {
-                    // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
-                    // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
-                    // older IEs. IE 9 in standards mode follows the spec
-                    len = match.length;
-                    if (!correctExecNpcg && len > 1) {
-                        for (idx = 0; idx < len; idx += 1) {
-                            if ('' === match[idx]) {
-                                found = true;
-                                break;
+                $affirm.deepEqual(match[0].length, 0, 'should not increment index on zero length mathces');
+                $affirm.deepEqual(regex.lastIndex, match.index, 'should not increment index on zero length mathces');
+
+                regex = /x/;
+
+                $call(pExec, regex, '123x5');
+
+                $affirm.strictEqual(regex.lastIndex, 0, 'should not increment lastIndex non global');
+            },
+
+            // pass
+            function () {
+                return pExec;
+            },
+
+            // fail
+            function () {
+                return function (stringArg) {
+                    var origLastIndex = $toNumber(throwIfNotRegExp(this).lastIndex),
+                        match = $apply(pExec, this, arguments),
+                        found,
+                        len,
+                        idx;
+
+                    if ($isArray(match)) {
+                        // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating
+                        // capturing groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of
+                        // older IEs. IE 9 in standards mode follows the spec
+                        len = $toLength(match.length);
+                        if (!correctExecNpcg && len > 1) {
+                            for (idx = 0; idx < len; idx += 1) {
+                                if ('' === match[idx]) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (found) {
+                                // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
+                                // matching due to characters outside the match
+                                $call(pReplace, $sSlice($toString(stringArg), $toNumber(match.index)), copyRegExp(this, {remove: 'g'}), function () {
+                                    var length = $toLength(arguments.length) - 2,
+                                        index,
+                                        it;
+
+                                    // Skip index 0 and the last 2
+                                    for (index = 1; index < length; index += 1) {
+                                        it = arguments[index];
+                                        if ($isUndefined(it)) {
+                                            match[index] = it;
+                                        }
+                                    }
+                                });
                             }
                         }
 
-                        if (found) {
-                            r2 = copyRegExp(this, {remove: 'g'});
-                            // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
-                            // matching due to characters outside the match
-                            $call(pReplace, $sSlice($toString(str), match.index), r2, function () {
-                                var length = arguments.length - 2,
-                                    index,
-                                    type,
-                                    it;
-
-                                // Skip index 0 and the last 2
-                                for (index = 1; index < length; index += 1) {
-                                    it = arguments[index];
-                                    type = typeof it;
-                                    if (type === 'undefined') {
-                                        match[index] = it;
-                                    }
-                                }
-                            });
+                        // Fix browsers that increment `lastIndex` after zero-length matches
+                        if (this.global && !$toLength(match[0].length) && $toNumber(this.lastIndex) > $toNumber(match.index)) {
+                            this.lastIndex = $toNumber(match.index);
                         }
                     }
 
-                    // Fix browsers that increment `lastIndex` after zero-length matches
-                    if (this.global && !match[0].length && this.lastIndex > match.index) {
-                        this.lastIndex = match.index;
+                    if (!this.global) {
+                        // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
+                        this.lastIndex = origLastIndex;
                     }
-                }
 
-                if (!this.global) {
-                    // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
-                    this.lastIndex = origLastIndex;
-                }
+                    return match;
+                };
+            },
 
-                return match;
-            };
+            // argNames
+            ['stringArg'],
 
-            exports.RegExp.proto.exec.argNames = ['stringArg'];
-        }
+            // message
+            'RegExp.exec patch'
+        );
 
         /**
          * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -8505,12 +8487,32 @@
          * @returns {Boolean} Whether the regex matched the provided value.
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test
          */
-        exports.RegExp.proto.test = function (stringArg) {
-            // Do this the easy way :-)
-            return !!$exec(this, stringArg);
-        };
+        exports.RegExp.proto.test = $decide(
+            // test
+            function () {
+                $affirmBasic(pTest)();
+                $affirm.strictEqual(exports.RegExp.proto.exec, pExec, 'RegExp.exec was patched');
+            },
 
-        exports.RegExp.proto.test.argNames = ['stringArg'];
+            // pass
+            function () {
+                return pTest;
+            },
+
+            // fail
+            function () {
+                return function (stringArg) {
+                    // Do this the easy way :-)
+                    return !!$exec(this, stringArg);
+                };
+            },
+
+            // argNames
+            ['stringArg'],
+
+            // message
+            'RegExp.test shim'
+        );
 
         /**
          * Fixes browser bugs in the native `RegExp.prototype.test`.
@@ -8544,7 +8546,7 @@
          * @returns {Boolean} Is a bytestring or not.
          */
         exports.String.proto.isBytestring = function () {
-            return exports.RegExp.test(/^[\x00-\xFF]*$/, $onlyCoercibleToString(this));
+            return $test(/^[\x00-\xFF]*$/, $onlyCoercibleToString(this));
         };
 
         /**
@@ -8589,7 +8591,6 @@
                 $affirm.deepEqual($call(pSplit, 'abcdefabcdefabcdef', new CRegExp('c')), ['ab', 'defab', 'defab', 'def'], 'should not throw on basic tests');
                 $affirm.deepEqual($call(pSplit, 'ab'), ['ab'], 'If "separator" is undefined must return Array with one String - "this" string');
                 $affirm.deepEqual($call(pSplit, 'ab', Undefined), ['ab'], 'If "separator" is undefined must return Array with one String - "this" string');
-                $affirm.deepEqual($call(pSplit, 'ab', Undefined, 0), [], 'If "separator" is undefined and "limit" set to 0 must return Array[]');
                 $affirm.deepEqual($call(pSplit, ''), [''], '(\'\') results in [\'\']');
                 $affirm.deepEqual($call(pSplit, '', new CRegExp('.')), [''], '(\'\', /./) results in [\'\']');
                 $affirm.deepEqual($call(pSplit, '', new CRegExp('.?')), [], '(\'\', /.?/) results in []');
@@ -8702,7 +8703,7 @@
                 return $decide(
                     // test
                     function () {
-                        $affirm.deepEqual($call(pSplit, '0', Undefined, 0), [], '"0".split(undefined, 0) -> []');
+                        $affirm.deepEqual($call(pSplit, 'ab', Undefined, 0), [], 'If "separator" is undefined and "limit" set to 0 must return Array[]');
                     },
 
                     // pass
@@ -8828,7 +8829,7 @@
                             }
 
                             if (lastLastIndex === $toLength(str.length)) {
-                                if (!$call(pTest, separator, '') || lastLength) {
+                                if (!$test(separator, '') || lastLength) {
                                     $push(output, '');
                                 }
                             } else {
@@ -9366,24 +9367,116 @@
          * the result of calling `$exec(regExpArg)`.
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match
          */
-        exports.String.proto.match = function (regExpArg) {
-            var str = $onlyCoercibleToString(this),
-                result;
+        exports.String.proto.match = $decide(
+            // test
+            function () {
+                $affirmBasic(pMatch)();
 
-            if (!$isRegExp(regExpArg)) {
-                regExpArg = new CRegExp(regExpArg);
-            } else if (regExpArg.global) {
-                result = $apply(pMatch, str, arguments);
-                // Fixes IE bug
-                regExpArg.lastIndex = 0;
+                $affirm.throws(function () {
+                    $call(pMatch);
+                }, CTypeError, 'should throw if no arguments');
 
-                return result;
-            }
+                $affirm.throws(function () {
+                    $call(pMatch, Undefined);
+                }, CTypeError, 'should throw if argument is undefined');
 
-            return $exec(regExpArg, str);
-        };
+                $affirm.throws(function () {
+                    $call(pMatch, null);
+                }, CTypeError, 'should throw if argument is null');
 
-        exports.String.proto.match.argNames = ['regExpArg'];
+                // https://github.com/es-shims/es5-shim/issues/293
+                /*jslint regexp: true */
+                $affirm.deepEqual($slice($call(pMatch, '4', /(?=(?:...)*$)/)), [''], '"4".match(/(?=(?:...)*$)/) == [""]');
+                /*jslint regexp: false */
+
+                $affirm.deepEqual($slice($call(pMatch, 'a bc', /(\w)/g)), ['a', 'b', 'c'], 'should return an array with all matches');
+                $affirm.strictEqual($call(pMatch, 'a bc', /x/g), null, 'should return null if no match is found');
+
+                var regex = /x/g,
+                    tests,
+                    length,
+                    index,
+                    test;
+
+                regex.lastIndex = 1;
+                $call(pMatch, '123x5', regex);
+                $affirm.strictEqual(regex.lastIndex, 0, 'should reset lastIndex to 0 when a match is found');
+
+                regex = /x/g;
+                regex.lastIndex = 1;
+                $call(pMatch, '123', regex);
+                $affirm.strictEqual(regex.lastIndex, 0, 'should reset lastIndex to 0 when no match is found');
+
+                regex = /x/g;
+                regex.lastIndex = 4;
+                $affirm.ok($call(pMatch, '123x5', regex), 'should start the search at the beginning of the string, ignoring lastIndex');
+
+                $affirm.deepEqual($slice($call(pMatch, 11, /1/g)), ['1', '1'], 'should convert any nonstring context to a string (except null and undefined)');
+
+                // These don't error because, per the spec, the values are passed through new RegExp()
+                // before being used as the context object for the (fixed) RegExp.prototype.exec
+                tests = [
+                    {
+                        str: '12',
+                        regex: '^(1)',
+                        result: ['1', '1']
+                    },
+                    // This would throw if the string was converted to an XRegExp rather than RegExp
+                    {
+                        str: '\x01',
+                        regex: '\\1',
+                        result: ['\x01']
+                    },
+                    // The converted value '[object Object]' creates a character class
+                    {
+                        str: '[obj]',
+                        regex: {},
+                        result: ['o']
+                    }, {
+                        str: 'null',
+                        regex: null,
+                        result: ['null']
+                    }
+                ];
+
+                length = $toLength(tests.length);
+                for (index = 0; index < length; index += 1) {
+                    test = tests[index];
+                    $affirm.deepEqual($slice($call(pMatch, test.str, test.regex)), test.result, 'should convert any provided non RegExp object to a RegExp');
+                }
+            },
+
+            // pass
+            function () {
+                return pMatch;
+            },
+
+            // fail
+            function () {
+                return function (regExpArg) {
+                    var str = $onlyCoercibleToString(this),
+                        result;
+
+                    if (!$isRegExp(regExpArg)) {
+                        regExpArg = new CRegExp(regExpArg);
+                    } else if (regExpArg.global) {
+                        result = $apply(pMatch, str, arguments);
+                        // Fixes IE bug
+                        regExpArg.lastIndex = 0;
+
+                        return result;
+                    }
+
+                    return $exec(regExpArg, str);
+                };
+            },
+
+            // argNames
+            ['regExpArg'],
+
+            // message
+            'String.match patch'
+        );
 
         /**
          * Fixes browser bugs in the native `String.prototype.match`.
@@ -18807,10 +18900,7 @@
             value: exports.factory()
         }, propNotEnumerable));
     }
-
-    // No longer required - trash early.
-    testTemp = null;
-}(((typeof window === 'object' || typeof window === 'function' || false) && window) ||
+}(((typeof window === 'function' || typeof window === 'object') && window) ||
     (typeof self === 'object' && self) ||
     (typeof global === 'object' && global) ||
     (typeof this === 'object' && this) || {},
