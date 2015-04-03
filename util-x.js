@@ -75,7 +75,7 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr, hasDeleteBug, str
+    wsStr, hasDeleteBug, str, target, replacement
 */
 
 /**
@@ -243,6 +243,7 @@
         $ceil,
         $random,
         $sqrt,
+        $pow,
         //mRound,
         $isFunction,
         $throwIfNotFunction,
@@ -1881,6 +1882,15 @@
      * @returns {number}
      */
     $sqrt = base.Math.sqrt;
+
+    /**
+     * Shortcut
+     *
+     * @private
+     * @function module:util-x~$pow
+     * @returns {number}
+     */
+    $pow = base.Math.pow;
 
     /**
      * Shortcut
@@ -6506,7 +6516,7 @@
             });
 
             var concatArr = [1, 2, 3],
-                expected = $slice($returnArgs(1, 2, 3, undefined, null, false)),
+                expected = $slice($returnArgs(1, 2, 3, Undefined, null, false)),
                 resArr,
                 index;
 
@@ -7277,6 +7287,964 @@
      */
     $sSlice = exports.String.slice;
 
+    /**
+     * Repeat the current string several times, return the new string.
+     *
+     * @function module:util-x~exports.String.proto.repeat
+     * @this {string}
+     * @param {number} count
+     * @returns {string}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
+     */
+    exports.String.proto.repeat = $decide(
+        // test
+        $affirmBasic(base.String.repeat),
+
+        // pass
+        function () {
+            return base.String.repeat;
+        },
+
+        // fail
+        function () {
+            /**
+             * Repeat the current string several times, return the new string. Used by String.repeat
+             *
+             * @param {string} s
+             * @param {number} count
+             * @returns {string}
+             */
+            function stringRepeatRep(s, count) {
+                var half,
+                    val;
+
+                if (count < 1 || s.length < 1) {
+                    val = '';
+                } else if (count % 2 === 1) {
+                    count -= 1;
+                    if (count > 0) {
+                        val = stringRepeatRep(s, count) + s;
+                    } else {
+                        val = s;
+                    }
+                } else {
+                    half = stringRepeatRep(s, count / 2);
+                    val = half + half;
+                }
+
+                return val;
+            }
+
+            return function (count) {
+                var thisString = $onlyCoercibleToString(this);
+
+                count = $toInteger(count);
+                if (count < 0) {
+                    throw new CRangeError('repeat count must be non-negative');
+                }
+
+                if (count === Infinity) {
+                    throw new CRangeError('repeat count must be less than infinity');
+                }
+
+                return stringRepeatRep(thisString, count);
+            };
+        },
+
+        // argNames
+        ['count'],
+
+        // messgae
+        'String.repeat shim'
+    );
+
+    /**
+     * Repeat the current string several times, return the new string.
+     *
+     * @function module:util-x~exports.String.repeat
+     * @param {string} string
+     * @param {number} count
+     * @returns {string}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
+     */
+    exports.String.repeat = $toMethod(exports.String.proto.repeat);
+    exports.String.repeat.argNames = ['string', 'count'];
+
+    /**
+     * Repeat the current string several times, return the new string.
+     *
+     * @private
+     * @function module:util-x~$repeat
+     * @param {string} string
+     * @param {number} count
+     * @returns {string}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
+     */
+    $repeat = exports.String.repeat;
+
+    /**
+     * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
+     * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
+     * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
+     * IE 6 to 9: Error: description, message
+     * IE 10: Error: description
+     * FF 3 to 5: Error: message, fileName, lineNumber, stack
+     * FF 3 to 3.5: Function: prototype
+     * Chrome 5 to 9: Error: message, stack
+     * Chrome 10 to 13: Error: arguments, type, message, stack
+     * V8 Error object has: captureStackTrace, stackTraceLimit
+     * Opera 10 to 12 & next: Error: message
+     * Opera 11.5: Function: prototype
+     * Safari 4 to 6 & next: Error: message
+     * There are most probably other native objects that do not agree: Object and Array should be fine in all
+     * environments.
+     *
+     * @function module:util-x~exports.Object.keys
+     * @param {Object} object
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+     */
+    /*jslint todo: true */
+    /** @todo: fix unwanted error, constructor and prototype properties */
+    /*jslint todo: false */
+    exports.Object.keys = (function () {
+        var argNames = ['object'];
+
+        return $decide(
+            // test
+            function () {
+                $affirmBasic(base.Object.keys)();
+
+                var value;
+
+                $affirm.doesNotThrow(function () {
+                    value = base.Object.keys($returnArgs(1, 2));
+                }, 'test1');
+
+                $affirm.strictEqual(value.length, 2, 'works with arguments object');
+                $affirm.ok(!hasErrorProps, 'works with error objects');
+
+                $affirm.doesNotThrow(function () {
+                    value = base.Object.keys(CError.prototype);
+                }, 'test2');
+
+                // Error prototype should not list
+                $affirm.strictEqual(value.length, 0, 'Error prototype zero list');
+            },
+
+            // pass
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        var value;
+
+                        $affirm.doesNotThrow(function () {
+                            value = base.Object.keys(1);
+                        }, 'number literal');
+
+                        $affirm.strictEqual(value.length, 0, 'number literal');
+
+                        $affirm.doesNotThrow(function () {
+                            value = base.Object.keys('a');
+                        }, 'string literal');
+
+                        $affirm.strictEqual(value.length, 1, 'string literal');
+
+                        $affirm.doesNotThrow(function () {
+                            value = base.Object.keys(true);
+                        }, 'boolean literal');
+
+                        $affirm.strictEqual(value.length, 0, 'boolean literal');
+                    },
+
+                    // pass
+                    function () {
+                        return base.Object.keys;
+                    },
+
+                    // fail
+                    function () {
+                        var mKeys = base.Object.keys;
+
+                        return function (object) {
+                            return mKeys($toObject(object));
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Object.keys patch'
+                );
+            },
+
+            // fail
+            function () {
+                return function (object) {
+                    object = $toObject(object);
+
+                    var skipEnumArgs = hasEnumArgsBug && $isArguments(object),
+                        length,
+                        dontEnum,
+                        theKeys = [],
+                        skipProto = hasProtoEnumBug && $isFunction(object),
+                        skipConstructor,
+                        name,
+                        ctor,
+                        index;
+
+                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
+                        length = $toLength(object.length);
+                        for (index = 0; index < length; index += 1) {
+                            $push(theKeys, $toString(index));
+                        }
+                    }
+
+                    if (!skipEnumArgs) {
+                        /*jslint forin: true */
+                        for (name in object) {
+                            if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
+                                $push(theKeys, name);
+                            }
+                        }
+                    }
+
+                    if (hasDontEnumBug) {
+                        ctor = object.constructor;
+                        skipConstructor = ctor && ctor.prototype === object;
+                        length = $toLength(shadowed.length);
+                        for (index = 0; index < length; index += 1) {
+                            dontEnum = shadowed[index];
+                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
+                                $push(theKeys, dontEnum);
+                            }
+                        }
+                    }
+
+                    return theKeys;
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.keys shim'
+        );
+    }());
+
+    /**
+     * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
+     * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
+     * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
+     * IE 6 to 9: Error: description, message
+     * IE 10: Error: description
+     * FF 3 to 5: Error: message, fileName, lineNumber, stack
+     * FF 3 to 3.5: Function: prototype
+     * Chrome 5 to 9: Error: message, stack
+     * Chrome 10 to 13: Error: arguments, type, message, stack
+     * V8 Error object has: captureStackTrace, stackTraceLimit
+     * Opera 10 to 12 & next: Error: message
+     * Opera 11.5: Function: prototype
+     * Safari 4 to 6 & next: Error: message
+     * There are most probably other native objects that do not agree: Object and Array should be fine in all
+     * environments.
+     *
+     * @private
+     * @function module:util-x~exports.Object.keys
+     * @param {Object} object
+     * @returns {Array}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+     */
+    $objectKeys = exports.Object.keys;
+
+    /**
+     * Default compare function for stableSort.
+     *
+     * @private
+     * @function module:util-x~$ascending
+     * @param {*} left
+     * @param {*} right
+     * @returns {number}
+     */
+    function $ascending(left, right) {
+        var leftS = $toString(left),
+            rightS = $toString(right),
+            val;
+
+        if (leftS === rightS) {
+            val = +0;
+        } else if (leftS < rightS) {
+            val = -1;
+        } else {
+            val = 1;
+        }
+
+        return val;
+    }
+
+    /**
+     * Default compare function for stableSort.
+     *
+     * @private
+     * @function module:util-x~$descending
+     * @param {*} left
+     * @param {*} right
+     * @returns {number}
+     */
+    function $descending(left, right) {
+        var leftS = $toString(left),
+            rightS = $toString(right),
+            val;
+
+        if (leftS === rightS) {
+            val = +0;
+        } else if (leftS < rightS) {
+            val = 1;
+        } else {
+            val = -1;
+        }
+
+        return val;
+    }
+
+    /**
+     * This method sorts the elements of the array in place and returns the array.
+     * This is a stable sort. The default sort order is lexicographic (not numeric).
+     *
+     * @function module:util-x~exports.Array.proto.stableSort
+     * @this {module:util-x~ArrayLike}
+     * @throws {TypeError} If array is null or undefined
+     * @param {Function} [compareFN]
+     * @throws {TypeError} If compareFN is not undefined or is not a function
+     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+     * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
+     */
+    exports.Array.proto.stableSort = (function () {
+        /**
+         * sortCompare function for stableSort.
+         *
+         * @private
+         * @function
+         * @param {*} object
+         * @param {*} left
+         * @param {*} right
+         * @returns {number}
+         */
+        function sortCompare(left, right) {
+            var hasj = $call(pHasOwn, left, 0),
+                hask = $call(pHasOwn, right, 0),
+                isUndefX,
+                isUndefY,
+                val;
+
+            if (!hasj && !hask) {
+                val = +0;
+            } else if (!hasj) {
+                val = 1;
+            } else if (!hask) {
+                val = -1;
+            } else {
+                isUndefX = $isUndefined(left[0]);
+                isUndefY = $isUndefined(right[0]);
+                if (isUndefX && isUndefY) {
+                    val = +0;
+                } else if (isUndefX) {
+                    val = 1;
+                } else if (isUndefY) {
+                    val = -1;
+                }
+            }
+
+            return val;
+        }
+
+        /**
+         * merge function for stableSort.
+         *
+         * @private
+         * @function
+         * @param {module:util-x~ArrayLike} left
+         * @param {module:util-x~ArrayLike} right
+         * @param {Function} comparison
+         * @returns {Array}
+         */
+        function merge(left, right, comparison) {
+            var result = [],
+                next = 0,
+                sComp;
+
+            result.length = $toLength($toLength(left.length) + $toLength(right.length));
+            while ($toLength(left.length) && $toLength(right.length)) {
+                sComp = sortCompare(left, right);
+                if (typeof sComp !== 'number') {
+                    if (comparison(left[0], right[0]) <= 0) {
+                        if ($call(pHasOwn, left, 0)) {
+                            result[next] = left[0];
+                        }
+
+                        $shift(left);
+                    } else {
+                        if ($call(pHasOwn, right, 0)) {
+                            result[next] = right[0];
+                        }
+
+                        $shift(right);
+                    }
+                } else if (sComp <= 0) {
+                    if ($call(pHasOwn, left, 0)) {
+                        result[next] = left[0];
+                    }
+
+                    $shift(left);
+                } else {
+                    if ($call(pHasOwn, right, 0)) {
+                        result[next] = right[0];
+                    }
+
+                    $shift(right);
+                }
+
+                next += 1;
+            }
+
+            while ($toLength(left.length)) {
+                if ($call(pHasOwn, left, 0)) {
+                    result[next] = left[0];
+                }
+
+                $shift(left);
+                next += 1;
+            }
+
+            while ($toLength(right.length)) {
+                if ($call(pHasOwn, right, 0)) {
+                    result[next] = right[0];
+                }
+
+                $shift(right);
+                next += 1;
+            }
+
+            return result;
+        }
+
+        /**
+         * mergeSort function for stableSort.
+         *
+         * @private
+         * @function module:util-x~mergeSort
+         * @param {module:util-x~ArrayLike} array
+         * @param {Function} comparefn
+         * @returns {Array}
+         */
+        function mergeSort(array, comparefn) {
+            var length = $toLength(array.length),
+                middle,
+                front,
+                back,
+                val;
+
+            if (length < 2) {
+                val = $slice(array);
+            } else {
+                middle = $ceil(length / 2);
+                front = $slice(array, 0, middle);
+                back = $slice(array, middle);
+                val = merge(mergeSort(front, comparefn), mergeSort(back, comparefn), comparefn);
+            }
+
+            return val;
+        }
+
+        return function (comparefn) {
+            var object = $toObject(this),
+                length = $toLength(object.length),
+                index,
+                sorted;
+
+            if ($isUndefined(comparefn)) {
+                comparefn = $ascending;
+            }
+
+            $throwIfNotFunction(comparefn);
+            if (length > 1) {
+                sorted = mergeSort(object, comparefn);
+                if ($isArray(object) || $isArguments(object)) {
+                    object.length = 0;
+                } else {
+                    $splice(object, 0, $toLength(object.length));
+                }
+
+                object.length = $toLength(sorted.length);
+                for (index = 0; index < length; index += 1) {
+                    if ($call(pHasOwn, sorted, index)) {
+                        object[index] = sorted[index];
+                    }
+                }
+            }
+
+            return object;
+        };
+    }());
+
+    exports.Array.proto.stableSort.argNames = ['comparefn'];
+
+    /**
+     * This {@link module:util-x~boundPrototypalFunction method} method sorts the elements of an array in place and returns the array.
+     * This is a stable sort. The default sort order is lexicographic (not numeric).
+     *
+     * @function module:util-x~exports.Array.stableSort
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {Function} [compareFN]
+     * @throws {TypeError} If compareFN is defined and is not a function
+     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+     * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
+     */
+    exports.Array.stableSort = $toMethod(exports.Array.proto.stableSort);
+    exports.Array.stableSort.argNames = ['array', 'comparefn'];
+
+    /**
+     * This method sorts the elements the array in place and returns the array.
+     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
+     *
+     * @function module:util-x~exports.Array.proto.sort
+     * @this {module:util-x~ArrayLike}
+     * @throws {TypeError} If array is null or undefined
+     * @param {Function} [compareFN]
+     * @throws {TypeError} If compareFN is not undefined or is not a function
+     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+     */
+    exports.Array.proto.sort = (function () {
+        var argNames = ['comparefn'];
+
+        return $decide(
+            // test
+            function () {
+                $affirmBasic(base.Array.sort)();
+
+                var sortArr = [],
+                    sortObj;
+
+                sortArr.length = 9;
+                sortArr[0] = 'f';
+                sortArr[1] = 'e';
+                sortArr[2] = 'd';
+                sortArr[4] = null;
+                sortArr[5] = Undefined;
+                sortArr[6] = 'a';
+                sortArr[7] = 'c';
+                sortArr[8] = 'b';
+
+                $call(base.Array.sort, sortArr);
+                $affirm.strictEqual(sortArr.length, 9, 'test1');
+                $affirm.strictEqual(sortArr[0], 'a', 'test2');
+                $affirm.strictEqual(sortArr[1], 'b', 'test3');
+                $affirm.strictEqual(sortArr[2], 'c', 'test4');
+                $affirm.strictEqual(sortArr[3], 'd', 'test5');
+                $affirm.strictEqual(sortArr[4], 'e', 'test6');
+                $affirm.strictEqual(sortArr[5], 'f', 'test7');
+                $affirm.strictEqual(sortArr[6], null, 'test8');
+                $affirm.strictEqual(sortArr[7], Undefined, 'test9');
+                $affirm.strictEqual(sortArr[8], Undefined, 'test110');
+                $affirm.ok($call(pHasOwn, sortArr, 7), 'test11');
+                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test12');
+
+                sortArr.length = 9;
+                sortArr[0] = 'f';
+                sortArr[1] = 'e';
+                sortArr[2] = 'd';
+                sortArr[3] = Undefined;
+                sortArr[4] = null;
+                sortArr[5] = 'a';
+                sortArr[6] = 'c';
+                sortArr[7] = 'b';
+
+                $call(base.Array.sort, sortArr, $descending);
+                $affirm.strictEqual(sortArr.length, 9, 'test13');
+                $affirm.strictEqual(sortArr[0], null, 'test14');
+                $affirm.strictEqual(sortArr[1], 'f', 'test15');
+                $affirm.strictEqual(sortArr[2], 'e', 'test16');
+                $affirm.strictEqual(sortArr[3], 'd', 'test17');
+                $affirm.strictEqual(sortArr[4], 'c', 'test18');
+                $affirm.strictEqual(sortArr[5], 'b', 'test19');
+                $affirm.strictEqual(sortArr[6], 'a', 'test20');
+                $affirm.strictEqual(sortArr[7], Undefined, 'test21');
+                $affirm.strictEqual(sortArr[8], Undefined, 'test22');
+                $affirm.ok($call(pHasOwn, sortArr, 7), 'test23');
+                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test24');
+
+                sortObj = {
+                    0: 5,
+                    1: 2,
+                    2: 4,
+                    4: null,
+                    6: 1,
+                    7: 3,
+                    length: 8
+                };
+
+                $call(base.Array.sort, sortObj, $descending);
+                $affirm.strictEqual(sortObj.length, 8, 'test25');
+                $affirm.strictEqual(sortObj[0], null, 'test26');
+                $affirm.strictEqual(sortObj[1], 5, 'test27');
+                $affirm.strictEqual(sortObj[2], 4, 'test28');
+                $affirm.strictEqual(sortObj[3], 3, 'test29');
+                $affirm.strictEqual(sortObj[4], 2, 'test30');
+                $affirm.strictEqual(sortObj[5], 1, 'test31');
+                $affirm.strictEqual(sortObj[6], Undefined, 'test32');
+                $affirm.strictEqual(sortObj[7], Undefined, 'test33');
+                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test34');
+                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test35');
+            },
+
+            // pass
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        $affirm.doesNotThrow(function () {
+                            $call(base.Array.sort, []);
+                        }, 'no compare argument');
+
+                        $affirm.doesNotThrow(function () {
+                            $call(base.Array.sort, [], Undefined);
+                        }, 'undefined compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], null);
+                        }, CTypeError, 'null compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], 1);
+                        }, CTypeError, 'number compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], true);
+                        }, CTypeError, 'boolean compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], 'a');
+                        }, CTypeError, 'string compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], {});
+                        }, CTypeError, 'object compare argument');
+
+                        $affirm.throws(function () {
+                            $call(base.Array.sort, [], []);
+                        }, CTypeError, 'array compare argument');
+                    },
+
+                    // pass
+                    function () {
+                        return base.Array.sort;
+                    },
+
+                    // fail
+                    function () {
+                        var pSort = base.Array.sort;
+
+                        return function (comparefn) {
+                            if ($isUndefined(comparefn)) {
+                                comparefn = $ascending;
+                            }
+
+                            return $call(pSort, $requireObjectCoercible(this), $throwIfNotFunction(comparefn));
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Array.sort patch'
+                );
+            },
+
+            // fail
+            function () {
+                return exports.Array.proto.stableSort;
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Array.sort shim'
+        );
+    }());
+
+    /**
+     * This {@link module:util-x~boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
+     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
+     *
+     * @function module:util-x~exports.Array.sort
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {Function} [compareFN]
+     * @throws {TypeError} If compareFN is defined and is not a function
+     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+     */
+    exports.Array.sort = $toMethod(exports.Array.proto.sort);
+    exports.Array.sort.argNames = ['array', 'comparefn'];
+
+    /**
+     * Shortcut
+     * This {@link module:util-x~boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
+     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
+     *
+     * @private
+     * @function module:util-x~$sort
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {Function} [compareFN]
+     * @throws {TypeError} If compareFN is defined and is not a function
+     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+     */
+    $sort = exports.Array.sort;
+
+    /**
+     * Tests a deep equality relation.
+     *
+     * @function module:util-x~exports.Object.deepEqual
+     * @param {*} a
+     * @param {*} b
+     * @returns {boolean}
+     * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+     */
+    exports.Object.deepEqual = (function () {
+        return function (a, b) {
+            if (a === b) {
+                return true;
+            }
+
+            var stringTagA = $toStringTag(a),
+                stringTagB = $toStringTag(b),
+                ka,
+                kb,
+                length,
+                index,
+                it;
+
+            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
+            }
+
+            if ($isRegExp(a) && $isRegExp(b)) {
+                return a.source === b.source &&
+                    a.global === b.global &&
+                    a.multiline === b.multiline &&
+                    a.lastIndex === b.lastIndex &&
+                    a.ignoreCase === b.ignoreCase &&
+                    a.sticky === b.sticky;
+            }
+
+            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
+                /*jslint eqeq: true */
+                return a == b;
+            }
+
+            if (a.prototype !== b.prototype) {
+                return false;
+            }
+
+            if ($isArguments(a)) {
+                if (!$isArguments(b)) {
+                    return false;
+                }
+
+                return $deepEqual($slice(a), $slice(b));
+            }
+
+            try {
+                ka = $objectKeys(a);
+                kb = $objectKeys(b);
+            } catch (eDE) {
+                return false;
+            }
+
+            length = $toLength(ka.length);
+            if (length !== $toLength(kb.length)) {
+                if ($isArray(a) && $isArray(b)) {
+                    if (a.length !== b.length) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                $sort(ka);
+                $sort(kb);
+                for (index = 0; index < length; index += 1) {
+                    if (ka[index] !== kb[index]) {
+                        return false;
+                    }
+                }
+            }
+
+            for (index = 0; index < length; index += 1) {
+                it = ka[index];
+                if (!$deepEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
+                    return false;
+                }
+            }
+
+            stringTagA = typeof a;
+            stringTagB = typeof b;
+
+            return stringTagA === stringTagB;
+        };
+    }());
+
+    exports.Object.deepEqual.argNames = ['a', 'b'];
+
+    /**
+     * Tests a deep equality relation.
+     *
+     * @private
+     * @function module:util-x~$deepEqual
+     * @param {*} a
+     * @param {*} b
+     * @returns {boolean}
+     * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+     */
+    $deepEqual = exports.Object.deepEqual;
+
+    /**
+     * Tests for deep equality, coercive equality with the equal comparison operator ( == ) and equivalent.
+     *
+     * @private
+     * @function module:util-x~$affirm.deepEqual
+     * @param {*} actual
+     * @param {*} expected
+     * @param {string} [message]
+     * @param {Function} [stackStartFunction]
+     * @returns {undefined}
+     */
+    $affirm.deepEqual = function (actual, expected, message, stackStartFunction) {
+        $throwIfNotEnoughArgs(arguments, 2);
+
+        var opt;
+
+        if (!$deepEqual(actual, expected)) {
+            opt = $optArgs(3, message, stackStartFunction, $affirm.deepEqual);
+            $affirm.fail(actual, expected, opt.message, 'deepEqual', opt.stackStartFunction);
+        }
+    };
+
+    /**
+     * Tests a deep equality relation.
+     *
+     * @function module:util-x~exports.Object.deepStrictEqual
+     * @param {*} a
+     * @param {*} b
+     * @returns {boolean}
+     */
+    exports.Object.deepStrictEqual = (function () {
+        return function (a, b) {
+            if (a === b) {
+                return true;
+            }
+
+            var stringTagA = $toStringTag(a),
+                stringTagB = $toStringTag(b),
+                ka,
+                kb,
+                length,
+                index,
+                it;
+
+            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
+            }
+
+            if ($isRegExp(a) && $isRegExp(b)) {
+                return a.source === b.source &&
+                    a.global === b.global &&
+                    a.multiline === b.multiline &&
+                    a.lastIndex === b.lastIndex &&
+                    a.ignoreCase === b.ignoreCase &&
+                    a.sticky === b.sticky;
+            }
+
+            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
+                return a === b;
+            }
+
+            if ($getPrototypeOf(a) !== $getPrototypeOf(b)) {
+                return false;
+            }
+
+            if ($isArguments(a)) {
+                if (!$isArguments(b)) {
+                    return false;
+                }
+
+                return $deepStrictEqual($slice(a), $slice(b));
+            }
+
+            try {
+                ka = $objectKeys(a);
+                kb = $objectKeys(b);
+            } catch (eDE) {
+                return false;
+            }
+
+            length = $toLength(ka.length);
+            if (length !== $toLength(kb.length)) {
+                if ($isArray(a) && $isArray(b)) {
+                    if (a.length !== b.length) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                $sort(ka);
+                $sort(kb);
+                for (index = 0; index < length; index += 1) {
+                    if (ka[index] !== kb[index]) {
+                        return false;
+                    }
+                }
+            }
+
+            for (index = 0; index < length; index += 1) {
+                it = ka[index];
+                if (!$deepStrictEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
+                    return false;
+                }
+            }
+
+            stringTagA = typeof a;
+            stringTagB = typeof b;
+
+            return stringTagA === stringTagB;
+        };
+    }());
+
+    exports.Object.deepStrictEqual.argNames = ['a', 'b'];
+
+    /**
+     * Tests a deep equality relation.
+     *
+     * @private
+     * @function module:util-x~$deepStrictEqual
+     * @param {*} a
+     * @param {*} b
+     * @returns {boolean}
+     */
+    $deepStrictEqual = exports.Object.deepStrictEqual;
+
     // RegExp closure
     (function () {
         var clipDups = new CRegExp('([\\s\\S])(?=[\\s\\S]*\\1)', 'g'),
@@ -7599,52 +8567,191 @@
          * @returns {Array.<string>}
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
          */
-        try {
-            /*jslint todo: true */
-            /** @todo Require more tests for string split */
-            /*jslint todo: false */
-            if (!testShims || !$isNative(pSplit) ||
-                    $call(pSplit, 'test', new CRegExp('(?:test)*')).length === 2 ||
-                    $call(pSplit, '.', new CRegExp('(.?)(.?)')).length !== 4 ||
-                    $call(pSplit, 'tesst', new CRegExp('(s)*'))[1] === 't' ||
-                    $call(pSplit, '', new CRegExp('.?')).length > 0 ||
-                    $call(pSplit, '.', new CRegExp('()()')).length > 1) {
+        exports.String.proto.split = $decide(
+            // test
+            function () {
+                $affirmBasic(pSplit)();
 
-                throw new CError();
-            }
+                $affirm.throws(function () {
+                    $call(pSplit);
+                }, CTypeError, 'should throw if no arguments');
 
-            exports.String.proto.split = function (separator, limit) {
-                var isUndef,
-                    val;
+                $affirm.throws(function () {
+                    $call(pSplit, Undefined);
+                }, CTypeError, 'should throw if argument is undefined');
 
-                // "0".split(undefined, 0) -> []
-                if ($isUndefined(separator) && limit === 0) {
-                    val = [];
-                } else {
-                    isUndef = $isUndefined(limit);
-                    if (es5limit) {
-                        if (isUndef) {
-                            limit = MAX_UINT32;
-                        } else {
-                            limit = $min($toLength(limit), MAX_UINT32);
-                        }
-                    } else {
-                        if (isUndef) {
-                            limit = MAX_SAFE_INTEGER;
-                        } else {
-                            limit = $toLength(limit);
-                        }
-                    }
+                $affirm.throws(function () {
+                    $call(pSplit, null);
+                }, CTypeError, 'should throw if argument is null');
 
-                    val = $call(pSplit, $onlyCoercibleToString(this), separator, limit);
-                }
+                $affirm.deepEqual($call(pSplit, 'abcdef', ''), ['a', 'b', 'c', 'd', 'e', 'f'], 'should not throw on basic tests');
+                $affirm.deepEqual($call(pSplit, 'abcdefabcdefabcdef', 'c'), ['ab', 'defab', 'defab', 'def'], 'should not throw on basic tests');
+                $affirm.deepEqual($call(pSplit, 'abcdefabcdefabcdef', new CRegExp('c')), ['ab', 'defab', 'defab', 'def'], 'should not throw on basic tests');
+                $affirm.deepEqual($call(pSplit, 'ab'), ['ab'], 'If "separator" is undefined must return Array with one String - "this" string');
+                $affirm.deepEqual($call(pSplit, 'ab', Undefined), ['ab'], 'If "separator" is undefined must return Array with one String - "this" string');
+                $affirm.deepEqual($call(pSplit, 'ab', Undefined, 0), [], 'If "separator" is undefined and "limit" set to 0 must return Array[]');
+                $affirm.deepEqual($call(pSplit, ''), [''], '(\'\') results in [\'\']');
+                $affirm.deepEqual($call(pSplit, '', new CRegExp('.')), [''], '(\'\', /./) results in [\'\']');
+                $affirm.deepEqual($call(pSplit, '', new CRegExp('.?')), [], '(\'\', /.?/) results in []');
+                $affirm.deepEqual($call(pSplit, '', new CRegExp('.??')), [], '(\'\', /.??/) results in []');
+                $affirm.deepEqual($call(pSplit, 'ab', /a*/), ['', 'b'], '(\'ab\', /a*/) results in [\'\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /a*?/), ['a', 'b'], '(\'ab\', /a*?/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /(?:ab)/), ['', ''], '(\'ab\', /(?:ab)/) results in [\'\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /(?:ab)*/), ['', ''], '(\'ab\', /(?:ab)*/) results in [\'\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /(?:ab)*?/), ['a', 'b'], '(\'ab\', /(?:ab)*?/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'test', ''), ['t', 'e', 's', 't'], '(\'test\', \'\') results in [\'t\', \'e\', \'s\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'test'), ['test'], '(\'test\', ) results in [\'test\']');
+                $affirm.deepEqual($call(pSplit, '111', 1), ['', '', '', ''], '(\'111\', 1) results in [\'\', \'\', \'\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, 2), ['t', 'e'], '(\'test\', /(?:)/, 2) results in [\'t\', \'e\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, -1), [], '(\'test\', /(?:)/, -1) results in []');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, Undefined), ['t', 'e', 's', 't'], '(\'test\', /(?:)/, undefined) results in [\'t\', \'e\', \'s\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, null), [], '(\'test\', /(?:)/, null) results in []');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, NaN), [], '(\'test\', /(?:)/, NaN) results in []');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, true), ['t'], '(\'test\', /(?:)/, true) results in [\'t\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, '2'), ['t', 'e'], '(\'test\', /(?:)/, \'2\') results in [\'t\', \'e\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(?:)/, 'two'), [], '(\'test\', /(?:)/, \'two\') results in []');
+                $affirm.deepEqual($call(pSplit, 'a', /-/), ['a'], '(\'a\', /-/) results in [\'a\']');
+                $affirm.deepEqual($call(pSplit, 'a', /-?/), ['a'], '(\'a\', /-?/) results in [\'a\']');
+                $affirm.deepEqual($call(pSplit, 'a', /-??/), ['a'], '(\'a\', /-??/) results in [\'a\']');
+                $affirm.deepEqual($call(pSplit, 'a', /a/), ['', ''], '(\'a\', /a/) results in [\'\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'a', /a?/), ['', ''], '(\'a\', /a?/) results in [\'\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'a', /a??/), ['a'], '(\'a\', /a??/) results in [\'a\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /-/), ['ab'], '(\'ab\', /-/) results in [\'ab\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /-?/), ['a', 'b'], '(\'ab\', /-?/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'ab', /-??/), ['a', 'b'], '(\'ab\', /-??/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a-b', /-/), ['a', 'b'], '(\'a-b\', /-/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a-b', /-?/), ['a', 'b'], '(\'a-b\', /-?/) results in [\'a\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a-b', /-??/), ['a', '-', 'b'], '(\'a-b\', /-??/) results in [\'a\', \'-\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a--b', /-/), ['a', '', 'b'], '(\'a--b\', /-/) results in [\'a\', \'\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a--b', /-?/), ['a', '', 'b'], '(\'a--b\', /-?/) results in [\'a\', \'\', \'b\']');
+                $affirm.deepEqual($call(pSplit, 'a--b', /-??/), ['a', '-', '-', 'b'], '(\'a--b\', /-??/) results in [\'a\', \'-\', \'-\', \'b\']');
+                $affirm.deepEqual($call(pSplit, '', /()()/), [], '(\'\', /()()/) results in []');
+                $affirm.deepEqual($call(pSplit, '.', /()()/), ['.'], '(\'.\', /()()/) results in [\'.\']');
+                $affirm.deepEqual($call(pSplit, '.', new CRegExp('(.?)(.?)')), ['', '.', '', ''], '(\'.\', /(.?)(.?)/) results in [\'\', \'.\', \'\', \'\']');
+                $affirm.deepEqual($call(pSplit, '.', new CRegExp('(.??)(.??)')), ['.'], '(\'.\', /(.??)(.??)/) results in [\'.\']');
 
-                return val;
-            };
+                var arrCmp = [];
 
-            exports.String.proto.split.argNames = ['separator', 'limit'];
-        } catch (eSplit) {
-            exports.String.proto.split = (function () {
+                arrCmp.length = 4;
+                arrCmp[0] = '';
+                arrCmp[1] = '.';
+                arrCmp[2] = Undefined;
+                arrCmp[3] = '';
+
+                $affirm.deepEqual($call(pSplit, '.', new CRegExp('(.)?(.)?')), arrCmp, '(\'.\', /(.)?(.)?/) results in [\'\', \'.\', undefined, \'\']');
+
+                arrCmp = [];
+                arrCmp.length = 13;
+                arrCmp[0] = 'A';
+                arrCmp[1] = Undefined;
+                arrCmp[2] = 'B';
+                arrCmp[3] = 'bold';
+                arrCmp[4] = '/';
+                arrCmp[5] = 'B';
+                arrCmp[6] = 'and';
+                arrCmp[7] = Undefined;
+                arrCmp[8] = 'CODE';
+                arrCmp[9] = 'coded';
+                arrCmp[10] = '/';
+                arrCmp[11] = 'CODE';
+                arrCmp[12] = '';
+
+                $affirm.deepEqual($call(pSplit, 'A<B>bold</B>and<CODE>coded</CODE>'), arrCmp, '(\'A<B>bold</B>and<CODE>coded</CODE>\', /<(\\/)?([^<>]+)>/) results in [\'A\', undefined, \'B\', \'bold\', \'/\', \'B\', \'and\', undefined, \'CODE\', \'coded\', \'/\', \'CODE\', \'\']');
+
+                arrCmp = [];
+                arrCmp.length = 5;
+                arrCmp[0] = 't';
+                arrCmp[1] = Undefined;
+                arrCmp[2] = 'e';
+                arrCmp[3] = 's';
+                arrCmp[4] = 'e';
+
+                $affirm.deepEqual($call(pSplit, 'tesst', /(s)*/), arrCmp, '(\'test\', /(s)*/) results in [\'t\', undefined, \'e\', \'s\', \'t\']');
+
+                arrCmp = [];
+                arrCmp.length = 7;
+                arrCmp[0] = 't';
+                arrCmp[1] = Undefined;
+                arrCmp[2] = 'e';
+                arrCmp[3] = Undefined;
+                arrCmp[4] = 's';
+                arrCmp[5] = Undefined;
+                arrCmp[6] = 'e';
+
+                $affirm.deepEqual($call(pSplit, 'tesst', /(s)*?/), arrCmp, '(\'test\', /(s)*?/) results in [\'t\', undefined, \'e\', undefined, \'s\', undefined, \'s\', undefined, \'t\']');
+                $affirm.deepEqual($call(pSplit, 'tesst', /(s*)/), ['t', '', 'e', 'ss', 't'], '(\'test\', /(s*)/) results in [\'t\', \'\', \'e\', \'ss\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'tesst', /(s*?)/), ['t', '', 'e', '', 's', '', 's', '', 't'], '(\'test\', /(s*?)/) results in [\'t\', \'\', \'e\', \'\', \'s\', \'\', \'s\', \'\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'tesst', /(?:s)*/), ['t', 'e', 't'], '(\'test\', /(?:s)*/) results in [\'t\', \'e\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'tesst', /(?=s+)/), ['te', 's', 'st'], '(\'test\', /(?=s+)/) results in [\'te\', \'s\', \'st\']');
+                $affirm.deepEqual($call(pSplit, 'test', 't'), ['', 'es', ''], '(\'test\', \'t\') results in [\'\', \'es\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'test', 'es'), ['t', 't'], '(\'test\', \'es\') results in [\'t\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'test', /t/), ['', 'es', '']);
+                $affirm.deepEqual($call(pSplit, 'test', /es/), ['t', 't'], '(\'test\', /es/) results in [\'t\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(t)/), ['', 't', 'es', 't', ''], '(\'test\', /(t)/) results in [\'\', \'t\', \'es\', \'t\', \'\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(es)/), ['t', 'es', 't'], '(\'test\', /(es)/) results in [\'t\', \'es\', \'t\']');
+                $affirm.deepEqual($call(pSplit, 'test', /(t)(e)(s)(t)/), ['', 't', 'e', 's', 't', ''], '(\'test\', /(t)(e)(s)(t)/) results in [\'\', \'t\', \'e\', \'s\', \'t\', \'\']');
+                $affirm.deepEqual($call(pSplit, '.', new CRegExp('(((.((.??)))))')), ['', '.', '.', '.', '', '', ''], '(\'.\', /(((.((.??)))))/) results in [\'\', \'.\', \'.\', \'.\', \'\', \'\', \'\']');
+                $affirm.deepEqual($call(pSplit, '.', new CRegExp('(((((.??)))))')), ['.'], '(\'.\', /(((((.??)))))/) results in [\'.\']');
+                $affirm.deepEqual($call(pSplit, 'a b c d', / /, -($pow(2, 32) - 1)), [], '(\'a b c d\', / /, -(Math.pow(2, 32) - 1)) results in []');
+                $affirm.deepEqual($call(pSplit, 'a b c d', / /, $pow(2, 32) + 1), ['a', 'b', 'c', 'd'], '(\'a b c d\', / /, Math.pow(2, 32) + 1) results in []');
+                $affirm.deepEqual($call(pSplit, 'a b c d', / /, Infinity), ['a', 'b', 'c', 'd'], '(\'a b c d\', / /, Infinity) results in []');
+            },
+
+            // pass
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        $affirm.deepEqual($call(pSplit, '0', Undefined, 0), [], '"0".split(undefined, 0) -> []');
+                    },
+
+                    // pass
+                    function () {
+                        return pSplit;
+                    },
+
+                    // fail
+                    function () {
+                        return function (separator, limit) {
+                            var isUndef,
+                                val;
+
+                            // "0".split(undefined, 0) -> []
+                            if ($isUndefined(separator) && limit === 0) {
+                                val = [];
+                            } else {
+                                isUndef = $isUndefined(limit);
+                                if (es5limit) {
+                                    if (isUndef) {
+                                        limit = MAX_UINT32;
+                                    } else {
+                                        limit = $min($toLength(limit), MAX_UINT32);
+                                    }
+                                } else {
+                                    if (isUndef) {
+                                        limit = MAX_SAFE_INTEGER;
+                                    } else {
+                                        limit = $toLength(limit);
+                                    }
+                                }
+
+                                val = $call(pSplit, $onlyCoercibleToString(this), separator, limit);
+                            }
+
+                            return val;
+                        };
+                    },
+
+                    // argNames
+                    ['separator', 'limit'],
+
+                    // message
+                    'String.split patch 2'
+                );
+            },
+
+            // fail
+            function () {
                 function search(str, regex, pos) {
                     var r2 = copyRegExp(regex, {
                             add: 'g',
@@ -7656,7 +8763,7 @@
                     match = $exec(r2, str);
                     if (regex.global) {
                         if (match) {
-                            regex.lastIndex = r2.lastIndex;
+                            regex.lastIndex = $toNumber(r2.lastIndex);
                         } else {
                             regex.lastIndex = 0;
                         }
@@ -7700,27 +8807,27 @@
                             output = $call(pSplit, str, separator, limit);
                         } else {
                             output = [];
-                            origLastIndex = separator.lastIndex;
+                            origLastIndex = $toNumber(separator.lastIndex);
                             lastLastIndex = 0;
-                            length = str.length;
+                            length = $toLength(str.length);
                             match = search(str, separator, pos);
                             while (match) {
                                 // This condition is not the same as `if (match[0].length)`
-                                if ((match.index + $toLength(match[0].length)) > lastLastIndex) {
-                                    $push(output, $sSlice(str, lastLastIndex, match.index));
-                                    if ($toLength(match.length) > 1 && match.index < length) {
+                                if (($toNumber(match.index) + $toLength(match[0].length)) > lastLastIndex) {
+                                    $push(output, $sSlice(str, lastLastIndex, $toNumber(match.index)));
+                                    if ($toLength(match.length) > 1 && $toNumber(match.index) < length) {
                                         output = $concat(output, $slice(match, 1));
                                     }
 
                                     lastLength = $toLength(match[0].length);
-                                    lastLastIndex = match.index + lastLength;
+                                    lastLastIndex = $toNumber(match.index) + lastLength;
                                 }
 
-                                pos = match.index + (match[0].length || 1);
+                                pos = $toNumber(match.index) + ($toLength(match[0].length) || 1);
                                 match = search(str, separator, pos);
                             }
 
-                            if (lastLastIndex === str.length) {
+                            if (lastLastIndex === $toLength(str.length)) {
                                 if (!$call(pTest, separator, '') || lastLength) {
                                     $push(output, '');
                                 }
@@ -7729,7 +8836,7 @@
                             }
 
                             separator.lastIndex = origLastIndex;
-                            if (output.length > limit) {
+                            if ($toLength(output.length) > limit) {
                                 output = $slice(output, 0, limit);
                             }
                         }
@@ -7737,10 +8844,14 @@
 
                     return output;
                 };
-            }());
+            },
 
-            exports.String.proto.split.argNames = ['separator', 'limit'];
-        }
+            // argNames
+            ['separator', 'limit'],
+
+            // message
+            'String.split patch 1'
+        );
 
         /**
          * Splits a String object into an array of strings by separating the string into subbase.str.
@@ -7781,183 +8892,392 @@
          * @returns {string} New string with one or all matches replaced.
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
          */
-        try {
-            if (testShims || !$isNative(pSplit)) {
-                throw new CError();
-            }
+        exports.String.proto.replace = $decide(
+            // test
+            function () {
+                $affirmBasic(pReplace)();
 
-            /*jslint todo: true */
-            /** @todo Require more tests for string replace */
-            /*jslint todo: false */
-            if ($call(pReplace, 'aaa', /aa/, '$&b') !== 'aaba' ||
-                    $call(pReplace, 'aaa', /aa/, '$\'b') !== 'aba' ||
-                    $call(pReplace, 'xaaa', /aa/, '$`b') !== 'xxba' ||
-                    $call(pReplace, 'aaa', /aa/, '$$b') !== '$ba') {
+                $affirm.throws(function () {
+                    $call(pReplace);
+                }, CTypeError, 'should throw if no arguments');
 
-                throw new CError('Failed token handling');
-            }
+                $affirm.throws(function () {
+                    $call(pReplace, Undefined);
+                }, CTypeError, 'should throw if argument is undefined');
 
-            testTemp.str = $call(pReplace, 'aaa', /a(a)/, '$01b');
-            if (testTemp.str !== 'aba') {
-                throw new CError('should handle double-digit backreferences $01, $10, and $99 in the replacement string');
-            }
 
-            testTemp.str = $call(pReplace, '100', /0/, function ($0, pos, str) {
-                /*jslint unparam: true */
-                /*jshint unused: false */
-                return typeof str;
-            });
+                $affirm.throws(function () {
+                    $call(pReplace, null);
+                }, CTypeError, 'should throw if argument is null');
 
-            if (testTemp.str !== '1string0') {
-                throw new CError('should return string as the typeof the last argument in replacement functions');
-            }
+                $affirm.strictEqual($call(pReplace, 'aaa', /a/, 'b'), 'baa', 'should replace the first match only when given a nonglobal regex');
+                $affirm.strictEqual($call(pReplace, 'aaa', /a/g, 'b'), 'bbb', 'should replace all matches when given a global regex');
+                $affirm.strictEqual($call(pReplace, 'aaa', 'a', 'b'), 'baa', 'should replace the first match only when given a string as the search pattern');
+                $affirm.strictEqual($call(pReplace, 'aaa', 'a(a)', 'b'), 'aaa', 'should not type convert a string search pattern to a regex');
+                $affirm.strictEqual($call(pReplace, 'a(a)a', 'a(a)', 'b'), 'ba', 'should not type convert a string search pattern to a regex');
+                $affirm.strictEqual($call(pReplace, 'aaa', /a(a)/, '$1b', 'should handle single-digit backreference $1 in the replacement string'), 'aba');
+                // Backreference to a nonparticipating capturing group
+                $affirm.strictEqual($call(pReplace, 'test', /t|(e)/g, '$1'), 'es', 'should handle single-digit backreference $1 in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', /a(a)/, '$01b'), 'aba', 'should handle double-digit backreferences $01, $10, and $99 in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', new CRegExp('a' + $repeat('()', 9) + '(a)'), '$10b'), 'aba', 'should handle double-digit backreferences $01, $10, and $99 in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', new CRegExp('a' + $repeat('()', 98) + '(a)'), '$99b'), 'aba', 'should handle double-digit backreferences $01, $10, and $99 in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', new CRegExp('a' + $repeat('()', 99) + '(a)'), '$100b'), '0ba', 'should end backreferences in the replacement string after two digits');
+                // NOTE: IE < 9 incorrectly treats all occurrences of $ as literal text when performing a
+                // replacement based on a search value that is not a regex.
+                $affirm.strictEqual($call(pReplace, 'aaa', /aa/, '$&b'), 'aaba', 'should handle backreference $& in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', 'aa', '$&b'), 'aaba', 'should handle backreference $& in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', /aa/, '$\'b'), 'aba', 'should handle right context token $\' in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', 'aa', '$\'b'), 'aba', 'should handle right context token $\' in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'xaaa', /aa/, '$`b'), 'xxba', 'should handle left context token $` in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'xaaa', 'aa', '$`b'), 'xxba', 'should handle left context token $` in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', /aa/, '$$b'), '$ba', 'should handle token $$ in the replacement string');
+                $affirm.strictEqual($call(pReplace, 'aaa', 'aa', '$$b'), '$ba', 'should handle token $$ in the replacement string');
 
-            testTemp.regex = /x/g;
-            testTemp.regex.lastIndex = 1;
-            $call(pReplace, '123x567', testTemp.regex, '_');
-            if (testTemp.regex.lastIndex !== 0) {
-                throw new CError('No reset of lastIndex of a global regex');
-            }
+                $affirm.strictEqual($call(pReplace, 'aaa', /a/, function () {
+                    return 'b';
+                }), 'baa', 'should allow a function to generate the replacement');
 
-            testTemp.regex.lastIndex = 1;
-            $call(pReplace, 'nomatch', testTemp.regex, '_');
-            if (testTemp.regex.lastIndex !== 0) {
-                throw new CError('No reset of lastIndex of a global regex');
-            }
+                $affirm.strictEqual($call(pReplace, 'aaa', /a/g, function () {
+                    return 'b';
+                }), 'bbb', 'should allow a function to generate the replacement');
 
-            testTemp.regex.lastIndex = testTemp.interimLastIndex = 0;
-            $call(pReplace, '1x2', testTemp.regex, function () {
-                testTemp.interimLastIndex = testTemp.regex.lastIndex;
-            });
+                $affirm.strictEqual($call(pReplace, 'aaa', 'a', function () {
+                    return 'b';
+                }), 'baa', 'should allow a function to generate the replacement');
 
-            if (testTemp.interimLastIndex !== 2) {
-                throw new CError('No update of lastIndex during replacement iterations');
-            }
+                $affirm.strictEqual($call(pReplace, 'aaa', /aa/, function ($0) {
+                    return $0 + 'b';
+                }), 'aaba', 'should allow using backreferences with replacement functions');
 
-            testTemp.regex = /x/;
-            $call(pReplace, '123x567', testTemp.regex, '_');
-            if (testTemp.regex.lastIndex !== 0) {
-                throw new CError('No reset of lastIndex of a non-global regex');
-            }
+                /*jshint -W098 */
+                $affirm.strictEqual($call(pReplace, 'aaa', /a(a)/, function ($0, $1) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $1 + 'b';
+                }), 'aba', 'should allow using backreferences with replacement functions');
+                /*jshint +W098 */
 
-            testTemp.regex.lastIndex = 1;
-            $call(pReplace, '123x567', testTemp.regex, '_');
-            if (testTemp.regex.lastIndex !== 1) {
-                throw new CError('No reset of lastIndex of a non-global regex');
-            }
+                $affirm.strictEqual($call(pReplace, 'aaa', 'aa', function ($0) {
+                    return $0 + 'b';
+                }), 'aaba', 'should allow using backreferences with replacement functions');
 
-            $call(pReplace, 'nomatch', testTemp.regex, '_');
-            if (testTemp.regex.lastIndex !== 1) {
-                throw new CError('No reset of lastIndex of a non-global regex');
-            }
+                // Regex search...
+                /*jshint -W098 */
+                $affirm.strictEqual($call(pReplace, 'aaa', /a(a)/, function ($0, $1) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return '$1';
+                }), '$1a', 'should not substitute tokens returned by replacement functions');
+                /*jshint +W098 */
 
-            exports.String.proto.replace = pReplace;
-        } catch (eReplace) {
-            $conlog('EWW', eReplace);
-            exports.String.proto.replace = function (search, replacement) {
-                var str = $onlyCoercibleToString(this),
-                    isRegex = $isRegExp(search),
-                    origLastIndex,
-                    result;
+                $affirm.strictEqual($call(pReplace, 'aaa', /a/, function () {
+                    return '$&';
+                }), '$&aa', 'should not substitute tokens returned by replacement functions');
 
-                if (isRegex) {
-                    // Only needed if `search` is nonglobal
-                    origLastIndex = $toNumber(search.lastIndex);
-                } else {
-                    // Type-convert
-                    search = $toString(search);
+                /*jshint -W098 */
+                $affirm.strictEqual($call(pReplace, 'xaaa', /a/, function ($0, pos) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $toString(pos);
+                }), 'x1aa', 'should allow using the match position within replacement functions');
+
+                $affirm.strictEqual($call(pReplace, 'xaaa', /a/g, function ($0, pos) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $toString(pos);
+                }), 'x123', 'should allow using the match position within replacement functions');
+
+                $affirm.strictEqual($call(pReplace, 'xaaa', /(a)/g, function ($0, $1, pos) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $toString(pos);
+                }), 'x123', 'should allow using the match position within replacement functions');
+
+                $affirm.strictEqual($call(pReplace, 'xaaa', 'a', function ($0, pos) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $toString(pos);
+                }), 'x1aa', 'should allow using the match position within replacement functions');
+                /*jshint +W098 */
+
+                /*jshint -W098 */
+                $affirm.strictEqual($call(pReplace, 'xaaa', /a/, function ($0, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return str;
+                }), 'xxaaaaa', 'should allow using the source string within replacement functions');
+
+                $affirm.strictEqual($call(pReplace, 'xaaa', /(a)/, function ($0, $1, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return str;
+                }), 'xxaaaaa', 'should allow using the source string within replacement functions');
+
+                $affirm.strictEqual($call(pReplace, 'xaaa', 'a', function ($0, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return str;
+                }), 'xxaaaaa', 'should allow using the source string within replacement functions');
+                /*jshint +W098 */
+
+                // NOTE: This tests for IE < 9, which doesn't get this correct natively
+                /*jshint -W098 */
+                $affirm.strictEqual($call(pReplace, '100', /0/, function ($0, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return typeof str;
+                }), '1string0', 'should return string as the typeof the last argument in replacement functions');
+
+                /*jshint -W053 */
+                $affirm.strictEqual($call(pReplace, new CString('100'), /0/, function ($0, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return typeof str;
+                }), '1string0', 'should return string as the typeof the last argument in replacement functions');
+                /*jshint +W053 */
+
+                $affirm.strictEqual($call(pReplace, 100, /0/, function ($0, pos, str) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return typeof str;
+                }), '1string0', 'should return string as the typeof the last argument in replacement functions');
+                /*jshint +W098 */
+
+                $affirm.strictEqual($call(pReplace, 0, /^/, '$`'), '0', 'should handle nonstring context when using a replacement text token that references the subject text');
+
+                var regex = /x/,
+                    interimLastIndex,
+                    values,
+                    value,
+                    length,
+                    index;
+
+                $call(pReplace, '123x567', regex, '_');
+                $affirm.strictEqual(regex.lastIndex, 0, 'should not modify the lastIndex of a nonglobal regex');
+
+                regex.lastIndex = 1;
+                $call(pReplace, '123x567', regex, '_');
+                $affirm.strictEqual(regex.lastIndex, 1, 'should not modify the lastIndex of a nonglobal regex');
+
+                $call(pReplace, 'nomatch', regex, '_');
+                $affirm.strictEqual(regex.lastIndex, 1, 'should not modify the lastIndex of a nonglobal regex');
+
+                regex = /x/g;
+
+                regex.lastIndex = 1;
+                $call(pReplace, '123x567', regex, '_');
+                $affirm.strictEqual(regex.lastIndex, 0, 'should reset the lastIndex of a global regex to 0');
+
+                regex.lastIndex = 1;
+                $call(pReplace, 'nomatch', regex, '_');
+                $affirm.strictEqual(regex.lastIndex, 0, 'should reset the lastIndex of a global regex to 0');
+
+                regex = /x/;
+                regex.lastIndex = 5;
+                $affirm.strictEqual($call(pReplace, '123x567', regex, '_'), '123_567', 'should ignore lastIndex when setting the search start position');
+
+                regex = /x/g;
+                regex.lastIndex = 5;
+                $affirm.strictEqual($call(pReplace, '123x567', regex, '_'), '123_567', 'should ignore lastIndex when setting the search start position');
+
+                regex = /x/g;
+                interimLastIndex = 0;
+
+                $call(pReplace, '1x2', regex, function () {
+                    interimLastIndex = regex.lastIndex;
+                });
+
+                $affirm.strictEqual(interimLastIndex, 2, 'should update lastIndex during replacement iterations');
+
+                values = [{
+                    target: '10x10',
+                    search: 10,
+                    replacement: 'x',
+                    expected: 'xx10'
+                }, {
+                    target: 'xaaa,ba,b',
+                    search: ['a', 'b'],
+                    replacement: 'x',
+                    expected: 'xaaxa,b'
+                }, {
+                    target: 'undefined',
+                    search: undefined,
+                    replacement: 'x',
+                    expected: 'x'
+                }];
+
+                length = $toLength(values.length);
+                for (index = 0; index < length; index += 1) {
+                    value = values[index];
+                    $affirm.strictEqual($call(pReplace, value.target, value.search, value.replacement), value.expected, 'should convert any provided nonstring search to a string');
                 }
 
-                // Don't use `typeof`; some older browsers return 'function' for regex objects
-                if ($isFunction(replacement)) {
-                    // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
-                    // functions isn't type-converted to a string
-                    result = $call(pReplace, str, search, function () {
-                        var args = $argSlice(arguments);
+                // Implicit undefined search and replacement
+                $affirm.strictEqual($call(pReplace, 'undefined'), 'undefined', 'should convert any provided nonstring search to a string');
 
-                        args[2] = $toString(args[2]);
+                values = [{
+                    target: 'xaaa',
+                    search: /a/g,
+                    replacement: 1.1,
+                    expected: 'x1.11.11.1'
+                }, {
+                    target: 'xaaa',
+                    search: /a/g,
+                    replacement: ['a', 'b'],
+                    expected: 'xa,ba,ba,b'
+                }, {
+                    target: 'x',
+                    search: /x/,
+                    replacement: /x/,
+                    expected: '/x/'
+                }, {
+                    target: 'xaaa',
+                    search: /a/,
+                    replacement: undefined,
+                    expected: 'xundefinedaa'
+                }];
 
-                        // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
-                        // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
-                        if (isRegex && search.global) {
-                            search.lastIndex = args[$toLength(args.length) - 2] + $getArgItem(args, 0).length;
-                        }
+                length = $toLength(values.length);
+                for (index = 0; index < length; index += 1) {
+                    value = values[index];
+                    $affirm.strictEqual($call(pReplace, value.target, value.search, value.replacement), value.expected, 'should convert any provided nonstring/nonfunction replacement to a string');
+                }
 
-                        // Should pass `undefined` as context; see
-                        // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
-                        return $apply(replacement, Undefined, args);
-                    });
-                } else {
-                    // Ensure that the last value of `args` will be a string when given nonstring `this`,
-                    // while still throwing on `null` or `undefined` context
-                    result = $call(pReplace, str, search, function () {
-                        // Keep this function's `arguments` available through closure
-                        var args = arguments,
-                            length = $toLength(arguments.length);
+                // Implicit undefined replacement
+                $affirm.strictEqual($call(pReplace, 'xaaa', /a/), 'xundefinedaa', 'should convert any provided nonstring/nonfunction replacement to a string');
 
-                        return $call(pReplace, $toString(replacement), replacementToken, function () {
-                            var $2 = $toString($getArgItem(arguments, 2));
+                values = [
+                    100,
+                    {},
+                    true,
+                    false,
+                    NaN,
+                    ['a']
+                ];
 
-                            // Special variable or numbered backreference without curly braces
-                            // $$
-                            if ($2 === '$') {
-                                return '$';
+                length = $toLength(values.length);
+                for (index = 0; index < length; index += 1) {
+                    value = values[index];
+                    $affirm.strictEqual($call(pReplace, value, /^/, 'x'), 'x' + value, 'should convert any nonstring context to a string (except null and undefined)');
+                }
+            },
+
+            // pass
+            function () {
+                return pReplace;
+            },
+
+            // fail
+            function () {
+                return function (search, replacement) {
+                    var str = $onlyCoercibleToString(this),
+                        isRegex = $isRegExp(search),
+                        origLastIndex,
+                        result;
+
+                    if (isRegex) {
+                        // Only needed if `search` is nonglobal
+                        origLastIndex = $toNumber(search.lastIndex);
+                    } else {
+                        // Type-convert
+                        search = $toString(search);
+                    }
+
+                    // Don't use `typeof`; some older browsers return 'function' for regex objects
+                    if ($isFunction(replacement)) {
+                        // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
+                        // functions isn't type-converted to a string
+                        result = $call(pReplace, str, search, function () {
+                            var args = $argSlice(arguments);
+
+                            args[2] = $toString(args[2]);
+
+                            // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
+                            // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
+                            if (isRegex && search.global) {
+                                search.lastIndex = args[$toLength(args.length) - 2] + $getArgItem(args, 0).length;
                             }
 
-                            // $&, $0 (not followed by 1-9), $00
-                            if ($2 === '&' || $toNumber($2) === 0) {
-                                return args[0];
-                            }
+                            // Should pass `undefined` as context; see
+                            // <https://bugs.ecmascript.org/show_bug.cgi?id=154>
+                            return $apply(replacement, Undefined, args);
+                        });
+                    } else {
+                        // Ensure that the last value of `args` will be a string when given nonstring `this`,
+                        // while still throwing on `null` or `undefined` context
+                        result = $call(pReplace, str, search, function () {
+                            // Keep this function's `arguments` available through closure
+                            var args = arguments,
+                                length = $toLength(arguments.length);
 
-                            // $` (left context)
-                            if ($2 === '`') {
-                                return $sSlice(args[2], 0, $toNumber(args[1]));
-                            }
+                            return $call(pReplace, $toString(replacement), replacementToken, function () {
+                                var $2 = $toString($getArgItem(arguments, 2));
 
-                            // $' (right context)
-                            if ($2 === '\'') {
-                                return $sSlice(args[2], $toNumber(args[1]) + $toLength(args[0].length));
-                            }
-
-                            // Numbered backreference without curly braces
-                            // Type-convert; drop leading zero
-                            $2 = $toNumber($2);
-                            /*
-                             * Native behavior
-                             * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
-                             * - `$1` is a literal `$1` if no capturing groups.
-                             * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
-                             * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
-                             * - `$0` is a literal `$0`.
-                             */
-                            if ($strictEqual($2, $2)) {
-                                if ($2 > (length - 3)) {
-                                    throw new CSyntaxError('Backreference to undefined group ' + $toString($getArgItem(arguments, 0)));
+                                // Special variable or numbered backreference without curly braces
+                                // $$
+                                if ($2 === '$') {
+                                    return '$';
                                 }
 
-                                return args[$2] || '';
-                            }
+                                // $&, $0 (not followed by 1-9), $00
+                                if ($2 === '&' || $toNumber($2) === 0) {
+                                    return args[0];
+                                }
 
-                            throw new CSyntaxError('Invalid token ' + $toString($getArgItem(arguments, 0)));
+                                // $` (left context)
+                                if ($2 === '`') {
+                                    return $sSlice(args[2], 0, $toNumber(args[1]));
+                                }
+
+                                // $' (right context)
+                                if ($2 === '\'') {
+                                    return $sSlice(args[2], $toNumber(args[1]) + $toLength(args[0].length));
+                                }
+
+                                // Numbered backreference without curly braces
+                                // Type-convert; drop leading zero
+                                $2 = $toNumber($2);
+                                /*
+                                 * Native behavior
+                                 * - Backrefs end after 1 or 2 digits. Cannot reference capturing group 100+.
+                                 * - `$1` is a literal `$1` if no capturing groups.
+                                 * - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
+                                 * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
+                                 * - `$0` is a literal `$0`.
+                                 */
+                                if ($strictEqual($2, $2)) {
+                                    if ($2 > (length - 3)) {
+                                        throw new CSyntaxError('Backreference to undefined group ' + $toString($getArgItem(arguments, 0)));
+                                    }
+
+                                    return args[$2] || '';
+                                }
+
+                                throw new CSyntaxError('Invalid token ' + $toString($getArgItem(arguments, 0)));
+                            });
                         });
-                    });
-                }
-
-                if (isRegex) {
-                    if (search.global) {
-                        // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
-                        search.lastIndex = 0;
-                    } else {
-                        // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
-                        search.lastIndex = origLastIndex;
                     }
-                }
 
-                return result;
-            };
+                    if (isRegex) {
+                        if (search.global) {
+                            // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
+                            search.lastIndex = 0;
+                        } else {
+                            // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
+                            search.lastIndex = origLastIndex;
+                        }
+                    }
 
-            exports.String.proto.replace.argNames = ['search', 'replacement'];
-        }
+                    return result;
+                };
+            },
+
+            // argNames
+            ['search', 'replacement'],
+
+            // message
+            'String.replace patch'
+        );
 
         /**
          * Fixes browser bugs in replacement text syntax when performing a replacement using a nonregex search
@@ -8207,101 +9527,6 @@
      */
     exports.String.padLeadingChar = $toMethod(exports.String.proto.padLeadingChar);
     exports.String.padLeadingChar.argNames = ['inputArg', 'character', 'size'];
-
-    /**
-     * Repeat the current string several times, return the new string.
-     *
-     * @function module:util-x~exports.String.proto.repeat
-     * @this {string}
-     * @param {number} count
-     * @returns {string}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
-     */
-    exports.String.proto.repeat = $decide(
-        // test
-        $affirmBasic(base.String.repeat),
-
-        // pass
-        function () {
-            return base.String.repeat;
-        },
-
-        // fail
-        function () {
-            /**
-             * Repeat the current string several times, return the new string. Used by String.repeat
-             *
-             * @param {string} s
-             * @param {number} count
-             * @returns {string}
-             */
-            function stringRepeatRep(s, count) {
-                var half,
-                    val;
-
-                if (count < 1 || s.length < 1) {
-                    val = '';
-                } else if (count % 2 === 1) {
-                    count -= 1;
-                    if (count > 0) {
-                        val = stringRepeatRep(s, count) + s;
-                    } else {
-                        val = s;
-                    }
-                } else {
-                    half = stringRepeatRep(s, count / 2);
-                    val = half + half;
-                }
-
-                return val;
-            }
-
-            return function (count) {
-                var thisString = $onlyCoercibleToString(this);
-
-                count = $toInteger(count);
-                if (count < 0) {
-                    throw new CRangeError('repeat count must be non-negative');
-                }
-
-                if (count === Infinity) {
-                    throw new CRangeError('repeat count must be less than infinity');
-                }
-
-                return stringRepeatRep(thisString, count);
-            };
-        },
-
-        // argNames
-        ['count'],
-
-        // messgae
-        'String.repeat shim'
-    );
-
-    /**
-     * Repeat the current string several times, return the new string.
-     *
-     * @function module:util-x~exports.String.repeat
-     * @param {string} string
-     * @param {number} count
-     * @returns {string}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
-     */
-    exports.String.repeat = $toMethod(exports.String.proto.repeat);
-    exports.String.repeat.argNames = ['string', 'count'];
-
-    /**
-     * Repeat the current string several times, return the new string.
-     *
-     * @private
-     * @function module:util-x~$repeat
-     * @param {string} string
-     * @param {number} count
-     * @returns {string}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
-     */
-    $repeat = exports.String.repeat;
 
     /**
      * Determines whether a string begins with the characters of another string,
@@ -10571,457 +11796,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
      */
     $randomInt = exports.Number.randomInt;
-    /**
-     * Default compare function for stableSort.
-     *
-     * @private
-     * @function module:util-x~$ascending
-     * @param {*} left
-     * @param {*} right
-     * @returns {number}
-     */
-    function $ascending(left, right) {
-        var leftS = $toString(left),
-            rightS = $toString(right),
-            val;
-
-        if (leftS === rightS) {
-            val = +0;
-        } else if (leftS < rightS) {
-            val = -1;
-        } else {
-            val = 1;
-        }
-
-        return val;
-    }
-
-    /**
-     * Default compare function for stableSort.
-     *
-     * @private
-     * @function module:util-x~$descending
-     * @param {*} left
-     * @param {*} right
-     * @returns {number}
-     */
-    function $descending(left, right) {
-        var leftS = $toString(left),
-            rightS = $toString(right),
-            val;
-
-        if (leftS === rightS) {
-            val = +0;
-        } else if (leftS < rightS) {
-            val = 1;
-        } else {
-            val = -1;
-        }
-
-        return val;
-    }
-
-    /**
-     * This method sorts the elements of the array in place and returns the array.
-     * This is a stable sort. The default sort order is lexicographic (not numeric).
-     *
-     * @function module:util-x~exports.Array.proto.stableSort
-     * @this {module:util-x~ArrayLike}
-     * @throws {TypeError} If array is null or undefined
-     * @param {Function} [compareFN]
-     * @throws {TypeError} If compareFN is not undefined or is not a function
-     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-     * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
-     */
-    exports.Array.proto.stableSort = (function () {
-        /**
-         * sortCompare function for stableSort.
-         *
-         * @private
-         * @function
-         * @param {*} object
-         * @param {*} left
-         * @param {*} right
-         * @returns {number}
-         */
-        function sortCompare(left, right) {
-            var hasj = $call(pHasOwn, left, 0),
-                hask = $call(pHasOwn, right, 0),
-                isUndefX,
-                isUndefY,
-                val;
-
-            if (!hasj && !hask) {
-                val = +0;
-            } else if (!hasj) {
-                val = 1;
-            } else if (!hask) {
-                val = -1;
-            } else {
-                isUndefX = $isUndefined(left[0]);
-                isUndefY = $isUndefined(right[0]);
-                if (isUndefX && isUndefY) {
-                    val = +0;
-                } else if (isUndefX) {
-                    val = 1;
-                } else if (isUndefY) {
-                    val = -1;
-                }
-            }
-
-            return val;
-        }
-
-        /**
-         * merge function for stableSort.
-         *
-         * @private
-         * @function
-         * @param {module:util-x~ArrayLike} left
-         * @param {module:util-x~ArrayLike} right
-         * @param {Function} comparison
-         * @returns {Array}
-         */
-        function merge(left, right, comparison) {
-            var result = [],
-                next = 0,
-                sComp;
-
-            result.length = $toLength($toLength(left.length) + $toLength(right.length));
-            while ($toLength(left.length) && $toLength(right.length)) {
-                sComp = sortCompare(left, right);
-                if (typeof sComp !== 'number') {
-                    if (comparison(left[0], right[0]) <= 0) {
-                        if ($call(pHasOwn, left, 0)) {
-                            result[next] = left[0];
-                        }
-
-                        $shift(left);
-                    } else {
-                        if ($call(pHasOwn, right, 0)) {
-                            result[next] = right[0];
-                        }
-
-                        $shift(right);
-                    }
-                } else if (sComp <= 0) {
-                    if ($call(pHasOwn, left, 0)) {
-                        result[next] = left[0];
-                    }
-
-                    $shift(left);
-                } else {
-                    if ($call(pHasOwn, right, 0)) {
-                        result[next] = right[0];
-                    }
-
-                    $shift(right);
-                }
-
-                next += 1;
-            }
-
-            while ($toLength(left.length)) {
-                if ($call(pHasOwn, left, 0)) {
-                    result[next] = left[0];
-                }
-
-                $shift(left);
-                next += 1;
-            }
-
-            while ($toLength(right.length)) {
-                if ($call(pHasOwn, right, 0)) {
-                    result[next] = right[0];
-                }
-
-                $shift(right);
-                next += 1;
-            }
-
-            return result;
-        }
-
-        /**
-         * mergeSort function for stableSort.
-         *
-         * @private
-         * @function module:util-x~mergeSort
-         * @param {module:util-x~ArrayLike} array
-         * @param {Function} comparefn
-         * @returns {Array}
-         */
-        function mergeSort(array, comparefn) {
-            var length = $toLength(array.length),
-                middle,
-                front,
-                back,
-                val;
-
-            if (length < 2) {
-                val = $slice(array);
-            } else {
-                middle = $ceil(length / 2);
-                front = $slice(array, 0, middle);
-                back = $slice(array, middle);
-                val = merge(mergeSort(front, comparefn), mergeSort(back, comparefn), comparefn);
-            }
-
-            return val;
-        }
-
-        return function (comparefn) {
-            var object = $toObject(this),
-                length = $toLength(object.length),
-                index,
-                sorted;
-
-            if ($isUndefined(comparefn)) {
-                comparefn = $ascending;
-            }
-
-            $throwIfNotFunction(comparefn);
-            if (length > 1) {
-                sorted = mergeSort(object, comparefn);
-                if ($isArray(object) || $isArguments(object)) {
-                    object.length = 0;
-                } else {
-                    $splice(object, 0, $toLength(object.length));
-                }
-
-                object.length = $toLength(sorted.length);
-                for (index = 0; index < length; index += 1) {
-                    if ($call(pHasOwn, sorted, index)) {
-                        object[index] = sorted[index];
-                    }
-                }
-            }
-
-            return object;
-        };
-    }());
-
-    exports.Array.proto.stableSort.argNames = ['comparefn'];
-
-    /**
-     * This {@link module:util-x~boundPrototypalFunction method} method sorts the elements of an array in place and returns the array.
-     * This is a stable sort. The default sort order is lexicographic (not numeric).
-     *
-     * @function module:util-x~exports.Array.stableSort
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {Function} [compareFN]
-     * @throws {TypeError} If compareFN is defined and is not a function
-     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-     * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
-     */
-    exports.Array.stableSort = $toMethod(exports.Array.proto.stableSort);
-    exports.Array.stableSort.argNames = ['array', 'comparefn'];
-
-    /**
-     * This method sorts the elements the array in place and returns the array.
-     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
-     *
-     * @function module:util-x~exports.Array.proto.sort
-     * @this {module:util-x~ArrayLike}
-     * @throws {TypeError} If array is null or undefined
-     * @param {Function} [compareFN]
-     * @throws {TypeError} If compareFN is not undefined or is not a function
-     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-     */
-    exports.Array.proto.sort = (function () {
-        var argNames = ['comparefn'];
-
-        return $decide(
-            // test
-            function () {
-                $affirmBasic(base.Array.sort)();
-
-                var sortArr = [],
-                    sortObj;
-
-                sortArr.length = 9;
-                sortArr[0] = 'f';
-                sortArr[1] = 'e';
-                sortArr[2] = 'd';
-                sortArr[4] = null;
-                sortArr[5] = Undefined;
-                sortArr[6] = 'a';
-                sortArr[7] = 'c';
-                sortArr[8] = 'b';
-
-                $call(base.Array.sort, sortArr);
-                $affirm.strictEqual(sortArr.length, 9, 'test1');
-                $affirm.strictEqual(sortArr[0], 'a', 'test2');
-                $affirm.strictEqual(sortArr[1], 'b', 'test3');
-                $affirm.strictEqual(sortArr[2], 'c', 'test4');
-                $affirm.strictEqual(sortArr[3], 'd', 'test5');
-                $affirm.strictEqual(sortArr[4], 'e', 'test6');
-                $affirm.strictEqual(sortArr[5], 'f', 'test7');
-                $affirm.strictEqual(sortArr[6], null, 'test8');
-                $affirm.strictEqual(sortArr[7], Undefined, 'test9');
-                $affirm.strictEqual(sortArr[8], Undefined, 'test110');
-                $affirm.ok($call(pHasOwn, sortArr, 7), 'test11');
-                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test12');
-
-                sortArr.length = 9;
-                sortArr[0] = 'f';
-                sortArr[1] = 'e';
-                sortArr[2] = 'd';
-                sortArr[3] = Undefined;
-                sortArr[4] = null;
-                sortArr[5] = 'a';
-                sortArr[6] = 'c';
-                sortArr[7] = 'b';
-
-                $call(base.Array.sort, sortArr, $descending);
-                $affirm.strictEqual(sortArr.length, 9, 'test13');
-                $affirm.strictEqual(sortArr[0], null, 'test14');
-                $affirm.strictEqual(sortArr[1], 'f', 'test15');
-                $affirm.strictEqual(sortArr[2], 'e', 'test16');
-                $affirm.strictEqual(sortArr[3], 'd', 'test17');
-                $affirm.strictEqual(sortArr[4], 'c', 'test18');
-                $affirm.strictEqual(sortArr[5], 'b', 'test19');
-                $affirm.strictEqual(sortArr[6], 'a', 'test20');
-                $affirm.strictEqual(sortArr[7], Undefined, 'test21');
-                $affirm.strictEqual(sortArr[8], Undefined, 'test22');
-                $affirm.ok($call(pHasOwn, sortArr, 7), 'test23');
-                $affirm.ok(!$call(pHasOwn, sortArr, 8), 'test24');
-
-                sortObj = {
-                    0: 5,
-                    1: 2,
-                    2: 4,
-                    4: null,
-                    6: 1,
-                    7: 3,
-                    length: 8
-                };
-
-                $call(base.Array.sort, sortObj, $descending);
-                $affirm.strictEqual(sortObj.length, 8, 'test25');
-                $affirm.strictEqual(sortObj[0], null, 'test26');
-                $affirm.strictEqual(sortObj[1], 5, 'test27');
-                $affirm.strictEqual(sortObj[2], 4, 'test28');
-                $affirm.strictEqual(sortObj[3], 3, 'test29');
-                $affirm.strictEqual(sortObj[4], 2, 'test30');
-                $affirm.strictEqual(sortObj[5], 1, 'test31');
-                $affirm.strictEqual(sortObj[6], Undefined, 'test32');
-                $affirm.strictEqual(sortObj[7], Undefined, 'test33');
-                $affirm.ok(!$call(pHasOwn, sortObj, 6), 'test34');
-                $affirm.ok(!$call(pHasOwn, sortObj, 7), 'test35');
-            },
-
-            // pass
-            function () {
-                return $decide(
-                    // test
-                    function () {
-                        $affirm.doesNotThrow(function () {
-                            $call(base.Array.sort, []);
-                        }, 'no compare argument');
-
-                        $affirm.doesNotThrow(function () {
-                            $call(base.Array.sort, [], undefined);
-                        }, 'undefined compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], null);
-                        }, CTypeError, 'null compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], 1);
-                        }, CTypeError, 'number compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], true);
-                        }, CTypeError, 'boolean compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], 'a');
-                        }, CTypeError, 'string compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], {});
-                        }, CTypeError, 'object compare argument');
-
-                        $affirm.throws(function () {
-                            $call(base.Array.sort, [], []);
-                        }, CTypeError, 'array compare argument');
-                    },
-
-                    // pass
-                    function () {
-                        return base.Array.sort;
-                    },
-
-                    // fail
-                    function () {
-                        var pSort = base.Array.sort;
-
-                        return function (comparefn) {
-                            if ($isUndefined(comparefn)) {
-                                comparefn = $ascending;
-                            }
-
-                            return $call(pSort, $requireObjectCoercible(this), $throwIfNotFunction(comparefn));
-                        };
-                    },
-
-                    // argNames
-                    argNames,
-
-                    // message
-                    'Array.sort patch'
-                );
-            },
-
-            // fail
-            function () {
-                return exports.Array.proto.stableSort;
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Array.sort shim'
-        );
-    }());
-
-    /**
-     * This {@link module:util-x~boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
-     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
-     *
-     * @function module:util-x~exports.Array.sort
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {Function} [compareFN]
-     * @throws {TypeError} If compareFN is defined and is not a function
-     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-     */
-    exports.Array.sort = $toMethod(exports.Array.proto.sort);
-    exports.Array.sort.argNames = ['array', 'comparefn'];
-
-    /**
-     * Shortcut
-     * This {@link module:util-x~boundPrototypalFunction method} sorts the elements of an array in place and returns the array.
-     * The sort may be unstable depending on the browser. The default sort order is lexicographic (not numeric).
-     *
-     * @private
-     * @function module:util-x~$sort
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {Function} [compareFN]
-     * @throws {TypeError} If compareFN is defined and is not a function
-     * @returns {module:util-x~ArrayLike} same type as supplied array argument.
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-     */
-    $sort = exports.Array.sort;
 
     /**
      * @private
@@ -12054,184 +12828,6 @@
     exports.Array.proto.copyWithin.argNames = ['array', 'target', 'start', 'end'];
 
     /**
-     * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
-     * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
-     * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
-     * IE 6 to 9: Error: description, message
-     * IE 10: Error: description
-     * FF 3 to 5: Error: message, fileName, lineNumber, stack
-     * FF 3 to 3.5: Function: prototype
-     * Chrome 5 to 9: Error: message, stack
-     * Chrome 10 to 13: Error: arguments, type, message, stack
-     * V8 Error object has: captureStackTrace, stackTraceLimit
-     * Opera 10 to 12 & next: Error: message
-     * Opera 11.5: Function: prototype
-     * Safari 4 to 6 & next: Error: message
-     * There are most probably other native objects that do not agree: Object and Array should be fine in all
-     * environments.
-     *
-     * @function module:util-x~exports.Object.keys
-     * @param {Object} object
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
-     */
-    /*jslint todo: true */
-    /** @todo: fix unwanted error, constructor and prototype properties */
-    /*jslint todo: false */
-    exports.Object.keys = (function () {
-        var argNames = ['object'];
-
-        return $decide(
-            // test
-            function () {
-                $affirmBasic(base.Object.keys)();
-
-                var value;
-
-                $affirm.doesNotThrow(function () {
-                    value = base.Object.keys($returnArgs(1, 2));
-                }, 'test1');
-
-                $affirm.strictEqual(value.length, 2, 'works with arguments object');
-                $affirm.ok(!hasErrorProps, 'works with error objects');
-
-                $affirm.doesNotThrow(function () {
-                    value = base.Object.keys(CError.prototype);
-                }, 'test2');
-
-                // Error prototype should not list
-                $affirm.strictEqual(value.length, 0, 'Error prototype zero list');
-            },
-
-            // pass
-            function () {
-                return $decide(
-                    // test
-                    function () {
-                        var value;
-
-                        $affirm.doesNotThrow(function () {
-                            value = base.Object.keys(1);
-                        }, 'number literal');
-
-                        $affirm.strictEqual(value.length, 0, 'number literal');
-
-                        $affirm.doesNotThrow(function () {
-                            value = base.Object.keys('a');
-                        }, 'string literal');
-
-                        $affirm.strictEqual(value.length, 1, 'string literal');
-
-                        $affirm.doesNotThrow(function () {
-                            value = base.Object.keys(true);
-                        }, 'boolean literal');
-
-                        $affirm.strictEqual(value.length, 0, 'boolean literal');
-                    },
-
-                    // pass
-                    function () {
-                        return base.Object.keys;
-                    },
-
-                    // fail
-                    function () {
-                        var mKeys = base.Object.keys;
-
-                        return function (object) {
-                            return mKeys($toObject(object));
-                        };
-                    },
-
-                    // argNames
-                    argNames,
-
-                    // message
-                    'Object.keys patch'
-                );
-            },
-
-            // fail
-            function () {
-                return function (object) {
-                    object = $toObject(object);
-
-                    var skipEnumArgs = hasEnumArgsBug && $isArguments(object),
-                        length,
-                        dontEnum,
-                        theKeys = [],
-                        skipProto = hasProtoEnumBug && $isFunction(object),
-                        skipConstructor,
-                        name,
-                        ctor,
-                        index;
-
-                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
-                        length = $toLength(object.length);
-                        for (index = 0; index < length; index += 1) {
-                            $push(theKeys, $toString(index));
-                        }
-                    }
-
-                    if (!skipEnumArgs) {
-                        /*jslint forin: true */
-                        for (name in object) {
-                            if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
-                                $push(theKeys, name);
-                            }
-                        }
-                    }
-
-                    if (hasDontEnumBug) {
-                        ctor = object.constructor;
-                        skipConstructor = ctor && ctor.prototype === object;
-                        length = $toLength(shadowed.length);
-                        for (index = 0; index < length; index += 1) {
-                            dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
-                                $push(theKeys, dontEnum);
-                            }
-                        }
-                    }
-
-                    return theKeys;
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.keys shim'
-        );
-    }());
-
-    /**
-     * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
-     * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
-     * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
-     * IE 6 to 9: Error: description, message
-     * IE 10: Error: description
-     * FF 3 to 5: Error: message, fileName, lineNumber, stack
-     * FF 3 to 3.5: Function: prototype
-     * Chrome 5 to 9: Error: message, stack
-     * Chrome 10 to 13: Error: arguments, type, message, stack
-     * V8 Error object has: captureStackTrace, stackTraceLimit
-     * Opera 10 to 12 & next: Error: message
-     * Opera 11.5: Function: prototype
-     * Safari 4 to 6 & next: Error: message
-     * There are most probably other native objects that do not agree: Object and Array should be fine in all
-     * environments.
-     *
-     * @private
-     * @function module:util-x~exports.Object.keys
-     * @param {Object} object
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
-     */
-    $objectKeys = exports.Object.keys;
-
-    /**
      * forKeys executes the callback function once for each own property present in the object until it finds one
      * where callback returns a true value.
      * If a thisArg parameter is provided to some, it will be passed to callback when invoked,
@@ -12719,7 +13315,7 @@
                         }, CTypeError, 'no properties argument');
 
                         $affirm.throws(function () {
-                            mDefineProperties({}, undefined);
+                            mDefineProperties({}, Undefined);
                         }, CTypeError, 'properties undefined');
 
                         $affirm.throws(function () {
@@ -13191,217 +13787,6 @@
      */
     exports.String.wrapInChars = $toMethod(exports.String.proto.wrapInChars);
     exports.String.proto.wrapInChars.argNames = ['string', 'characters'];
-
-    /**
-     * Tests a deep equality relation.
-     *
-     * @function module:util-x~exports.Object.deepEqual
-     * @param {*} a
-     * @param {*} b
-     * @returns {boolean}
-     * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
-     */
-    exports.Object.deepEqual = (function () {
-        return function (a, b) {
-            if (a === b) {
-                return true;
-            }
-
-            var stringTagA = $toStringTag(a),
-                stringTagB = $toStringTag(b),
-                ka,
-                kb,
-                length,
-                index,
-                it;
-
-            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
-                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
-            }
-
-            if ($isRegExp(a) && $isRegExp(b)) {
-                return a.source === b.source &&
-                    a.global === b.global &&
-                    a.multiline === b.multiline &&
-                    a.lastIndex === b.lastIndex &&
-                    a.ignoreCase === b.ignoreCase &&
-                    a.sticky === b.sticky;
-            }
-
-            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
-                /*jslint eqeq: true */
-                return a == b;
-            }
-
-            if (a.prototype !== b.prototype) {
-                return false;
-            }
-
-            if ($isArguments(a)) {
-                if (!$isArguments(b)) {
-                    return false;
-                }
-
-                return $deepEqual($slice(a), $slice(b));
-            }
-
-            try {
-                ka = $objectKeys(a);
-                kb = $objectKeys(b);
-            } catch (eDE) {
-                return false;
-            }
-
-            length = $toLength(ka.length);
-            if (length !== $toLength(kb.length)) {
-                if ($isArray(a) && $isArray(b)) {
-                    if (a.length !== b.length) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                $sort(ka);
-                $sort(kb);
-                for (index = 0; index < length; index += 1) {
-                    if (ka[index] !== kb[index]) {
-                        return false;
-                    }
-                }
-            }
-
-            for (index = 0; index < length; index += 1) {
-                it = ka[index];
-                if (!$deepEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
-                    return false;
-                }
-            }
-
-            stringTagA = typeof a;
-            stringTagB = typeof b;
-
-            return stringTagA === stringTagB;
-        };
-    }());
-
-    exports.Object.deepEqual.argNames = ['a', 'b'];
-
-    /**
-     * Tests a deep equality relation.
-     *
-     * @private
-     * @function module:util-x~$deepEqual
-     * @param {*} a
-     * @param {*} b
-     * @returns {boolean}
-     * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
-     */
-    $deepEqual = exports.Object.deepEqual;
-
-    /**
-     * Tests a deep equality relation.
-     *
-     * @function module:util-x~exports.Object.deepStrictEqual
-     * @param {*} a
-     * @param {*} b
-     * @returns {boolean}
-     */
-    exports.Object.deepStrictEqual = (function () {
-        return function (a, b) {
-            if (a === b) {
-                return true;
-            }
-
-            var stringTagA = $toStringTag(a),
-                stringTagB = $toStringTag(b),
-                ka,
-                kb,
-                length,
-                index,
-                it;
-
-            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
-                return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
-            }
-
-            if ($isRegExp(a) && $isRegExp(b)) {
-                return a.source === b.source &&
-                    a.global === b.global &&
-                    a.multiline === b.multiline &&
-                    a.lastIndex === b.lastIndex &&
-                    a.ignoreCase === b.ignoreCase &&
-                    a.sticky === b.sticky;
-            }
-
-            if (($isPrimitive(a) || $isFunction(a)) && ($isPrimitive(b) || $isFunction(b))) {
-                return a === b;
-            }
-
-            if ($getPrototypeOf(a) !== $getPrototypeOf(b)) {
-                return false;
-            }
-
-            if ($isArguments(a)) {
-                if (!$isArguments(b)) {
-                    return false;
-                }
-
-                return $deepStrictEqual($slice(a), $slice(b));
-            }
-
-            try {
-                ka = $objectKeys(a);
-                kb = $objectKeys(b);
-            } catch (eDE) {
-                return false;
-            }
-
-            length = $toLength(ka.length);
-            if (length !== $toLength(kb.length)) {
-                if ($isArray(a) && $isArray(b)) {
-                    if (a.length !== b.length) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                $sort(ka);
-                $sort(kb);
-                for (index = 0; index < length; index += 1) {
-                    if (ka[index] !== kb[index]) {
-                        return false;
-                    }
-                }
-            }
-
-            for (index = 0; index < length; index += 1) {
-                it = ka[index];
-                if (!$deepStrictEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
-                    return false;
-                }
-            }
-
-            stringTagA = typeof a;
-            stringTagB = typeof b;
-
-            return stringTagA === stringTagB;
-        };
-    }());
-
-    exports.Object.deepStrictEqual.argNames = ['a', 'b'];
-
-    /**
-     * Tests a deep equality relation.
-     *
-     * @private
-     * @function module:util-x~$deepStrictEqual
-     * @param {*} a
-     * @param {*} b
-     * @returns {boolean}
-     */
-    $deepStrictEqual = exports.Object.deepStrictEqual;
 
     /**
      * This method truncates a long string to the length specified by n;
