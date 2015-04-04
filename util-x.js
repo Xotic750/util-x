@@ -2574,31 +2574,6 @@
     }());
 
     /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     * For use with call.
-     *
-     * @private
-     * @function module:util-x~$toObjectCallFix
-     * @param {*} inputArg The argument to be converted to an object.
-     * @returns {Object} Value of inputArg as type Object.
-     */
-    /*
-    function $toObjectCallFix(inputArg) {
-        var object = inputArg,
-            type;
-
-        if (hasCallBug) {
-            type = typeof inputArg;
-            if (type === 'boolean' || type === 'number' || type === 'string') {
-                object = $toObject(inputArg);
-            }
-        }
-
-        return object;
-    }
-    */
-
-    /**
      * Indicates if a string suffers the "indexed accessability bug".
      * True if it does, otherwise false.
      *
@@ -2637,7 +2612,7 @@
      * @param {*} inputArg
      * @returns {boolean}
      */
-    $isArguments = function duckType(inputArg) {
+    $isArguments = function (inputArg) {
         return !$isPrimitive(inputArg) && typeof inputArg.length === 'number' && 'callee' in inputArg && !('arguments' in inputArg);
     };
 
@@ -2652,7 +2627,7 @@
         var fn;
 
         if (false || hasBoxedStringBug || hasEnumStringBug || hasEnumArgsBug) {
-            fn = function $hasProperty(inputArg, property) {
+            fn = function (inputArg, property) {
                 var length = $toLength(inputArg.length);
 
                 if (length && $isIndex(property, length)) {
@@ -2665,7 +2640,7 @@
                 return $toString(property) in $toObject(inputArg);
             };
         } else {
-            fn = function $hasProperty(inputArg, property) {
+            fn = function (inputArg, property) {
                 /*jstwit in: true */
                 return $toString(property) in $toObject(inputArg);
             };
@@ -8217,7 +8192,7 @@
                 circ.cnt = 0;
             }
 
-            if (circ.cnt > 100) {
+            if (circ.cnt > 200) {
                 throw new CRangeError('Circular reference limit exceeded');
             }
 
@@ -8379,7 +8354,7 @@
                 circ.cnt = 0;
             }
 
-            if (circ.cnt > 100) {
+            if (circ.cnt > 200) {
                 throw new CRangeError('Circular reference limit exceeded');
             }
 
