@@ -75,7 +75,7 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr, hasDeleteBug, str, target, replacement, result
+    wsStr, hasDeleteBug, str, target, replacement, result, isCircular
 */
 
 /**
@@ -363,6 +363,9 @@
         $defProp,
         $deleteProperty,
         $sSlice,
+        $forKeys,
+        $indexOf,
+        $isCircular,
 
         BigNum,
 
@@ -12674,6 +12677,22 @@
     exports.Array.indexOf.argNames = ['array', 'searchElement', 'fromIndex'];
 
     /**
+     * Shortcut
+     * This {@link module:util-x~boundPrototypalFunction method} returns the first index at which a given element can
+     * be found in the array, or -1 if it is not present.
+     *
+     * @private
+     * @function module:util-x~$indexOf
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @param {number} [fromIndex]
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+     */
+    $indexOf = exports.Array.indexOf;
+
+    /**
      * Returns true if the specified searchElement is in the specified array.
      * Using strict equality (the same method used by the === comparison operator).
      *
@@ -13061,6 +13080,61 @@
      */
     exports.Object.forKeys = $toMethod(exports.Object.proto.forKeys);
     exports.Object.forKeys.argNames = ['object', 'fn', 'thisArg'];
+
+    /**
+     * Executes a provided function once per object property and allows a some like break.
+     *
+     * @private
+     * @function module:util-x~$.forKeys
+     * @param {Object} object
+     * @throws {TypeError} If object is primitive
+     * @param {module:util-x~forKeysCallback} fn
+     * @throws {TypeError} If fn is not a function
+     * @param {*} [thisArg]
+     * @returns {boolean}
+     */
+    $forKeys = exports.Object.forKeys;
+
+    /**
+     * @private
+     * @function module:util-x~$isCircular
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    $isCircular = (function () {
+        var isCirc,
+            cb;
+
+        cb = function (item) {
+            return !$isPrimitive(item) && ($indexOf(this, item) !== -1 || isCirc(item, this));
+        };
+
+        isCirc = function (obj, arr) {
+            if ($isPrimitive(obj)) {
+                return false;
+            }
+
+            if (!$isArray(arr)) {
+                arr = [];
+            }
+
+            $push(arr, obj);
+
+            return $forKeys(obj, cb, arr);
+        };
+
+        return function (inputArg) {
+            return isCirc(inputArg);
+        };
+    }());
+
+    /**
+     * @function module:util-x~exports.Object.isCircular
+     * @param {*} inputArg
+     * @returns {boolean}
+     */
+    exports.Object.isCircular = $isCircular;
+    exports.Object.isCircular.argNames = ['inputArg'];
 
     /**
      * Check to see if an object is empty (contains no enumerable properties).
