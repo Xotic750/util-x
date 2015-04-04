@@ -75,7 +75,8 @@
     toSource, toString, toStringTag, toUint, toUint16, toUint32, toUint8,
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
-    wsStr, hasDeleteBug, str, target, replacement, result, isCircular
+    wsStr, hasDeleteBug, str, target, replacement, result, isCircular, a, b,
+    cnt
 */
 
 /**
@@ -8005,6 +8006,143 @@
     $sort = exports.Array.sort;
 
     /**
+     * This method returns the first index at which a given element can
+     * be found in the array, or -1 if it is not present.
+     *
+     * @function module:util-x~exports.Array.proto.indexOf
+     * @this {module:util-x~ArrayLike}
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @param {number} [fromIndex]
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+     */
+    exports.Array.proto.indexOf = $decide(
+        // test
+        function () {
+            $affirmBasic(base.Array.indexOf)();
+
+            var value;
+
+            $affirm.doesNotThrow(function () {
+                value = $call(base.Array.indexOf, [0, 1], 1, 2);
+            }, 'test1');
+
+            $affirm.strictEqual(value, -1, 'item not found');
+        },
+
+        // pass
+        function () {
+            return base.Array.indexOf;
+        },
+
+        // fail
+        function () {
+            return function (searchElement, fromIndex) {
+                var object = $toObject(this),
+                    length = $toLength(object.length),
+                    stringTag = $toStringTag(object),
+                    val = -1,
+                    index;
+
+                if (length) {
+                    if (arguments.length > 1) {
+                        fromIndex = $toInteger(fromIndex);
+                    } else {
+                        fromIndex = 0;
+                    }
+
+                    if (fromIndex < length) {
+                        if (fromIndex < 0) {
+                            fromIndex = length - $abs(fromIndex);
+                            if (fromIndex < 0) {
+                                fromIndex = 0;
+                            }
+                        }
+
+                        for (index = fromIndex; index < length; index += 1) {
+                            if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
+                                val = index;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                return val;
+            };
+        },
+
+        // argNames
+        ['searchElement', 'fromIndex'],
+
+        // message
+        'Array.indexOf shim'
+    );
+
+    /**
+     * This {@link module:util-x~boundPrototypalFunction method} returns the first index at which a given element can
+     * be found in the array, or -1 if it is not present.
+     *
+     * @function module:util-x~exports.Array.indexOf
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @param {number} [fromIndex]
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+     */
+    exports.Array.indexOf = $toMethod(exports.Array.proto.indexOf);
+    exports.Array.indexOf.argNames = ['array', 'searchElement', 'fromIndex'];
+
+    /**
+     * Shortcut
+     * This {@link module:util-x~boundPrototypalFunction method} returns the first index at which a given element can
+     * be found in the array, or -1 if it is not present.
+     *
+     * @private
+     * @function module:util-x~$indexOf
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @param {number} [fromIndex]
+     * @returns {number}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+     */
+    $indexOf = exports.Array.indexOf;
+
+    /**
+     * Returns true if the specified searchElement is in the specified array.
+     * Using strict equality (the same method used by the === comparison operator).
+     *
+     * @function module:util-x~exports.Array.proto.contains
+     * @this {module:util-x~ArrayLike}
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @returns {boolean}
+     */
+    exports.Array.proto.contains = (function (pEAIndexOf) {
+        return function () {
+            return $apply(pEAIndexOf, this, arguments) !== -1;
+        };
+    }(exports.Array.proto.indexOf));
+
+    exports.Array.proto.contains.argNames = ['searchElement'];
+
+    /**
+     * Returns true if the specified searchElement is in the specified array.
+     * Using strict equality (the same method used by the === comparison operator).
+     *
+     * @function module:util-x~exports.Array.contains
+     * @param {module:util-x~ArrayLike} array
+     * @throws {TypeError} If array is null or undefined
+     * @param {*} searchElement
+     * @returns {boolean}
+     */
+    exports.Array.contains = $toMethod(exports.Array.proto.contains);
+    exports.Array.contains.argNames = ['array', 'searchElement'];
+
+    /**
      * Tests a deep equality relation.
      *
      * @function module:util-x~exports.Object.deepEqual
@@ -8014,7 +8152,7 @@
      * @see http://wiki.commonjs.org/wiki/Unit_Testing/1.0
      */
     exports.Object.deepEqual = (function () {
-        return function (a, b) {
+        var de = function (a, b, circ) {
             if (a === b) {
                 return true;
             }
@@ -8025,6 +8163,8 @@
                 bIsArgs,
                 aIsPrim,
                 bIsPrim,
+                aCirc,
+                bCirc,
                 ka,
                 kb,
                 length,
@@ -8059,6 +8199,28 @@
                 return false;
             }
 
+            if ($indexOf(circ.a, a) === -1) {
+                $push(circ.a, a);
+            } else {
+                aCirc = true;
+            }
+
+            if ($indexOf(circ.b, b) === -1) {
+                $push(circ.b, b);
+            } else {
+                bCirc = true;
+            }
+
+            if (aCirc && bCirc) {
+                circ.cnt += 1;
+            } else {
+                circ.cnt = 0;
+            }
+
+            if (circ.cnt > 100) {
+                throw new CRangeError('Circular reference limit exceeded');
+            }
+
             aIsArgs = $isArguments(a);
             bIsArgs = $isArguments(b);
             if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs)) {
@@ -8066,7 +8228,7 @@
             }
 
             if (aIsArgs) {
-                return $deepEqual($slice(a), $slice(b));
+                return de($slice(a), $slice(b), circ);
             }
 
             ka = $objectKeys(a);
@@ -8092,7 +8254,7 @@
 
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!$deepEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
+                if (!de($getItem(a, it, stringTagA), $getItem(b, it, stringTagB), circ)) {
                     return false;
                 }
             }
@@ -8101,6 +8263,10 @@
             stringTagB = typeof b;
 
             return stringTagA === stringTagB;
+        };
+
+        return function (a, b) {
+            return de(a, b, { a: [], b: [], cnt: 0 });
         };
     }());
 
@@ -8149,7 +8315,7 @@
      * @returns {boolean}
      */
     exports.Object.deepStrictEqual = (function () {
-        return function (a, b) {
+        var de = function (a, b, circ) {
             if (a === b) {
                 return true;
             }
@@ -8160,6 +8326,8 @@
                 bIsArgs,
                 aIsPrim,
                 bIsPrim,
+                aCirc,
+                bCirc,
                 ka,
                 kb,
                 length,
@@ -8193,6 +8361,28 @@
                 return false;
             }
 
+            if ($indexOf(circ.a, a) === -1) {
+                $push(circ.a, a);
+            } else {
+                aCirc = true;
+            }
+
+            if ($indexOf(circ.b, b) === -1) {
+                $push(circ.b, b);
+            } else {
+                bCirc = true;
+            }
+
+            if (aCirc && bCirc) {
+                circ.cnt += 1;
+            } else {
+                circ.cnt = 0;
+            }
+
+            if (circ.cnt > 100) {
+                throw new CRangeError('Circular reference limit exceeded');
+            }
+
             aIsArgs = $isArguments(a);
             bIsArgs = $isArguments(b);
             if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs)) {
@@ -8200,7 +8390,7 @@
             }
 
             if (aIsArgs) {
-                return $deepEqual($slice(a), $slice(b));
+                return de($slice(a), $slice(b), circ);
             }
 
             ka = $objectKeys(a);
@@ -8226,7 +8416,7 @@
 
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!$deepStrictEqual($getItem(a, it, stringTagA), $getItem(b, it, stringTagB))) {
+                if (!de($getItem(a, it, stringTagA), $getItem(b, it, stringTagB), circ)) {
                     return false;
                 }
             }
@@ -8235,6 +8425,10 @@
             stringTagB = typeof b;
 
             return stringTagA === stringTagB;
+        };
+
+        return function (a, b) {
+            return de(a, b, { a: [], b: [], cnt: 0 });
         };
     }());
 
@@ -12587,143 +12781,6 @@
     exports.Number.toFixed.argNames = ['number', 'fractionDigits'];
 
     /**
-     * This method returns the first index at which a given element can
-     * be found in the array, or -1 if it is not present.
-     *
-     * @function module:util-x~exports.Array.proto.indexOf
-     * @this {module:util-x~ArrayLike}
-     * @throws {TypeError} If array is null or undefined
-     * @param {*} searchElement
-     * @param {number} [fromIndex]
-     * @returns {number}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-     */
-    exports.Array.proto.indexOf = $decide(
-        // test
-        function () {
-            $affirmBasic(base.Array.indexOf)();
-
-            var value;
-
-            $affirm.doesNotThrow(function () {
-                value = $call(base.Array.indexOf, [0, 1], 1, 2);
-            }, 'test1');
-
-            $affirm.strictEqual(value, -1, 'item not found');
-        },
-
-        // pass
-        function () {
-            return base.Array.indexOf;
-        },
-
-        // fail
-        function () {
-            return function (searchElement, fromIndex) {
-                var object = $toObject(this),
-                    length = $toLength(object.length),
-                    stringTag = $toStringTag(object),
-                    val = -1,
-                    index;
-
-                if (length) {
-                    if (arguments.length > 1) {
-                        fromIndex = $toInteger(fromIndex);
-                    } else {
-                        fromIndex = 0;
-                    }
-
-                    if (fromIndex < length) {
-                        if (fromIndex < 0) {
-                            fromIndex = length - $abs(fromIndex);
-                            if (fromIndex < 0) {
-                                fromIndex = 0;
-                            }
-                        }
-
-                        for (index = fromIndex; index < length; index += 1) {
-                            if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
-                                val = index;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                return val;
-            };
-        },
-
-        // argNames
-        ['searchElement', 'fromIndex'],
-
-        // message
-        'Array.indexOf shim'
-    );
-
-    /**
-     * This {@link module:util-x~boundPrototypalFunction method} returns the first index at which a given element can
-     * be found in the array, or -1 if it is not present.
-     *
-     * @function module:util-x~exports.Array.indexOf
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {*} searchElement
-     * @param {number} [fromIndex]
-     * @returns {number}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-     */
-    exports.Array.indexOf = $toMethod(exports.Array.proto.indexOf);
-    exports.Array.indexOf.argNames = ['array', 'searchElement', 'fromIndex'];
-
-    /**
-     * Shortcut
-     * This {@link module:util-x~boundPrototypalFunction method} returns the first index at which a given element can
-     * be found in the array, or -1 if it is not present.
-     *
-     * @private
-     * @function module:util-x~$indexOf
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {*} searchElement
-     * @param {number} [fromIndex]
-     * @returns {number}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-     */
-    $indexOf = exports.Array.indexOf;
-
-    /**
-     * Returns true if the specified searchElement is in the specified array.
-     * Using strict equality (the same method used by the === comparison operator).
-     *
-     * @function module:util-x~exports.Array.proto.contains
-     * @this {module:util-x~ArrayLike}
-     * @throws {TypeError} If array is null or undefined
-     * @param {*} searchElement
-     * @returns {boolean}
-     */
-    exports.Array.proto.contains = (function (pEAIndexOf) {
-        return function () {
-            return $apply(pEAIndexOf, this, arguments) !== -1;
-        };
-    }(exports.Array.proto.indexOf));
-
-    exports.Array.proto.contains.argNames = ['searchElement'];
-
-    /**
-     * Returns true if the specified searchElement is in the specified array.
-     * Using strict equality (the same method used by the === comparison operator).
-     *
-     * @function module:util-x~exports.Array.contains
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {*} searchElement
-     * @returns {boolean}
-     */
-    exports.Array.contains = $toMethod(exports.Array.proto.contains);
-    exports.Array.contains.argNames = ['array', 'searchElement'];
-
-    /**
      * This method returns the first index at which a given element
      * can be found in the array, or -1 if it is not present.
      *
@@ -13114,17 +13171,13 @@
                 return false;
             }
 
-            if (!$isArray(arr)) {
-                arr = [];
-            }
-
             $push(arr, obj);
 
             return $forKeys(obj, cb, arr);
         };
 
         return function (inputArg) {
-            return isCirc(inputArg);
+            return isCirc(inputArg, []);
         };
     }());
 
@@ -15506,6 +15559,7 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     exports.Array.powerSet = $toMethod(exports.Array.proto.powerSet);
+    exports.Array.powerSet.argNames = ['array'];
 
     /**
      * Convert an array to a plain object representation.
