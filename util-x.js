@@ -2623,31 +2623,10 @@
      * @param {string} property The property name.
      * @returns {boolean} True if the property is on the object or in the object's prototype, otherwise false.
      */
-    $hasProperty = (function () {
-        var fn;
-
-        if (false || hasBoxedStringBug || hasEnumStringBug || hasEnumArgsBug) {
-            fn = function (inputArg, property) {
-                var length = $toLength(inputArg.length);
-
-                if (length && $isIndex(property, length)) {
-                    if ((hasEnumStringBug && $isString(inputArg)) || (hasEnumArgsBug && $isArguments(inputArg))) {
-                        return true;
-                    }
-                }
-
-                /*jstwit in: true */
-                return $toString(property) in $toObject(inputArg);
-            };
-        } else {
-            fn = function (inputArg, property) {
-                /*jstwit in: true */
-                return $toString(property) in $toObject(inputArg);
-            };
-        }
-
-        return fn;
-    }());
+    $hasProperty = function (inputArg, property) {
+        /*jstwit in: true */
+        return $toString(property) in $toObject(inputArg);
+    };
 
     /**
      * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
@@ -10248,67 +10227,42 @@
     /** @todo: fix args and string enum bug */
     /*jslint todo: false */
     /* jshint -W001 */
-    exports.Object.proto.hasOwnProperty = (function () {
+    exports.Object.proto.hasOwnProperty = (function (phop) {
         var argNames = ['property'];
 
         return $decide(
             // test
             function () {
                 $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
-                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+
             },
 
             // pass
             function () {
-                return pHasOwn;
+                return phop;
             },
 
             // fail
             function () {
-                return $decide(
-                    // test
-                    function () {
-                        $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
-                    },
+                var length = $toLength(shadowed.length);
 
-                    // pass
-                    function () {
-                        return function (property) {
-                            var prop = $toString(property);
-
-                            return (prop === 'prototype' && $isFunction(this)) || $call(pHasOwn, this, prop);
-                        };
-                    },
-
-                    // fail
-                    function () {
-                        return function (property) {
-                            var prop = $toString(property),
-                                hop = $call(pHasOwn, this, prop),
-                                length,
-                                index;
+                return function (property) {
+                    var prop = $toString(property),
+                        hop = $call(phop, this, prop),
+                        index;
 
 
-                            if (!hop && $hasProperty(this, prop)) {
-                                length = $toLength(shadowed.length);
-                                for (index = 0; index < length; index += 1) {
-                                    if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
-                                        hop = true;
-                                        break;
-                                    }
-                                }
+                    if (!hop && $hasProperty(this, prop)) {
+                        for (index = 0; index < length; index += 1) {
+                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                                hop = true;
+                                break;
                             }
+                        }
+                    }
 
-                            return hop;
-                        };
-                    },
-
-                    // argNames
-                    argNames,
-
-                    // message
-                    'Object.hasOwnProperty hasDontEnumBug patch'
-                );
+                    return hop;
+                };
             },
 
             // argNames
@@ -10317,7 +10271,70 @@
             // message
             'Object.hasOwnProperty hasDontEnumBug patch'
         );
-    }());
+    }(pHasOwn));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasProtoEnumBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok($call(phop, 'abc', '1'), 'hasStringOwnPropBug');
+                $affirm.ok($call(phop, $Object('abc'), '1'), 'hasStringOwnPropBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasStringOwnPropBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
