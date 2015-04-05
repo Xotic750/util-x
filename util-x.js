@@ -2623,10 +2623,25 @@
      * @param {string} property The property name.
      * @returns {boolean} True if the property is on the object or in the object's prototype, otherwise false.
      */
-    $hasProperty = function (inputArg, property) {
-        /*jstwit in: true */
-        return $toString(property) in $toObject(inputArg);
-    };
+    $hasProperty = (function () {
+        var fn;
+
+        if (hasBoxedStringBug) {
+            fn = function (inputArg, property) {
+                var prop = $toString(property);
+
+                /*jstwit in: true */
+                return ($isString(inputArg) && $isIndex(prop, inputArg.length)) || $toString(prop) in $toObject(inputArg);
+            };
+        } else {
+            fn = function (inputArg, property) {
+                /*jstwit in: true */
+                return $toString(property) in $toObject(inputArg);
+            };
+        }
+
+        return fn;
+    }());
 
     /**
      * Forchecking an objects item by index. Can pacth or objects that don't work with boxed index access.
@@ -10223,9 +10238,6 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
-    /*jslint todo: true */
-    /** @todo: fix args and string enum bug */
-    /*jslint todo: false */
     /* jshint -W001 */
     exports.Object.proto.hasOwnProperty = (function (phop) {
         var argNames = ['property'];
