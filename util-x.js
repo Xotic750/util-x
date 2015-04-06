@@ -9060,6 +9060,34 @@
                 $affirm.doesNotThrow(function () {
                     $call(pTest, /x/, null);
                 }, 'should not throw if string argument is null');
+
+                var regex = /x/;
+
+                regex.lastIndex = 4;
+                $affirm.ok($call(pTest, regex, '123x5'), 'should ignore lastIndex and set the search start position at 0 for a nonglobal regex');
+
+                regex = /x/g;
+                regex.lastIndex = 4;
+                $affirm.ok(!$call(pTest, regex, '123x5'), 'should use lastIndex to set the search start position for a global regex');
+
+                regex.lastIndex = 2;
+                $affirm.ok($call(pTest, regex, '123x5'), 'should use lastIndex to set the search start position for a global regex');
+
+                regex = /x/g;
+                regex.lastIndex = '3';
+                $affirm.ok($call(pTest, regex, '123x5'), 'should type convert lastIndex when setting the search start position');
+
+                regex.lastIndex = '4';
+                $affirm.ok(!$call(pTest, regex, '123x5'), 'should type convert lastIndex when setting the search start position');
+
+                regex = /x/g;
+                $affirm.ok(!$call(pTest, regex), 'should type no argument to string');
+                $affirm.ok(!$call(pTest, regex, undefined), 'should type undefined to string');
+                $affirm.ok(!$call(pTest, regex, null), 'should type null to string');
+                $affirm.ok(!$call(pTest, regex, 1), 'should type 1 to string');
+                $affirm.ok(!$call(pTest, regex, true), 'should type true to string');
+                $affirm.ok(!$call(pTest, regex, {}), 'should type {} to string');
+                $affirm.ok(!$call(pTest, regex, []), 'should type [] to string');
             },
 
             // pass
