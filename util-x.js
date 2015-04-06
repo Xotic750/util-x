@@ -7345,6 +7345,347 @@
     $repeat = exports.String.repeat;
 
     /**
+     * Return the value of the [[Prototype]] internal property of object.
+     * Actually based on the ECMA6 draft, which only throws on undefined or null.
+     *
+     * @function module:util-x~exports.Object.getPrototypeOf
+     * @param {Object} object
+     * @returns {Prototype}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ordinary-object-internal-methods-and-internal-slots-getprototypeof
+     */
+    exports.Object.getPrototypeOf = (function () {
+        var argNames = ['object'];
+
+        return $decide(
+            // test
+            $affirmBasic(base.Object.getPrototypeOf),
+
+            // pass
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        var proto;
+
+                        $affirm.doesNotThrow(function () {
+                            proto = base.Object.getPrototypeOf(1);
+                        }, 'get number literal proto');
+
+                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = base.Object.getPrototypeOf(true);
+                        }, 'get boolean literal proto');
+
+                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = base.Object.getPrototypeOf('');
+                        }, 'get string literal proto');
+
+                        $affirm.strictEqual(proto, protoString, 'work with string literal');
+                    },
+
+                    // pass
+                    function () {
+                        return base.Object.getPrototypeOf;
+                    },
+
+                    // fail
+                    function () {
+                        var mGetPrototypeOf = base.Object.getPrototypeOf;
+
+                        return function (object) {
+                            return mGetPrototypeOf($toObject(object));
+                        };
+                    },
+
+                    // argNames
+                    ['object'],
+
+                    // message
+                    'Object.getPrototypeOf primitive patch'
+                );
+            },
+
+            // fail
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        var proto;
+
+                        $affirm.doesNotThrow(function () {
+                            proto = protoObject[stringProto];
+                        }, 'get __proto__');
+
+                        $affirm.strictEqual(protoObject[stringProto], null, 'has __proto__');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $toObject(1)[stringProto];
+                        }, 'get number literal proto');
+
+                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $toObject(true)[stringProto];
+                        }, 'get boolean literal proto');
+
+                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
+
+                        $affirm.doesNotThrow(function () {
+                            proto = $toObject('')[stringProto];
+                        }, 'get string literal proto');
+
+                        $affirm.strictEqual(proto, protoString, 'work with string literal');
+                        $affirm.ok(!testShims, 'testing shim');
+                    },
+
+                    // pass
+                    function () {
+                        return function (object) {
+                            return $toObject(object)[stringProto];
+                        };
+                    },
+
+                    // fail
+                    function () {
+                        var fixOpera10GetPrototypeOf;
+
+                        if ($returnArgs().constructor.prototype !== protoObject) {
+                            fixOpera10GetPrototypeOf = true;
+                        }
+
+                        return function (object) {
+                            var obj = $toObject(object),
+                                ctrProto,
+                                protoObj;
+
+                            if (obj === protoObject) {
+                                return null;
+                            }
+
+                            if ($isFunction(obj.constructor)) {
+                                if (fixOpera10GetPrototypeOf && $isArguments(obj)) {
+                                    ctrProto = protoObject;
+                                } else {
+                                    ctrProto = obj.constructor.prototype;
+                                }
+                            } else {
+                                protoObj = obj[stringProto];
+                                if ($toStringTag(protoObj) === stringTagObject && !$isFunction(protoObj)) {
+                                    ctrProto = protoObj;
+                                } else {
+                                    ctrProto = protoObject;
+                                }
+                            }
+
+                            if (obj === ctrProto) {
+                                return protoObject;
+                            }
+
+                            return ctrProto;
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Object.getPrototypeOf full shim'
+                );
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.getPrototypeOf __proto__ shim'
+        );
+    }());
+
+    /**
+     * Return the value of the [[Prototype]] internal property of object.
+     * Actually based on the ECMA6 draft, which only throws on undefined or null.
+     *
+     * @private
+     * @function module:util-x~$getPrototypeOf
+     * @param {Object} object
+     * @returns {Prototype}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
+     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tointeger
+     */
+    $getPrototypeOf = exports.Object.getPrototypeOf;
+
+    /**
+     * Check to see if an object is a plain object (created using "{}" or "new Object").
+     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
+     *
+     * @function module:util-x~exports.Object.isPlainObject
+     * @param {Object} object
+     * @returns {boolean}
+     */
+    exports.Object.isPlainObject = function (object) {
+        return $toStringTag(object) === stringTagObject && !$isFunction(object) && $getPrototypeOf(object) === protoObject;
+    };
+
+    exports.Object.isPlainObject.argNames = ['object'];
+
+    // redefinition
+    $isPlainObject = exports.Object.isPlainObject;
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @function module:util-x~exports.Object.proto.hasOwnProperty
+     * @this {Object}
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    /* jshint -W001 */
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                var length = $toLength(shadowed.length);
+
+                return function (property) {
+                    var prop = $toString(property),
+                        hop = $call(phop, this, prop),
+                        index;
+
+
+                    if (!hop && $hasProperty(this, prop)) {
+                        for (index = 0; index < length; index += 1) {
+                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                                hop = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    return hop;
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasDontEnumBug patch'
+        );
+    }(pHasOwn));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasProtoEnumBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok($call(phop, 'abc', '1'), 'hasStringOwnPropBug');
+                $affirm.ok($call(phop, $Object('abc'), '1'), 'hasStringOwnPropBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasStringOwnPropBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @function module:util-x~exports.Object.hasOwnProperty
+     * @param {Object} object
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
+    exports.Object.hasOwnProperty.argNames = ['object', 'property'];
+    /* jshint +W001 */
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @private
+     * @function module:util-x~$hasOwn
+     * @param {Object} object
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    $hasOwn = exports.Object.hasOwnProperty;
+
+    /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
      * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
      * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
@@ -7451,7 +7792,7 @@
                         length,
                         dontEnum,
                         theKeys = [],
-                        skipProto = hasProtoEnumBug && $isFunction(object),
+                        //skipProto = hasProtoEnumBug && $isFunction(object),
                         skipConstructor,
                         name,
                         ctor,
@@ -7460,18 +7801,30 @@
                     if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
                         length = $toLength(object.length);
                         for (index = 0; index < length; index += 1) {
-                            $push(theKeys, $toString(index));
+                            if ($hasOwn(object, index)) {
+                                $push(theKeys, $toString(index));
+                            }
                         }
                     }
 
                     if (!skipEnumArgs) {
                         /*jslint forin: true */
                         for (name in object) {
+                            if ($hasOwn(object, name)) {
+                                $push(theKeys, name);
+                            }
+                        }
+                    }
+
+                    /*
+                    if (!skipEnumArgs) {
+                        for (name in object) {
                             if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
                                 $push(theKeys, name);
                             }
                         }
                     }
+                    */
 
                     if (hasDontEnumBug) {
                         ctor = object.constructor;
@@ -10037,347 +10390,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/contains
      */
     $stringContains = exports.String.contains;
-
-    /**
-     * Return the value of the [[Prototype]] internal property of object.
-     * Actually based on the ECMA6 draft, which only throws on undefined or null.
-     *
-     * @function module:util-x~exports.Object.getPrototypeOf
-     * @param {Object} object
-     * @returns {Prototype}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ordinary-object-internal-methods-and-internal-slots-getprototypeof
-     */
-    exports.Object.getPrototypeOf = (function () {
-        var argNames = ['object'];
-
-        return $decide(
-            // test
-            $affirmBasic(base.Object.getPrototypeOf),
-
-            // pass
-            function () {
-                return $decide(
-                    // test
-                    function () {
-                        var proto;
-
-                        $affirm.doesNotThrow(function () {
-                            proto = base.Object.getPrototypeOf(1);
-                        }, 'get number literal proto');
-
-                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
-
-                        $affirm.doesNotThrow(function () {
-                            proto = base.Object.getPrototypeOf(true);
-                        }, 'get boolean literal proto');
-
-                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
-
-                        $affirm.doesNotThrow(function () {
-                            proto = base.Object.getPrototypeOf('');
-                        }, 'get string literal proto');
-
-                        $affirm.strictEqual(proto, protoString, 'work with string literal');
-                    },
-
-                    // pass
-                    function () {
-                        return base.Object.getPrototypeOf;
-                    },
-
-                    // fail
-                    function () {
-                        var mGetPrototypeOf = base.Object.getPrototypeOf;
-
-                        return function (object) {
-                            return mGetPrototypeOf($toObject(object));
-                        };
-                    },
-
-                    // argNames
-                    ['object'],
-
-                    // message
-                    'Object.getPrototypeOf primitive patch'
-                );
-            },
-
-            // fail
-            function () {
-                return $decide(
-                    // test
-                    function () {
-                        var proto;
-
-                        $affirm.doesNotThrow(function () {
-                            proto = protoObject[stringProto];
-                        }, 'get __proto__');
-
-                        $affirm.strictEqual(protoObject[stringProto], null, 'has __proto__');
-
-                        $affirm.doesNotThrow(function () {
-                            proto = $toObject(1)[stringProto];
-                        }, 'get number literal proto');
-
-                        $affirm.strictEqual(proto, protoNumber, 'work with number literal');
-
-                        $affirm.doesNotThrow(function () {
-                            proto = $toObject(true)[stringProto];
-                        }, 'get boolean literal proto');
-
-                        $affirm.strictEqual(proto, protoBoolean, 'work with boolean literal');
-
-                        $affirm.doesNotThrow(function () {
-                            proto = $toObject('')[stringProto];
-                        }, 'get string literal proto');
-
-                        $affirm.strictEqual(proto, protoString, 'work with string literal');
-                        $affirm.ok(!testShims, 'testing shim');
-                    },
-
-                    // pass
-                    function () {
-                        return function (object) {
-                            return $toObject(object)[stringProto];
-                        };
-                    },
-
-                    // fail
-                    function () {
-                        var fixOpera10GetPrototypeOf;
-
-                        if ($returnArgs().constructor.prototype !== protoObject) {
-                            fixOpera10GetPrototypeOf = true;
-                        }
-
-                        return function (object) {
-                            var obj = $toObject(object),
-                                ctrProto,
-                                protoObj;
-
-                            if (obj === protoObject) {
-                                return null;
-                            }
-
-                            if ($isFunction(obj.constructor)) {
-                                if (fixOpera10GetPrototypeOf && $isArguments(obj)) {
-                                    ctrProto = protoObject;
-                                } else {
-                                    ctrProto = obj.constructor.prototype;
-                                }
-                            } else {
-                                protoObj = obj[stringProto];
-                                if ($toStringTag(protoObj) === stringTagObject && !$isFunction(protoObj)) {
-                                    ctrProto = protoObj;
-                                } else {
-                                    ctrProto = protoObject;
-                                }
-                            }
-
-                            if (obj === ctrProto) {
-                                return protoObject;
-                            }
-
-                            return ctrProto;
-                        };
-                    },
-
-                    // argNames
-                    argNames,
-
-                    // message
-                    'Object.getPrototypeOf full shim'
-                );
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.getPrototypeOf __proto__ shim'
-        );
-    }());
-
-    /**
-     * Return the value of the [[Prototype]] internal property of object.
-     * Actually based on the ECMA6 draft, which only throws on undefined or null.
-     *
-     * @private
-     * @function module:util-x~$getPrototypeOf
-     * @param {Object} object
-     * @returns {Prototype}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
-     * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tointeger
-     */
-    $getPrototypeOf = exports.Object.getPrototypeOf;
-
-    /**
-     * Check to see if an object is a plain object (created using "{}" or "new Object").
-     * Some gotchas, not all browsers are equal and native objects do not necessarily abide by the rules.
-     *
-     * @function module:util-x~exports.Object.isPlainObject
-     * @param {Object} object
-     * @returns {boolean}
-     */
-    exports.Object.isPlainObject = function (object) {
-        return $toStringTag(object) === stringTagObject && !$isFunction(object) && $getPrototypeOf(object) === protoObject;
-    };
-
-    exports.Object.isPlainObject.argNames = ['object'];
-
-    // redefinition
-    $isPlainObject = exports.Object.isPlainObject;
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @function module:util-x~exports.Object.proto.hasOwnProperty
-     * @this {Object}
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    /* jshint -W001 */
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
-
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                var length = $toLength(shadowed.length);
-
-                return function (property) {
-                    var prop = $toString(property),
-                        hop = $call(phop, this, prop),
-                        index;
-
-
-                    if (!hop && $hasProperty(this, prop)) {
-                        for (index = 0; index < length; index += 1) {
-                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
-                                hop = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    return hop;
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasDontEnumBug patch'
-        );
-    }(pHasOwn));
-
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                return function (property) {
-                    var prop = $toString(property);
-
-                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasProtoEnumBug patch'
-        );
-    }(exports.Object.proto.hasOwnProperty));
-
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok($call(phop, 'abc', '1'), 'hasStringOwnPropBug');
-                $affirm.ok($call(phop, $Object('abc'), '1'), 'hasStringOwnPropBug');
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                return function (property) {
-                    var prop = $toString(property);
-
-                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasStringOwnPropBug patch'
-        );
-    }(exports.Object.proto.hasOwnProperty));
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @function module:util-x~exports.Object.hasOwnProperty
-     * @param {Object} object
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
-    exports.Object.hasOwnProperty.argNames = ['object', 'property'];
-    /* jshint +W001 */
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @private
-     * @function module:util-x~$hasOwn
-     * @param {Object} object
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    $hasOwn = exports.Object.hasOwnProperty;
 
     /**
      * @private
