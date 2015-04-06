@@ -151,6 +151,8 @@
         MAX_VALUE = 1.7976931348623157e+308,
         MIN_VALUE = 5e-324,
         EPSILON = 2.220446049250313e-16,
+        INFINITY = 1 / POSITIVE_ZERO,
+        NEGATIVE_INFINITY = 1 / NEGATIVE_ZERO,
 
         // 'Object#toString' result references.
         stringTagArguments = '[object Arguments]',
@@ -2280,7 +2282,7 @@
     /**
      * Shortcut
      * Replaced later
-     * Returns false if the argument coerces to NaN, +Infinity, or -Infinity, and otherwise returns true.
+     * Returns false if the argument coerces to NaN, +INFINITY, or NEGATIVE_INFINITY, and otherwise returns true.
      *
      * @private
      * @function module:util-x~$isFinite
@@ -2291,7 +2293,7 @@
     $isFinite = function (inputArg) {
         var num = $toNumber(inputArg);
 
-        return $strictEqual(num, num) && num !== Infinity && num !== -Infinity;
+        return $strictEqual(num, num) && num !== INFINITY && num !== NEGATIVE_INFINITY;
     };
 
     /**
@@ -2308,7 +2310,7 @@
             val = 0;
 
         if ($strictEqual(number, number)) {
-            if (!number || number === Infinity || number === -Infinity) {
+            if (!number || number === INFINITY || number === NEGATIVE_INFINITY) {
                 val = number;
             } else {
                 val = (number > 0 || -1) * $floor($abs(number));
@@ -2333,7 +2335,7 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
      */
     $isInteger = function (inputArg) {
-        return typeof inputArg === 'number' && inputArg !== Infinity && inputArg !== -Infinity && $toInteger(inputArg) === inputArg;
+        return typeof inputArg === 'number' && inputArg !== INFINITY && inputArg !== NEGATIVE_INFINITY && $toInteger(inputArg) === inputArg;
     };
 
     /**
@@ -2350,7 +2352,7 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.issafeinteger
      */
     $isSafeInteger = function (inputArg) {
-        return typeof inputArg === 'number' && inputArg !== Infinity && inputArg !== -Infinity && $toInteger(inputArg) === inputArg && inputArg >= MIN_SAFE_INTEGER && inputArg <= MAX_SAFE_INTEGER;
+        return typeof inputArg === 'number' && inputArg !== INFINITY && inputArg !== NEGATIVE_INFINITY && $toInteger(inputArg) === inputArg && inputArg >= MIN_SAFE_INTEGER && inputArg <= MAX_SAFE_INTEGER;
     };
 
     /**
@@ -2360,7 +2362,7 @@
      * @private
      * @function module:util-x~$toLength
      * @param {*} inputArg The object to be converted to a length.
-     * @returns {number} If len <= +0 then +0 else if len is +Infinity then 2^53-1 else min(len, 2^53-1).
+     * @returns {number} If len <= +0 then +0 else if len is +INFINITY then 2^53-1 else min(len, 2^53-1).
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
      */
     function $toLength(inputArg) {
@@ -4472,17 +4474,17 @@
      * @name module:util-x~exports.Number.POSITIVE_INFINITY
      * @type {number}
      * @const
-     * @default Infinity
+     * @default INFINITY
      */
-    exports.Number.POSITIVE_INFINITY = Infinity;
+    exports.Number.POSITIVE_INFINITY = INFINITY;
 
     /**
      * @name module:util-x~exports.Number.NEGATIVE_INFINITY
      * @type {number}
      * @const
-     * @default -Infinity
+     * @default NEGATIVE_INFINITY
      */
-    exports.Number.NEGATIVE_INFINITY = -Infinity;
+    exports.Number.NEGATIVE_INFINITY = NEGATIVE_INFINITY;
 
     /**
      * @name module:util-x~exports.Number.EPSILON
@@ -4554,7 +4556,7 @@
         if (typeof inputArg !== 'number') {
             rtn = false;
         } else if (inputArg === 0) {
-            rtn = 1 / inputArg === Infinity;
+            rtn = 1 / inputArg === INFINITY;
         } else {
             rtn = inputArg > 0;
         }
@@ -4577,7 +4579,7 @@
         if (typeof inputArg !== 'number') {
             rtn = false;
         } else if (inputArg === 0) {
-            rtn = 1 / inputArg !== Infinity;
+            rtn = 1 / inputArg !== INFINITY;
         } else {
             rtn = inputArg < 0;
         }
@@ -5340,7 +5342,7 @@
     $isNaN = exports.isNaN;
 
     /**
-     * Returns false if the argument coerces to NaN, +Infinity, or -Infinity, and otherwise returns true.
+     * Returns false if the argument coerces to NaN, +INFINITY, or NEGATIVE_INFINITY, and otherwise returns true.
      *
      * @private
      * @function module:util-x~exports.isFinite
@@ -5950,7 +5952,7 @@
         // fail
         function () {
             return function (number) {
-                return typeof number === 'number' && $strictEqual(number, number) && number !== Infinity && number !== -Infinity;
+                return typeof number === 'number' && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY;
             };
         },
 
@@ -6090,7 +6092,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = ((number > 0 || -1) * $floor($abs(number))) % UWORD32;
             if (val > MAX_INT32) {
                 val -= UWORD32;
@@ -6213,7 +6215,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = $modulo($toInteger(number), UNSAFE_INTEGER);
         }
 
@@ -6262,7 +6264,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = $modulo($toInteger(number), UWORD32);
         }
 
@@ -6312,7 +6314,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = ((number > 0 || -1) * $floor($abs(number))) % UWORD16;
             if (val > MAX_INT16) {
                 val -= UWORD16;
@@ -6354,7 +6356,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = $modulo($toInteger(number), UWORD16);
         }
 
@@ -6391,7 +6393,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val  = ((number > 0 || -1) * $floor($abs(number))) % UWORD8;
             if (val > MAX_INT8) {
                 val -= UWORD8;
@@ -6433,7 +6435,7 @@
         var number = $toNumber(inputArg),
             val = 0;
 
-        if (number && $strictEqual(number, number) && number !== Infinity && number !== -Infinity) {
+        if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
             val = $modulo($toInteger(number), UWORD8);
         }
 
@@ -7305,7 +7307,7 @@
                     throw new CRangeError('repeat count must be non-negative');
                 }
 
-                if (count === Infinity) {
+                if (count === INFINITY) {
                     throw new CRangeError('repeat count must be less than infinity');
                 }
 
@@ -7785,63 +7787,39 @@
 
             // fail
             function () {
-                return function (object) {
-                    object = $toObject(object);
+                var length = $toLength(shadowed.length);
 
-                    var length,
-                        dontEnum,
+                return function (object) {
+                    var obj = $toObject(object),
                         theKeys = [],
-                        //skipProto = hasProtoEnumBug && $isFunction(object),
+                        dontEnum,
                         skipConstructor,
                         name,
                         ctor,
                         index;
 
-                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || (hasEnumArgsBug && $isArguments(object))) {
-                        length = $toLength(object.length);
+                    if ((hasEnumStringBug && $toStringTag(obj) === stringTagString) || (hasEnumArgsBug && $isArguments(obj))) {
+                        length = $toLength(obj.length);
                         for (index = 0; index < length; index += 1) {
-                            if ($hasOwn(object, index)) {
+                            if ($hasOwn(obj, index)) {
                                 $push(theKeys, $toString(index));
                             }
                         }
                     }
 
                     /*jslint forin: true */
-                    for (name in object) {
-                        if ($hasOwn(object, name)) {
+                    for (name in obj) {
+                        if ($hasOwn(obj, name)) {
                             $push(theKeys, name);
                         }
                     }
 
-                    /*
-                    if (!skipEnumArgs) {
-                        for (name in object) {
-                            if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
-                                $push(theKeys, name);
-                            }
-                        }
-                    }
-
                     if (hasDontEnumBug) {
-                        ctor = object.constructor;
-                        skipConstructor = ctor && ctor.prototype === object;
-                        length = $toLength(shadowed.length);
+                        ctor = obj.constructor;
+                        skipConstructor = ctor && ctor.prototype === obj;
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
-                                $push(theKeys, dontEnum);
-                            }
-                        }
-                    }
-                    */
-
-                    if (hasDontEnumBug) {
-                        ctor = object.constructor;
-                        skipConstructor = ctor && ctor.prototype === object;
-                        length = $toLength(shadowed.length);
-                        for (index = 0; index < length; index += 1) {
-                            dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(object, dontEnum)) {
+                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(obj, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
@@ -8788,7 +8766,7 @@
             es5limit = $join($call(pSplit, 'test', /(?:)/, -1), '') === 'test' &&
                         $join($call(pSplit, 'a b c d', / /, -(UWORD32 - 1)), '') === 'a' &&
                         $join($call(pSplit, 'a b c d', / /, UWORD32 + 1), '') === 'a' &&
-                        $join($call(pSplit, 'a b c d', / /, Infinity), '') === '';
+                        $join($call(pSplit, 'a b c d', / /, INFINITY), '') === '';
 
         /**
          * This method takes a string and puts a backslash in front of every character
@@ -9285,7 +9263,7 @@
                 $affirm.deepEqual($call(pSplit, '.', new CRegExp('(((((.??)))))')), ['.'], '(\'.\', /(((((.??)))))/) results in [\'.\']');
                 $affirm.deepEqual($call(pSplit, 'a b c d', / /, -($pow(2, 32) - 1)), [], '(\'a b c d\', / /, -(Math.pow(2, 32) - 1)) results in []');
                 $affirm.deepEqual($call(pSplit, 'a b c d', / /, $pow(2, 32) + 1), ['a', 'b', 'c', 'd'], '(\'a b c d\', / /, Math.pow(2, 32) + 1) results in []');
-                $affirm.deepEqual($call(pSplit, 'a b c d', / /, Infinity), ['a', 'b', 'c', 'd'], '(\'a b c d\', / /, Infinity) results in []');
+                $affirm.deepEqual($call(pSplit, 'a b c d', / /, INFINITY), ['a', 'b', 'c', 'd'], '(\'a b c d\', / /, INFINITY) results in []');
             },
 
             // pass
@@ -10152,9 +10130,9 @@
 
         $conlog('first', first);
         if (first === '') {
-            val = Infinity;
+            val = INFINITY;
         } else {
-            val = $min($max($split(str, first).length - 1, 0), Infinity);
+            val = $min($max($split(str, first).length - 1, 0), INFINITY);
         }
 
         return val;
@@ -10190,7 +10168,7 @@
             singleChar = $getItem($onlyCoercibleToString(character), 0, stringTagString),
             count = $toInteger(size) - string.length;
 
-        if (count < 0 || count === Infinity) {
+        if (count < 0 || count === INFINITY) {
             count = 0;
         }
 
@@ -14252,8 +14230,8 @@
         if (type === 'string') {
             result = value;
         } else if (type === 'undefined' ||
-                    value === Infinity ||
-                    value === -Infinity ||
+                    value === INFINITY ||
+                    value === NEGATIVE_INFINITY ||
                     exports.Number.isNaN(value) ||
                     $isFunction(value) ||
                     $isRegExp(value)) {
@@ -14345,7 +14323,7 @@
      * @function module:util-x~exports.customError
      * @param {string} name
      * @param {Function} [ErrorConstructor] Does not work with IE < 9, only Error can be used (defult: Error)
-     * @param {module:util-x~NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
+     * @param {module:util-x~NumberLike} [maxMessageLength] Range 64 to INFINITY (128 default)
      * @returns {Function}
      */
     exports.customError = (function () {
@@ -14360,7 +14338,7 @@
          * @function makeCustomError
          * @param {string} name
          * @param {Function} ErrorConstructor Does not work with IE < 9, only Error can be used
-         * @param {module:util-x~NumberLike} [maxMessageLength] Range 64 to Infinity (128 default)
+         * @param {module:util-x~NumberLike} [maxMessageLength] Range 64 to INFINITY (128 default)
          * @returns {Function}
          */
         function makeCustomError(name, ErrorConstructor, maxMessageLength) {
@@ -14842,7 +14820,8 @@
         function () {
             $affirmBasic(base.Date.toJSON)();
 
-            var value;
+            var zero = 0,
+                value;
 
             $affirm.throws(function () {
                 value = $call(base.Date.toJSON, $makeDate(-8.64e15));
@@ -14880,13 +14859,13 @@
             $affirm.strictEqual(value, null, 'test10');
 
             $affirm.doesNotThrow(function () {
-                value = $call(base.Date.toJSON, Infinity);
+                value = $call(base.Date.toJSON, INFINITY);
             }, 'test11');
 
             $affirm.strictEqual(value, null, 'test12');
 
             $affirm.doesNotThrow(function () {
-                value = $call(base.Date.toJSON, -Infinity);
+                value = $call(base.Date.toJSON, 1 / -zero);
             }, 'test13');
 
             $affirm.strictEqual(value, null, 'test14');
@@ -15137,7 +15116,7 @@
                     case 'string':
                         return stringifyQuote(value);
                     case 'number':
-                        if (value !== Infinity && value !== -Infinity) {
+                        if (value !== INFINITY && value !== NEGATIVE_INFINITY) {
                             return $toString(value);
                         }
 
@@ -15471,7 +15450,7 @@
                     }
 
                     if ($isUndefined(length)) {
-                        end = Infinity;
+                        end = INFINITY;
                     } else {
                         end = $toInteger(length);
                     }
@@ -15687,7 +15666,7 @@
          * There is no limit to the number of digits of a string value (other than that of Javascript's
          * maximum array size 2^32-1), but the largest recommended exponent magnitude is 1e+6.<br/>
          * <br/>
-         * Infinity, NaN and hexadecimal literal strings, e.g. '0xff', are not valid.<br/>
+         * INFINITY, NaN and hexadecimal literal strings, e.g. '0xff', are not valid.<br/>
          * <br/>
          * String values in octal literal form will be interpreted as decimals, e.g. '011' is 11, not 9.<br/>
          *<br/>
@@ -15806,16 +15785,6 @@
              * @default /^-?(\d+(\.\d*)?|\.\d+)(e[+\-]?\d+)?$/i
              */
             isValid = /^-?(\d+(\.\d*)?|\.\d+)(e[+\-]?\d+)?$/i,
-
-            /**
-             * Used to keep jslint happy whenever we divide or multiply bu zero.
-             *
-             * @private
-             * @const
-             * @type {number}
-             * @default 0
-             */
-            zero = 0,
 
             /**
              * Variable used for a function expression.
@@ -16225,7 +16194,7 @@
                 nL;
 
             // Minus zero?
-            if (typeof n === 'number' && n === 0 && 1 / n === -Infinity) {
+            if (n === 0 && 1 / n === NEGATIVE_INFINITY) {
                 n = '-0';
             } else {
                 // Ensure n is string and check validity.
@@ -16307,7 +16276,7 @@
          * @param {number} dp Integer, 0 to MAX_DP inclusive.
          * @param {number} rm 0, 1, 2 or 3 (DOWN, HALF_UP, HALF_EVEN, UP)
          * @throws {module:util-x~bigerror} NaN if y is invalid.
-         * @throws {module:util-x~bigerror} ±Infinity on division by zero.
+         * @throws {module:util-x~bigerror} ±INFINITY on division by zero.
          * @throws {module:util-x~bigerror} NaN on division of zero by zero.
          * @throws {module:util-x~bigerror} '!Big.DP!' if dp not an integer or not in integer range.
          * @returns {module:util-x~bigobject} {@link module:util-x~bigobject this} / y.
@@ -16372,13 +16341,13 @@
                     throw new BigError(NaN);
                 }
 
-                // If dvs is 0, throw +-Infinity.
+                // If dvs is 0, throw +-INFINITY.
                 if (!dvs[0]) {
-                    throw new BigError(s / zero);
+                    throw new BigError(s / POSITIVE_ZERO);
                 }
 
                 // dvd is 0, return +-0.
-                return new this.constructor(s * zero);
+                return new this.constructor(s * POSITIVE_ZERO);
             }
 
             dvsZ = $slice(dvs);
@@ -16824,7 +16793,7 @@
                 } else if (xc[0]) {
                     rtn = new this.constructor(this);
                 } else {
-                    rtn = new this.constructor(a * zero);
+                    rtn = new this.constructor(a * POSITIVE_ZERO);
                 }
 
                 return rtn;
@@ -17257,7 +17226,7 @@
              * @function
              * @param {...module:util-x~validNumeric} y A numeric value.
              * @throws {Error} NaN if y is invalid.
-             * @throws {Error} ±Infinity on division by zero.
+             * @throws {Error} ±INFINITY on division by zero.
              * @throws {Error} NaN on division of zero by zero.
              * @throws {Error} '!Big.DP!' if {@link Big.DP} not an integer or not in integer range
              * @returns {module:util-x~bigobject} {@link module:util-x~bigobject this} / y.
@@ -17692,7 +17661,7 @@
                     i = $sqrt($call(bigToString, this));
                     // Math.sqrt underflow/overflow?
                     // Pass x to Math.sqrt as integer, then adjust the result exponent.
-                    if (i === 0 || i === 1 / zero) {
+                    if (i === 0 || i === INFINITY) {
                         estimate = $join(xc, '');
                         /*jslint bitwise: true */
                         test = estimate.length + e & 1;
