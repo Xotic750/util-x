@@ -7788,8 +7788,7 @@
                 return function (object) {
                     object = $toObject(object);
 
-                    var skipEnumArgs = hasEnumArgsBug && $isArguments(object),
-                        length,
+                    var length,
                         dontEnum,
                         theKeys = [],
                         //skipProto = hasProtoEnumBug && $isFunction(object),
@@ -7798,7 +7797,7 @@
                         ctor,
                         index;
 
-                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
+                    if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || (hasEnumArgsBug && $isArguments(object))) {
                         length = $toLength(object.length);
                         for (index = 0; index < length; index += 1) {
                             if ($hasOwn(object, index)) {
@@ -7807,12 +7806,10 @@
                         }
                     }
 
-                    if (!skipEnumArgs) {
-                        /*jslint forin: true */
-                        for (name in object) {
-                            if ($hasOwn(object, name)) {
-                                $push(theKeys, name);
-                            }
+                    /*jslint forin: true */
+                    for (name in object) {
+                        if ($hasOwn(object, name)) {
+                            $push(theKeys, name);
                         }
                     }
 
@@ -7824,7 +7821,6 @@
                             }
                         }
                     }
-                    */
 
                     if (hasDontEnumBug) {
                         ctor = object.constructor;
@@ -7833,6 +7829,19 @@
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
                             if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, object, dontEnum)) {
+                                $push(theKeys, dontEnum);
+                            }
+                        }
+                    }
+                    */
+
+                    if (hasDontEnumBug) {
+                        ctor = object.constructor;
+                        skipConstructor = ctor && ctor.prototype === object;
+                        length = $toLength(shadowed.length);
+                        for (index = 0; index < length; index += 1) {
+                            dontEnum = shadowed[index];
+                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(object, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
