@@ -7345,156 +7345,6 @@
     $repeat = exports.String.repeat;
 
     /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @function module:util-x~exports.Object.proto.hasOwnProperty
-     * @this {Object}
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    /* jshint -W001 */
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
-
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                var length = $toLength(shadowed.length);
-
-                return function (property) {
-                    var prop = $toString(property),
-                        hop = $call(phop, this, prop),
-                        index;
-
-
-                    if (!hop && $hasProperty(this, prop)) {
-                        for (index = 0; index < length; index += 1) {
-                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
-                                hop = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    return hop;
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasDontEnumBug patch'
-        );
-    }(pHasOwn));
-
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                return function (property) {
-                    var prop = $toString(property);
-
-                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasProtoEnumBug patch'
-        );
-    }(exports.Object.proto.hasOwnProperty));
-
-    exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
-        return $decide(
-            // test
-            function () {
-                $affirm.ok($call(phop, 'abc', '1'), 'hasStringOwnPropBug');
-                $affirm.ok($call(phop, $Object('abc'), '1'), 'hasStringOwnPropBug');
-            },
-
-            // pass
-            function () {
-                return phop;
-            },
-
-            // fail
-            function () {
-                return function (property) {
-                    var prop = $toString(property);
-
-                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
-                };
-            },
-
-            // argNames
-            argNames,
-
-            // message
-            'Object.hasOwnProperty hasStringOwnPropBug patch'
-        );
-    }(exports.Object.proto.hasOwnProperty));
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @function module:util-x~exports.Object.hasOwnProperty
-     * @param {Object} object
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
-    exports.Object.hasOwnProperty.argNames = ['object', 'property'];
-    /* jshint +W001 */
-
-    /**
-     * Returns a boolean indicating whether the object has the specified property.
-     * This function can be used to determine whether an object has the specified property as a direct property of
-     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
-     *
-     * @private
-     * @function module:util-x~$hasOwn
-     * @param {Object} object
-     * @param {StringLike} property
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
-     */
-    $hasOwn = exports.Object.hasOwnProperty;
-
-    /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
      * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
      * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
@@ -7601,7 +7451,7 @@
                         length,
                         dontEnum,
                         theKeys = [],
-                        //skipProto = hasProtoEnumBug && $isFunction(object),
+                        skipProto = hasProtoEnumBug && $isFunction(object),
                         skipConstructor,
                         name,
                         ctor,
@@ -7610,30 +7460,18 @@
                     if ((hasEnumStringBug && $toStringTag(object) === stringTagString) || skipEnumArgs) {
                         length = $toLength(object.length);
                         for (index = 0; index < length; index += 1) {
-                            if ($hasOwn(object, index)) {
-                                $push(theKeys, $toString(index));
-                            }
+                            $push(theKeys, $toString(index));
                         }
                     }
 
                     if (!skipEnumArgs) {
                         /*jslint forin: true */
                         for (name in object) {
-                            if ($hasOwn(object, index)) {
-                                $push(theKeys, name);
-                            }
-                        }
-                    }
-
-                    /*
-                    if (!skipEnumArgs) {
-                        for (name in object) {
                             if (!(skipProto && name === 'prototype') && $call(pHasOwn, object, name)) {
                                 $push(theKeys, name);
                             }
                         }
                     }
-                    */
 
                     if (hasDontEnumBug) {
                         ctor = object.constructor;
@@ -10390,6 +10228,156 @@
 
     // redefinition
     $isPlainObject = exports.Object.isPlainObject;
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @function module:util-x~exports.Object.proto.hasOwnProperty
+     * @this {Object}
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    /* jshint -W001 */
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                var length = $toLength(shadowed.length);
+
+                return function (property) {
+                    var prop = $toString(property),
+                        hop = $call(phop, this, prop),
+                        index;
+
+
+                    if (!hop && $hasProperty(this, prop)) {
+                        for (index = 0; index < length; index += 1) {
+                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                                hop = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    return hop;
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasDontEnumBug patch'
+        );
+    }(pHasOwn));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasProtoEnumBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
+
+    exports.Object.proto.hasOwnProperty = (function (phop) {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok($call(phop, 'abc', '1'), 'hasStringOwnPropBug');
+                $affirm.ok($call(phop, $Object('abc'), '1'), 'hasStringOwnPropBug');
+            },
+
+            // pass
+            function () {
+                return phop;
+            },
+
+            // fail
+            function () {
+                return function (property) {
+                    var prop = $toString(property);
+
+                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
+                };
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasStringOwnPropBug patch'
+        );
+    }(exports.Object.proto.hasOwnProperty));
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @function module:util-x~exports.Object.hasOwnProperty
+     * @param {Object} object
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
+    exports.Object.hasOwnProperty.argNames = ['object', 'property'];
+    /* jshint +W001 */
+
+    /**
+     * Returns a boolean indicating whether the object has the specified property.
+     * This function can be used to determine whether an object has the specified property as a direct property of
+     * that object; unlike the exports.Object.has function, this method does not check down the object's prototype chain.
+     *
+     * @private
+     * @function module:util-x~$hasOwn
+     * @param {Object} object
+     * @param {StringLike} property
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
+     */
+    $hasOwn = exports.Object.hasOwnProperty;
 
     /**
      * @private
