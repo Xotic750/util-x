@@ -7567,14 +7567,15 @@
                 var length = $toLength(shadowed.length);
 
                 return function (property) {
-                    var prop = $toString(property),
-                        hop = $call(phop, this, prop),
+                    var object = $toObject(this),
+                        prop = $toString(property),
+                        hop = $call(phop, object, prop),
                         index;
 
 
-                    if (!hop && $hasProperty(this, prop)) {
+                    if (!hop && $hasProperty(object, prop)) {
                         for (index = 0; index < length; index += 1) {
-                            if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                            if (prop === shadowed[index] && object[prop] !== $getPrototypeOf(object)[prop]) {
                                 hop = true;
                                 break;
                             }
@@ -7610,9 +7611,10 @@
             // fail
             function () {
                 return function (property) {
-                    var prop = $toString(property);
+                    var object = $toObject(this),
+                        prop = $toString(property);
 
-                    return (prop === 'prototype' && $isFunction(this)) || $call(phop, this, prop);
+                    return (prop === 'prototype' && $isFunction(object)) || $call(phop, object, prop);
                 };
             },
 
@@ -7642,9 +7644,10 @@
             // fail
             function () {
                 return function (property) {
-                    var prop = $toString(property);
+                    var object = $toObject(this),
+                        prop = $toString(property);
 
-                    return ($isString(this) && $isIndex(prop, this.length)) || $call(phop, this, prop);
+                    return ($isString(object) && $isIndex(prop, $toLength(object.length))) || $call(phop, object, prop);
                 };
             },
 
@@ -7701,6 +7704,8 @@
                 $affirmBasic(pPropertyIsEnumerable)();
 
                 $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+                $affirm.ok(!hasEnumStringBug, 'hasEnumStringBug');
+                $affirm.ok(!hasEnumArgsBug, 'hasEnumArgsBug');
                 $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toString'));
                 $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toLocaleString'));
                 $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'valueOf'));
