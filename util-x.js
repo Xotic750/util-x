@@ -7547,6 +7547,79 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     /* jshint -W001 */
+
+    exports.Object.proto.hasOwnProperty = (function () {
+        var argNames = ['property'];
+
+        return $decide(
+            // test
+            function () {
+                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+                $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+            },
+
+            // pass
+            function () {
+                return pHasOwn;
+            },
+
+            // fail
+            function () {
+                return $decide(
+                    // test
+                    function () {
+                        $affirm.ok(!hasProtoEnumBug, 'hasProtoEnumBug');
+                    },
+
+                    // pass
+                    function () {
+                        return function (property) {
+                            var prop = $toString(property);
+
+                            return (prop === 'prototype' && $isFunction(this)) || $call(pHasOwn, this, prop);
+                        };
+                    },
+
+                    // fail
+                    function () {
+                        return function (property) {
+                            var prop = $toString(property),
+                                hop = $call(pHasOwn, this, prop),
+                                length,
+                                index;
+
+
+                            if (!hop && $hasProperty(this, prop)) {
+                                length = $toLength(shadowed.length);
+                                for (index = 0; index < length; index += 1) {
+                                    if (prop === shadowed[index] && this[prop] !== $getPrototypeOf(this)[prop]) {
+                                        hop = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            return hop;
+                        };
+                    },
+
+                    // argNames
+                    argNames,
+
+                    // message
+                    'Object.hasOwnProperty hasDontEnumBug patch'
+                );
+            },
+
+            // argNames
+            argNames,
+
+            // message
+            'Object.hasOwnProperty hasDontEnumBug patch'
+        );
+    }());
+
+    /*
     exports.Object.proto.hasOwnProperty = (function (phop) {
         var argNames = ['property'];
 
@@ -7554,7 +7627,6 @@
             // test
             function () {
                 $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
-
             },
 
             // pass
@@ -7658,6 +7730,7 @@
             'Object.hasOwnProperty hasStringOwnPropBug patch'
         );
     }(exports.Object.proto.hasOwnProperty));
+    */
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
