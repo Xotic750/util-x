@@ -369,6 +369,7 @@
         $forKeys,
         $indexOf,
         $isCircular,
+        $propertyIsEnumerable,
 
         BigNum,
 
@@ -7685,6 +7686,101 @@
     $hasOwn = exports.Object.hasOwnProperty;
 
     /**
+     * This method returns a Boolean indicating whether the specified property is enumerable.
+     *
+     * @function module:util-x~exports.Object.proto.propertyIsEnumerable
+     * @this {Object}
+     * @param {StringLike} prop The name of the property to test.
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
+     */
+    exports.Object.proto.propertyIsEnumerable = (function (pPropertyIsEnumerable) {
+        return $decide(
+            // test
+            function () {
+                $affirmBasic(pPropertyIsEnumerable)();
+
+                $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toString'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toLocaleString'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'valueOf'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'hasOwnProperty'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'isPrototypeOf'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'propertyIsEnumerable'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'constructor'));
+            },
+
+            // pass
+            function () {
+                return pPropertyIsEnumerable;
+            },
+
+            // fail
+            function () {
+                var length = $toLength(shadowed.length);
+
+                return function (property) {
+                    var object = $toObject(this),
+                        prop = $toString(property),
+                        found,
+                        index,
+                        rtn;
+
+                    if (object === protoObject) {
+                        for (index = 0; index < length; index += 1) {
+                            if (prop === shadowed[index]) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found) {
+                            rtn = object[prop] !== protoObject[prop];
+                        }
+                    }
+
+                    if (typeof rtn !== 'boolean') {
+                        rtn = $call(pPropertyIsEnumerable, object, prop);
+                    }
+
+                    return rtn;
+                };
+            },
+
+            // argNames
+            ['property'],
+
+            // message
+            'Object.propertyIsEnumerable patch'
+        );
+    }(base.Object.propertyIsEnumerable));
+
+    /**
+     * This method returns a Boolean indicating whether the specified property is enumerable.
+     *
+     * @function module:util-x~exports.Object.propertyIsEnumerable
+     * @param {Object} The object to be tested
+     * @param {StringLike} prop The name of the property to test.
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
+     */
+    exports.Object.propertyIsEnumerable = $toMethod(exports.Object.proto.propertyIsEnumerable);
+    exports.Object.propertyIsEnumerable.argNames = ['object', 'property'];
+
+    /**
+     * Shortcut
+     * This method returns a Boolean indicating whether the specified property is enumerable.
+     *
+     * @private
+     * @function module:util-x~$propertyIsEnumerable
+     * @param {Object} The object to be tested
+     * @param {StringLike} prop The name of the property to test.
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
+     */
+    $propertyIsEnumerable = exports.Object.propertyIsEnumerable;
+
+    /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
      * for-in loop (the difference being that a for-in loop enumerates properties in the prototype chain as well).
      * Some gotchas to watch for, not all browsers agree on what properties are enumerable:
@@ -7816,7 +7912,7 @@
                         skipConstructor = ctor && ctor.prototype === obj;
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(obj, dontEnum)) {
+                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(obj, dontEnum) && $propertyIsEnumerable(obj, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
