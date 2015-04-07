@@ -7722,9 +7722,9 @@
                 return function (property) {
                     var object = $toObject(this),
                         prop = $toString(property),
+                        rtn = $call(pPropertyIsEnumerable, object, prop),
                         found,
-                        index,
-                        rtn;
+                        index;
 
                     if (object === protoObject) {
                         for (index = 0; index < length; index += 1) {
@@ -7735,12 +7735,8 @@
                         }
 
                         if (found) {
-                            rtn = object[prop] !== protoObject[prop];
+                            rtn = object[prop] !== base.Object[prop];
                         }
-                    }
-
-                    if (typeof rtn !== 'boolean') {
-                        rtn = $call(pPropertyIsEnumerable, object, prop);
                     }
 
                     return rtn;
