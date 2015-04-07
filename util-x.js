@@ -2653,11 +2653,11 @@
      * @function module:util-x~$hasItem
      * @param {Object} object
      * @param {number} index
-     * @param {string} stringTag
+     * @param {boolean} isString
      * @returns {boolean}
      */
-    function $hasItem(object, index, stringTag) {
-        return stringTag === stringTagString || $hasProperty(object, index);
+    function $hasItem(object, index, isString) {
+        return isString || $hasProperty(object, index);
     }
 
     /**
@@ -2905,18 +2905,18 @@
      * @function module:util-x~$getItem
      * @param {Object} object
      * @param {number} index
-     * @param {string} stringTag
+     * @param {boolean} isString
      * @returns {*}
      */
     $getItem = (function (pCharAt) {
-        return function (object, index, stringTag) {
+        return function (object, index, isString) {
             var item;
 
-            if (hasBoxedStringBug && stringTag === stringTagString) {
+            if (hasBoxedStringBug && isString) {
                 item = $call(pCharAt, object, index);
             } else {
                 item = object[index];
-                if (stringTag === stringTagString && $isUndefined(item)) {
+                if (isString && $isUndefined(item)) {
                     item = '';
                 }
             }
@@ -2924,6 +2924,32 @@
             return item;
         };
     }(base.String.charAt));
+
+    /**
+     * Provides a string representation of the supplied object in the form "[object type]",
+     * where type is the object type.
+     *
+     * @private
+     * @function module:util-x~$toStringTag
+     * @param {*} inputArg The object for which a class string represntation is required.
+     * @returns {string} A string value of the form "[object type]".
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.4.2
+     */
+    $toStringTag = (function (pToString) {
+        return function (inputArg) {
+            var val;
+
+            if ($isUndefined(inputArg)) {
+                val = stringTagUndefined;
+            } else if (inputArg === null) {
+                val = stringTagNull;
+            } else {
+                val = $call(pToString, inputArg);
+            }
+
+            return val;
+        };
+    }(base.Object.toString));
 
     /**
      * Creates a new array from the arraylike argument, starting at start and ending at end.
@@ -2943,7 +2969,7 @@
     $pSlice = function (start, end) {
         var object = $toObject(this),
             length = $toLength(object.length),
-            stringTag = $toStringTag ? $toStringTag(object) : $call(base.Object.toString, object),
+            isString = $isString(object),
             relativeStart = $toInteger(start),
             val = [],
             next = 0,
@@ -2972,8 +2998,8 @@
         finalEnd = $toLength(finalEnd);
         val.length = $toLength($max(finalEnd - k, 0));
         while (k < finalEnd) {
-            if ($hasItem(object, k, stringTag)) {
-                val[next] = $getItem(object, k, stringTag);
+            if ($hasItem(object, k, isString)) {
+                val[next] = $getItem(object, k, isString);
             }
 
             next += 1;
@@ -4031,16 +4057,7 @@
         };
     }(global.console));
 
-    /**
-     * Provides a string representation of the supplied object in the form "[object type]",
-     * where type is the object type.
-     *
-     * @private
-     * @function module:util-x~$toStringTag
-     * @param {*} inputArg The object for which a class string represntation is required.
-     * @returns {string} A string value of the form "[object type]".
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.4.2
-     */
+    // redefinition
     $toStringTag = (function (pOToString) {
         return function (inputArg) {
             var val;
@@ -4667,12 +4684,11 @@
         var plusMinus = new CRegExp('^[+\\-]?');
 
         return function (inputArg) {
-            var thisClass = $toStringTag(inputArg),
-                val,
+            var val,
                 string,
                 number;
 
-            if (thisClass === stringTagNumber || thisClass === stringTagString) {
+            if ($isNumber(inputArg) || $isString(inputArg)) {
                 string = $call(pReplace, inputArg, plusMinus, '');
                 number = $parseFloat(string);
                 val = $strictEqual(number, number) && $isFinite(string);
@@ -4706,12 +4722,12 @@
      */
     exports.Number.inRange = function (value, min, max) {
         min = $toPrimitive(min, hintNumber);
-        if ($toStringTag(min) !== stringTagNumber && !$isNumeric(min)) {
+        if (!$isNumber(min) && !$isNumeric(min)) {
             min = NaN;
         }
 
         max = $toPrimitive(max, hintNumber);
-        if ($toStringTag(max) !== stringTagNumber && !$isNumeric(max)) {
+        if (!$isNumber(max) && !$isNumeric(max)) {
             max = NaN;
         }
 
@@ -4744,17 +4760,17 @@
      */
     exports.Number.outRange = function (value, min, max) {
         value = $toPrimitive(value, hintNumber);
-        if (($toStringTag(value) !== stringTagNumber || !$strictEqual(value, value)) && !$isNumeric(value)) {
+        if ((!$isNumber(value) || !$strictEqual(value, value)) && !$isNumeric(value)) {
             return true;
         }
 
         min = $toPrimitive(min, hintNumber);
-        if (($toStringTag(min) !== stringTagNumber || !$strictEqual(min, min)) && !$isNumeric(min)) {
+        if ((!$isNumber(min) || !$strictEqual(min, min)) && !$isNumeric(min)) {
             return true;
         }
 
         max = $toPrimitive(max, hintNumber);
-        if (($toStringTag(max) !== stringTagNumber || !$strictEqual(max, max)) && !$isNumeric(max)) {
+        if ((!$isNumber(max) || !$strictEqual(max, max)) && !$isNumeric(max)) {
             return true;
         }
 
@@ -5548,25 +5564,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.2
      */
     exports.Object.toStringTag = $toStringTag;
-
-    /**
-     * Throws a TypeError if arguments is a function otherwise returns the function.
-     *
-     * @private
-     * @function module:util-x~throwIfFunction
-     * @param {*} inputArg
-     * @throws {TypeError} If inputArg is a {@link Function function}.
-     * @returns {Function}
-     */
-    /*
-    function throwIfFunction(inputArg) {
-        if ($isFunction(inputArg)) {
-            throw new CTypeError($toStringTag(inputArg) + ' is a function');
-        }
-
-        return inputArg;
-    }
-    */
 
     /**
      * Target function.
@@ -7529,7 +7526,7 @@
      * @returns {boolean}
      */
     exports.Object.isPlainObject = function (object) {
-        return $toStringTag(object) === stringTagObject && !$isFunction(object) && $getPrototypeOf(object) === protoObject;
+        return $toStringTag(object) === stringTagObject && $getPrototypeOf(object) === protoObject;
     };
 
     exports.Object.isPlainObject.argNames = ['object'];
@@ -7646,7 +7643,7 @@
                 return function (property) {
                     var prop = $toString(property);
 
-                    return ($toStringTag(this) === stringTagString && $isIndex(prop, this.length)) || $call(phop, this, prop);
+                    return ($isString(this) && $isIndex(prop, this.length)) || $call(phop, this, prop);
                 };
             },
 
@@ -7798,7 +7795,7 @@
                         ctor,
                         index;
 
-                    if ((hasEnumStringBug && $toStringTag(obj) === stringTagString) || (hasEnumArgsBug && $isArguments(obj))) {
+                    if ((hasEnumStringBug && $isString(obj)) || (hasEnumArgsBug && $isArguments(obj))) {
                         length = $toLength(obj.length);
                         for (index = 0; index < length; index += 1) {
                             if ($hasOwn(obj, index)) {
@@ -8350,7 +8347,7 @@
             return function (searchElement, fromIndex) {
                 var object = $toObject(this),
                     length = $toLength(object.length),
-                    stringTag = $toStringTag(object),
+                    isString = $isString(object),
                     val = -1,
                     index;
 
@@ -8370,7 +8367,7 @@
                         }
 
                         for (index = fromIndex; index < length; index += 1) {
-                            if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
+                            if ($hasItem(object, index, isString) && searchElement === $getItem(object, index, isString)) {
                                 val = index;
                                 break;
                             }
@@ -9427,7 +9424,7 @@
                             }
 
                             if (lastLastIndex === length) {
-                                if (!$call(pTest, separator, '') || lastLength) {
+                                if (!$test(separator, '') || lastLength) {
                                     $push(output, '');
                                 }
                             } else {
@@ -9922,7 +9919,7 @@
          * @returns {string}
          */
         exports.String.proto.replaceAll = function (pattern, characters) {
-            if ($toStringTag(pattern) === stringTagString) {
+            if ($isString(pattern)) {
                 pattern = new CRegExp($replace($onlyCoercibleToString(pattern), escapeThese, '\\$&'), 'g');
             } else if ($isRegExp(pattern)) {
                 pattern = copyRegExp(pattern, {
@@ -9930,7 +9927,7 @@
                 });
             }
 
-            if ($toStringTag(characters) !== stringTagString && $toStringTag(characters) !== stringTagNumber) {
+            if (!$isString(characters) && !$isNumber(characters)) {
                 characters = '';
             } else {
                 characters = $toString(characters);
@@ -10451,7 +10448,7 @@
     exports.Array.proto.first = function () {
         var object = $specialToObject(this);
 
-        return $getItem(object, 0, $toStringTag(object));
+        return $getItem(object, 0, $isString(object));
     };
 
     /**
@@ -10478,7 +10475,7 @@
             rtn = -1,
             index;
 
-        if ($toStringTag(object) === stringTagString) {
+        if ($isString(object)) {
             rtn = length - 1;
         } else {
             for (index = 0; index < length; index += 1) {
@@ -10512,7 +10509,7 @@
     exports.Array.proto.last = function () {
         var object = $specialToObject(this);
 
-        return $getItem(object, object.length - 1, $toStringTag(object));
+        return $getItem(object, object.length - 1, $isString(object));
     };
 
     /**
@@ -10538,7 +10535,7 @@
             rtn = -1,
             index;
 
-        if ($toStringTag(object) === stringTagString) {
+        if ($isString(object)) {
             rtn = last;
         } else {
             for (index = last; index >= 0; index -= 1) {
@@ -10588,7 +10585,7 @@
     exports.Array.proto.unique = (function () {
         return function (equalFn, thisArg) {
             var object = $toObject(this),
-                stringTag,
+                isString,
                 length,
                 index,
                 arr,
@@ -10603,13 +10600,13 @@
             $throwIfNotFunction(equalFn);
             arr = [];
             length = $toLength(object.length);
-            stringTag = $toStringTag(object);
+            isString = $isString(object);
             for (index = 0; index < length; index += 1) {
-                if ($hasItem(object, index, stringTag)) {
-                    it = $getItem(object, index, stringTag);
+                if ($hasItem(object, index, isString)) {
+                    it = $getItem(object, index, isString);
                     val = true;
                     for (idx = 0; idx < length; idx += 1) {
-                        if (idx < index && $hasItem(object, idx, stringTag) && $call(equalFn, thisArg, it, $getItem(object, idx, stringTag))) {
+                        if (idx < index && $hasItem(object, idx, isString) && $call(equalFn, thisArg, it, $getItem(object, idx, isString))) {
                             val = false;
                             break;
                         }
@@ -10929,7 +10926,7 @@
                         length = $toLength(object.length),
                         removed = [],
                         relativeStart = $toInteger(start),
-                        stringTag = $toStringTag(object),
+                        isString = $isString(object),
                         actualStart,
                         actualDeleteCount,
                         k = 0,
@@ -10957,8 +10954,8 @@
                     actualDeleteCount = $min($max($toLength(deleteCount), 0), length - actualStart);
                     while (k < actualDeleteCount) {
                         from = actualStart + k;
-                        if ($hasItem(object, from, stringTag)) {
-                            $push(removed, $getItem(object, from, stringTag));
+                        if ($hasItem(object, from, isString)) {
+                            $push(removed, $getItem(object, from, isString));
                         }
 
                         k += 1;
@@ -10970,8 +10967,8 @@
                         while (k < loopCache) {
                             from = k + actualDeleteCount;
                             to = k + itemCount;
-                            if ($hasItem(object, from, stringTag)) {
-                                object[to] = $getItem(object, from, stringTag);
+                            if ($hasItem(object, from, isString)) {
+                                object[to] = $getItem(object, from, isString);
                             } else {
                                 $deleteProperty(object, to);
                             }
@@ -10990,8 +10987,8 @@
                         while (k > actualStart) {
                             from = k + actualDeleteCount - 1;
                             to = k + itemCount - 1;
-                            if ($hasItem(object, from, stringTag)) {
-                                object[to] = $getItem(object, from, stringTag);
+                            if ($hasItem(object, from, isString)) {
+                                object[to] = $getItem(object, from, isString);
                             } else {
                                 $deleteProperty(object, to);
                             }
@@ -11105,7 +11102,7 @@
             }, 'should not throw when calling function');
 
             $affirm.strictEqual($typeOf(result), 'object', 'is object');
-            $affirm.strictEqual($toStringTag(result), stringTagString, 'is string');
+            $affirm.ok($isString(result), 'is string');
         };
     }
 
@@ -11146,22 +11143,16 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     length,
                     index;
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 for (index = 0; index < length; index += 1) {
-                    if ($hasItem(object, index, stringTag)) {
-                        $call(fn, thisArg, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        $call(fn, thisArg, $getItem(object, index, isString), index, object);
                     }
                 }
             };
@@ -11218,23 +11209,17 @@
      */
     exports.Array.proto.forAll = function (fn, thisArg) {
         var object = $toObject(this),
-            stringTag,
+            isString,
             length,
             index,
             val;
 
         $throwIfNotFunction(fn);
         length = $toLength(object.length);
-        /*
-        if (length) {
-            thisArg = $toObjectCallFix(thisArg);
-        }
-        */
-
-        stringTag = $toStringTag(object);
+        isString = $isString(object);
         val = false;
         for (index = 0; index < length; index += 1) {
-            val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
+            val = !!$call(fn, thisArg, $getItem(object, index, isString), index, object);
             if (val) {
                 break;
             }
@@ -11297,24 +11282,18 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     val,
                     length,
                     index;
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 val = false;
                 for (index = 0; index < length; index += 1) {
-                    if ($hasItem(object, index, stringTag)) {
-                        val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        val = !!$call(fn, thisArg, $getItem(object, index, isString), index, object);
                         if (val) {
                             break;
                         }
@@ -11403,7 +11382,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     length,
                     index,
                     val,
@@ -11411,15 +11390,9 @@
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 for (index = 0; index < length; index += 1) {
-                    it = $getItem(object, index, stringTag);
+                    it = $getItem(object, index, isString);
                     if ($call(fn, thisArg, it, index, object)) {
                         val = it;
                         break;
@@ -11509,23 +11482,17 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     val,
                     length,
                     index;
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 val = -1;
                 for (index = 0; index < length; index += 1) {
-                    if ($call(fn, thisArg, $getItem(object, index, stringTag), index, object)) {
+                    if ($call(fn, thisArg, $getItem(object, index, isString), index, object)) {
                         val = index;
                         break;
                     }
@@ -11590,7 +11557,7 @@
         function () {
             return function (arrayLike, mapfn, thisArg) {
                 var object = $toObject(arrayLike),
-                    stringTag,
+                    isString,
                     length,
                     array,
                     mapping,
@@ -11615,9 +11582,9 @@
                 }
                 */
 
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 for (index = 0; index < length; index += 1) {
-                    it = $getItem(object, index, stringTag);
+                    it = $getItem(object, index, isString);
                     if (mapping) {
                         it = $call(mapfn, thisArg, it, index);
                     }
@@ -11673,24 +11640,18 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     length,
                     val,
                     index;
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 val = true;
                 for (index = 0; index < length; index += 1) {
-                    if ($hasItem(object, index, stringTag)) {
-                        val = !!$call(fn, thisArg, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        val = !!$call(fn, thisArg, $getItem(object, index, isString), index, object);
                         if (!val) {
                             break;
                         }
@@ -11760,7 +11721,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     length,
                     arr,
                     index;
@@ -11768,16 +11729,10 @@
                 $throwIfNotFunction(fn);
                 arr = [];
                 arr.length = length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 for (index = 0; index < length; index += 1) {
-                    if ($hasItem(object, index, stringTag)) {
-                        arr[index] =  $call(fn, thisArg, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        arr[index] =  $call(fn, thisArg, $getItem(object, index, isString), index, object);
                     }
                 }
 
@@ -11880,7 +11835,7 @@
         function () {
             return function (fn, thisArg) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     length,
                     arr,
                     index,
@@ -11888,17 +11843,11 @@
 
                 $throwIfNotFunction(fn);
                 length = $toLength(object.length);
-                /*
-                if (length) {
-                    thisArg = $toObjectCallFix(thisArg);
-                }
-                */
-
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 arr = [];
                 for (index = 0; index < length; index += 1) {
-                    if ($hasItem(object, index, stringTag)) {
-                        it = $getItem(object, index, stringTag);
+                    if ($hasItem(object, index, isString)) {
+                        it = $getItem(object, index, isString);
                         if ($call(fn, thisArg, it, index, object)) {
                             $push(arr, it);
                         }
@@ -11959,7 +11908,7 @@
 
             return function (fn, initialValue) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     accumulator,
                     length,
                     kPresent,
@@ -11972,15 +11921,15 @@
                 }
 
                 index = 0;
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 if ($toLength(arguments.length) > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
                     while (!kPresent && index < length) {
-                        kPresent = $hasItem(object, index, stringTag);
+                        kPresent = $hasItem(object, index, isString);
                         if (kPresent) {
-                            accumulator = $getItem(object, index, stringTag);
+                            accumulator = $getItem(object, index, isString);
                             index += 1;
                         }
                     }
@@ -11991,8 +11940,8 @@
                 }
 
                 while (index < length) {
-                    if ($hasItem(object, index, stringTag)) {
-                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, isString), index, object);
                     }
 
                     index += 1;
@@ -12053,7 +12002,7 @@
 
             return function (fn, initialValue) {
                 var object = $toObject(this),
-                    stringTag,
+                    isString,
                     accumulator,
                     length,
                     kPresent,
@@ -12065,16 +12014,16 @@
                     throw new CTypeError(reduceRightTypeErrorMessage);
                 }
 
-                stringTag = $toStringTag(object);
+                isString = $isString(object);
                 index = length - 1;
                 if ($toLength(arguments.length) > 1) {
                     accumulator = initialValue;
                 } else {
                     kPresent = false;
                     while (!kPresent && index >= 0) {
-                        kPresent = $hasItem(object, index, stringTag);
+                        kPresent = $hasItem(object, index, isString);
                         if (kPresent) {
-                            accumulator = $getItem(object, index, stringTag);
+                            accumulator = $getItem(object, index, isString);
                             index -= 1;
                         }
                     }
@@ -12085,8 +12034,8 @@
                 }
 
                 while (index >= 0) {
-                    if ($hasItem(object, index, stringTag)) {
-                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, stringTag), index, object);
+                    if ($hasItem(object, index, isString)) {
+                        accumulator = $call(fn, Undefined, accumulator, $getItem(object, index, isString), index, object);
                     }
 
                     index -= 1;
@@ -12851,7 +12800,7 @@
             return function (searchElement, fromIndex) {
                 var object = $toObject(this),
                     length = $toLength(object.length),
-                    stringTag = $toStringTag(object),
+                    isString = $isString(object),
                     val = -1,
                     index;
 
@@ -12869,7 +12818,7 @@
                     }
 
                     for (index = fromIndex; index >= 0; index -= 1) {
-                        if ($hasItem(object, index, stringTag) && searchElement === $getItem(object, index, stringTag)) {
+                        if ($hasItem(object, index, isString) && searchElement === $getItem(object, index, isString)) {
                             val = index;
                             break;
                         }
@@ -13136,12 +13085,12 @@
         }
         */
 
-        isString = $toStringTag(object) === stringTagString;
+        isString = $isString(object);
         val = false;
         for (index = 0; index < length; index += 1) {
             it = keys[index];
             if (isString && $toString($toInteger(it)) === it && it >= 0 && it <= MAX_SAFE_INTEGER) {
-                item = $getItem(object, it, stringTagString);
+                item = $getItem(object, it, true);
             } else {
                 item = object[it];
             }
@@ -13608,7 +13557,7 @@
          * @returns {Object}
          */
         function throwString(props) {
-            if ($toStringTag(props) === stringTagString) {
+            if ($isString(props)) {
                 throw new CTypeError('Property description must be an object: ' + $toString(props));
             }
 
@@ -13834,7 +13783,7 @@
         exports.Object.freeze(object);
         for (propKey in object) {
             /*jslint forin: false*/
-            propVal = $getItem(object, propKey, $toStringTag(object));
+            propVal = $getItem(object, propKey, $isString(object));
             if (!$isPrimitive(propVal) && !exports.Object.isFrozen(propVal)) {
                 exports.Object.deepFreeze(propVal);
             }
@@ -13870,7 +13819,7 @@
             return function (target) {
                 var to = $toObject(target),
                     length = $toLength(arguments.length),
-                    stringTag,
+                    isString,
                     from,
                     index,
                     keysArray,
@@ -13888,9 +13837,9 @@
                             len = $toLength(keysArray.length);
                             for (nextIndex = 0; nextIndex < len; nextIndex += 1) {
                                 nextKey = keysArray[nextIndex];
-                                stringTag = $toStringTag(from);
-                                if ($hasItem(from, nextKey, stringTag)) {
-                                    to[nextKey] = $getItem(from, nextKey, stringTag);
+                                isString = $isString(from);
+                                if ($hasItem(from, nextKey, isString)) {
+                                    to[nextKey] = $getItem(from, nextKey, isString);
                                 }
                             }
                         }
@@ -14025,7 +13974,7 @@
      */
     exports.Date.proto.isValid = (function (pGetTime) {
         return function () {
-            if ($toStringTag(this) !== stringTagDate) {
+            if (!$isDate(this)) {
                 throw new CTypeError('this is not a Date object.');
             }
 
@@ -14083,7 +14032,7 @@
      * @returns {string}
      */
     exports.String.proto.wrapInChars = function (characters) {
-        if ($toStringTag(characters) !== stringTagString && $toStringTag(characters) !== stringTagNumber) {
+        if (!$isString(characters) && !$isNumber(characters)) {
             characters = '';
         } else {
             characters = $toString(characters);
@@ -14604,11 +14553,11 @@
 
         if ($hasOwnValidLength(object) && !$isFunction(object)) {
             inLen = $toLength(object.length);
-            isString = $toStringTag(object) === stringTagString;
+            isString = $isString(object);
             if (isString) {
                 tempVal = {};
                 for (inIndex = 0; inIndex < inLen; inIndex += 1) {
-                    tempVal[inIndex] = $getItem(object, inIndex, stringTagString);
+                    tempVal[inIndex] = $getItem(object, inIndex, true);
                 }
 
                 object = tempVal;
@@ -15122,7 +15071,6 @@
                         length,
                         index,
                         keys,
-                        cl,
                         v;
 
                     if (value !== null && !$isUndefined(value) && $isFunction(value.toJSON)) {
@@ -15133,11 +15081,8 @@
                         value = $call(sfyReplacer, holder, key, value);
                     }
 
-                    if (!$isPrimitive(value)) {
-                        cl = $toStringTag(value);
-                        if (cl === stringTagString || cl === stringTagNumber || cl === stringTagBoolean) {
-                            value = $toPrimitive(value, hintNumber);
-                        }
+                    if (!$isPrimitive(value) && ($isString(value) || $isNumber(value) || $isBoolean(value))) {
+                        value = $toPrimitive(value, hintNumber);
                     }
 
                     switch ($typeOf(value)) {
@@ -15553,8 +15498,8 @@
                 if (len < 1) {
                     $push(val, []);
                 } else {
-                    if ($toStringTag(thisObj) === stringTagString) {
-                        lastElement = $getItem(thisObj, len - 1, stringTagString);
+                    if ($isString(thisObj)) {
+                        lastElement = $getItem(thisObj, len - 1, true);
                         object = $sSlice(thisObj, 0, -1);
                     } else {
                         object = $slice(thisObj);
@@ -15605,16 +15550,16 @@
     exports.Array.proto.toObject = function () {
         var object = $toObject(this),
             accumulator = {},
-            stringTag,
+            isString,
             length,
             index;
 
         if ($hasOwnValidLength(object) && !$isFunction(object)) {
-            stringTag = $toStringTag(object);
+            isString = $isString(object);
             accumulator.length = length = $toLength(object.length);
             for (index = 0; index < length; index += 1) {
-                if ($hasItem(object, index, stringTag)) {
-                    accumulator[index] = $getItem(object, index, stringTag);
+                if ($hasItem(object, index, isString)) {
+                    accumulator[index] = $getItem(object, index, isString);
                 }
             }
         } else {
