@@ -7726,7 +7726,9 @@
                         found,
                         index;
 
-                    if (object === protoObject) {
+                    if (((hasEnumStringBug && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $hasOwn(object, prop)) {
+                        rtn = true;
+                    } else if (object === protoObject) {
                         for (index = 0; index < length; index += 1) {
                             if (prop === shadowed[index]) {
                                 found = true;
