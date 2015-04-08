@@ -7572,7 +7572,7 @@
                         index;
 
 
-                    if (!hop && $hasProperty(object, prop)) {
+                    if (!hop && prop in object) {
                         for (index = 0; index < length; index += 1) {
                             if (prop === shadowed[index] && object[prop] !== $getPrototypeOf(object)[prop]) {
                                 hop = true;
