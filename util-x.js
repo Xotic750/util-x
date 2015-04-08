@@ -7547,6 +7547,8 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     /* jshint -W001 */
+    exports.Object.proto.hasOwnProperty = pHasOwn;
+    /*
     exports.Object.proto.hasOwnProperty = (function (phop) {
         var argNames = ['property'];
 
@@ -7570,7 +7572,6 @@
                         prop = $toString(property),
                         hop = $call(phop, object, prop),
                         index;
-
 
                     if (!hop && prop in object) {
                         for (index = 0; index < length; index += 1) {
@@ -7657,6 +7658,7 @@
             'Object.hasOwnProperty hasStringOwnPropBug patch'
         );
     }(exports.Object.proto.hasOwnProperty));
+    */
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
