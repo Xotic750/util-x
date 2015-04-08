@@ -7671,10 +7671,7 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
-    //exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
-    exports.Object.hasOwnProperty = function (object, property) {
-        return pHasOwn.call($toObject(object), $toString(property));
-    };
+    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
     exports.Object.hasOwnProperty.argNames = ['object', 'property'];
     /* jshint +W001 */
 
@@ -19062,9 +19059,7 @@
         });
 
         /* jshint -W001 */
-        utilx.Object.hasOwnProperty = function (object, property) {
-            return pHasOwn.call($toObject(object), $toString(property));
-        };
+        utilx.Object.hasOwnProperty = $hasOwn;
         /* jshint +W001 */
 
         /*jslint newcap: true */
