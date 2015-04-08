@@ -7625,6 +7625,7 @@
             'Object.hasOwnProperty hasProtoEnumBug patch'
         );
     }(exports.Object.proto.hasOwnProperty));
+    */
 
     exports.Object.proto.hasOwnProperty = (function (phop) {
         var argNames = ['property'];
@@ -7657,8 +7658,7 @@
             // message
             'Object.hasOwnProperty hasStringOwnPropBug patch'
         );
-    }(exports.Object.proto.hasOwnProperty));
-    */
+    }(pHasOwn));
 
     /**
      * Returns a boolean indicating whether the object has the specified property.
@@ -18979,7 +18979,8 @@
         }
 
         /*jslint evil: true */
-        return new CFunction('fn', 'apply', 'return function (' + args + ') { return apply(fn, this, arguments); };')(fn, $apply);
+        return eval('(function (' + args + ') { return $apply(fn, this, arguments); })');
+        //return new CFunction('fn', 'apply', 'return function (' + args + ') { return apply(fn, this, arguments); };')(fn, $apply);
     }
 
     /**
@@ -19057,10 +19058,6 @@
                 $push(utilx.methods, key1);
             }
         });
-
-        /* jshint -W001 */
-        utilx.Object.hasOwnProperty = $hasOwn;
-        /* jshint +W001 */
 
         /*jslint newcap: true */
         $defineProperty(utilx, 'Big', $assign({
