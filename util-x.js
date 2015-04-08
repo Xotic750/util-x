@@ -37,7 +37,7 @@
     RequireObjectCoercible, String, SyntaxError, ToMethod, ToNumber, ToObject,
     ToPrimitive, ToString, TypeError, UNSAFE_INTEGER, URIError, UWORD16, UWORD32,
     UWORD8, Uint8Array, WORD16, WORD32, WORD8, '\\', abs, actual, add, alert,
-    amd, anchor, apply, areSameClass, areSameTypeOf, argNames, assert, assign,
+    amd, anchor, apply, areSameClass, areSameTypeOf, assert, assign,
     bind, c, call, captureStackTrace, ceil, charAt, charCodeAt, clamp,
     clampToInt, classId, clipDuplicates, codePointAt, concat, configurable,
     console, constructor, contains, copyWithin, countCharacter, create,
@@ -76,7 +76,7 @@
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
     wsStr, hasDeleteBug, str, target, replacement, result, isCircular, a, b,
-    cnt
+    cnt, minArgs, maxArgs
 */
 
 /**
@@ -350,7 +350,6 @@
         $isDigits,
         $join,
         $parseInt,
-        $map,
         $trim,
         $substr,
         $parseFloat,
@@ -370,6 +369,7 @@
         $indexOf,
         $isCircular,
         $propertyIsEnumerable,
+        $toMethod,
 
         BigNum,
 
@@ -1991,7 +1991,6 @@
      * @returns {boolean}
      */
     exports.Object.isUndefined = $isUndefined;
-    exports.Object.isUndefined.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to a value of type string
@@ -2079,7 +2078,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ecmascript-data-types-and-values
      */
     exports.Object.isPrimitive = $isPrimitive;
-    exports.Object.isPrimitive.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -2181,7 +2179,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-toprimitive
      */
     exports.Object.ToPrimitive = $toPrimitive;
-    exports.Object.ToPrimitive.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to a value of type number but fixes some environment bugs.
@@ -2261,7 +2258,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tonumber
      */
     exports.Object.ToNumber = $toNumber;
-    exports.Object.ToNumber.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -3159,7 +3155,6 @@
      * @returns {boolean}
      */
     exports.Boolean.isBoolean = $isBoolean;
-    exports.Boolean.isBoolean.argNames = ['inputArg'];
 
     /**
      * Returns true if the operand inputArg is a Number.
@@ -3190,7 +3185,6 @@
      * @returns {boolean}
      */
     exports.Number.isNumber = $isNumber;
-    exports.Number.isNumber.argNames = ['inputArg'];
 
     // redefinition
     $isString = (function (pOToString, strStr) {
@@ -3229,7 +3223,6 @@
      * @returns {boolean}
      */
     exports.String.isString = $isString;
-    exports.String.isString.argNames = ['inputArg'];
 
     /**
      * Returns true if the operand inputArg is a symbol.
@@ -3251,7 +3244,6 @@
      * @returns {boolean}
      */
     exports.Object.isSymbol = $isSymbol;
-    exports.Object.isSymbol.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -3317,7 +3309,6 @@
      * @returns {boolean}
      */
     exports.Object.isArguments = $isArguments;
-    exports.Object.isArguments.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -3396,7 +3387,6 @@
      * @returns {boolean}
      */
     exports.RegExp.isRegExp = $isRegExp;
-    exports.RegExp.isRegExp.argNames = ['inputArg'];
 
     /**
      * Returns true if the operand inputArg is an error.
@@ -3439,7 +3429,6 @@
      * @returns {boolean}
      */
     exports.Error.isError = $isError;
-    exports.Error.isError.argNames = ['inputArg'];
 
     // redefinition
     $isDate = (function (pOToString, strDate) {
@@ -3462,7 +3451,6 @@
      * @returns {boolean}
      */
     exports.Date.isDate = $isDate;
-    exports.Date.isDate.argNames = ['inputArg'];
 
     /**
      * Returns true if argument has own property of length
@@ -3870,13 +3858,13 @@
      * @param {Function|boolean} affirms A function that throws exceptions or boolean (coerced).
      * @param {Function|*} pass A function to be called or any value. If affirms was called then the result of the call will be supplied as an argument to a function.
      * @param {Function} fail A function to be called or any value. If affirms was called then the result of the call will be supplied as an argument to a function.
-     * @param {Array} [argNames] If fail evaluated to a function then this array will be added as the property 'argNames'.
      * @param {string} [message] Any value will be coerced to a string for logging.
      * @returns {*}
      */
-    function $decide(affirms, pass, fail, argNames, message) {
-        var length = $throwIfNotEnoughArgs(arguments, 3),
-            result,
+    function $decide(affirms, pass, fail, message) {
+        $throwIfNotEnoughArgs(arguments, 3);
+
+        var result,
             passed,
             returned;
 
@@ -3885,12 +3873,7 @@
                 returned = affirms();
                 passed = true;
             } catch (eAffirms) {
-                if (length === 4 && typeof argNames === 'string') {
-                    message = argNames;
-                } else {
-                    message = $toString(message);
-                }
-
+                message = $toString(message);
                 $conlog(message, eAffirms);
                 passed = false;
             }
@@ -3912,9 +3895,6 @@
         } else {
             if ($isFunction(fail)) {
                 result = fail(returned);
-                if ($isFunction(result) && $isArray(argNames)) {
-                    result.argNames = argNames;
-                }
             } else {
                 result = fail;
             }
@@ -4261,15 +4241,102 @@
      *                                    if none supplied or is not a function.
      * @returns {module:util-x~boundPrototypalFunction} Stand alone method.
      */
-    function $toMethod(protoFn, checkThisArgFn) {
-        $throwIfNotFunction(protoFn);
-        if (!$isFunction(checkThisArgFn)) {
-            checkThisArgFn = $requireObjectCoercible;
-        }
+    $toMethod = (function () {
+        var funcs = {
+            1: function (protoFn, checkThisArgFn) {
+                return function (thisArg) {
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
 
-        /*jslint evil: true */
-        return new CFunction('fn', 'check', 'slice', 'apply', 'return function (' + $bindArgs(protoFn.length + 1) + ') { return apply(fn, check(arguments[0]), slice(arguments, 1)); };')(protoFn, checkThisArgFn, $argSlice, $apply);
-    }
+            2: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            3: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            4: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            5: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            6: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4, $5) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            7: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4, $5, $6) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            8: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4, $5, $6, $7) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            9: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4, $5, $6, $7, $8) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            10: function (protoFn, checkThisArgFn) {
+                return function (thisArg, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
+                    /*jslint unparam: true */
+                    /*jshint unused: false */
+                    return $apply(protoFn, checkThisArgFn(thisArg), $argSlice(arguments, 1));
+                };
+            },
+
+            minArgs: 1,
+
+            maxArgs: 10
+        };
+
+        return function (protoFn, checkThisArgFn) {
+            $throwIfNotFunction(protoFn);
+            if (!$isFunction(checkThisArgFn)) {
+                checkThisArgFn = $requireObjectCoercible;
+            }
+
+            var length = $min($max($toLength(protoFn.length) + 1, funcs.minArgs), funcs.maxArgs);
+
+            return funcs[length](protoFn, checkThisArgFn);
+        };
+    }());
 
     // redefinition
     $slice = $toMethod($pSlice);
@@ -4559,8 +4626,6 @@
         return $min($max(number, min), max);
     };
 
-    exports.Number.clamp.argNames = ['number', 'min', 'max'];
-
     /**
      * Returns true if the operand inputArg is a number which is positive.
      *
@@ -4582,8 +4647,6 @@
         return rtn;
     };
 
-    exports.Number.isPositive.argNames = ['inputArg'];
-
     /**
      * Returns true if the operand inputArg is a number which is negative.
      *
@@ -4604,8 +4667,6 @@
 
         return rtn;
     };
-
-    exports.Number.isNegative.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -4653,9 +4714,6 @@
         function () {
             return $toString;
         },
-
-        // argNames
-        ['inputArg'],
 
         // message
         'ToString patch'
@@ -4710,7 +4768,6 @@
      * @see http://stackoverflow.com/a/15043984/592253
      */
     exports.Object.isNumeric = $isNumeric;
-    exports.Object.isNumeric.argNames = ['inputArg'];
 
     /**
      * Returns true if the operand value is greater than or equal to min and is less than or equal to max.
@@ -4734,8 +4791,6 @@
 
         return $toNumber(value) >= $toNumber(min) && value <= $toNumber(max);
     };
-
-    exports.Number.inRange.argNames = ['value', 'min', 'max'];
 
     /**
      * Shortcut
@@ -4780,8 +4835,6 @@
         return value <= $toNumber(min) || value >= $toNumber(max);
     };
 
-    exports.Number.outRange.argNames = ['value', 'min', 'max'];
-
     /*
      *
      * EXPORTABLES THAT DO RELY ON ANY OF OUR FUNCTIONS
@@ -4799,7 +4852,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-requireobjectcoercible
      */
     exports.Object.RequireObjectCoercible = $requireObjectCoercible;
-    exports.Object.RequireObjectCoercible.argNames = ['inputArg'];
 
     /**
      * Returns a string only if the arguments is coercible otherwise throws an error.
@@ -4823,7 +4875,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
      */
     exports.Object.ToObject = $toObject;
-    exports.Object.ToObject.argNames = ['inputArg'];
 
     /**
      * Returns true if the specified property is in the specified object.
@@ -4835,7 +4886,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7
      */
     exports.Object.hasProperty = $hasProperty;
-    exports.Object.hasProperty.argNames = ['object', 'property'];
 
     //
     (function (toStringTag) {
@@ -5026,8 +5076,6 @@
             return !$isPrimitive(inputArg) && (isFunctionInternal(inputArg, false) || isFunctionInternal(inputArg, true));
         };
 
-        exports.Function.isFunction.argNames = ['inputArg'];
-
         // redefinition
         $isFunction = exports.Function.isFunction;
 
@@ -5047,8 +5095,6 @@
                 return $isFunction(inputArg) && isNativeFunction(inputArg);
             };
         }
-
-        exports.Function.isNativeFunction.argNames = ['inputArg'];
     }(base.Object.toString));
 
     /**
@@ -5085,8 +5131,6 @@
      * @returns {*}
      */
     exports.Function.proto.call = (function () {
-        var argNames = ['thisArg'];
-
         return $decide(
             // test
             function () {
@@ -5112,9 +5156,6 @@
                         return $pCall;
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Function.call patch'
                 );
@@ -5124,9 +5165,6 @@
             function () {
                 return $pCall;
             },
-
-            // argNames
-            argNames,
 
             // message
             'Function.call shim'
@@ -5143,7 +5181,6 @@
      * @returns {*}
      */
     exports.Function.call = $call;
-    exports.Function.call.argNames = ['func', 'thisArg'];
 
     /**
      * This method calls a function with a given this value and arguments provided as an
@@ -5156,8 +5193,6 @@
      * @returns {*}
      */
     exports.Function.proto.apply = (function () {
-        var argNames = ['thisArg', 'arrayLike'];
-
         return $decide(
             // test
             function () {
@@ -5185,9 +5220,6 @@
                         return $pApply;
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Function.apply patch'
                 );
@@ -5197,9 +5229,6 @@
             function () {
                 return $pApply;
             },
-
-            // argNames
-            argNames,
 
             // message
             'Function.apply shim'
@@ -5217,7 +5246,6 @@
      * @returns {*}
      */
     exports.Function.apply = $apply;
-    exports.Function.apply.argNames = ['func', 'thisArg', 'arrayLike'];
 
     /**
      * Shortcut
@@ -5250,7 +5278,6 @@
      * @returns {string}
      */
     exports.Object.typeOf = $typeOf;
-    exports.Object.typeOf.argNames = ['inputArg'];
 
     /**
      * Returns true if the operands are of the same typeof.
@@ -5282,8 +5309,6 @@
         return same;
     };
 
-    exports.Object.areSameTypeOf.argNames = ['a', 'b'];
-
     /**
      * Returns true if the operands are of the same object class.
      *
@@ -5312,8 +5337,6 @@
         return same;
     };
 
-    exports.Object.areSameClass.argNames = ['a', 'b'];
-
     /**
      * The function tests whether an object has in its prototype chain the prototype property of a constructor.
      *
@@ -5324,7 +5347,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof
      */
     exports.Object.instanceOf = $instanceOf;
-    exports.Object.instanceOf.argNames = ['object', 'ctr'];
 
     /**
      * Returns true if the argument coerces to NaN, and otherwise returns false.
@@ -5347,9 +5369,6 @@
         function () {
             return $isNaN;
         },
-
-        // argNames
-        ['number'],
 
         // message
         'isNaN shim'
@@ -5380,9 +5399,6 @@
         function () {
             return $isFinite;
         },
-
-        // argNames
-        ['number'],
 
         // message
         'isFinite shim'
@@ -5519,9 +5535,6 @@
             return $pSlice;
         },
 
-        // argNames
-        ['start', 'end'],
-
         // message
         'Array.slice shim'
     );
@@ -5537,7 +5550,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
      */
     exports.Array.slice = $toMethod(exports.Array.proto.slice);
-    exports.Array.slice.argNames = ['array', 'start', 'end'];
 
     // redefinition
     $slice = exports.Array.slice;
@@ -5553,7 +5565,6 @@
      * @returns {boundPrototypalFunction}
      */
     exports.Function.ToMethod = $toMethod;
-    exports.Function.ToMethod.argNames = ['protofn', 'checkThisArgFn'];
 
     /**
      * Return the String value that is the result of concatenating the three Strings "[object ", class, and "]".
@@ -5665,9 +5676,6 @@
             };
         },
 
-        // argNames
-        ['thisArg', 'varArgs'],
-
         // message
         'Function.bind shim'
     );
@@ -5687,7 +5695,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
      */
     exports.Function.bind = $toMethod(exports.Function.proto.bind);
-    exports.Function.bind.argNames = ['fn', 'thisArg', 'varArgs'];
 
     /**
      * The function takes one argument inputArg, and returns the Boolean value true if the argument is an object
@@ -5716,9 +5723,6 @@
             return $isArray;
         },
 
-        // argNames
-        ['inputArg'],
-
         // message
         'Array.isArray shim'
     );
@@ -5739,8 +5743,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
      */
     exports.Array.proto.join = (function () {
-        var argNames = ['separator'];
-
         return $decide(
             // test
             $affirmBasic(base.Array.join),
@@ -5772,9 +5774,6 @@
                             return $call(pJoin, this, separator);
                         };
                     },
-
-                    // argNames
-                    argNames,
 
                     // message
                     'Array.join patch'
@@ -5811,9 +5810,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'Array.join shim'
         );
@@ -5832,7 +5828,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join
      */
     exports.Array.join = $toMethod(exports.Array.proto.join);
-    exports.Array.join.argNames = ['inputArg', 'separator'];
 
     /**
      * Shortcut
@@ -5885,9 +5880,6 @@
             };
         },
 
-        // argNames
-        ['x', 'y'],
-
         // message
         'Object.is shim'
     );
@@ -5920,9 +5912,6 @@
             };
         },
 
-        // argNames
-        ['inputArg'],
-
         // message
         'Number.isNaN shim'
     );
@@ -5953,9 +5942,6 @@
                 return typeof number === 'number' && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY;
             };
         },
-
-        // argNames
-        ['number'],
 
         // message
         'Number.isFinite shim'
@@ -5988,9 +5974,6 @@
             };
         },
 
-        // argNames
-        ['value'],
-
         // message
         'Math.sign shim'
     );
@@ -6004,7 +5987,7 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.4
      */
     exports.Number.toInteger = $toInteger;
-    exports.Number.toInteger.argNames = ['inputArg'];
+
     $isInteger = $decide(
         // test
         $affirmBasic(base.Number.isInteger),
@@ -6018,9 +6001,6 @@
         function () {
             return $isInteger;
         },
-
-        // argNames
-        ['inputArg'],
 
         // message
         'Number.isInteger shim'
@@ -6056,9 +6036,6 @@
         function () {
             return $isSafeInteger;
         },
-
-        // argNames
-        ['inputArg'],
 
         // message
         'Number.isSafeInteger shim'
@@ -6111,7 +6088,6 @@
      * @returns {number}
      */
     exports.Number.toInt32 = toInt32;
-    exports.Number.toInt32.argNames = ['inputArg'];
 
     /**
      * The exports.Number.isInt32() method determines whether the passed value is an integer.
@@ -6126,8 +6102,6 @@
     exports.Number.isInt32 = function (inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= MIN_INT32 && inputArg <= MAX_INT32;
     };
-
-    exports.Number.isInt32.argNames = ['inputArg'];
 
     /**
      * The Number.modulo function is a modified implementation of the `%` operator. This algorithm uses the
@@ -6144,8 +6118,6 @@
         return this - divisor * $floor(this / divisor);
     };
 
-    exports.Number.proto.modulo.argNames = ['divisor'];
-
     /**
      * The Number.modulo function is a modified implementation of the `%` operator. This algorithm uses the
      * formula `remainder = dividend - divisor * quotient`; the `%` operator uses a truncating division.
@@ -6158,7 +6130,6 @@
      * @returns {number}
      */
     exports.Number.modulo = $toMethod(exports.Number.proto.modulo, $firstArg);
-    exports.Number.modulo.argNames = ['dividend', 'divisor'];
 
     /**
      * Shortcut
@@ -6186,8 +6157,6 @@
         return $isInteger(inputArg) && inputArg % 2 !== 0;
     };
 
-    exports.Number.isOdd.argNames = ['inputArg'];
-
     /**
      * The Number.isEven returns true if the integer is even otherwise false.
      *
@@ -6198,8 +6167,6 @@
     exports.Number.isEven = function (inputArg) {
         return $isInteger(inputArg) && inputArg % 2 === 0;
     };
-
-    exports.Number.isEven.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^53 integer values in
@@ -6220,8 +6187,6 @@
         return val;
     };
 
-    exports.Number.toUint.argNames = ['inputArg'];
-
     /**
      * This method determines whether the passed value is an integer.
      * If the target value is an integer in the  range 0 through 2^53-1, inclusive,
@@ -6236,8 +6201,6 @@
         return $isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_SAFE_INTEGER;
     };
 
-    exports.Number.isUint.argNames = ['inputArg'];
-
     /**
      * The abstract operation ToLength converts its argument to an integer suitable for use as the length
      * of an array-like object.
@@ -6248,7 +6211,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
      */
     exports.Number.toLength = $toLength;
-    exports.Number.toLength.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^32 integer values in
@@ -6268,8 +6230,6 @@
 
         return val;
     };
-
-    exports.Number.toUint32.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -6298,7 +6258,6 @@
      * @returns {boolean}
      */
     exports.Number.isUint32 = $isUint32;
-    exports.Number.isUint32.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^16 integer values in
@@ -6324,8 +6283,6 @@
         return val;
     };
 
-    exports.Number.toInt16.argNames = ['inputArg'];
-
     /**
      * This method determines whether the passed value is an integer.
      * If the target value is an integer in the range -2^15 through 2^15-1, inclusive,
@@ -6339,8 +6296,6 @@
     exports.Number.isInt16 = function (inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= MIN_INT16 && inputArg <= MAX_INT16;
     };
-
-    exports.Number.isInt16.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^16 integer values in
@@ -6361,8 +6316,6 @@
         return val;
     };
 
-    exports.Number.toUint16.argNames = ['inputArg'];
-
     /**
      * This method determines whether the passed value is an integer.
      * If the target value is an integer in the  range 0 through 2^16-1, inclusive,
@@ -6376,8 +6329,6 @@
     exports.Number.isUint16 = function (inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_UINT16;
     };
-
-    exports.Number.isUint16.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^8 integer values in
@@ -6403,8 +6354,6 @@
         return val;
     };
 
-    exports.Number.toInt8.argNames = ['inputArg'];
-
     /**
      * This method determines whether the passed value is an integer.
      * If the target value is an integer in the range -2^7 through 2^7-1, inclusive,
@@ -6418,8 +6367,6 @@
     exports.Number.isInt8 = function (inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= MIN_INT8 && inputArg <= MAX_INT8;
     };
-
-    exports.Number.isInt8.argNames = ['inputArg'];
 
     /**
      * The abstract operation converts its argument to one of 2^8 integer values in
@@ -6440,8 +6387,6 @@
         return val;
     };
 
-    exports.Number.toUint8.argNames = ['inputArg'];
-
     /**
      * This method determines whether the passed value is an integer.
      * If the target value is an integer in the  range 0 through 2^8-1, inclusive,
@@ -6455,8 +6400,6 @@
     exports.Number.isUint8 = function (inputArg) {
         return $isSafeInteger(inputArg) && inputArg >= 0 && inputArg <= MAX_UINT8;
     };
-
-    exports.Number.isUint8.argNames = ['inputArg'];
 
     /**
      * When the concat method is called with zero or more arguments item1, item2, etc.,
@@ -6519,7 +6462,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat
      */
     exports.Array.concat = $toMethod(exports.Array.proto.concat);
-    exports.Array.concat.argNames = ['array', 'varArgs'];
+
     $concat = exports.Array.concat;
 
     /**
@@ -6601,7 +6544,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push
      */
     exports.Array.push = $toMethod(exports.Array.proto.push);
-    exports.Array.push.argNames = ['array', 'varArgs'];
 
     /**
      * Shortcut
@@ -6698,7 +6640,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop
      */
     exports.Array.pop = $toMethod(exports.Array.proto.pop);
-    exports.Array.pop.argNames = ['array'];
 
     /**
      * Shortcut
@@ -6833,7 +6774,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift
      */
     exports.Array.shift = $toMethod(exports.Array.proto.shift);
-    exports.Array.shift.argNames = ['array'];
 
     /**
      * Shortcut
@@ -6980,7 +6920,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift
      */
     exports.Array.unshift = $toMethod(exports.Array.proto.unshift);
-    exports.Array.unshift.argNames = ['array', 'varArgs'];
 
     /**
      * Shortcut
@@ -7112,7 +7051,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.8
      */
     exports.Array.reverse = $toMethod(exports.Array.proto.reverse);
-    exports.Array.reverse.argNames = ['array'];
 
     /**
      * Shortcut
@@ -7139,8 +7077,6 @@
     exports.Number.clampToInt = function (num, min, max) {
         return $min($max($toInteger(num), $toInteger(min)), $toInteger(max));
     };
-
-    exports.Number.clampToInt.argNames = ['num', 'min', 'max'];
 
     /**
      * The slice method takes two arguments, start and end, and returns a substring of the result
@@ -7229,7 +7165,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.slice
      */
     exports.String.slice = $toMethod(exports.String.proto.slice);
-    exports.String.slice.argNames = ['string', 'start', 'end'];
 
     /**
      * The slice method takes two arguments, start and end, and returns a substring of the result
@@ -7313,9 +7248,6 @@
             };
         },
 
-        // argNames
-        ['count'],
-
         // messgae
         'String.repeat shim'
     );
@@ -7330,7 +7262,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/repeat
      */
     exports.String.repeat = $toMethod(exports.String.proto.repeat);
-    exports.String.repeat.argNames = ['string', 'count'];
 
     /**
      * Repeat the current string several times, return the new string.
@@ -7355,8 +7286,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ordinary-object-internal-methods-and-internal-slots-getprototypeof
      */
     exports.Object.getPrototypeOf = (function () {
-        var argNames = ['object'];
-
         return $decide(
             // test
             $affirmBasic(base.Object.getPrototypeOf),
@@ -7400,9 +7329,6 @@
                             return mGetPrototypeOf($toObject(object));
                         };
                     },
-
-                    // argNames
-                    ['object'],
 
                     // message
                     'Object.getPrototypeOf primitive patch'
@@ -7489,16 +7415,10 @@
                         };
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Object.getPrototypeOf full shim'
                 );
             },
-
-            // argNames
-            argNames,
 
             // message
             'Object.getPrototypeOf __proto__ shim'
@@ -7530,8 +7450,6 @@
         return $toStringTag(object) === stringTagObject && $getPrototypeOf(object) === protoObject;
     };
 
-    exports.Object.isPlainObject.argNames = ['object'];
-
     // redefinition
     $isPlainObject = exports.Object.isPlainObject;
 
@@ -7550,8 +7468,6 @@
     exports.Object.proto.hasOwnProperty = pHasOwn;
     /*
     exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
         return $decide(
             // test
             function () {
@@ -7586,17 +7502,12 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'Object.hasOwnProperty hasDontEnumBug patch'
         );
     }(pHasOwn));
 
     exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
         return $decide(
             // test
             function () {
@@ -7618,9 +7529,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'Object.hasOwnProperty hasProtoEnumBug patch'
         );
@@ -7628,8 +7536,6 @@
     */
 
     exports.Object.proto.hasOwnProperty = (function (phop) {
-        var argNames = ['property'];
-
         return $decide(
             // test
             function () {
@@ -7652,9 +7558,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'Object.hasOwnProperty hasStringOwnPropBug patch'
         );
@@ -7672,7 +7575,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
-    exports.Object.hasOwnProperty.argNames = ['object', 'property'];
     /* jshint +W001 */
 
     /**
@@ -7751,9 +7653,6 @@
                 };
             },
 
-            // argNames
-            ['property'],
-
             // message
             'Object.propertyIsEnumerable patch'
         );
@@ -7769,7 +7668,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
      */
     exports.Object.propertyIsEnumerable = $toMethod(exports.Object.proto.propertyIsEnumerable);
-    exports.Object.propertyIsEnumerable.argNames = ['object', 'property'];
 
     /**
      * Shortcut
@@ -7810,8 +7708,6 @@
     /** @todo: fix unwanted error, constructor and prototype properties */
     /*jslint todo: false */
     exports.Object.keys = (function () {
-        var argNames = ['object'];
-
         return $decide(
             // test
             function () {
@@ -7874,9 +7770,6 @@
                         };
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Object.keys patch'
                 );
@@ -7925,9 +7818,6 @@
                     return theKeys;
                 };
             },
-
-            // argNames
-            argNames,
 
             // message
             'Object.keys shim'
@@ -8190,8 +8080,6 @@
         };
     }());
 
-    exports.Array.proto.stableSort.argNames = ['comparefn'];
-
     /**
      * This {@link module:util-x~boundPrototypalFunction method} method sorts the elements of an array in place and returns the array.
      * This is a stable sort. The default sort order is lexicographic (not numeric).
@@ -8206,7 +8094,6 @@
      * @see http://en.wikipedia.org/wiki/Sorting_algorithm#Stability
      */
     exports.Array.stableSort = $toMethod(exports.Array.proto.stableSort);
-    exports.Array.stableSort.argNames = ['array', 'comparefn'];
 
     /**
      * This method sorts the elements the array in place and returns the array.
@@ -8221,8 +8108,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
      */
     exports.Array.proto.sort = (function () {
-        var argNames = ['comparefn'];
-
         return $decide(
             // test
             function () {
@@ -8359,9 +8244,6 @@
                         };
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Array.sort patch'
                 );
@@ -8371,9 +8253,6 @@
             function () {
                 return exports.Array.proto.stableSort;
             },
-
-            // argNames
-            argNames,
 
             // message
             'Array.sort shim'
@@ -8393,7 +8272,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
      */
     exports.Array.sort = $toMethod(exports.Array.proto.sort);
-    exports.Array.sort.argNames = ['array', 'comparefn'];
 
     /**
      * Shortcut
@@ -8479,9 +8357,6 @@
             };
         },
 
-        // argNames
-        ['searchElement', 'fromIndex'],
-
         // message
         'Array.indexOf shim'
     );
@@ -8499,7 +8374,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
      */
     exports.Array.indexOf = $toMethod(exports.Array.proto.indexOf);
-    exports.Array.indexOf.argNames = ['array', 'searchElement', 'fromIndex'];
 
     /**
      * Shortcut
@@ -8533,8 +8407,6 @@
         };
     }(exports.Array.proto.indexOf));
 
-    exports.Array.proto.contains.argNames = ['searchElement'];
-
     /**
      * Returns true if the specified searchElement is in the specified array.
      * Using strict equality (the same method used by the === comparison operator).
@@ -8546,7 +8418,6 @@
      * @returns {boolean}
      */
     exports.Array.contains = $toMethod(exports.Array.proto.contains);
-    exports.Array.contains.argNames = ['array', 'searchElement'];
 
     /**
      * Tests a deep equality relation.
@@ -8675,8 +8546,6 @@
             return de(a, b, { a: [], b: [], cnt: 0 });
         };
     }());
-
-    exports.Object.deepEqual.argNames = ['a', 'b'];
 
     /**
      * Tests a deep equality relation.
@@ -8838,8 +8707,6 @@
         };
     }());
 
-    exports.Object.deepStrictEqual.argNames = ['a', 'b'];
-
     /**
      * Tests a deep equality relation.
      *
@@ -8892,7 +8759,6 @@
          * @returns {string}
          */
         exports.String.escapeRegex = $toMethod(exports.String.proto.escapeRegex);
-        exports.String.escapeRegex.argNames = ['string'];
 
         /**
          * Removes any duplicate characters from the provided string.
@@ -8904,8 +8770,6 @@
         exports.String.clipDuplicates = function (str) {
             return $call(pReplace, $onlyCoercibleToString(str), clipDups, '');
         };
-
-        exports.String.clipDuplicates.argNames = ['str'];
 
         /**
          * Throws a TypeError if the argument is not a RegExp.
@@ -9088,9 +8952,6 @@
                 };
             },
 
-            // argNames
-            ['stringArg'],
-
             // message
             'RegExp.exec patch'
         );
@@ -9105,7 +8966,6 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec
          */
         exports.RegExp.exec = $toMethod(exports.RegExp.proto.exec);
-        exports.RegExp.exec.argNames = ['regExpArg', 'stringArg'];
 
         /**
          * Fixes browser bugs in the native `RegExp.prototype.exec`.
@@ -9200,9 +9060,6 @@
                 };
             },
 
-            // argNames
-            ['stringArg'],
-
             // message
             'RegExp.test shim'
         );
@@ -9217,7 +9074,6 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test
          */
         exports.RegExp.test = $toMethod(exports.RegExp.proto.test);
-        exports.RegExp.test.argNames = ['regExpArg', 'stringArg'];
 
         /**
          * Fixes browser bugs in the native `RegExp.prototype.test`.
@@ -9250,7 +9106,6 @@
          * @returns {Boolean} Is a bytestring or not.
          */
         exports.String.isBytestring = $toMethod(exports.String.proto.isBytestring);
-        exports.String.isBytestring.argNames = ['stringArg'];
 
         /**
          * Splits a String object into an array of strings by separating the string into subbase.str.
@@ -9436,9 +9291,6 @@
                         };
                     },
 
-                    // argNames
-                    ['separator', 'limit'],
-
                     // message
                     'String.split patch 2'
                 );
@@ -9542,9 +9394,6 @@
                 };
             },
 
-            // argNames
-            ['separator', 'limit'],
-
             // message
             'String.split patch 1'
         );
@@ -9560,7 +9409,6 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split
          */
         exports.String.split = $toMethod(exports.String.proto.split);
-        exports.String.split.argNames = ['stringArg', 'separator', 'limit'];
 
         /**
          * Splits a String object into an array of strings by separating the string into subbase.str.
@@ -9968,9 +9816,6 @@
                 };
             },
 
-            // argNames
-            ['search', 'replacement'],
-
             // message
             'String.replace patch'
         );
@@ -9989,7 +9834,6 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
          */
         exports.String.replace = $toMethod(exports.String.proto.replace);
-        exports.String.replace.argNames = ['inputArg', 'search', 'replacement'];
 
         /**
          * Fixes browser bugs in replacement text syntax when performing a replacement using a nonregex search
@@ -10036,8 +9880,6 @@
             return $replace($onlyCoercibleToString(this), pattern, characters);
         };
 
-        exports.String.proto.replaceAll.argNames = ['pattern', 'characters'];
-
         /**
          * This {@link module:util-x~boundPrototypalFunction method} replaces all occurences of a string pattern within
          * a string with the string characters.
@@ -10050,7 +9892,6 @@
          * @returns {string}
          */
         exports.String.replaceAll = $toMethod(exports.String.proto.replaceAll);
-        exports.String.replaceAll.argNames = ['string', 'pattern', 'characters'];
 
         /**
          * Fixes browser bugs in the native `String.prototype.match`.
@@ -10166,9 +10007,6 @@
                 };
             },
 
-            // argNames
-            ['regExpArg'],
-
             // message
             'String.match patch'
         );
@@ -10184,7 +10022,6 @@
          * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match
          */
         exports.String.match = $toMethod(exports.String.proto.match);
-        exports.String.match.argNames = ['stringArg', 'regExpArg'];
     }());
 
     /**
@@ -10210,7 +10047,6 @@
      * @returns {string}
      */
     exports.String.first = $toMethod(exports.String.proto.first);
-    exports.String.first.argNames = ['inputArg'];
 
     /**
      * Coerces its argument to a string and returns the last character of that string.
@@ -10237,7 +10073,6 @@
      * @returns {string}
      */
     exports.String.last = $toMethod(exports.String.proto.last);
-    exports.String.last.argNames = ['inputArg'];
 
     /**
      * Coerces inputArg to a string and counts the occurences of the argument character.
@@ -10263,8 +10098,6 @@
         return val;
     };
 
-    exports.String.proto.countCharacter.argNames = ['character'];
-
     /**
      * Coerces inputArg to a string and counts the occurences of the argument character.
      * Throws an error if the arguments can not be coerced, i.e. null or undefined.
@@ -10275,7 +10108,6 @@
      * @returns {number}
      */
     exports.String.countCharacter = $toMethod(exports.String.proto.countCharacter);
-    exports.String.countCharacter.argNames = ['inputArg', 'character'];
 
     /**
      * Coerces inputArg to a string and repeatedly adds the argument character to the beginning until
@@ -10300,8 +10132,6 @@
         return exports.String.repeat(singleChar, count) + string;
     };
 
-    exports.String.proto.padLeadingChar.argNames = ['character', 'size'];
-
     /**
      * Coerces inputArg to a string and repeatedly adds the argument character to the beginning until
      * the string is greater than or Object.equal to the specified length.
@@ -10314,7 +10144,6 @@
      * @returns {string}
      */
     exports.String.padLeadingChar = $toMethod(exports.String.proto.padLeadingChar);
-    exports.String.padLeadingChar.argNames = ['inputArg', 'character', 'size'];
 
     /**
      * Determines whether a string begins with the characters of another string,
@@ -10347,9 +10176,6 @@
             };
         },
 
-        // argNames
-        ['searchString', 'position'],
-
         // message
         'String.startsWith shim'
     );
@@ -10366,7 +10192,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
      */
     exports.String.startsWith = $toMethod(exports.String.proto.startsWith);
-    exports.String.startsWith.argNames = ['string', 'searchString', 'position'];
 
     /**
      * Determines whether a string ends with the characters of another string,
@@ -10410,9 +10235,6 @@
             };
         },
 
-        // argNames
-        ['searchString', 'position'],
-
         // message
         'String.endsWith shim'
     );
@@ -10429,7 +10251,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
      */
     exports.String.endsWith = $toMethod(exports.String.proto.endsWith);
-    exports.String.endsWith.argNames = ['string', 'searchString', 'position'];
 
     /**
      * Determines whether a string contains the characters of another string, returning true or
@@ -10468,9 +10289,6 @@
             };
         },
 
-        // argNames
-        ['searchString', 'position'],
-
         // message
         'String.contains shim'
     );
@@ -10487,7 +10305,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/contains
      */
     exports.String.contains = $toMethod(exports.String.proto.contains);
-    exports.String.proto.contains.argNames = ['string', 'searchString', 'position'];
 
     /**
      * Determines whether a string contains the characters of another string, returning true or
@@ -10535,8 +10352,6 @@
         return !$specialToObject(inputArg).length;
     };
 
-    exports.Array.isEmpty.argNames = ['inputArg'];
-
     /**
      * Returns the first element of an array i.e. array[0]
      * Use in combination .isEmpty
@@ -10560,7 +10375,6 @@
      * @returns {*}
      */
     exports.Array.first = $toMethod(exports.Array.proto.first);
-    exports.Array.first.argNames = ['inputArg'];
 
     /**
      * Returns the first populated elements index in an array ignoring holes, otherwise -1.
@@ -10597,7 +10411,6 @@
      * @returns {*}
      */
     exports.Array.firstIn = $toMethod(exports.Array.proto.firstIn);
-    exports.Array.firstIn.argNames = ['inputArg'];
 
     /**
      * Returns the last element of an array; otherwise returns undefined.
@@ -10620,7 +10433,6 @@
      * @returns {*}
      */
     exports.Array.last = $toMethod(exports.Array.proto.last);
-    exports.Array.last.argNames = ['inputArg'];
 
     /**
      * Returns the last populated elements index of an array ignoring holes, otherwise -1.
@@ -10657,7 +10469,6 @@
      * @returns {*}
      */
     exports.Array.lastIn = $toMethod(exports.Array.proto.lastIn);
-    exports.Array.lastIn.argNames = ['inputArg'];
 
     /**
      * Compares operand a against operand b and returns true if they are deemed to be the same value.
@@ -10722,8 +10533,6 @@
         };
     }());
 
-    exports.Array.proto.unique.argNames = ['equalFn', 'thisArg'];
-
     /**
      * This method creates a new array of unique occurences using
      * the {@link module:util-x~exports.Object.strictEqual strictEqual} comparison.
@@ -10739,7 +10548,6 @@
      * @returns {Array}
      */
     exports.Array.unique = $toMethod(exports.Array.proto.unique);
-    exports.Array.proto.unique.argNames = ['array', 'equalFn', 'thisArg'];
 
     /**
      * Returns a property descriptor for an own property (that is, one directly present on an object,
@@ -10753,8 +10561,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
      */
     exports.Object.getOwnPropertyDescriptor = (function () {
-        var argNames = ['object', 'property'];
-
         return $decide(
             // test
             function () {
@@ -10836,9 +10642,6 @@
                                 };
                             },
 
-                            // argNames
-                            argNames,
-
                             // message
                             'Object.getOwnPropertyDescriptor throws patch'
                         );
@@ -10859,9 +10662,6 @@
                             return descriptor;
                         };
                     },
-
-                    // argNames
-                    argNames,
 
                     // message
                     'Object.getOwnPropertyDescriptor read only patch'
@@ -10914,9 +10714,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             //message
             'Object.getOwnPropertyDescriptor sham'
         );
@@ -10935,8 +10732,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
     exports.Array.proto.splice = (function () {
-        var argNames = ['start', 'deleteCount'],
-            readOnlyLengths = {};
+        var readOnlyLengths = {};
 
         // Used to identify `toStringTag` values of object with read only length.
         readOnlyLengths[stringTagFunction] = true;
@@ -11010,9 +10806,6 @@
                             return val;
                         };
                     },
-
-                    // argNames
-                    argNames,
 
                     // message
                     'Array.splice patch'
@@ -11110,9 +10903,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'Array.splice shim'
         );
@@ -11131,7 +10921,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
      */
     exports.Array.splice = $toMethod(exports.Array.proto.splice);
-    exports.Array.splice.argNames = ['array', 'start', 'deleteCount'];
 
     /**
      * This) method changes the content of an array,
@@ -11258,9 +11047,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.forEach shim'
     );
@@ -11278,7 +11064,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
      */
     exports.Array.forEach = $toMethod(exports.Array.proto.forEach);
-    exports.Array.forEach.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * Executes a provided function once per array element.
@@ -11328,8 +11113,6 @@
         return val;
     };
 
-    exports.Array.proto.forAll.argNames = ['fn', 'thisArg'];
-
     /**
      * Executes a provided function once per array element position.
      * Unlike forEach, this method treats the array as dense and allows a some like break.
@@ -11343,7 +11126,6 @@
      * @returns {undefined}
      */
     exports.Array.forAll = $toMethod(exports.Array.proto.forAll);
-    exports.Array.forAll.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * some executes the callback function once for each element present in the array until it finds one
@@ -11404,9 +11186,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.some shim'
     );
@@ -11424,7 +11203,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
      */
     exports.Array.some = $toMethod(exports.Array.proto.some);
-    exports.Array.some.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * The find method executes the callback function once for each element present in the array until it
@@ -11503,9 +11281,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.find shim'
     );
@@ -11524,7 +11299,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
      */
     exports.Array.find = $toMethod(exports.Array.proto.find);
-    exports.Array.find.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * The findIndex method executes the callback function once for each element present in the array until it
@@ -11602,9 +11376,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.findIndex'
     );
@@ -11623,7 +11394,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
      */
     exports.Array.findIndex = $toMethod(exports.Array.proto.findIndex);
-    exports.Array.findIndex.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * from calls a provided callback function once for each element in an arrayLike object, in order,
@@ -11696,9 +11466,6 @@
             };
         },
 
-        // argNames
-        ['arrayLike', 'mapfn', 'thisArg'],
-
         // message
         'Array.from shim'
     );
@@ -11762,9 +11529,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.every shim'
     );
@@ -11782,7 +11546,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every
      */
     exports.Array.every = $toMethod(exports.Array.proto.every);
-    exports.Array.every.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * map calls a provided callback function once for each element in an arrayLike object, in order,
@@ -11840,9 +11603,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.map shim'
     );
@@ -11860,23 +11620,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
      */
     exports.Array.map = $toMethod(exports.Array.proto.map);
-    exports.Array.map.argNames = ['array', 'fn', 'thisArg'];
-
-    /**
-     * Shortcut
-     * Creates a new array with the results of calling a provided function on every element in this array.
-     *
-     * @private
-     * @function module:util-x~$map
-     * @param {module:util-x~ArrayLike} array
-     * @throws {TypeError} If array is null or undefined
-     * @param {module:util-x~mapCallback} fn
-     * @throws {TypeError} If fn is not a function
-     * @param {*} [thisArg]
-     * @returns {Array}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
-     */
-    $map = exports.Array.map;
 
     /**
      * This method creates a new Array instance with a variable number of arguments,
@@ -11902,9 +11645,6 @@
                 return $argSlice(arguments);
             };
         },
-
-        // argNames
-        ['varArgs'],
 
         // message
         'Array.of shim'
@@ -11958,9 +11698,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'thisArg'],
-
         // message
         'Array.filter shim'
     );
@@ -11978,7 +11715,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
      */
     exports.Array.filter = $toMethod(exports.Array.proto.filter);
-    exports.Array.filter.argNames = ['array', 'fn', 'thisArg'];
 
     /**
      * Apply a function against an accumulator and each value of the array (from left-to-right)
@@ -12051,9 +11787,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'initialValue'],
-
         // message
         'Array.reduce shim'
     );
@@ -12072,7 +11805,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
      */
     exports.Array.reduce = $toMethod(exports.Array.proto.reduce);
-    exports.Array.reduce.argNames = ['array', 'fn', 'initialValue'];
 
     /**
      * this method applies a function against an accumulator and
@@ -12145,9 +11877,6 @@
             };
         },
 
-        // argNames
-        ['fn', 'initialValue'],
-
         // message
         'Array.reduceRight shim'
     );
@@ -12166,7 +11895,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight
      */
     exports.Array.reduceRight = $toMethod(exports.Array.proto.reduceRight);
-    exports.Array.reduceRight.argNames = ['array', 'fn', 'initialValue'];
 
     /**
      * Returns a safe integer for the supplied argument.
@@ -12215,8 +11943,6 @@
 
         return val;
     };
-
-    exports.Number.randomInt.argNames = ['min', 'max'];
 
     /**
      * Shortcut
@@ -12363,7 +12089,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
      */
     exports.String.trim = $toMethod(exports.String.proto.trim);
-    exports.String.trim.argNames = ['inputArg'];
 
     /**
      * Shortcut
@@ -12440,9 +12165,6 @@
             };
         },
 
-        // argNames
-        ['inputArg', 'radix'],
-
         // message
         'parseInt patch'
     );
@@ -12507,9 +12229,6 @@
             };
         },
 
-        // argNames
-        ['inputArg', 'radix'],
-
         // message
         'Number.parseInt shim'
     );
@@ -12560,9 +12279,6 @@
                 return mParseFloat($trim(str));
             };
         },
-
-        // argNames
-        ['inputArg'],
 
         // message
         'parseFloat patch'
@@ -12615,9 +12331,6 @@
         function () {
             return $parseFloat;
         },
-
-        // argNames
-        ['inputArg'],
 
         // message
         'Number.parseFloat shim'
@@ -12843,9 +12556,6 @@
             };
         },
 
-        // argNames
-        ['fractionDigits'],
-
         // message
         'Number.toFixed shim'
     );
@@ -12860,7 +12570,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
      */
     exports.Number.toFixed = $toMethod(exports.Number.proto.toFixed, $firstArg);
-    exports.Number.toFixed.argNames = ['number', 'fractionDigits'];
 
     /**
      * This method returns the first index at which a given element
@@ -12929,9 +12638,6 @@
             };
         },
 
-        // argNames
-        ['searchElement', 'fromIndex'],
-
         // message
         'Array.lastIndexOf shim'
     );
@@ -12949,7 +12655,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf
      */
     exports.Array.lastIndexOf = $toMethod(exports.Array.proto.lastIndexOf);
-    exports.Array.lastIndexOf.argNames = ['array', 'searchElement', 'fromIndex'];
 
     /**
      * With this {@link module:util-x~boundPrototypalFunction method}, fill every element of array from start up
@@ -13011,9 +12716,6 @@
             };
         },
 
-        // argNames
-        ['value', 'start', 'end'],
-
         // message
         'Array.fill shim'
     );
@@ -13032,7 +12734,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fill
      */
     exports.Array.fill = $toMethod(exports.Array.proto.fill);
-    exports.Array.fill.argNames = ['array', 'value', 'start', 'end'];
 
     /**
      * With this {@link module:util-x~boundPrototypalFunction method}, every element of array from start up to but
@@ -13120,9 +12821,6 @@
             };
         },
 
-        // argNames
-        ['target', 'start', 'end'],
-
         // message
         'Array.copyWithin shim'
     );
@@ -13140,7 +12838,6 @@
      * @returns {Array}
      */
     exports.Array.copyWithin = $toMethod(exports.Array.proto.copyWithin);
-    exports.Array.proto.copyWithin.argNames = ['array', 'target', 'start', 'end'];
 
     /**
      * forKeys executes the callback function once for each own property present in the object until it finds one
@@ -13204,8 +12901,6 @@
         return val;
     };
 
-    exports.Object.proto.forKeys.argNames = ['fn', 'thisArg'];
-
     /**
      * Executes a provided function once per object property and allows a some like break.
      *
@@ -13218,7 +12913,6 @@
      * @returns {boolean}
      */
     exports.Object.forKeys = $toMethod(exports.Object.proto.forKeys);
-    exports.Object.forKeys.argNames = ['object', 'fn', 'thisArg'];
 
     /**
      * Executes a provided function once per object property and allows a some like break.
@@ -13269,7 +12963,6 @@
      * @returns {boolean}
      */
     exports.Object.isCircular = $isCircular;
-    exports.Object.isCircular.argNames = ['inputArg'];
 
     /**
      * Check to see if an object is empty (contains no enumerable properties).
@@ -13294,8 +12987,6 @@
     exports.Object.isEmpty = function (inputArg) {
         return !$objectKeys(inputArg).length;
     };
-
-    exports.Object.isEmpty.argNames = ['inputArg'];
 
     /**
      * This method returns true if the string
@@ -13322,7 +13013,6 @@
      * @returns {boolean}
      */
     exports.String.isDigits = $toMethod(exports.String.proto.isDigits);
-    exports.String.isDigits.argNames = ['string'];
 
     /**
      * This {@link module:util-x~boundPrototypalFunction method} returns true if the operand inputArg is a String and
@@ -13449,8 +13139,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
      */
     exports.Object.defineProperty = (function () {
-        var argNames = ['object', 'property', 'descriptor'];
-
         return $decide(
             //test
             function () {
@@ -13601,9 +13289,6 @@
                         };
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Object.defineProperty patch'
                 );
@@ -13613,9 +13298,6 @@
             function () {
                 return $defProp;
             },
-
-            // argNames
-            argNames,
 
             //message
             'Object.defineProperty sham'
@@ -13646,8 +13328,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties
      */
     exports.Object.defineProperties = (function () {
-        var argNames = ['object', 'props'],
-            mDefineProperties = base.Object.defineProperties;
+        var mDefineProperties = base.Object.defineProperties;
 
         /**
          * @private
@@ -13713,9 +13394,6 @@
                         };
                     },
 
-                    // argNames
-                    argNames,
-
                     // message
                     'Object.defineProperties patch'
                 );
@@ -13740,9 +13418,6 @@
                     return object;
                 };
             },
-
-            // argNames
-            argNames,
 
             // message
             'Object.defineProperties using Object.defineProperty'
@@ -13788,9 +13463,6 @@
             };
         },
 
-        // argNames
-        ['object'],
-
         // message
         'Object.freeze sham'
     );
@@ -13828,9 +13500,6 @@
             };
         },
 
-        // argNames
-        ['object'],
-
         // message
         'Object.freeze Rhino bug patch'
     );
@@ -13861,9 +13530,6 @@
             };
         },
 
-        // argNames
-        ['object'],
-
         //  message
         'Object.isFrozen sham'
     );
@@ -13892,8 +13558,6 @@
 
         return object;
     };
-
-    exports.Object.deepFreeze.argNames = ['object'];
 
     /**
      * The assign function is used to copy the values of all of the enumerable own properties from a
@@ -13949,9 +13613,6 @@
                 return to;
             };
         },
-
-        // argNames
-        ['target'],
 
         // message
         'Object.assign shim'
@@ -14047,9 +13708,6 @@
             };
         },
 
-        // argNames
-        ['prototype', 'propertiesObject'],
-
         // message
         'Object.create shim'
     );
@@ -14092,7 +13750,6 @@
      * @returns {boolean}
      */
     exports.Date.isValid = $toMethod(exports.Date.proto.isValid);
-    exports.Date.isValid.argNames = ['dateObject'];
 
     /**
      * This method returns the number of milliseconds elapsed since 1 January 1970 00:00:00 UTC.
@@ -14141,8 +13798,6 @@
         return characters + $onlyCoercibleToString(this) + characters;
     };
 
-    exports.String.proto.wrapInChars.argNames = ['characters'];
-
     /**
      * This {@link module:util-x~boundPrototypalFunction method} wraps a string within the given character.
      *
@@ -14152,7 +13807,6 @@
      * @returns {string}
      */
     exports.String.wrapInChars = $toMethod(exports.String.proto.wrapInChars);
-    exports.String.proto.wrapInChars.argNames = ['string', 'characters'];
 
     /**
      * This method truncates a long string to the length specified by n;
@@ -14174,8 +13828,6 @@
         return s;
     };
 
-    exports.String.proto.truncate.argNames = ['n'];
-
     /**
      * This {@link module:util-x~boundPrototypalFunction method} truncates a long string to the length specified by n;
      * used by AssertionError.toString
@@ -14186,7 +13838,6 @@
      * @returns {string}
      */
     exports.String.truncate = $toMethod(exports.String.proto.truncate);
-    exports.String.truncate.argNames = ['s', 'n'];
 
     /**
      * This {@link module:util-x~boundPrototypalFunction method} truncates a long string to the length specified by n;
@@ -14222,8 +13873,6 @@
         }, propNotEnumerable));
     };
 
-    exports.Function.proto.inherits.argNames = ['superCtor'];
-
     /**
      * This {@link module:util-x~boundPrototypalFunction method} inherits the prototype methods from one constructor into another.
      *
@@ -14233,7 +13882,6 @@
      * @returns {undefined}
      */
     exports.Function.inherits = $toMethod(exports.Function.proto.inherits);
-    exports.Function.inherits.argNames = ['ctor', 'superCtor'];
 
     /**
      * This {@link module:util-x~boundPrototypalFunction method} inherits the prototype methods from one constructor into another.
@@ -14279,8 +13927,6 @@
         return result;
     };
 
-    exports.Error.isErrorTypeConstructor.argNames = ['inputArg'];
-
     /**
      * Tests to see if the argument is one of the seven standard Error type constructors.
      *
@@ -14320,8 +13966,6 @@
 
         return result;
     };
-
-    exports.customErrorReplacer.argNames = ['key', 'value'];
 
     // Error closure
     (function () {
@@ -14552,8 +14196,6 @@
         };
     }());
 
-    exports.customError.argNames = ['name', 'ErrorConstructor', 'maxMessageLength'];
-
     /**
      * Swap places of 2 item values on an object's properties.
      *
@@ -14628,8 +14270,6 @@
         return object;
     };
 
-    exports.Object.swapItems.argNames = ['object', 'prop1', 'prop2'];
-
     /**
      * This method performs Fisher-Yates shuffle for randomly shuffling a set.
      *
@@ -14699,8 +14339,6 @@
         return object;
     };
 
-    exports.Array.proto.shuffle.argNames = ['rounds'];
-
     /**
      * This {@link module:util-x~boundPrototypalFunction method} performs Fisher-Yates shuffle for randomly shuffling a set.
      *
@@ -14712,7 +14350,6 @@
      * @see http://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
      */
     exports.Array.shuffle = $toMethod(exports.Array.proto.shuffle);
-    exports.Array.proto.shuffle.argNames = ['array', 'rounds'];
 
     /**
      *  This function returns an ISO 8601 representation of the instance in time
@@ -14862,7 +14499,6 @@
      * @returns {string} An ISO 8601 representation of the date.
      */
     exports.Date.toISOString = $toMethod(exports.Date.proto.toISOString);
-    exports.Date.toISOString.argNames = ['date'];
 
     /**
      * Create date object with .toISOString and .toJSON methods attached.
@@ -14976,9 +14612,6 @@
             };
         },
 
-        // argNames
-        ['key'],
-
         // message
         'Date.toJSON shim'
     );
@@ -14993,7 +14626,6 @@
      * @returns {string} An ISO 8601 representation of the date.
      */
     exports.Date.toJSON = $toMethod(exports.Date.proto.toJSON);
-    exports.Date.toJSON.argNames = ['date', 'key'];
 
     /**
      * Return a JSON string corresponding to the specified value, optionally including only certain properties
@@ -15301,9 +14933,6 @@
                 };
             },
 
-            //argNames
-            ['value', 'replacer', 'space'],
-
             // message
             'JSON.stringify shim'
         );
@@ -15320,8 +14949,6 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse
      */
     exports.JSON.parse = (function (mParse) {
-        var argNames = ['text', 'reviver'];
-
         return $decide(
             //test
             function () {
@@ -15379,9 +15006,6 @@
                             return mParse(text, reviver);
                         };
                     },
-
-                    // argNames
-                    argNames,
 
                     // message
                     'JSON.parse patch'
@@ -15457,9 +15081,6 @@
                 };
             },
 
-            // argNames
-            argNames,
-
             // message
             'JSON.parse shim'
         );
@@ -15493,8 +15114,6 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-string.prototype.substr
      */
     exports.String.proto.substr = (function () {
-        var argNames = ['start', 'length'];
-
         return $decide(
             // test
             function () {
@@ -15532,9 +15151,6 @@
                 };
             },
 
-            //argsNames
-            argNames,
-
             // message
             'String.substr shim'
         );
@@ -15554,7 +15170,6 @@
      * @see http://www.ecma-international.org/ecma-262/5.1/#sec-B.2.3
      */
     exports.String.substr = $toMethod(exports.String.proto.substr);
-    exports.String.substr.argNames = ['object', 'start', 'length'];
 
     /**
      * The substr method takes two arguments, start and length, and returns a substring of the result
@@ -15638,7 +15253,6 @@
      * @see http://en.wikipedia.org/wiki/Power_set
      */
     exports.Array.powerSet = $toMethod(exports.Array.proto.powerSet);
-    exports.Array.powerSet.argNames = ['array'];
 
     /**
      * Convert an array to a plain object representation.
@@ -18952,50 +18566,13 @@
 
     /**
      * @private
-     * @function module:util-x~wrapFunction
-     * @param {Function} fn A function to be wrapped.
-     * @throws {TypeError} If fn is not a function.
-     * @returns {Function} A wrapped version of the supplied function.
-     */
-    function wrapFunction(fn) {
-        var fnLen = $toLength($throwIfNotFunction(fn).length),
-            anLen,
-            args;
-
-        if ($isArray(fn.argNames)) {
-            anLen = $toLength(fn.argNames.length);
-            if (anLen < fnLen) {
-                throw new CError('argNames are fewer than function arguments: ' + $toString(fn.argNames));
-            }
-
-            args = $slice(fn.argNames, 0, $min(anLen, fnLen));
-            args = $map(args, function (name) {
-                return '$' + name;
-            });
-
-            args = $join(args, ', ');
-        } else {
-            args = $bindArgs(fnLen);
-        }
-
-        /*jslint evil: true */
-        return eval('(function (' + args + ') { return $apply(fn, this, arguments); })');
-        //return new CFunction('fn', 'apply', 'return function (' + args + ') { return apply(fn, this, arguments); };')(fn, $apply);
-    }
-
-    /**
-     * @private
      * @function module:util-x~provideItem
      * @param {*} item
      * @returns {*} The item that the argument provides.
      */
     function provideItem(item) {
-        if (!$isPrimitive(item)) {
-            if ($isPlainObject(item)) {
-                item = {};
-            } else if ($isFunction(item)) {
-                item = wrapFunction(item);
-            }
+        if (!$isPrimitive(item) && $isPlainObject(item)) {
+            item = {};
         }
 
         return item;
