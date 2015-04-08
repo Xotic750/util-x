@@ -7673,7 +7673,7 @@
      */
     //exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
     exports.Object.hasOwnProperty = function (object, property) {
-        return $call(pHasOwn, $toObject(object), $toString(property));
+        return pHasOwn.call($toObject(object), $toString(property));
     };
     exports.Object.hasOwnProperty.argNames = ['object', 'property'];
     /* jshint +W001 */
