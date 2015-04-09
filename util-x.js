@@ -7828,7 +7828,7 @@
                         skipConstructor = ctor && ctor.prototype === obj;
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, obj, dontEnum) && $propertyIsEnumerable(obj, dontEnum)) {
+                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, obj, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
