@@ -7592,7 +7592,7 @@
         return pHasOwn.call(object, property);
     };
 
-    //exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
+    exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
     /* jshint +W001 */
 
     /**
@@ -18655,9 +18655,7 @@
         });
 
         /*jshint -W001 */
-        utilx.Object.hasOwnProperty = function (object, property) {
-            return Object.prototype.hasOwnProperty.call(object, property);
-        };
+        utilx.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
         /*jshint +W001 */
 
         /*jslint newcap: true */
