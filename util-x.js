@@ -18654,9 +18654,9 @@
             }
         });
 
-        /*jshint -W001 */
-        utilx.Object.hasOwnProperty = $hasOwn;
-        /*jshint +W001 */
+        $defineProperty(utilx.Object, 'hasOwnProperty', $assign({
+            value: $hasOwn
+        }, propNotEnumerable));
 
         /*jslint newcap: true */
         $defineProperty(utilx, 'Big', $assign({
