@@ -2002,18 +2002,24 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tostring
      */
     function $toString(inputArg) {
-        var val;
+        var type,
+            val;
 
         if (inputArg === null) {
             val = 'null';
-        } else if ($isUndefined(inputArg)) {
-            val = 'undefined';
         } else {
-            if (typeof inputArg === 'symbol') {
-                throw new CTypeError('Cannot convert symbol to string');
-            }
+            type = typeof inputArg;
+            if (type === 'string') {
+                val = inputArg;
+            } else if (type === 'undefined') {
+                val = type;
+            } else {
+                if (type === 'symbol') {
+                    throw new CTypeError('Cannot convert symbol to string');
+                }
 
-            val = $String(inputArg);
+                val = $String(inputArg);
+            }
         }
 
         return val;
@@ -2036,20 +2042,6 @@
         }
 
         return inputArg;
-    }
-
-    /**
-     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
-     *
-     * @private
-     * @function module:util-x~$toObject
-     * @param {*} inputArg The argument to be converted to an object.
-     * @throws {TypeError} If inputArg is not coercible to an object.
-     * @returns {Object} Value of inputArg as type Object.
-     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
-     */
-    function $toObject(inputArg) {
-        return $Object($requireObjectCoercible(inputArg));
     }
 
     /**
@@ -2078,6 +2070,28 @@
      * @see https://people.mozilla.org/~jorendorff/es6-draft.html#sec-ecmascript-data-types-and-values
      */
     exports.Object.isPrimitive = $isPrimitive;
+
+    /**
+     * The abstract operation converts its argument to a value of type Object but fixes some environment bugs.
+     *
+     * @private
+     * @function module:util-x~$toObject
+     * @param {*} inputArg The argument to be converted to an object.
+     * @throws {TypeError} If inputArg is not coercible to an object.
+     * @returns {Object} Value of inputArg as type Object.
+     * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+     */
+    function $toObject(inputArg) {
+        var object;
+
+        if ($isPrimitive($requireObjectCoercible(inputArg))) {
+            object = $Object(inputArg);
+        } else {
+            object = inputArg;
+        }
+
+        return object;
+    }
 
     /**
      * Shortcut
