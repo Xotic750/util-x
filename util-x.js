@@ -18655,7 +18655,7 @@
         });
 
         /*jshint -W001 */
-        utilx.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
+        utilx.Object.hasOwnProperty = $hasOwn;
         /*jshint +W001 */
 
         /*jslint newcap: true */
