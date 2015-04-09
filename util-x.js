@@ -18584,26 +18584,18 @@
 
     /**
      * @private
-     * @function module:util-x~provideItem
-     * @param {*} item
-     * @returns {*} The item that the argument provides.
-     */
-    function provideItem(item) {
-        if (!$isPrimitive(item) && $isPlainObject(item)) {
-            item = {};
-        }
-
-        return item;
-    }
-
-    /**
-     * @private
      * @function module:util-x~addMethodsList
      * @param {Object} object
      * @param {String} key
      */
     function defineItem(to, key, value) {
-        var item = provideItem(value);
+        var item;
+
+        if (!$isPrimitive(item) && $isPlainObject(item)) {
+            item = {};
+        } else {
+            item = value;
+        }
 
         $defineProperty(to, key, $assign({
             value: item
