@@ -18603,8 +18603,10 @@
      * @param {String} key
      */
     function defineItem(to, key, value) {
+        var item = provideItem(value);
+
         $defineProperty(to, key, $assign({
-            value: provideItem(value)
+            value: item
         }, propNotEnumerable));
     }
 
@@ -18653,10 +18655,6 @@
                 $push(utilx.methods, key1);
             }
         });
-
-        $defineProperty(utilx.Object, 'hasOwnProperty', $assign({
-            value: $hasOwn
-        }, propNotEnumerable));
 
         /*jslint newcap: true */
         $defineProperty(utilx, 'Big', $assign({
