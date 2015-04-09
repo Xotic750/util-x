@@ -18654,6 +18654,12 @@
             }
         });
 
+        /*jshint -W001 */
+        utilx.Object.hasOwnProperty = function (object, property) {
+            return Object.prototype.hasOwnProperty.call(object, property);
+        };
+        /*jshint +W001 */
+
         /*jslint newcap: true */
         $defineProperty(utilx, 'Big', $assign({
             value: BigNum()
