@@ -7575,7 +7575,7 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty
      */
     exports.Object.hasOwnProperty = function (object, property) {
-        return exports.Object.proto.hasOwnProperty.call($toObject(object), $toString(property));
+        return Object.prototype.hasOwnProperty.call($toObject(object), $toString(property));
     };
 
     //exports.Object.hasOwnProperty = $toMethod(exports.Object.proto.hasOwnProperty);
