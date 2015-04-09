@@ -8452,8 +8452,10 @@
                 return true;
             }
 
-            var stringTagA = $toStringTag(a),
-                stringTagB = $toStringTag(b),
+            var aIsString,
+                bIsString,
+                aType,
+                bType,
                 aIsArgs,
                 bIsArgs,
                 aIsPrim,
@@ -8466,7 +8468,7 @@
                 index,
                 it;
 
-            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+            if ($isDate(a) && $isDate(b)) {
                 return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
             }
 
@@ -8547,17 +8549,19 @@
                 }
             }
 
+            aIsString = $isString(a);
+            bIsString = $isString(b);
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!de($getItem(a, it, stringTagA), $getItem(b, it, stringTagB), circ)) {
+                if (!de($getItem(a, it, aIsString), $getItem(b, it, bIsString), circ)) {
                     return false;
                 }
             }
 
-            stringTagA = typeof a;
-            stringTagB = typeof b;
+            aType = typeof a;
+            bType = typeof b;
 
-            return stringTagA === stringTagB;
+            return aType === bType;
         };
 
         return function (a, b) {
@@ -8613,8 +8617,10 @@
                 return true;
             }
 
-            var stringTagA = $toStringTag(a),
-                stringTagB = $toStringTag(b),
+            var aIsString,
+                bIsString,
+                aType,
+                bType,
                 aIsArgs,
                 bIsArgs,
                 aIsPrim,
@@ -8627,7 +8633,7 @@
                 index,
                 it;
 
-            if (stringTagA === stringTagDate && stringTagB === stringTagDate) {
+            if ($isDate(a) && $isDate(b)) {
                 return $toPrimitive(a, hintString) === $toPrimitive(b, hintString);
             }
 
@@ -8707,17 +8713,19 @@
                 }
             }
 
+            aIsString = $isString(a);
+            bIsString = $isString(b);
             for (index = 0; index < length; index += 1) {
                 it = ka[index];
-                if (!de($getItem(a, it, stringTagA), $getItem(b, it, stringTagB), circ)) {
+                if (!de($getItem(a, it, aIsString), $getItem(b, it, bIsString), circ)) {
                     return false;
                 }
             }
 
-            stringTagA = typeof a;
-            stringTagB = typeof b;
+            aType = typeof a;
+            bType = typeof b;
 
-            return stringTagA === stringTagB;
+            return aType === bType;
         };
 
         return function (a, b) {
@@ -10517,16 +10525,19 @@
                 isString,
                 length,
                 index,
+                eqFn,
                 arr,
                 idx,
                 val,
                 it;
 
             if ($isUndefined(equalFn)) {
-                equalFn = $strictEqual;
+                eqFn = $strictEqual;
+            } else {
+                eqFn = equalFn;
             }
 
-            $throwIfNotFunction(equalFn);
+            $throwIfNotFunction(eqFn);
             arr = [];
             length = $toLength(object.length);
             isString = $isString(object);
@@ -10535,7 +10546,7 @@
                     it = $getItem(object, index, isString);
                     val = true;
                     for (idx = 0; idx < length; idx += 1) {
-                        if (idx < index && $hasItem(object, idx, isString) && $call(equalFn, thisArg, it, $getItem(object, idx, isString))) {
+                        if (idx < index && $hasItem(object, idx, isString) && $call(eqFn, thisArg, it, $getItem(object, idx, isString))) {
                             val = false;
                             break;
                         }
