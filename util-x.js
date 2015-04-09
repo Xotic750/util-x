@@ -7800,16 +7800,17 @@
                 return function (object) {
                     var obj = $toObject(object),
                         theKeys = [],
+                        isString = hasEnumStringBug && $isString(obj),
                         dontEnum,
                         skipConstructor,
                         name,
                         ctor,
                         index;
 
-                    if ((hasEnumStringBug && $isString(obj)) || (hasEnumArgsBug && $isArguments(obj))) {
+                    if (isString || (hasEnumArgsBug && $isArguments(obj))) {
                         length = $toLength(obj.length);
                         for (index = 0; index < length; index += 1) {
-                            if ($hasOwn(obj, index)) {
+                            if (isString || $call(pHasOwn, obj, index)) {
                                 $push(theKeys, $toString(index));
                             }
                         }
@@ -7817,7 +7818,7 @@
 
                     /*jslint forin: true */
                     for (name in obj) {
-                        if ($hasOwn(obj, name)) {
+                        if ($call(pHasOwn, obj, name)) {
                             $push(theKeys, name);
                         }
                     }
@@ -7827,7 +7828,7 @@
                         skipConstructor = ctor && ctor.prototype === obj;
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $hasOwn(obj, dontEnum) && $propertyIsEnumerable(obj, dontEnum)) {
+                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, obj, dontEnum) && $propertyIsEnumerable(obj, dontEnum)) {
                                 $push(theKeys, dontEnum);
                             }
                         }
