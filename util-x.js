@@ -7619,21 +7619,27 @@
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
      */
     exports.Object.proto.propertyIsEnumerable = (function (pPropertyIsEnumerable) {
+        var strPropEnumBug = true;
+
         return $decide(
             // test
             function () {
                 $affirmBasic(pPropertyIsEnumerable)();
 
+                $affirm.ok($call(pPropertyIsEnumerable, 'abc', '0'), 'String indexes');
+                $affirm.ok($call(pPropertyIsEnumerable, $toObject('abc'), '0'), 'String object indexes');
+                strPropEnumBug = false;
                 $affirm.ok(!hasDontEnumBug, 'hasDontEnumBug');
                 $affirm.ok(!hasEnumStringBug, 'hasEnumStringBug');
                 $affirm.ok(!hasEnumArgsBug, 'hasEnumArgsBug');
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toString'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toLocaleString'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'valueOf'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'hasOwnProperty'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'isPrototypeOf'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'propertyIsEnumerable'));
-                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'constructor'));
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toString'), 'Object.prototype.toString');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'toLocaleString'), 'Object.prototype.toLocaleString');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'valueOf'), 'Object.prototype.valueOf');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'hasOwnProperty'), 'Object.prototype.hasOwnProperty');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'isPrototypeOf'), 'Object.prototype.isPrototypeOf');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'propertyIsEnumerable'), 'Object.prototype.propertyIsEnumerable');
+                $affirm.ok(!$call(pPropertyIsEnumerable, protoObject, 'constructor'), 'Object.prototype.constructor');
+
             },
 
             // pass
@@ -7652,18 +7658,20 @@
                         found,
                         index;
 
-                    if (((hasEnumStringBug && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $hasOwn(object, prop)) {
-                        rtn = true;
-                    } else if (object === protoObject) {
-                        for (index = 0; index < length; index += 1) {
-                            if (prop === shadowed[index]) {
-                                found = true;
-                                break;
+                    if (!rtn) {
+                        if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $call(pHasOwn, object, prop)) {
+                            rtn = true;
+                        } else if (object === protoObject) {
+                            for (index = 0; index < length; index += 1) {
+                                if (prop === shadowed[index]) {
+                                    found = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        if (found) {
-                            rtn = object[prop] !== base.Object[prop];
+                            if (found) {
+                                rtn = object[prop] !== base.Object[prop];
+                            }
                         }
                     }
 
