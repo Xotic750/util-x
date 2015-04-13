@@ -7662,12 +7662,12 @@
                         skipConstructor;
 
                     if (!rtn) {
-                        if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $call(pHasOwn, object, prop)) {
+                        if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object) && $call(pHasOwn, object, prop))) && $isIndex(prop, $toLength(object.length))) {
                             rtn = true;
-                        } else { //if (hasDontEnumBug) {
-                            /*jslint forin: true */
+                        } else if (hasDontEnumBug) {
                             for (index = 0; index < length; index += 1) {
                                 if (prop === shadowed[index]) {
+                                    /*jslint forin: true */
                                     for (name in base) {
                                         if (object === base[name].proto) {
                                             isProto = true;
