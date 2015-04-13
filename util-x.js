@@ -7657,29 +7657,37 @@
                         rtn = $call(pPropertyIsEnumerable, object, prop),
                         found,
                         index,
-                        name;
+                        name,
+                        isProto,
+                        skipConstructor;
 
                     if (!rtn) {
                         if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $call(pHasOwn, object, prop)) {
                             rtn = true;
                         } else { //if (hasDontEnumBug) {
                             /*jslint forin: true */
-                            for (name in base) {
-                                if (object === base[name].proto) {
-                                    for (index = 0; index < length; index += 1) {
-                                        if (prop === shadowed[index]) {
-                                            found = true;
+                            for (index = 0; index < length; index += 1) {
+                                if (prop === shadowed[index]) {
+                                    for (name in base) {
+                                        if (object === base[name].proto) {
+                                            isProto = true;
                                             break;
                                         }
                                     }
 
-                                    if (found && $call(pHasOwn, object, prop)) {
-                                        $conlog(name, prop, object[prop] !== base[name][prop]);
-                                        rtn = object[prop] !== base[name][prop];
+                                    skipConstructor = prop === 'constructor' && object.constructor && object.constructor.prototype !== object;
+                                    if (!skipConstructor && !isProto) {
+                                        $conlog('found : ' + prop);
+                                        found = true;
                                     }
 
                                     break;
                                 }
+                            }
+
+                            if (found && $call(pHasOwn, object, prop)) {
+                                $conlog(name + ' : ' + prop + ' : ' + object[prop] !== base[name][prop]);
+                                rtn = object[prop] !== base[name][prop];
                             }
                         }
                     }
@@ -10132,7 +10140,6 @@
             first = $getItem($onlyCoercibleToString(character), 0, stringTagString),
             val;
 
-        $conlog('first', first);
         if (first === '') {
             val = INFINITY;
         } else {
