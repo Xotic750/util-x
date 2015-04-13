@@ -7656,21 +7656,26 @@
                         prop = $toString(property),
                         rtn = $call(pPropertyIsEnumerable, object, prop),
                         found,
-                        index;
+                        index,
+                        name;
 
                     if (!rtn) {
                         if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object))) && $isIndex(prop, $toLength(object.length)) && $call(pHasOwn, object, prop)) {
                             rtn = true;
-                        } else if (object === protoObject) {
-                            for (index = 0; index < length; index += 1) {
-                                if (prop === shadowed[index]) {
-                                    found = true;
-                                    break;
-                                }
-                            }
+                        } else {
+                            for (name in base) {
+                                if ($call(pHasOwn, base, name) && object === base[name].proto) {
+                                    for (index = 0; index < length; index += 1) {
+                                        if (prop === shadowed[index]) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
 
-                            if (found) {
-                                rtn = object[prop] !== base.Object[prop];
+                                    if (found && $call(pHasOwn, object, prop)) {
+                                        rtn = object[prop] !== base[name][prop];
+                                    }
+                                }
                             }
                         }
                     }
@@ -7685,17 +7690,6 @@
     }(base.Object.propertyIsEnumerable));
 
     /**
-     * This method returns a Boolean indicating whether the specified property is enumerable.
-     *
-     * @function module:util-x~exports.Object.propertyIsEnumerable
-     * @param {Object} The object to be tested
-     * @param {StringLike} prop The name of the property to test.
-     * @returns {boolean}
-     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
-     */
-    exports.Object.propertyIsEnumerable = $toMethod(exports.Object.proto.propertyIsEnumerable);
-
-    /**
      * Shortcut
      * This method returns a Boolean indicating whether the specified property is enumerable.
      *
@@ -7706,7 +7700,18 @@
      * @returns {boolean}
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
      */
-    $propertyIsEnumerable = exports.Object.propertyIsEnumerable;
+    $propertyIsEnumerable = $toMethod(exports.Object.proto.propertyIsEnumerable);
+
+    /**
+     * This method returns a Boolean indicating whether the specified property is enumerable.
+     *
+     * @function module:util-x~exports.Object.propertyIsEnumerable
+     * @param {Object} The object to be tested
+     * @param {StringLike} prop The name of the property to test.
+     * @returns {boolean}
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable
+     */
+    exports.Object.propertyIsEnumerable = $propertyIsEnumerable;
 
     /**
      * Returns an array of a given object's own enumerable properties, in the same order as that provided by a
