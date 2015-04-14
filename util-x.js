@@ -7669,7 +7669,7 @@
                                 if (prop === shadowed[index]) {
                                     /*jslint forin: true */
                                     for (name in base) {
-                                        if (object === base[name].proto) {
+                                        if (typeof base[name] === 'object' && object === base[name].proto) {
                                             isProto = true;
                                             break;
                                         }
@@ -7830,7 +7830,9 @@
                         skipConstructor,
                         name,
                         ctor,
-                        index;
+                        objName,
+                        index,
+                        isProto;
 
                     if (isString || (hasEnumArgsBug && $isArguments(obj))) {
                         length = $toLength(obj.length);
@@ -7849,12 +7851,29 @@
                     }
 
                     if (hasDontEnumBug) {
-                        ctor = obj.constructor;
-                        skipConstructor = ctor && ctor.prototype === obj;
+                        /*jslint forin: true */
+                        for (objName in base) {
+                            if (typeof base[objName] === 'object' && obj === base[objName].proto) {
+                                isProto = true;
+                                break;
+                            }
+                        }
+
+                        if (!isProto) {
+                            ctor = obj.constructor;
+                            skipConstructor = ctor && ctor.prototype === obj;
+                        }
+
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
-                            if (!(skipConstructor && dontEnum === 'constructor') && $call(pHasOwn, obj, dontEnum)) {
-                                $push(theKeys, dontEnum);
+                            if ($call(pHasOwn, obj, dontEnum)) {
+                                if (isProto) {
+                                    if (obj[dontEnum] !== base[name][dontEnum]) {
+                                        $push(theKeys, dontEnum);
+                                    }
+                                } else if (!(skipConstructor && dontEnum === 'constructor')) {
+                                    $push(theKeys, dontEnum);
+                                }
                             }
                         }
                     }
