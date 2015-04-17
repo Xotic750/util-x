@@ -7655,7 +7655,8 @@
                         index,
                         name,
                         isProto,
-                        skipConstructor;
+                        skip,
+                        subject;
 
                     if (!rtn) {
                         if ((((hasEnumStringBug || strPropEnumBug) && $isString(object)) || (hasEnumArgsBug && $isArguments(object) && $call(pHasOwn, object, prop))) && $isIndex(prop, $toLength(object.length))) {
@@ -7665,14 +7666,15 @@
                                 if (prop === shadowed[index]) {
                                     /*jslint forin: true */
                                     for (name in base) {
-                                        if (typeof base[name] === 'object' && object === base[name].proto) {
+                                        subject = base[name];
+                                        if (subject !== null && !$isUndefined(subject) && object === subject.proto) {
                                             isProto = true;
                                             break;
                                         }
                                     }
 
-                                    skipConstructor = prop === 'constructor' && object.constructor && object.constructor.prototype !== object;
-                                    if (!skipConstructor && !isProto) {
+                                    skip = prop === 'constructor' && object.constructor && object.constructor.prototype !== object;
+                                    if (!skip && !isProto) {
                                         $conlog('found : ' + prop);
                                         found = true;
                                     }
@@ -7832,7 +7834,8 @@
                         name,
                         objName,
                         index,
-                        isProto;
+                        isProto,
+                        subject;
 
                     if (isString || (hasEnumArgsBug && $isArguments(obj))) {
                         length = $toLength(obj.length);
@@ -7849,8 +7852,9 @@
                             if (hasErrorProps) {
                                 skip = false;
                                 for (index = 0; index < uLen; index += 1) {
-                                    if (obj === unwantedError[index].proto) {
-                                        dontEnum = unwantedError[index].unwanted;
+                                    subject = unwantedError[index];
+                                    if (obj === subject.proto) {
+                                        dontEnum = subject.unwanted;
                                         if ($call(pHasOwn, dontEnum, name) && obj[name] === dontEnum[name]) {
                                             skip = true;
                                         }
@@ -7869,13 +7873,16 @@
                     if (hasDontEnumBug) {
                         /*jslint forin: true */
                         for (objName in base) {
-                            if (typeof base[objName] === 'object' && obj === base[objName].proto) {
+                            subject = base[objName];
+                            if (subject !== null && !$isUndefined(subject) && obj === subject.proto) {
                                 isProto = true;
                                 break;
                             }
                         }
 
-                        if (!isProto) {
+                        if (isProto) {
+                            skip = false;
+                        } else {
                             skip = obj.constructor && obj.constructor.prototype === obj;
                         }
 
