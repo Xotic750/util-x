@@ -76,7 +76,7 @@
     toUpperCase, trim, trimLeft, trimRight, trimString, truncate, typeOf, unique,
     unshift, unwatch, value, valueOf, version, watch, wrapInChars, writable,
     wsStr, hasDeleteBug, str, target, replacement, result, isCircular, a, b,
-    cnt, minArgs, maxArgs
+    cnt, minArgs, maxArgs, unwanted
 */
 
 /**
@@ -4169,58 +4169,54 @@
      */
     hasErrorProps = (function () {
         var errObjs = [
-                protoError,
-                protoTypeError,
-                protoSyntaxError,
-                protoRangeError,
-                protoEvalError,
-                protoReferenceError,
-                protoURIError
+                {name: 'Error', proto: protoError, unwanted: {}},
+                {name: 'TypeError', proto: protoTypeError, unwanted: {}},
+                {name: 'SyntaxError', proto: protoSyntaxError, unwanted: {}},
+                {name: 'RangeError', proto: protoRangeError, unwanted: {}},
+                {name: 'EvalError', proto: protoEvalError, unwanted: {}},
+                {name: 'ReferenceError', proto: protoReferenceError, unwanted: {}},
+                {name: 'URIError', proto: protoURIError, unwanted: {}}
             ],
-            length1 = $toLength(errObjs.length),
-            index1,
-            length2,
-            index2,
+            length = $toLength(errObjs.length),
+            hasDefProp = !!base.Object.defineProperty,
+            found = false,
+            index,
+            name,
             prop,
-            found,
-            obj;
+            proto;
 
         unwantedError.length = 0;
-        for (index1 = 0; index1 < length1; index1 += 1) {
-            obj = errObjs[index1];
+        for (index = 0; index < length; index += 1) {
+            name = errObjs[index].name;
+            proto = errObjs[index].proto;
             /*jslint forin: true */
-            for (prop in obj) {
-                if ($call(pHasOwn, obj, prop)) {
-                    found = false;
-                    length2 = $toLength(unwantedError.length);
-                    for (index2 = 0; index2 < length2; index2 += 1) {
-                        if (prop === unwantedError[index2]) {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        try {
-                            if (base.Object.defineProperty) {
-                                base.Object.defineProperty(obj, prop, propNotEnumerable);
-                                if (base.Object.propertyIsEnumerable(protoFunction, 'length')) {
-                                    throw new CError('Still enumerable');
-                                }
-
-                                $conlog('Unwanted error ' + prop + ' patched');
+            for (prop in proto) {
+                if ($call(pHasOwn, proto, prop)) {
+                    try {
+                        if (hasDefProp) {
+                            base.Object.defineProperty(proto, prop, propNotEnumerable);
+                            if ($call(base.Object.propertyIsEnumerable, proto, prop)) {
+                                throw new CError('Still enumerable');
                             }
-                        } catch (eUnwantedError) {
-                            unwantedError.length += 1;
-                            unwantedError[length2] = prop;
-                            $conlog('Unwanted error ' + prop + ' patch failed');
+
+                            $conlog('Unwanted error prop "' + prop + '": patched');
+                        } else {
+                            throw new CError('Still enumerable');
                         }
+                    } catch (eUnwantedError) {
+                        found = true;
+                        errObjs[index].unwanted[prop] = proto[prop];
+                        $conlog('Unwanted "' + name + '" prop "' + prop + '": patch failed');
                     }
                 }
             }
         }
 
-        return !!unwantedError.length;
+        if (found) {
+            unwantedError = errObjs;
+        }
+
+        return found;
     }());
 
     /**
@@ -7820,16 +7816,20 @@
 
             // fail
             function () {
-                var length = $toLength(shadowed.length);
+                var length = $toLength(shadowed.length),
+                    uLen = 0;
+
+                if (hasErrorProps) {
+                    uLen = $toLength(unwantedError.length);
+                }
 
                 return function (object) {
                     var obj = $toObject(object),
                         theKeys = [],
                         isString = hasEnumStringBug && $isString(obj),
                         dontEnum,
-                        skipConstructor,
+                        skip,
                         name,
-                        ctor,
                         objName,
                         index,
                         isProto;
@@ -7846,7 +7846,23 @@
                     /*jslint forin: true */
                     for (name in obj) {
                         if ($call(pHasOwn, obj, name)) {
-                            $push(theKeys, name);
+                            if (hasErrorProps) {
+                                skip = false;
+                                for (index = 0; index < uLen; index += 1) {
+                                    if (obj === unwantedError[index].proto) {
+                                        dontEnum = unwantedError[index].unwanted;
+                                        if ($call(pHasOwn, dontEnum, name) && obj[name] === dontEnum[name]) {
+                                            skip = true;
+                                        }
+
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!skip) {
+                                $push(theKeys, name);
+                            }
                         }
                     }
 
@@ -7860,8 +7876,7 @@
                         }
 
                         if (!isProto) {
-                            ctor = obj.constructor;
-                            skipConstructor = ctor && ctor.prototype === obj;
+                            skip = obj.constructor && obj.constructor.prototype === obj;
                         }
 
                         for (index = 0; index < length; index += 1) {
@@ -7871,7 +7886,7 @@
                                     if (obj[dontEnum] !== base[name][dontEnum]) {
                                         $push(theKeys, dontEnum);
                                     }
-                                } else if (!(skipConstructor && dontEnum === 'constructor')) {
+                                } else if (!(skip && dontEnum === 'constructor')) {
                                     $push(theKeys, dontEnum);
                                 }
                             }
