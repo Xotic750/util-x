@@ -7673,7 +7673,7 @@
                                         }
                                     }
 
-                                    skip = prop === 'constructor' && object.constructor && object.constructor.prototype !== object;
+                                    skip = prop === 'constructor' && $hasProperty(object, 'constructor') && object.constructor.prototype !== object;
                                     if (!skip && !isProto) {
                                         $conlog('found : ' + prop);
                                         found = true;
@@ -7832,7 +7832,6 @@
                         dontEnum,
                         skip,
                         name,
-                        objName,
                         index,
                         isProto,
                         subject;
@@ -7872,25 +7871,20 @@
 
                     if (hasDontEnumBug) {
                         /*jslint forin: true */
-                        for (objName in base) {
-                            subject = base[objName];
+                        for (name in base) {
+                            subject = base[name];
                             if (subject !== null && !$isUndefined(subject) && obj === subject.proto) {
                                 isProto = true;
                                 break;
                             }
                         }
 
-                        if (isProto) {
-                            skip = false;
-                        } else {
-                            skip = obj.constructor && obj.constructor.prototype === obj;
-                        }
-
+                        skip = !isProto && $hasProperty(obj, 'constructor') && obj.constructor.prototype === obj;
                         for (index = 0; index < length; index += 1) {
                             dontEnum = shadowed[index];
                             if ($call(pHasOwn, obj, dontEnum)) {
                                 if (isProto) {
-                                    if (obj[dontEnum] !== base[name][dontEnum]) {
+                                    if (obj[dontEnum] !== subject[dontEnum]) {
                                         $push(theKeys, dontEnum);
                                     }
                                 } else if (!(skip && dontEnum === 'constructor')) {
