@@ -2817,7 +2817,9 @@
    * @return {*}
    */
   function $throwArgsWrongType(inputArg) {
-    if (inputArg !== null && !$isUndefined(inputArg)) {
+    /*jslint eqeq:true */
+    /*jshint eqnull:true */
+    if (inputArg != null) {
       if ($isPrimitive(inputArg) ||
           (typeof inputArg.length === 'number' && 'charAt' in inputArg)) {
 
@@ -5967,7 +5969,9 @@
           separator = $toString(separator);
           for (index = 0; index < length; index += 1) {
             val = object[index];
-            if (val !== null && !$isUndefined(val)) {
+            /*jslint eqeq:true */
+            /*jshint eqnull:true */
+            if (val != null) {
               result += $toString(val);
             }
 
@@ -7755,7 +7759,9 @@
                   /*jslint forin: true */
                   for (name in base) {
                     subject = base[name];
-                    if (subject !== null && !$isUndefined(subject) && object === subject.proto) {
+                    /*jslint eqeq:true */
+                    /*jshint eqnull:true */
+                    if (subject != null && object === subject.proto) {
                       isProto = true;
                       break;
                     }
@@ -7961,7 +7967,9 @@
             /*jslint forin: true */
             for (name in base) {
               subject = base[name];
-              if (subject !== null && !$isUndefined(subject) && obj === subject.proto) {
+              /*jslint eqeq:true */
+              /*jshint eqnull:true */
+              if (subject != null && obj === subject.proto) {
                 isProto = true;
                 break;
               }
@@ -14377,7 +14385,9 @@ nextChildFlatten:
         if (length >= 2) {
           for (index = 1; index < length; index += 1) {
             arg = arguments[index];
-            if (arg !== null && !$isUndefined(arg)) {
+            /*jslint eqeq:true */
+            /*jshint eqnull:true */
+            if (arg != null) {
               from = $toObject(arg);
               keysArray = $objectKeys(from);
               len = $toLength(keysArray.length);
@@ -15587,7 +15597,9 @@ nextChildFlatten:
             keys,
             v;
 
-          if (value !== null && !$isUndefined(value) && $isFunction(value.toJSON)) {
+          /*jslint eqeq:true */
+          /*jshint eqnull:true */
+          if (value != null && $isFunction(value.toJSON)) {
             value = value.toJSON(key);
           }
 
@@ -16095,7 +16107,9 @@ nextChildFlatten:
 
     var rtn = false;
 
-    if (object !== null && !$isUndefined(object)) {
+    /*jslint eqeq:true */
+    /*jshint eqnull:true */
+    if (object != null) {
       if ($instanceOf(object, Ctor)) {
         rtn = true;
       } else if (!$isPrimitive(object) && !$isPlainObject(object) && !$isFunction(object) && typeof object.classId === 'string') {
