@@ -129,7 +129,7 @@
   var base,
 
     // not every shim is compatable with every JS engine
-    testShims = true,
+    testShims = false,
     enableLog = true,
     $conlog,
 
@@ -2361,7 +2361,7 @@
   $isNaN = function (inputArg) {
     var num = $toNumber(inputArg);
 
-    return !$strictEqual(num, num);
+    return num !== num;
   };
 
   /**
@@ -2379,7 +2379,7 @@
   $isFinite = function (inputArg) {
     var num = $toNumber(inputArg);
 
-    return $strictEqual(num, num) &&
+    return num === num &&
             num !== INFINITY &&
             num !== NEGATIVE_INFINITY;
   };
@@ -2399,7 +2399,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if ($strictEqual(number, number)) {
+    if (number === number) {
       if (!number || number === INFINITY || number === NEGATIVE_INFINITY) {
         val = number;
       } else {
@@ -2738,7 +2738,9 @@
    *                   prototype, otherwise false.
    */
   $hasProperty = (function () {
-    var fn;
+    var fn,
+      obj,
+      val;
 
     if (hasBoxedStringBug) {
       fn = function (inputArg, property) {
@@ -2747,13 +2749,26 @@
         /*jstwit in: true */
         return ($isString(inputArg) &&
                 $isIndex(prop, inputArg.length)) ||
-                $toString(prop) in $toObject(inputArg);
+                prop in $toObject(inputArg);
       };
     } else {
-      fn = function (inputArg, property) {
-        /*jstwit in: true */
-        return $toString(property) in $toObject(inputArg);
-      };
+      val = 0;
+      obj = $toObject('abc');
+      try {
+        if (val in obj && 'charAt' in obj) {
+          fn = function (inputArg, property) {
+            /*jstwit in: true */
+            return property in $toObject(inputArg);
+          };
+        } else {
+          throw 'requires toString';
+        }
+      } catch (eHasProperty) {
+        fn = function (inputArg, property) {
+          /*jstwit in: true */
+          return $toString(property) in $toObject(inputArg);
+        };
+      }
     }
 
     return fn;
@@ -4824,6 +4839,70 @@
   };
 
   /**
+   * The abstract operation converts its argument to a value of type Object but
+   * fixes some environment bugs. Should be a pointless check, as it should
+   * never pass and always fail o the shim.
+   *
+   * @private
+   * @function module:util-x~$toObject
+   * @param {*} inputArg The argument to be converted to an object.
+   * @throws {TypeError} If inputArg is not coercible to an object.
+   * @return {Object} Value of inputArg as type Object.
+   * @see http://www.ecma-international.org/ecma-262/5.1/#sec-9.9
+   */
+  $toObject = $decide(
+    // test
+    function () {
+      var result;
+
+      $affirm.ok(!testShims, 'testing shim');
+
+      $affirm.throws(function () {
+        $Object();
+      }, CTypeError, 'no arguments');
+
+      $affirm.throws(function () {
+        $Object(Undefined);
+      }, CTypeError, 'undefined');
+
+      $affirm.throws(function () {
+        $Object(null);
+      }, CTypeError, 'null');
+
+      $affirm.doesNotThrow(function () {
+        result = $Object(false);
+      }, 'boolean');
+
+      $affirm.strictEqual(typeof result, 'object', 'boolean object');
+
+      $affirm.doesNotThrow(function () {
+        result = $Object(0);
+      }, 'number');
+
+      $affirm.strictEqual(typeof result, 'object', 'number object');
+
+      $affirm.doesNotThrow(function () {
+        result = $Object('');
+      }, 'string');
+
+      $affirm.strictEqual(typeof result, 'object', 'string');
+    },
+
+    // pass
+    function () {
+      return $Object;
+    },
+
+    // fail
+    function () {
+      return $toObject;
+    },
+
+    // message
+    'ToObject patch'
+  );
+
+  /**
    * Shortcut
    * The abstract operation converts its argument to a value of type string
    *
@@ -4905,7 +4984,7 @@
       if ($isNumber(inputArg) || $isString(inputArg)) {
         string = $call(pReplace, inputArg, plusMinus, '');
         number = $parseFloat(string);
-        val = $strictEqual(number, number) && $isFinite(string);
+        val = number === number && $isFinite(string);
       } else {
         val = false;
       }
@@ -4974,19 +5053,19 @@
    */
   exports.Number.outRange = function (value, min, max) {
     value = $toPrimitive(value, hintNumber);
-    if ((!$isNumber(value) || !$strictEqual(value, value)) &&
+    if ((!$isNumber(value) || value !== value) &&
         !$isNumeric(value)) {
 
       return true;
     }
 
     min = $toPrimitive(min, hintNumber);
-    if ((!$isNumber(min) || !$strictEqual(min, min)) && !$isNumeric(min)) {
+    if ((!$isNumber(min) || min !== min) && !$isNumeric(min)) {
       return true;
     }
 
     max = $toPrimitive(max, hintNumber);
-    if ((!$isNumber(max) || !$strictEqual(max, max)) && !$isNumeric(max)) {
+    if ((!$isNumber(max) || max !== max) && !$isNumeric(max)) {
       return true;
     }
 
@@ -6049,7 +6128,7 @@
         if (x === y) {
           val = x !== 0 || (1 / x) === (1 / y);
         } else {
-          val = !$strictEqual(x, x) && !$strictEqual(y, y);
+          val = x !== x && y !== y;
         }
 
         return val;
@@ -6115,7 +6194,7 @@
     // fail
     function () {
       return function (number) {
-        return typeof number === 'number' && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY;
+        return typeof number === 'number' && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY;
       };
     },
 
@@ -6243,7 +6322,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = ((number > 0 || -1) * $floor($abs(number))) % UWORD32;
       if (val > MAX_INT32) {
         val -= UWORD32;
@@ -6356,7 +6435,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = $modulo($toInteger(number), UNSAFE_INTEGER);
     }
 
@@ -6400,7 +6479,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = $modulo($toInteger(number), UWORD32);
     }
 
@@ -6447,7 +6526,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = ((number > 0 || -1) * $floor($abs(number))) % UWORD16;
       if (val > MAX_INT16) {
         val -= UWORD16;
@@ -6485,7 +6564,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = $modulo($toInteger(number), UWORD16);
     }
 
@@ -6518,7 +6597,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = ((number > 0 || -1) * $floor($abs(number))) % UWORD8;
       if (val > MAX_INT8) {
         val -= UWORD8;
@@ -6556,7 +6635,7 @@
     var number = $toNumber(inputArg),
       val = 0;
 
-    if (number && $strictEqual(number, number) && number !== INFINITY && number !== NEGATIVE_INFINITY) {
+    if (number && number === number && number !== INFINITY && number !== NEGATIVE_INFINITY) {
       val = $modulo($toInteger(number), UWORD8);
     }
 
@@ -9554,7 +9633,7 @@
       arg1 = arguments[1];
       numPos = $toNumber(arg1);
       length = $toLength(str.length);
-      if (!$strictEqual(numPos, numPos)) {
+      if (numPos !== numPos) {
         fromIndex = length;
       } else {
         if ($toLength(arguments.length) > 1) {
@@ -10355,7 +10434,7 @@
                  * - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
                  * - `$0` is a literal `$0`.
                  */
-                if ($strictEqual($2, $2)) {
+                if ($2 === $2) {
                   if ($2 > (length - 3)) {
                     throw new CSyntaxError('Backreference to undefined group ' + $toString(arguments[0]));
                   }
@@ -13252,7 +13331,7 @@ nextChildFlatten:
 
         f = $toNumber(fractionDigits);
         // Test for NaN and round fractionDigits down
-        if (!$strictEqual(f, f)) {
+        if (f !== f) {
           f = 0;
         } else {
           f = $floor(f);
@@ -13264,7 +13343,7 @@ nextChildFlatten:
 
         x = $toNumber(this);
         // Test for NaN or if it is too big or small, return the string value of the number.
-        if (!$strictEqual(x, x) || x <= -1e21 || x >= 1e21) {
+        if (x !== x || x <= -1e21 || x >= 1e21) {
           return $toString(x);
         }
 
@@ -14532,7 +14611,7 @@ nextChildFlatten:
 
       var ms = $call(pGetTime, this);
 
-      return $strictEqual(ms, ms);
+      return ms === ms;
     };
   }(base.Date.getTime));
 
@@ -14615,7 +14694,7 @@ nextChildFlatten:
     var s = $onlyCoercibleToString(this);
 
     n = $toNumber(n);
-    if ($strictEqual(n, n) && n >= 0 && s.length > n) {
+    if (n === n && n >= 0 && s.length > n) {
       s = $sSlice(s, 0, n);
     }
 
@@ -14868,7 +14947,7 @@ nextChildFlatten:
       }
 
       maxMessageLength = +maxMessageLength;
-      if (!$strictEqual(maxMessageLength, maxMessageLength) || maxMessageLength < 64) {
+      if (maxMessageLength !== maxMessageLength || maxMessageLength < 64) {
         maxMessageLength = 128;
       }
 
