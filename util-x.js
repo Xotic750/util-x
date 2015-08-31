@@ -129,7 +129,7 @@
   var base,
 
     // not every shim is compatable with every JS engine
-    testShims = false,
+    testShims = true,
     enableLog = true,
     $conlog,
 
@@ -1919,16 +1919,18 @@
    * @param {number} index
    * @return {*}
    */
+  /*
   function $getArgItem(args, index) {
     return args[index];
   }
+  */
 
   /**
    * Set the value of the arguments at index.
    * Primarily to keep jslint happy
    *
    * @private
-   * @function module:util-x~$getArgItem
+   * @function module:util-x~$setArgItem
    * @param {arguments} args
    * @param {number} index
    * @param {*} value
@@ -1952,7 +1954,7 @@
    * @return {*}
    */
   function $firstArg() {
-    return $getArgItem(arguments, 0);
+    return arguments[0];
   }
 
   /**
@@ -1992,7 +1994,7 @@
    * @return {boolean}
    */
   function $isUndefined(inputArg) {
-    return $strictEqual(typeof inputArg, 'undefined');
+    return typeof inputArg === 'undefined';
   }
 
   /**
@@ -2202,7 +2204,7 @@
 
     /*
     exoticToPrim = inputarg['@@toPrimitive'];
-    if (!$isUndefined(exoticToPrim)) {
+    if (typeof exoticToPrim !== 'undefined') {
         result = inputarg['@@toPrimitive']();
 
         if ($isPrimitive(result)) {
@@ -2216,7 +2218,7 @@
     if ($isPrimitive(inputArg)) {
       result = inputArg;
     } else {
-      hint = typeof $getArgItem(arguments, 1);
+      hint = typeof arguments[1];
       if (hint === 'string' || (hint !== 'number' && $isDate(inputArg))) {
         methodNames = ['toString', 'valueOf'];
       } else {
@@ -2780,7 +2782,7 @@
    * @return {string}
    */
   function $getName(object, name) {
-    while (!$isUndefined(object[name])) {
+    while (typeof object[name] !== 'undefined') {
       name += $toString($toInteger($random() * 100));
     }
 
@@ -3037,7 +3039,7 @@
         item = $call(pCharAt, object, index);
       } else {
         item = object[index];
-        if (isString && $isUndefined(item)) {
+        if (isString && typeof item === 'undefined') {
           item = '';
         }
       }
@@ -3062,7 +3064,7 @@
 
       if (inputArg === null) {
         val = stringTagNull;
-      } else if ($isUndefined(inputArg)) {
+      } else if (typeof inputArg === 'undefined') {
         val = stringTagUndefined;
       } else {
         val = $call(pToString, inputArg);
@@ -3104,7 +3106,7 @@
       k = $min(relativeStart, length);
     }
 
-    if ($isUndefined(end)) {
+    if (typeof end === 'undefined') {
       relativeEnd = length;
     } else {
       relativeEnd = $toInteger(end);
@@ -3957,7 +3959,7 @@
       }
     }
 
-    if (!$isUndefined(actual)) {
+    if (typeof actual !== 'undefined') {
       opt = $optArgs(2, message, stackStartFunction, $affirm.doesNotThrow);
       $affirm.fail(actual, Undefined, opt.message, 'doesNotThrow', opt.stackStartFunction);
     }
@@ -4153,7 +4155,7 @@
       if ($isPrimitive(inputArg)) {
         if (inputArg === null) {
           val = stringTagNull;
-        } else if ($isUndefined(inputArg)) {
+        } else if (typeof inputArg === 'undefined') {
           val = stringTagUndefined;
         }
       } else if ($call(pHasOwn, inputArg, 'length')) {
@@ -5939,7 +5941,7 @@
 
             return function (separator) {
               $requireObjectCoercible(this);
-              if ($isUndefined(separator)) {
+              if (typeof separator === 'undefined') {
                 separator = ',';
               }
 
@@ -5962,7 +5964,7 @@
             index,
             val;
 
-          if ($isUndefined(separator)) {
+          if (typeof separator === 'undefined') {
             separator = ',';
           }
 
@@ -7288,7 +7290,7 @@
           from,
           to;
 
-        if ($isUndefined(end)) {
+        if (typeof end === 'undefined') {
           intEnd = length;
         } else {
           intEnd = $toInteger(end);
@@ -8112,8 +8114,8 @@
       } else if (!hask) {
         val = -1;
       } else {
-        isUndefX = $isUndefined(left[0]);
-        isUndefY = $isUndefined(right[0]);
+        isUndefX = typeof left[0] === 'undefined';
+        isUndefY = typeof right[0] === 'undefined';
         if (isUndefX && isUndefY) {
           val = +0;
         } else if (isUndefX) {
@@ -8230,7 +8232,7 @@
         index,
         sorted;
 
-      if ($isUndefined(comparefn)) {
+      if (typeof comparefn === 'undefined') {
         comparefn = $ascending;
       }
 
@@ -8411,7 +8413,7 @@
             var pSort = base.Array.sort;
 
             return function (comparefn) {
-              if ($isUndefined(comparefn)) {
+              if (typeof comparefn === 'undefined') {
                 comparefn = $ascending;
               }
 
@@ -9375,7 +9377,7 @@
               remove: 'gy'
             });
           } else {
-            if ($isUndefined(regex)) {
+            if (typeof regex === 'undefined') {
               regex = '';
             }
 
@@ -9462,7 +9464,7 @@
       });
 
       if ($toLength(arguments.length) > 1) {
-        fromIndex = $toNumber($getArgItem(arguments, 1));
+        fromIndex = $toNumber(arguments[1]);
         if (fromIndex < 0) {
           fromIndex = 0;
         }
@@ -9549,7 +9551,7 @@
         remove: 'y'
       });
 
-      arg1 = $getArgItem(arguments, 1);
+      arg1 = arguments[1];
       numPos = $toNumber(arg1);
       length = $toLength(str.length);
       if (!$strictEqual(numPos, numPos)) {
@@ -9821,10 +9823,10 @@
                 val;
 
               // "0".split(undefined, 0) -> []
-              if ($isUndefined(separator) && limit === 0) {
+              if (typeof separator === 'undefined' && limit === 0) {
                 val = [];
               } else {
-                isUndef = $isUndefined(limit);
+                isUndef = typeof limit === 'undefined';
                 if (es5limit) {
                   if (isUndef) {
                     limit = MAX_UINT32;
@@ -9889,10 +9891,10 @@
             len;
 
           // "0".split(undefined, 0) -> []
-          if ($isUndefined(separator) && limit === 0) {
+          if (typeof separator === 'undefined' && limit === 0) {
             output = [];
           } else {
-            isUndef = $isUndefined(limit);
+            isUndef = typeof limit === 'undefined';
             if (es5limit) {
               if (isUndef) {
                 limit = MAX_UINT32;
@@ -10303,7 +10305,7 @@
               // Update `lastIndex` before calling `replacement`. Fixes IE, Chrome, Firefox,
               // Safari bug (last tested IE 9, Chrome 17, Firefox 11, Safari 5.1)
               if (isRegex && search.global) {
-                search.lastIndex = args[$toLength(args.length) - 2] + $getArgItem(args, 0).length;
+                search.lastIndex = args[$toLength(args.length) - 2] + arguments[0].length;
               }
 
               // Should pass `undefined` as context; see
@@ -10319,7 +10321,7 @@
                 length = $toLength(arguments.length);
 
               return $call(pReplace, $toString(replacement), replacementToken, function () {
-                var $2 = $toString($getArgItem(arguments, 2));
+                var $2 = $toString(arguments[2]);
 
                 // Special variable or numbered backreference without curly braces
                 // $$
@@ -10355,13 +10357,13 @@
                  */
                 if ($strictEqual($2, $2)) {
                   if ($2 > (length - 3)) {
-                    throw new CSyntaxError('Backreference to undefined group ' + $toString($getArgItem(arguments, 0)));
+                    throw new CSyntaxError('Backreference to undefined group ' + $toString(arguments[0]));
                   }
 
                   return args[$2] || '';
                 }
 
-                throw new CSyntaxError('Invalid token ' + $toString($getArgItem(arguments, 0)));
+                throw new CSyntaxError('Invalid token ' + $toString(arguments[0]));
               });
             });
           }
@@ -10785,7 +10787,7 @@
           end,
           start;
 
-        if ($isUndefined(position)) {
+        if (typeof position === 'undefined') {
           position = thisLen;
         } else {
           position = $toInteger(position);
@@ -10842,7 +10844,7 @@
           searchStr = $toString(searchString),
           length = str.length;
 
-        if ($isUndefined(position)) {
+        if (typeof position === 'undefined') {
           position = 0;
         } else {
           position = $toInteger(position);
@@ -11068,7 +11070,7 @@
         val,
         it;
 
-      if ($isUndefined(equalFn)) {
+      if (typeof equalFn === 'undefined') {
         eqFn = $strictEqual;
       } else {
         eqFn = equalFn;
@@ -11257,7 +11259,7 @@
               obj[stringProto] = protoObject;
               getter = $call(mLookupGetter, obj, property);
               setter = $call(mLookupSetter, obj, property);
-              if ($isUndefined(prototype)) {
+              if (typeof prototype === 'undefined') {
                 $deleteProperty(obj, stringProto);
               } else {
                 obj[stringProto] = prototype;
@@ -11462,7 +11464,7 @@
 
           k = actualStart;
           while (item < argLength) {
-            object[k] = $getArgItem(arguments, item);
+            object[k] = arguments[item];
             k += 1;
             item += 1;
           }
@@ -12004,7 +12006,7 @@
           index,
           it;
 
-        if (!$isUndefined(mapfn)) {
+        if (typeof mapfn !== 'undefined') {
           mapping = !!$throwIfNotFunction(mapfn);
         }
 
@@ -12929,7 +12931,7 @@ nextChildFlatten:
 
       return function (str, radix) {
         str = $trim(str);
-        if ($isUndefined(radix) || !toInt32(radix)) {
+        if (typeof radix === 'undefined' || !toInt32(radix)) {
           if ($test(hexRx, str)) {
             radix = 16;
           } else {
@@ -13476,7 +13478,7 @@ nextChildFlatten:
           relativeStart = $min(relativeStart, length);
         }
 
-        if ($isUndefined(end)) {
+        if (typeof end === 'undefined') {
           relativeEnd = length;
         } else {
           relativeEnd = $toInteger(end);
@@ -13565,7 +13567,7 @@ nextChildFlatten:
           from = $min(relativeStart, length);
         }
 
-        if ($isUndefined(end)) {
+        if (typeof end === 'undefined') {
           relativeEnd = length;
         } else {
           relativeEnd = $toInteger(end);
@@ -14738,7 +14740,7 @@ nextChildFlatten:
    * @return {string}
    */
   exports.customErrorReplacer = function () {
-    var value = $getArgItem(arguments, 1),
+    var value = arguments[1],
       type = typeof value,
       result;
 
@@ -14971,7 +14973,7 @@ nextChildFlatten:
         throw new CSyntaxError('"name" was an empty string');
       }
 
-      if ($isUndefined(maxMessageLength)) {
+      if (typeof maxMessageLength === 'undefined') {
         var type = typeof ErrorConstructor;
 
         if (type === 'number' || type === 'string') {
@@ -15462,16 +15464,16 @@ nextChildFlatten:
         $affirm.doesNotThrow(function () {
           mStringify(noop);
         }, 'should not throw');
-        $affirm.ok($isUndefined(mStringify(noop)), 'test7');
+        $affirm.ok(typeof mStringify(noop) === 'undefined', 'test7');
         // IE 8 serializes `undefined` as `"undefined"`. Safari 5.1.7 and FF
         // 3.1b3 pass this test.
-        $affirm.ok($isUndefined(mStringify(Undefined)), 'test8');
+        $affirm.ok(typeof mStringify(Undefined) === 'undefined', 'test8');
         // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
         // respectively, if the toSON is omitted entirely.
         $affirm.doesNotThrow(function () {
           mStringify();
         }, 'test9');
-        $affirm.ok($isUndefined(mStringify()), 'test10');
+        $affirm.ok(typeof mStringify() === 'undefined', 'test10');
         // FF 3.1b1, 2 throw an error if the given testTemp.a is not a number,
         // string, array, object, Boolean, or `null` literal. This applies to
         // objects with custom `toJSON` methods as well, unless they are nested
@@ -15670,7 +15672,7 @@ nextChildFlatten:
                 element = sfyReplacer[index];
                 if (typeof element === 'string') {
                   v = stringifyToString(element, value, circular);
-                  if (!$isUndefined(v)) {
+                  if (typeof v !== 'undefined') {
                     $push(partial, stringifyQuote(element) + theGap + v);
                   }
                 }
@@ -15681,7 +15683,7 @@ nextChildFlatten:
               for (index = 0; index < length; index += 1) {
                 element = keys[index];
                 v = stringifyToString(element, value, circular);
-                if (!$isUndefined(v)) {
+                if (typeof v !== 'undefined') {
                   $push(partial, stringifyQuote(element) + theGap + v);
                 }
               }
@@ -15795,7 +15797,7 @@ nextChildFlatten:
           // fail
           function () {
             return function (text, reviver) {
-              if ($isUndefined(text)) {
+              if (typeof text === 'undefined') {
                 throw new CSyntaxError('JSON.parse');
               }
 
@@ -15835,7 +15837,7 @@ nextChildFlatten:
             for (index = 0; index < length; index += 1) {
               k = keys[index];
               v = walk(value, k);
-              if (!$isUndefined(v)) {
+              if (typeof v !== 'undefined') {
                 value[k] = v;
               } else {
                 $deleteProperty(value, k);
@@ -15937,7 +15939,7 @@ nextChildFlatten:
             intStart = $max(size + intStart, 0);
           }
 
-          if ($isUndefined(length)) {
+          if (typeof length === 'undefined') {
             end = INFINITY;
           } else {
             end = $toInteger(length);
@@ -16446,10 +16448,10 @@ nextChildFlatten:
         more = xc[i] >= 5;
       } else if (rm === 2) {
         /*jslint bitwise:true */
-        more = xc[i] > 5 || (xc[i] === 5 && (more || i < 0 || !$isUndefined(xc[i + 1]) || xc[i - 1] & 1));
+        more = xc[i] > 5 || (xc[i] === 5 && (more || i < 0 || typeof xc[i + 1] !== 'undefined' || xc[i - 1] & 1));
         /*jslint bitwise:true */
       } else if (rm === 3) {
-        more = more || !$isUndefined(xc[i]) || i < 0;
+        more = more || typeof xc[i] !== 'undefined' || i < 0;
       } else {
         more = false;
         if (rm !== 0) {
@@ -16941,7 +16943,7 @@ nextChildFlatten:
 
         dvdI += 1;
         s -= 1;
-      } while ((dvdI < dvdL || !$isUndefined(rem[0])) && s);
+      } while ((dvdI < dvdL || typeof rem[0] !== 'undefined') && s);
 
       // Leading zero? Do not remove if result is simply zero (qi == 1).
       if (!qc[0] && qi !== 1) {
@@ -16952,7 +16954,7 @@ nextChildFlatten:
 
       // Round?
       if (qi > digits) {
-        $call(rnd, q, dp, rm, !$isUndefined(rem[0]));
+        $call(rnd, q, dp, rm, typeof rem[0] !== 'undefined');
       }
 
       return q;
