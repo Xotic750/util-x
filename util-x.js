@@ -4505,99 +4505,99 @@
     var funcs = {
       1: function (protoFn, checkThisArgFn) {
         return function (thisArg) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       2: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       3: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       4: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       5: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       6: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4, $5) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       7: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4, $5, $6) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       8: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4, $5, $6, $7) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       9: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4, $5, $6, $7, $8) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
       10: function (protoFn, checkThisArgFn) {
         return function (thisArg, $1, $2, $3, $4, $5, $6, $7, $8, $9) {
-          var args = $argSlice(arguments, 1);
+          var tArg = checkThisArgFn(thisArg);
 
           /*jslint unparam: true */
           /*jshint unused: false */
-          return $apply(protoFn, checkThisArgFn(thisArg), args);
+          return $apply(protoFn, tArg, $argSlice(arguments, 1));
         };
       },
 
