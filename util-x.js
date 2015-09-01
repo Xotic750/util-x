@@ -4164,45 +4164,157 @@
 
   // redefinition
   $toStringTag = (function (pOToString) {
-    return function (inputArg) {
-      var val;
+    return $decide(
+      // test
+      function () {
+        var result;
 
-      if ($isPrimitive(inputArg)) {
-        if (inputArg === null) {
-          val = stringTagNull;
-        } else if (typeof inputArg === 'undefined') {
-          val = stringTagUndefined;
-        }
-      } else if ($call(pHasOwn, inputArg, 'length')) {
-        if ($isArguments(inputArg)) {
-          val = stringTagArguments;
-        } else if ($isArray(inputArg)) {
-          val = stringTagArray;
-        } else if ($isString(inputArg)) {
-          val = stringTagString;
-        } else if ($isFunction(inputArg)) {
-          val = stringTagFunction;
-        }
-      } else {
-        if ($isNumber(inputArg)) {
-          val = stringTagNumber;
-        } else if ($isBoolean(inputArg)) {
-          val = stringTagBoolean;
-        } else if ($isRegExp(inputArg)) {
-          val = stringTagRegExp;
-        } else if ($isDate(inputArg)) {
-          val = stringTagDate;
-        } else if ($isError(inputArg)) {
-          val = stringTagError;
-        }
-      }
+        $affirm.ok(!testShims, 'testing shim');
 
-      if (!val) {
-        val = $call(pOToString, inputArg);
-      }
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString);
+        }, 'call no arg');
 
-      return val;
-    };
+        $affirm.strictEqual(result, stringTagUndefined, 'no arg');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, Undefined);
+        }, 'call undefined');
+
+        $affirm.strictEqual(result, stringTagUndefined, 'undefined');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, null);
+        }, 'call null');
+
+        $affirm.strictEqual(result, stringTagNull, 'null');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, arguments);
+        }, 'call arguments');
+
+        $affirm.strictEqual(result, stringTagArguments, 'arguments');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, 'abc');
+        }, 'call string');
+
+        $affirm.strictEqual(result, stringTagString, 'string');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, $Object('abc'));
+        }, 'call string object');
+
+        $affirm.strictEqual(result, stringTagString, 'string object');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, []);
+        }, 'call array');
+
+        $affirm.strictEqual(result, stringTagArray, 'array');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, function () { return; });
+        }, 'test3');
+
+        $affirm.strictEqual(result, stringTagFunction, 'function');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, 1);
+        }, 'call number');
+
+        $affirm.strictEqual(result, stringTagNumber, 'number');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, $Object(1));
+        }, 'call number object');
+
+        $affirm.strictEqual(result, stringTagNumber, 'number object');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, true);
+        }, 'call boolean');
+
+        $affirm.strictEqual(result, stringTagBoolean, 'boolean');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, $Object(true));
+        }, 'call boolean object');
+
+        $affirm.strictEqual(result, stringTagBoolean, 'boolean object');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, new CRegExp(''));
+        }, 'call regexp');
+
+        $affirm.strictEqual(result, stringTagRegExp, 'regexp');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, new CDate());
+        }, 'call date');
+
+        $affirm.strictEqual(result, stringTagDate, 'date');
+
+        $affirm.doesNotThrow(function () {
+          result = $call(pOToString, new CError(''));
+        }, 'call error');
+
+        $affirm.strictEqual(result, stringTagError, 'error');
+      },
+
+      // pass
+      function () {
+        return function (inputArg) {
+          return $call(pOToString, inputArg);
+        };
+      },
+
+      // fail
+      function () {
+        return function (inputArg) {
+          var val;
+
+          if ($isPrimitive(inputArg)) {
+            if (inputArg === null) {
+              val = stringTagNull;
+            } else if (typeof inputArg === 'undefined') {
+              val = stringTagUndefined;
+            }
+          } else if ($call(pHasOwn, inputArg, 'length')) {
+            if ($isArguments(inputArg)) {
+              val = stringTagArguments;
+            } else if ($isArray(inputArg)) {
+              val = stringTagArray;
+            } else if ($isString(inputArg)) {
+              val = stringTagString;
+            } else if ($isFunction(inputArg)) {
+              val = stringTagFunction;
+            }
+          } else {
+            if ($isNumber(inputArg)) {
+              val = stringTagNumber;
+            } else if ($isBoolean(inputArg)) {
+              val = stringTagBoolean;
+            } else if ($isRegExp(inputArg)) {
+              val = stringTagRegExp;
+            } else if ($isDate(inputArg)) {
+              val = stringTagDate;
+            } else if ($isError(inputArg)) {
+              val = stringTagError;
+            }
+          }
+
+          if (!val) {
+            val = $call(pOToString, inputArg);
+          }
+
+          return val;
+        };
+      },
+
+      // message
+      'toStringTag patch'
+    );
   }(base.Object.toString));
 
   /**
