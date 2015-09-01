@@ -12980,6 +12980,7 @@
     var object = $toObject(this),
       length = $toLength(object.length),
       result = [],
+      resultLen,
       index,
       stack,
       value,
@@ -13015,15 +13016,19 @@ nextChildFlatten:
           }
 
           len = $toLength(value.length);
+          resultLen = $toLength(result.length);
+          result.length = resultLen + len;
           for (idx = 0; idx < len; idx += 1) {
             if ($hasProperty(value, idx)) {
-              $push(result, value[idx]);
-            } else {
+              result[resultLen + idx] = value[idx];
+              //$push(result, value[idx]);
+            }/* else {
               result.length += 1;
-            }
+            }*/
           }
         } else {
-          $push(result, value);
+          result[result.length] = value;
+          //$push(result, value);
         }
       } else {
         result.length += 1;
