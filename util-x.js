@@ -4163,21 +4163,25 @@
    * @function module:util-x~grow
    * @param {module:util-x~ArrayLike} destination
    * @param {module:util-x~ArrayLike} [source]
-   * @return {Array} destination
+   * @return {number} New length
    */
   function $grow(destination, source) {
     var dLen = $toLength(destination.length),
       sLen = $toLength(source.length),
-      index;
+      isUndef,
+      index,
+      value;
 
     destination.length = dLen + sLen;
     for (index = 0; index < sLen; index += 1) {
-      if ($hasProperty(source, index)) {
-        destination[dLen + index] = source[index];
+      value = source[index];
+      isUndef = typeof value === 'undefined';
+      if (!isUndef || (isUndef && $hasProperty(source, index))) {
+        destination[dLen + index] = value;
       }
     }
 
-    return destination;
+    return destination.length;
   }
 
   /**
