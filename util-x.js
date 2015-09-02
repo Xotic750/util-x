@@ -13020,7 +13020,8 @@
       length,
       index,
       stack,
-      value;
+      value,
+      sLen;
 
     if (!$isArray(object)) {
       return result;
@@ -13042,7 +13043,7 @@ nextChildFlatten:
         value = object[index];
         if ($isArray(value)) {
           if (deep) {
-            $push(stack, [object, length, index + 1]);
+            stack[$toLength(stack.length)] = [object, length, index + 1];
             object = value;
             length = $toLength(value.length);
             index = 0;
@@ -13052,7 +13053,6 @@ nextChildFlatten:
 
           $grow(result, value);
         } else {
-          //$push(result, value);
           result[$toLength(result.length)] = value;
         }
       } else {
@@ -13060,13 +13060,18 @@ nextChildFlatten:
       }
 
       index += 1;
-      if (deep && index >= length && $toLength(stack.length)) {
-        value = $pop(stack);
-        object = value[0];
-        length = value[1];
-        index = value[2];
-        /*jslint continue:true*/
-        continue nextChildFlatten;
+      if (deep && index >= length) {
+        sLen = $toLength(stack.length);
+        if (sLen) {
+          sLen -= 1;
+          value = stack[sLen];
+          stack.length = sLen;
+          object = value[0];
+          length = value[1];
+          index = value[2];
+          /*jslint continue:true*/
+          continue nextChildFlatten;
+        }
       }
     }
 
