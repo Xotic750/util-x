@@ -4160,6 +4160,28 @@
 
   /**
    * @private
+   * @function module:util-x~grow
+   * @param {module:util-x~ArrayLike} destination
+   * @param {module:util-x~ArrayLike} [source]
+   * @return {Array} destination
+   */
+  function $grow(destination, source) {
+    var dLen = $toLength(destination.length),
+      sLen = $toLength(source.length),
+      index;
+
+    destination.length = dLen + sLen;
+    for (index = 0; index < sLen; index += 1) {
+      if ($hasProperty(source, index)) {
+        destination[dLen + index] = source[index];
+      }
+    }
+
+    return destination;
+  }
+
+  /**
+   * @private
    * @function module:util-x~$conlog
    * @param {...*} [varArgs]
    */
@@ -10543,7 +10565,7 @@
                 if ((mIndex + m0Len) > lastLastIndex) {
                   $push(output, $sSlice(str, lastLastIndex, mIndex));
                   if ($toLength(match.length) > 1 && mIndex < length) {
-                    output = $concat(output, $slice(match, 1));
+                    $grow(output, $slice(match, 1));
                   }
 
                   lastLength = m0Len;
@@ -13024,7 +13046,7 @@ nextChildFlatten:
             continue nextChildFlatten;
           }
 
-          result = $concat(result, value);
+          $grow(result, value);
         } else {
           $push(result, value);
         }
