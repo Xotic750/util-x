@@ -13042,7 +13042,7 @@ nextChildFlatten:
         value = object[index];
         if ($isArray(value)) {
           if (deep) {
-            $push(stack, [object, length, index]);
+            $push(stack, [object, length, index + 1]);
             object = value;
             length = $toLength(value.length);
             index = 0;
@@ -13052,7 +13052,8 @@ nextChildFlatten:
 
           $grow(result, value);
         } else {
-          $push(result, value);
+          //$push(result, value);
+          result[$toLength(result.length)] = value;
         }
       } else {
         result.length += 1;
@@ -13063,7 +13064,7 @@ nextChildFlatten:
         value = $pop(stack);
         object = value[0];
         length = value[1];
-        index = value[2] + 1;
+        index = value[2];
         /*jslint continue:true*/
         continue nextChildFlatten;
       }
