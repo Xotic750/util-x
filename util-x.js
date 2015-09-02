@@ -23,7 +23,7 @@
  */
 
 /*jslint
-  maxerr:100, indent:2
+  maxerr:200, indent:2
 */
 
 /*global
@@ -337,6 +337,7 @@
     $forEach,
     $push,
     $pop,
+    $concat,
     $deepEqual,
     $deepStrictEqual,
     $defineProperty,
@@ -4143,13 +4144,14 @@
         while (k < len) {
           if ($hasProperty(element, k)) {
             val[next] = element[k];
-            k += 1;
-          } else {
-            val[next] = element;
           }
 
+          k += 1;
           next += 1;
         }
+      } else {
+        val[next] = element;
+        next += 1;
       }
     }
 
@@ -4585,11 +4587,13 @@
 
       var argsStr = $bindArgs($toLength(protoFn.length) + 1, ' ,'),
         theFn = 'return function (thisArg, ' + argsStr +
-        ') { return apply(pFn, cFn, thisArg, arguments); };';
+          ') { return apply(pFn, cFn, thisArg, arguments); };';
 
       /*jslint evil: true */
       return new CFunction('pFn', 'cFn', 'apply', theFn)(
-        protoFn, checkThisArgFn, method
+        protoFn,
+        checkThisArgFn,
+        method
       );
     };
   }());
@@ -6032,9 +6036,11 @@
       function makeBound(binder, args) {
         /*jslint evil: true */
         return new CFunction(
-          'binder', 'apply',
+          'binder',
+          'apply',
           'return function (' + args +
-          ') { return apply(binder, this, arguments); };')(binder, $apply);
+            ') { return apply(binder, this, arguments); };'
+        )(binder, $apply);
       }
 
       return function (thisArg) {
@@ -6861,7 +6867,8 @@
 
       $affirm.doesNotThrow(function () {
         resArr = $call(
-          base.Array.concat, concatArr,
+          base.Array.concat,
+          concatArr,
           $slice($returnArgs(undefined, null, false))
         );
       });
@@ -6893,13 +6900,27 @@
    * etc., it returns an array containing the array elements of the object
    * followed by the array elements of each argument in order.
    *
+   * @private
+   * @function module:util-x~$concat
+   * @param {Array} array
+   * @param {...*} [varArgs]
+   * @return {Array}
+   * @see https://goo.gl/aY7KDO
+   */
+  $concat = $toMethod(exports.Array.proto.concat);
+
+  /**
+   * When the concat method is called with zero or more arguments item1, item2,
+   * etc., it returns an array containing the array elements of the object
+   * followed by the array elements of each argument in order.
+   *
    * @function module:util-x~exports.Array.concat
    * @param {Array} array
    * @param {...*} [varArgs]
    * @return {Array}
    * @see https://goo.gl/aY7KDO
    */
-  exports.Array.concat = $toMethod(exports.Array.proto.concat);
+  exports.Array.concat = $concat;
 
   /**
    * This method adds one or more elements to the end of the array and
@@ -9399,7 +9420,8 @@
 
       // Get native flags in use
       flags = $onlyCoercibleToString(
-        $call(pExec, getNativeFlags, $toString(regExpArg))[1]);
+        $call(pExec, getNativeFlags, $toString(regExpArg))[1]
+      );
       if (options.add) {
         flags = $call(pReplace, flags + options.add, clipDups, '');
       }
@@ -9534,22 +9556,23 @@
                  * the match
                  */
                 $call(
-                 pReplace,
-                 $sSlice($toString(stringArg), $toNumber(match.index)),
-                 copyRegExp(this, { remove: 'g' }),
-                 function () {
-                  var length = $toLength(arguments.length) - 2,
-                    index,
-                    it;
+                  pReplace,
+                  $sSlice($toString(stringArg), $toNumber(match.index)),
+                  copyRegExp(this, { remove: 'g' }),
+                  function () {
+                    var length = $toLength(arguments.length) - 2,
+                      index,
+                      it;
 
-                  // Skip index 0 and the last 2
-                  for (index = 1; index < length; index += 1) {
-                    it = arguments[index];
-                    if ($isUndefined(it)) {
-                      match[index] = it;
+                    // Skip index 0 and the last 2
+                    for (index = 1; index < length; index += 1) {
+                      it = arguments[index];
+                      if ($isUndefined(it)) {
+                        match[index] = it;
+                      }
                     }
                   }
-                });
+                );
               }
             }
 
@@ -10186,7 +10209,7 @@
                           ['test'],
                           '(\'test\', ) results in [\'test\']');
         $affirm.deepEqual($call(pSplit, '111', 1),
-                          ['', '', '', ''], '(\'111\', 1) results in '+
+                          ['', '', '', ''], '(\'111\', 1) results in ' +
                           '[\'\', \'\', \'\', \'\']');
         $affirm.deepEqual($call(pSplit, 'test', /(?:)/, 2),
                           ['t', 'e'],
@@ -10330,7 +10353,7 @@
         $affirm.deepEqual($call(pSplit, 'tesst', /(s)*?/),
                           arrCmp,
                           '(\'test\', /(s)*?/) results in [\'t\', undefined, ' +
-                          '\'e\', undefined, \'s\', undefined, \'s\', '+
+                          '\'e\', undefined, \'s\', undefined, \'s\', ' +
                           'undefined, \'t\']');
         $affirm.deepEqual($call(pSplit, 'tesst', /(s*)/),
                           ['t', '', 'e', 'ss', 't'],
@@ -10481,10 +10504,7 @@
             match,
             length,
             mIndex,
-            m0Len,
-            slc,
-            idx,
-            len;
+            m0Len;
 
           // "0".split(undefined, 0) -> []
           if (typeof separator === 'undefined' && limit === 0) {
@@ -10523,15 +10543,7 @@
                 if ((mIndex + m0Len) > lastLastIndex) {
                   $push(output, $sSlice(str, lastLastIndex, mIndex));
                   if ($toLength(match.length) > 1 && mIndex < length) {
-                    slc = $slice(match, 1);
-                    len = $toLength(slc.length);
-                    for (idx = 0; idx < len; idx += 1) {
-                      if ($hasProperty(slc, idx)) {
-                        $push(output, slc[idx]);
-                      } else {
-                        output.length += 1;
-                      }
-                    }
+                    output = $concat(output, $slice(match, 1));
                   }
 
                   lastLength = m0Len;
@@ -12978,16 +12990,18 @@
    */
   exports.Array.proto.flatten = function (deep) {
     var object = $toObject(this),
-      length = $toLength(object.length),
       result = [],
-      resultLen,
+      length,
       index,
       stack,
-      value,
-      idx,
-      len;
+      value;
 
-    if (!length || !$isArray(object)) {
+    if (!$isArray(object)) {
+      return result;
+    }
+
+    length = $toLength(object.length);
+    if (!length) {
       return result;
     }
 
@@ -13002,7 +13016,7 @@ nextChildFlatten:
         value = object[index];
         if ($isArray(value)) {
           if (deep) {
-            stack[stack.length] = [object, length, index];
+            $push(stack, [object, length, index]);
             object = value;
             length = $toLength(value.length);
             index = 0;
@@ -13010,39 +13024,22 @@ nextChildFlatten:
             continue nextChildFlatten;
           }
 
-          len = $toLength(value.length);
-          resultLen = $toLength(result.length);
-          result.length = resultLen + len;
-          for (idx = 0; idx < len; idx += 1) {
-            if ($hasProperty(value, idx)) {
-              result[resultLen + idx] = value[idx];
-              //$push(result, value[idx]);
-            }/* else {
-              result.length += 1;
-            }*/
-          }
+          result = $concat(result, value);
         } else {
-          result[result.length] = value;
-          //$push(result, value);
+          $push(result, value);
         }
       } else {
         result.length += 1;
       }
 
       index += 1;
-      if (deep && index >= length) {
-        len = $toLength(stack.length);
-        if (len) {
-          len -= 1;
-          value = stack[len];
-          stack.length = len;
-          //$pop(stack);
-          object = value[0];
-          length = value[1];
-          index = value[2] + 1;
-          /*jslint continue:true*/
-          continue nextChildFlatten;
-        }
+      if (deep && index >= length && $toLength(stack.length)) {
+        value = $pop(stack);
+        object = value[0];
+        length = value[1];
+        index = value[2] + 1;
+        /*jslint continue:true*/
+        continue nextChildFlatten;
       }
     }
 
