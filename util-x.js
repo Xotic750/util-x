@@ -13016,62 +13016,50 @@
    */
   exports.Array.proto.flatten = function (deep) {
     var object = $toObject(this),
+      length = $toLength(object.length),
       result = [],
-      length,
-      index,
       stack,
       value,
-      sLen;
+      tail;
 
-    if (!$isArray(object)) {
+    if (!length || !Array.isArray(object)) {
       return result;
     }
 
-    length = $toLength(object.length);
-    if (!length) {
-      return result;
-    }
+    stack = [{
+      object: object,
+      length: length,
+      index: 0
+    }];
 
-    index = 0;
-    if (deep) {
-      stack = [];
-    }
-
-nextChildFlatten:
-    while (index < length) {
-      if ($hasProperty(object, index)) {
-        value = object[index];
-        if ($isArray(value)) {
-          if (deep) {
-            stack[$toLength(stack.length)] = [object, length, index + 1];
-            object = value;
-            length = $toLength(value.length);
-            index = 0;
-            /*jslint continue:true*/
-            continue nextChildFlatten;
-          }
-
-          $grow(result, value);
-        } else {
-          result[$toLength(result.length)] = value;
-        }
+    length = 1;
+    while (length) {
+      tail = stack[length - 1];
+      if (tail.index >= tail.length) {
+        stack.length = length = length - 1;
       } else {
-        result.length += 1;
-      }
+        if ($hasProperty(tail.object, tail.index)) {
+          value = tail.object[tail.index];
+          if (Array.isArray(value)) {
+            if (deep) {
+              stack[length] = {
+                object: value,
+                length: $toLength(value.length),
+                index: 0
+              };
 
-      index += 1;
-      if (deep && index >= length) {
-        sLen = $toLength(stack.length);
-        if (sLen) {
-          sLen -= 1;
-          value = stack[sLen];
-          stack.length = sLen;
-          object = value[0];
-          length = value[1];
-          index = value[2];
-          /*jslint continue:true*/
-          continue nextChildFlatten;
+              length += 1;
+            } else {
+              $grow(result, value);
+            }
+          } else {
+            result[$toLength(result.length)] = value;
+          }
+        } else {
+          result.length += 1;
         }
+
+        tail.index += 1;
       }
     }
 
