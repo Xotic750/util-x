@@ -13020,6 +13020,7 @@
       result = [],
       stack,
       value,
+      cIdx,
       tail;
 
     if (!length || !Array.isArray(object)) {
@@ -13041,6 +13042,12 @@
         if ($hasProperty(tail.object, tail.index)) {
           value = tail.object[tail.index];
           if (Array.isArray(value)) {
+            for (cIdx = 0; cIdx < length; cIdx += 1) {
+              if (value === stack[cIdx].object) {
+                throw new CTypeError('Flattening circular array');
+              }
+            }
+
             if (deep) {
               stack[length] = {
                 object: value,
